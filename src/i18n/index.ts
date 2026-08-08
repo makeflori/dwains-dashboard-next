@@ -19,7 +19,7 @@ export const TRANSLATIONS: Record<SupportedLanguage, TranslationDictionary> = {
   ez,
   ru,
   'zh-hans': zhHans,
-  'zh-hant': zhHant,ru
+  'zh-hant': zhHant,
 };
 
 export { type TranslationDictionary, type TranslationKey };
