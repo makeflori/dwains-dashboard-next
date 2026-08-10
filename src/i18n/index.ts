@@ -5,8 +5,9 @@ import { fr } from './locales/fr';
 import { nl } from './locales/nl';
 import { zhHans } from './locales/zh-Hans';
 import { zhHant } from './locales/zh-Hant';
+import { ru } from './locales/ru';
 
-export const SUPPORTED_LANGUAGES = ['en', 'nl', 'de', 'fr', 'es', 'zh-hans', 'zh-hant'] as const;
+export const SUPPORTED_LANGUAGES = ['en', 'nl', 'de', 'fr', 'es', 'zh-hans', 'zh-hant', 'ru'] as const;
 
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 
@@ -16,6 +17,7 @@ export const TRANSLATIONS: Record<SupportedLanguage, TranslationDictionary> = {
   de,
   fr,
   es,
+  ru,
   'zh-hans': zhHans,
   'zh-hant': zhHant,
 };
