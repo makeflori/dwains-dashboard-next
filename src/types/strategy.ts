@@ -81,8 +81,16 @@ export interface AreaCustomCard {
   card: LovelaceCardConfig;
 }
 
+export type AreaEntityLayout = 'grouped' | 'ungrouped';
+
 export interface AreaOptions {
   card_size?: 'small' | 'large';
+  /** Group generated entity cards by domain, or show one freely ordered list. */
+  entity_layout?: AreaEntityLayout;
+  /** Order of generated domain sections when entity_layout is grouped. */
+  group_order?: string[];
+  /** Area-wide entity order used when entity_layout is ungrouped. */
+  entity_order?: string[];
   groups_options?: Record<string, EntitiesDisplay>;
   // Custom Lovelace cards placed around the area sections.
   custom_cards?: AreaCustomCard[];

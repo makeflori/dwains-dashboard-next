@@ -1,13 +1,15 @@
-// Generieke host voor een willekeurige Lovelace-kaart-config. Beheert een
-// hui-card-element imperatief in de eigen light-DOM, zodat er nooit een rauw
-// DOM-element in een Lit-template/repeat van de ouder belandt (voorkomt de
-// 'nextSibling of null'-crash). Zelfde idee als dwains-dashboard-next-tile-host.
+// Generieke host voor een willekeurige Lovelace-kaart-config. Maakt de echte
+// kaart via Home Assistants card helpers en beheert die in de eigen light-DOM,
+// zodat er nooit een rauw DOM-element in een Lit-template van de ouder belandt.
 export class DwainsCardHost extends HTMLElement {
   private _hass: any | undefined;
   private _config: any | undefined;
+  private _configKey = '';
+  private _renderedConfigKey = '';
   private _child: any | null = null;
   private _observer?: IntersectionObserver;
   private _hasRendered = false;
+  private _renderRequest = 0;
 
   set hass(value: any) {
     this._hass = value;
@@ -19,6 +21,7 @@ export class DwainsCardHost extends HTMLElement {
 
   set config(value: any) {
     this._config = value;
+    this._configKey = this._getConfigKey(value);
     this._renderWhenVisible();
   }
   get config() {
@@ -33,11 +36,13 @@ export class DwainsCardHost extends HTMLElement {
   }
 
   disconnectedCallback() {
+    this._renderRequest += 1;
     this._observer?.disconnect();
     this._observer = undefined;
     this._hasRendered = false;
+    this._renderedConfigKey = '';
     this._child = null;
-    this.innerHTML = '';
+    this.replaceChildren();
   }
 
   private _renderWhenVisible() {
@@ -66,20 +71,66 @@ export class DwainsCardHost extends HTMLElement {
     this._observer.observe(this);
   }
 
-  private _render() {
-    if (!this.isConnected || !this._config) return;
-    if (!this._child || !this.contains(this._child)) {
-      this._child = document.createElement('hui-card');
-      this.innerHTML = '';
-      this.appendChild(this._child);
-    }
+  private _getConfigKey(config: any): string {
     try {
-      // hass VÓÓR config zodat charts thema-context hebben bij render
+      return JSON.stringify(config) ?? '';
+    } catch {
+      return String(config?.type ?? '') + ':' + String(config?.entity ?? '');
+    }
+  }
+
+  private async _render() {
+    if (!this.isConnected || !this._config) return;
+
+    if (
+      this._child &&
+      this.contains(this._child) &&
+      this._renderedConfigKey === this._configKey
+    ) {
       if (this._hass) this._child.hass = this._hass;
-      this._child.config = this._config;
+      return;
+    }
+
+    const request = ++this._renderRequest;
+    const config = this._config;
+    const configKey = this._configKey;
+
+    try {
+      const loadCardHelpers = (window as any).loadCardHelpers;
+      if (typeof loadCardHelpers !== 'function') {
+        throw new Error('Home Assistant card helpers are not available');
+      }
+
+      const helpers = await loadCardHelpers();
+      if (
+        request !== this._renderRequest ||
+        !this.isConnected ||
+        configKey !== this._configKey
+      ) {
+        return;
+      }
+
+      const child = helpers.createCardElement(config);
+      if (!child) throw new Error('Home Assistant did not create a card element');
+
+      // Home Assistant configures the real card before returning it. We only
+      // provide hass and mount it, avoiding hui-card's asynchronous setConfig race.
+      if (this._hass) child.hass = this._hass;
+      this._child = child;
+      this._renderedConfigKey = configKey;
+      this.replaceChildren(child);
     } catch (e) {
+      if (request !== this._renderRequest || !this.isConnected) return;
       // eslint-disable-next-line no-console
-      console.warn('dwains-dashboard-next-card-host: kaart configureren mislukt', e);
+      console.warn('dwains-dashboard-next-card-host: failed to create card', e);
+      this._child = null;
+      this._renderedConfigKey = '';
+      const error = document.createElement('div');
+      error.className = 'dd-card-host-error';
+      error.style.cssText =
+        'padding:12px;color:var(--error-color);background:var(--card-background-color);border-radius:8px;';
+      error.textContent = 'Card could not be loaded';
+      this.replaceChildren(error);
     }
   }
 }

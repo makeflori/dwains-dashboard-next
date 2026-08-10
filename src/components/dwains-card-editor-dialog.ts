@@ -5,6 +5,7 @@ import type { HomeAssistant } from "../types/home-assistant";
 import type { LovelaceCardConfig } from "../types/strategy";
 import { fireEvent } from "./utils/fire-event";
 import { ddLocalize } from "../utils/localize";
+import "./utils/dd-card-host";
 
 export interface CardEditorDialogParams {
   /** Bestaande kaart om te bewerken (leeg = nieuwe kaart) */
@@ -213,7 +214,8 @@ export class DwainsCardEditorDialog extends LitElement {
       return;
     }
     try {
-      const el = document.createElement("hui-card") as any;
+      const el = document.createElement("dwains-dashboard-next-card-host") as any;
+      el.setAttribute("eager", "");
       el.hass = this.hass;
       el.config = this._card;
       this._previewEl = el;
@@ -420,7 +422,8 @@ export class DwainsCardEditorDialog extends LitElement {
       const cfg = this._previewConfigFor(t);
       if (!cfg) return;
       try {
-        const el = document.createElement("hui-card") as any;
+        const el = document.createElement("dwains-dashboard-next-card-host") as any;
+        el.setAttribute("eager", "");
         el.hass = this.hass;
         el.config = cfg;
         el.setAttribute("preview", "");

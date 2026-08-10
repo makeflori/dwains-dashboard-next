@@ -6,7 +6,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
 import type { HomeAssistant } from '../types/home-assistant';
-import type { DwainsDashboardConfig, AreaConfig, EntityConfig, AreaData, AreaCustomCard, HomeInformationCardKey, HomeSectionKey } from '../types/strategy';
+import type { DwainsDashboardConfig, AreaConfig, EntityConfig, AreaData, AreaCustomCard, EntitiesDisplay, HomeInformationCardKey, HomeSectionKey } from '../types/strategy';
 import { getAreaData, clearAreaDataCache, clearAreaDataCacheForArea } from '../utils/area';
 import { getAreaIcon, getDeviceClassIcon, getDomainColor, getDomainIcon } from '../utils/icons';
 import { getStatusDomains, getTotalWattage, type DomainCount as StatusDomainCount } from '../utils/header-status-domains';
@@ -49,6 +49,7 @@ const AREA_HEADER_REVEAL_SCROLL = 88;
 const MOBILE_INITIAL_HOME_AREAS = 12;
 const MOBILE_INITIAL_ENTITY_GROUPS = 4;
 const MOBILE_INITIAL_ENTITY_CARDS = 12;
+const UNGROUPED_AREA_EDIT_GROUP = '__ungrouped__';
 const ICON_ARROW_LEFT = 'M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z';
 
 interface CachedAreaData {
@@ -176,6 +177,10 @@ export class DwainsLayoutCard extends LitElement {
   @state() private _suggestedFavoriteEntities: string[] = [];
   @state() private _customCardDrag: { areaId: string; cardId: string } | null = null;
   @state() private _customCardDragOver: { areaId: string; placement: string; index: number } | null = null;
+  @state() private _generatedCardDrag: { areaId: string; entityId: string; groupKey: string } | null = null;
+  @state() private _generatedCardDragOver: { areaId: string; entityId: string; groupKey: string } | null = null;
+  @state() private _generatedGroupDrag: { areaId: string; groupKey: string } | null = null;
+  @state() private _generatedGroupDragOver: { areaId: string; groupKey: string } | null = null;
   @state() private _optimisticEntityStates: Record<string, OptimisticEntityState> = {};
   @state() private _renderAllMobileHomeAreas = false;
   @state() private _renderAllMobileAreaEntities = false;
@@ -3120,6 +3125,21 @@ export class DwainsLayoutCard extends LitElement {
       position: relative;
     }
 
+    .mobile-domain-group.group-editing {
+      border-radius: 8px;
+      transition: opacity 0.16s ease, outline-color 0.16s ease, background-color 0.16s ease;
+    }
+
+    .mobile-domain-group.group-dragging {
+      opacity: 0.46;
+    }
+
+    .mobile-domain-group.group-drag-over {
+      outline: 2px solid var(--primary-color);
+      outline-offset: 7px;
+      background: color-mix(in srgb, var(--primary-color) 5%, transparent);
+    }
+
     .mobile-domain-group:not(.menu-open) {
       contain: layout style paint;
     }
@@ -3143,6 +3163,47 @@ export class DwainsLayoutCard extends LitElement {
       align-items: center;
       gap: 8px;
       min-width: 0;
+    }
+
+    .mobile-domain-header-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      flex: 0 0 auto;
+    }
+
+    .mobile-domain-order-button,
+    .mobile-domain-drag-handle {
+      width: 30px;
+      height: 30px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--secondary-background-color) 78%, transparent);
+      color: var(--secondary-text-color);
+      cursor: pointer;
+    }
+
+    .mobile-domain-drag-handle {
+      cursor: grab;
+      touch-action: none;
+    }
+
+    .mobile-domain-drag-handle:active {
+      cursor: grabbing;
+    }
+
+    .mobile-domain-order-button:disabled {
+      opacity: 0.28;
+      cursor: default;
+    }
+
+    .mobile-domain-order-button ha-icon,
+    .mobile-domain-drag-handle ha-icon {
+      --mdc-icon-size: 18px;
     }
 
     .mobile-layout-toggle {
@@ -3645,6 +3706,14 @@ export class DwainsLayoutCard extends LitElement {
       }
 
     @media (min-width: 769px) {
+      .area-view .dd-generated-card-wrap.editing,
+      .area-view .mobile-entities-section.layout-grid .dd-generated-card-wrap.editing {
+        width: 100%;
+        min-width: 0;
+        flex: none;
+        scroll-snap-align: none;
+      }
+
       .area-view .mobile-entities-section {
         gap: 28px;
         margin-top: 20px;
@@ -3905,6 +3974,99 @@ export class DwainsLayoutCard extends LitElement {
       outline: 1px solid color-mix(in srgb, var(--divider-color) 78%, transparent);
       outline-offset: 2px;
       cursor: grab;
+    }
+
+    .dd-generated-card-wrap {
+      display: contents;
+    }
+
+    .dd-generated-card-wrap.editing {
+      position: relative;
+      display: block;
+      box-sizing: border-box;
+      flex: 0 0 164px;
+      min-width: 0;
+      scroll-snap-align: start;
+      cursor: grab;
+      outline: 1px dashed color-mix(in srgb, var(--primary-color) 38%, var(--divider-color));
+      outline-offset: 2px;
+      border-radius: 12px;
+      transition: opacity 0.16s ease, outline-color 0.16s ease, transform 0.16s ease;
+    }
+
+    .dd-generated-card-wrap.editing > .mobile-entity-card,
+    .dd-generated-card-wrap.editing > .mobile-entity-replacement-card,
+    .dd-generated-card-wrap.editing > .mobile-todo-list-card {
+      width: 100%;
+      min-width: 0;
+      pointer-events: none;
+    }
+
+    .dd-generated-card-wrap.editing.is-hidden > :not(.dd-generated-card-toolbar) {
+      opacity: 0.38;
+      filter: saturate(0.45);
+    }
+
+    .dd-generated-card-wrap.editing.dragging {
+      opacity: 0.42;
+      cursor: grabbing;
+    }
+
+    .dd-generated-card-wrap.editing.drag-over {
+      outline-color: var(--primary-color);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 14%, transparent);
+      transform: translateY(-2px);
+    }
+
+    .dd-generated-card-toolbar {
+      position: absolute;
+      top: 7px;
+      right: 7px;
+      z-index: 6;
+      display: flex;
+      gap: 4px;
+      padding: 3px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--card-background-color) 94%, transparent);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.16);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .dd-generated-card-toolbar button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      color: var(--primary-text-color);
+      cursor: pointer;
+    }
+
+    .dd-generated-card-toolbar button:first-child {
+      color: var(--primary-color);
+      cursor: grab;
+    }
+
+    .dd-generated-card-toolbar button:hover,
+    .dd-generated-card-toolbar button:focus-visible {
+      background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+      outline: none;
+    }
+
+    .dd-generated-card-toolbar ha-icon {
+      --mdc-icon-size: 17px;
+    }
+
+    .mobile-entities-section.layout-grid .dd-generated-card-wrap.editing {
+      width: 100%;
+      min-width: 0;
+      flex: none;
+      scroll-snap-align: none;
     }
 
     .dd-custom-card-wrap.dragging {
@@ -12072,13 +12234,16 @@ export class DwainsLayoutCard extends LitElement {
     const area = this.config?.areas?.find(a => a.area_id === this._selectedArea);
     if (!area) return nothing;
 
-    const areaEntities = this._getFilteredAreaEntities(this._selectedArea);
+    const visibleAreaEntities = this._getFilteredAreaEntities(this._selectedArea);
+    const areaEntities = this._editMode
+      ? this._getEditableAreaEntities(this._selectedArea)
+      : visibleAreaEntities;
     const areaData = this._getCachedAreaData(area);
     const hasPicture = area.picture ? true : false;
     const pictureContrastClass = hasPicture ? this._getPictureContrastClass(area.picture) : '';
-    const deviceCount = this._getAreaDeviceCount(area.area_id, areaEntities);
+    const deviceCount = this._getAreaDeviceCount(area.area_id, visibleAreaEntities);
     const hasHeaderMetrics = Boolean(areaData.temperature || areaData.humidity);
-    const hasMobileQuickControls = areaEntities.some(entity =>
+    const hasMobileQuickControls = visibleAreaEntities.some(entity =>
       entity.entity_id.startsWith('light.') ||
       entity.entity_id.startsWith('switch.') ||
       entity.entity_id.startsWith('cover.')
@@ -12105,9 +12270,9 @@ export class DwainsLayoutCard extends LitElement {
             >
               ${this._renderStaticIcon(ICON_ARROW_LEFT)}
             </button>
-            ${this._renderAreaMobileQuickControls(area.area_id, areaEntities)}
+              ${this._renderAreaMobileQuickControls(area.area_id, visibleAreaEntities)}
             <div class="area-mobile-actions">
-              ${this._renderAreaMobileCameraAction(areaEntities)}
+              ${this._renderAreaMobileCameraAction(visibleAreaEntities)}
               ${this._renderUnavailableEntitiesIcon(area.area_id)}
               ${this._canManageDashboard() ? html`
                 <button
@@ -12155,7 +12320,7 @@ export class DwainsLayoutCard extends LitElement {
             </div>
           </div>
           ${this._renderAreaHeaderMetrics(areaData)}
-          ${this._renderAreaBadges(area, areaEntities, areaData)}
+          ${this._renderAreaBadges(area, visibleAreaEntities, areaData)}
         </div>
 
         ${this._renderCustomCardSlot(area.area_id, 'top', this._t('layout.custom_cards_top'))}
@@ -12372,6 +12537,33 @@ export class DwainsLayoutCard extends LitElement {
     `;
   }
 
+  private _renderUngroupedCustomCardSlot(areaId: string, slotIndex: number) {
+    const canEdit = this._canManageDashboard();
+    if (!canEdit && this._editMode) this._editMode = false;
+
+    const placement = `ungrouped:${Math.max(0, slotIndex)}`;
+    const cards = this._getAreaCustomCards(areaId).filter((entry) => entry.placement === placement);
+    const dragOver = this._customCardDragOver?.areaId === areaId &&
+      this._customCardDragOver.placement === placement &&
+      this._customCardDragOver.index === cards.length;
+    if (!cards.length && !this._editMode) return nothing;
+
+    return html`
+      ${cards.map((entry, index) => this._renderCustomCard(areaId, entry, index))}
+      ${this._editMode && canEdit ? html`
+        <button
+          class="dd-add-card dd-domain-add-card ${dragOver ? 'drag-over' : ''}"
+          @click=${() => this._addCard(areaId, placement, cards.length)}
+          @dragover=${(event: DragEvent) => this._handleCustomSlotDragOver(event, areaId, placement, cards.length)}
+          @drop=${(event: DragEvent) => this._handleCustomCardDrop(event, areaId, placement, cards.length)}
+        >
+          <ha-icon icon="mdi:plus"></ha-icon>
+          <span>${this._t('layout.add_card')}</span>
+        </button>
+      ` : nothing}
+    `;
+  }
+
   // Dispatch een show-dialog event voor een (native HA) dialog dat al
   // geregistreerd is. De dialog-manager maakt het element aan.
   private _fireNativeDialog(tag: string, dialogParams: any) {
@@ -12552,6 +12744,7 @@ export class DwainsLayoutCard extends LitElement {
       return;
     }
 
+    this._clearGeneratedCardDragState();
     this._customCardDrag = { areaId, cardId };
     this._customCardDragOver = null;
     event.dataTransfer?.setData('text/plain', cardId);
@@ -12616,18 +12809,22 @@ export class DwainsLayoutCard extends LitElement {
   }
 
   private async _saveAreaCustomCards(areaId: string, customCards: AreaCustomCard[]): Promise<void> {
+    const cardsToSave = this._normalizeAreaCustomCardsForSave(customCards);
+    await this._saveAreaOptionsPatch(areaId, { custom_cards: cardsToSave });
+  }
+
+  private async _saveAreaOptionsPatch(areaId: string, patch: Record<string, any>): Promise<void> {
     if (!this._canManageDashboard()) return;
     const keepEditing = this._editMode && this._selectedView === 'area' && this._selectedArea === areaId;
     if (keepEditing) this._rememberAreaEditMode(areaId);
 
-    const cardsToSave = this._normalizeAreaCustomCardsForSave(customCards);
-    // Update local config immutably (HA freezes config objects).
+    // Update local config immediately so drag and visibility actions feel responsive.
     const prevOptions: any = this.config.areas_options || {};
     this.config = {
       ...this.config,
       areas_options: {
         ...prevOptions,
-        [areaId]: { ...(prevOptions[areaId] || {}), custom_cards: cardsToSave },
+        [areaId]: { ...(prevOptions[areaId] || {}), ...patch },
       },
     };
     if (keepEditing) this._editMode = true;
@@ -12646,17 +12843,17 @@ export class DwainsLayoutCard extends LitElement {
             ...strat,
             areas_options: {
               ...stratOptions,
-              [areaId]: { ...(stratOptions[areaId] || {}), custom_cards: cardsToSave },
+              [areaId]: { ...(stratOptions[areaId] || {}), ...patch },
             },
           },
         };
         await this.hass.callWS({ type: 'lovelace/config/save', ...base, config: newConfig });
-        console.log('✅ Eigen kaarten opgeslagen voor', areaId);
+        console.log('✅ Area options saved for', areaId);
       } else {
-        console.warn('⚠️ Geen strategy in lovelace config — opslaan overgeslagen', lovelaceConfig);
+        console.warn('⚠️ No dashboard strategy found; area options were not saved', lovelaceConfig);
       }
     } catch (e) {
-      console.error('❌ Opslaan eigen kaarten mislukt:', e);
+      console.error('❌ Saving area options failed:', e);
       alert(this._t('layout.save_card_failed', { error: String(e) }));
     }
   }
@@ -12954,23 +13151,49 @@ export class DwainsLayoutCard extends LitElement {
   }
 
   private _renderMobileEntitiesSection(area: AreaConfig, entities: EntityConfig[]) {
-    const groups = this._mobileEntityGroups(entities);
+    const orderedEntities = this._sortAreaEntities(area.area_id, entities);
+    if (this.config?.areas_options?.[area.area_id]?.entity_layout === 'ungrouped') {
+      return this._renderUngroupedAreaEntities(area, orderedEntities);
+    }
+
+    const groups = this._sortAreaEntityGroups(
+      area.area_id,
+      this._mobileEntityGroups(orderedEntities)
+    );
     if (!groups.length) return nothing;
-    const renderedGroups = this._isMobile && !this._renderAllMobileAreaEntities && groups.length > MOBILE_INITIAL_ENTITY_GROUPS
+    const renderedGroups = this._isMobile && !this._editMode && !this._renderAllMobileAreaEntities && groups.length > MOBILE_INITIAL_ENTITY_GROUPS
       ? groups.slice(0, MOBILE_INITIAL_ENTITY_GROUPS)
       : groups;
 
     return html`
       <section class="mobile-entities-section layout-${this._mobileEntityLayout}">
-        ${renderedGroups.map(group => {
+        ${renderedGroups.map((group, groupIndex) => {
           const hasActions = this._mobileControllableEntities(group.entities).length > 0;
           const gridMode = this._mobileEntityLayout === 'grid';
-          const renderedEntities = this._isMobile && !this._renderAllMobileAreaEntities && group.entities.length > MOBILE_INITIAL_ENTITY_CARDS
+          const renderedEntities = this._isMobile && !this._editMode && !this._renderAllMobileAreaEntities && group.entities.length > MOBILE_INITIAL_ENTITY_CARDS
             ? group.entities.slice(0, MOBILE_INITIAL_ENTITY_CARDS)
             : group.entities;
+          const renderedEntityIds = renderedEntities.map(entity => entity.entity_id);
 
           return html`
-            <div class="mobile-domain-group ${this._isMobileDomainMenuOpen(area.area_id, group.key) ? 'menu-open' : ''}">
+            <div
+              class=${classMap({
+                'mobile-domain-group': true,
+                'menu-open': this._isMobileDomainMenuOpen(area.area_id, group.key),
+                'group-editing': this._editMode && this._canManageDashboard(),
+                'group-dragging': this._generatedGroupDrag?.areaId === area.area_id &&
+                  this._generatedGroupDrag.groupKey === group.key,
+                'group-drag-over': this._generatedGroupDragOver?.areaId === area.area_id &&
+                  this._generatedGroupDragOver.groupKey === group.key,
+              })}
+              @dragover=${(event: DragEvent) => this._handleGeneratedGroupDragOver(event, area.area_id, group.key)}
+              @drop=${(event: DragEvent) => this._handleGeneratedGroupDrop(
+                event,
+                area.area_id,
+                group.key,
+                groups.map(item => item.key)
+              )}
+            >
               <div class="mobile-domain-header">
                 <div class="mobile-domain-title">
                   ${group.key === 'todo'
@@ -12991,16 +13214,68 @@ export class DwainsLayoutCard extends LitElement {
                     <span class="mobile-domain-count">(${group.entities.length} ${group.entities.length === 1 ? 'item' : 'items'})</span>
                   </span>
                 </div>
-                ${hasActions ? html`
-                  <button
-                    class="mobile-domain-more ${this._isMobileDomainMenuOpen(area.area_id, group.key) ? 'active' : ''}"
-                    type="button"
-                    title=${group.name}
-                    @click=${(event: Event) => this._toggleMobileDomainMenu(event, area.area_id, group)}
-                  >
-                    <ha-icon icon="mdi:dots-horizontal"></ha-icon>
-                  </button>
-                ` : nothing}
+                <div class="mobile-domain-header-actions">
+                  ${this._editMode && this._canManageDashboard() ? html`
+                    <button
+                      class="mobile-domain-order-button"
+                      type="button"
+                      title=${this._t('settings.move_up')}
+                      aria-label=${this._t('settings.move_up')}
+                      ?disabled=${groupIndex === 0}
+                      @click=${(event: Event) => this._moveGeneratedGroup(
+                        event,
+                        area.area_id,
+                        groups.map(item => item.key),
+                        groupIndex,
+                        -1
+                      )}
+                    >
+                      <ha-icon icon="mdi:arrow-up"></ha-icon>
+                    </button>
+                    <button
+                      class="mobile-domain-order-button"
+                      type="button"
+                      title=${this._t('settings.move_down')}
+                      aria-label=${this._t('settings.move_down')}
+                      ?disabled=${groupIndex === groups.length - 1}
+                      @click=${(event: Event) => this._moveGeneratedGroup(
+                        event,
+                        area.area_id,
+                        groups.map(item => item.key),
+                        groupIndex,
+                        1
+                      )}
+                    >
+                      <ha-icon icon="mdi:arrow-down"></ha-icon>
+                    </button>
+                    <button
+                      class="mobile-domain-drag-handle"
+                      type="button"
+                      draggable="true"
+                      title=${this._t('layout.drag_group')}
+                      aria-label=${this._t('layout.drag_group')}
+                      @dragstart=${(event: DragEvent) => this._handleGeneratedGroupDragStart(
+                        event,
+                        area.area_id,
+                        group.key
+                      )}
+                      @dragend=${this._clearGeneratedGroupDragState}
+                      @click=${(event: Event) => event.stopPropagation()}
+                    >
+                      <ha-icon icon="mdi:drag"></ha-icon>
+                    </button>
+                  ` : nothing}
+                  ${hasActions ? html`
+                    <button
+                      class="mobile-domain-more ${this._isMobileDomainMenuOpen(area.area_id, group.key) ? 'active' : ''}"
+                      type="button"
+                      title=${group.name}
+                      @click=${(event: Event) => this._toggleMobileDomainMenu(event, area.area_id, group)}
+                    >
+                      <ha-icon icon="mdi:dots-horizontal"></ha-icon>
+                    </button>
+                  ` : nothing}
+                </div>
 	              </div>
 	              <div class="mobile-entity-rail">
 	                ${this._renderDomainCustomCardSlot(area.area_id, group.key, 0, renderedEntities.length)}
@@ -13008,7 +13283,7 @@ export class DwainsLayoutCard extends LitElement {
 	                  renderedEntities,
 	                  entity => entity.entity_id,
 	                  (entity, index) => html`
-                      ${this._renderMobileEntityCard(area, entity)}
+                      ${this._renderEditableGeneratedCard(area, entity, group.key, index, renderedEntityIds)}
                       ${this._renderDomainCustomCardSlot(area.area_id, group.key, index + 1, renderedEntities.length)}
                     `
 	                )}
@@ -13016,6 +13291,70 @@ export class DwainsLayoutCard extends LitElement {
 	            </div>
 	          `;
 	        })}
+      </section>
+    `;
+  }
+
+  private _renderUngroupedAreaEntities(area: AreaConfig, entities: EntityConfig[]) {
+    const hasPlacedCustomCards = this._getAreaCustomCards(area.area_id).some((entry) =>
+      entry.placement.startsWith('ungrouped:') ||
+      entry.placement.startsWith('domain:') ||
+      entry.placement.startsWith('after:')
+    );
+    if (!entities.length && !hasPlacedCustomCards && !this._editMode) return nothing;
+
+    const gridMode = this._mobileEntityLayout === 'grid';
+    const groupTotals = new Map<string, number>();
+    entities.forEach((entity) => {
+      const key = this._mobileEntityTypeKey(entity.entity_id) || 'other';
+      groupTotals.set(key, (groupTotals.get(key) || 0) + 1);
+    });
+
+    const groupIndexes = new Map<string, number>();
+    return html`
+      <section class="mobile-entities-section area-ungrouped-entities layout-${this._mobileEntityLayout}">
+        <div class="mobile-domain-group area-ungrouped-group">
+          <div class="mobile-domain-header">
+            <div class="mobile-domain-title">
+              <button
+                class="mobile-layout-toggle ${gridMode ? 'active' : ''}"
+                type="button"
+                title=${gridMode ? this._t('layout.swipe_cards') : this._t('layout.show_all_cards')}
+                aria-label=${gridMode ? this._t('layout.switch_swipe_cards') : this._t('layout.show_all_cards')}
+                @click=${this._toggleMobileEntityLayout}
+              >
+                <ha-icon icon=${gridMode ? 'mdi:view-carousel-outline' : 'mdi:view-grid-outline'}></ha-icon>
+              </button>
+              <span class="mobile-domain-title-copy">
+                <span class="mobile-domain-title-label">${this._t('layout.entities')}</span>
+                <span class="mobile-domain-count">(${this._tp('common.entity', entities.length)})</span>
+              </span>
+            </div>
+          </div>
+          <div class="mobile-entity-rail">
+            ${this._renderUngroupedCustomCardSlot(area.area_id, 0)}
+            ${entities.map((entity, entityIndex) => {
+              const groupKey = this._mobileEntityTypeKey(entity.entity_id) || 'other';
+              const groupIndex = groupIndexes.get(groupKey) || 0;
+              const groupTotal = groupTotals.get(groupKey) || 0;
+              groupIndexes.set(groupKey, groupIndex + 1);
+              return html`
+                ${groupIndex === 0
+                  ? this._renderDomainCustomCardSlot(area.area_id, groupKey, 0, groupTotal)
+                  : nothing}
+                ${this._renderEditableGeneratedCard(
+                  area,
+                  entity,
+                  UNGROUPED_AREA_EDIT_GROUP,
+                  entityIndex,
+                  entities.map(item => item.entity_id)
+                )}
+                ${this._renderDomainCustomCardSlot(area.area_id, groupKey, groupIndex + 1, groupTotal)}
+                ${this._renderUngroupedCustomCardSlot(area.area_id, entityIndex + 1)}
+              `;
+            })}
+          </div>
+        </div>
       </section>
     `;
   }
@@ -13226,6 +13565,373 @@ export class DwainsLayoutCard extends LitElement {
         icon: this._mobileGroupIcon(key),
         entities: groupEntities,
       }));
+  }
+
+  private _sortAreaEntityGroups(areaId: string, groups: MobileEntityGroup[]): MobileEntityGroup[] {
+    const configuredOrder = this.config?.areas_options?.[areaId]?.group_order || [];
+    if (!configuredOrder.length) return groups;
+
+    const directOrder = new Map(configuredOrder.map((groupKey, index) => [groupKey, index]));
+    const strategyOrder: string[] = [];
+    configuredOrder.forEach((groupKey) => {
+      const strategyGroup = this._strategyGroupForMobileGroupKey(groupKey);
+      if (!strategyOrder.includes(strategyGroup)) strategyOrder.push(strategyGroup);
+    });
+    const projectedOrder = new Map(strategyOrder.map((groupKey, index) => [groupKey, index]));
+    const groupIndex = (groupKey: string): number | undefined => directOrder.get(groupKey) ??
+      projectedOrder.get(this._strategyGroupForMobileGroupKey(groupKey));
+
+    return groups
+      .map((group, fallbackIndex) => ({ group, fallbackIndex }))
+      .sort((a, b) => {
+        const aIndex = groupIndex(a.group.key);
+        const bIndex = groupIndex(b.group.key);
+        if (aIndex !== undefined && bIndex !== undefined) return aIndex - bIndex;
+        if (aIndex !== undefined) return -1;
+        if (bIndex !== undefined) return 1;
+        return a.fallbackIndex - b.fallbackIndex;
+      })
+      .map(({ group }) => group);
+  }
+
+  private _strategyGroupForMobileGroupKey(groupKey: string): string {
+    if (groupKey === 'light' || groupKey === 'lights') return 'lights';
+    if (['climate', 'humidifier', 'water_heater', 'fan'].includes(groupKey)) return 'climate';
+    if (groupKey === 'cover' || groupKey === 'covers') return 'covers';
+    if (groupKey === 'media_player' || groupKey === 'media_players') return 'media_players';
+    if (['alarm_control_panel', 'lock', 'camera', 'binary_sensor', 'security'].includes(groupKey)) return 'security';
+    if (groupKey === 'motion') return 'motion';
+    if (['script', 'scene', 'automation', 'todo', 'event', 'actions'].includes(groupKey)) return 'actions';
+    return 'others';
+  }
+
+  private _sortAreaEntities(areaId: string, entities: EntityConfig[]): EntityConfig[] {
+    const areaOptions = this.config?.areas_options?.[areaId];
+    const ungrouped = areaOptions?.entity_layout === 'ungrouped';
+    const ungroupedOrder = new Map((areaOptions?.entity_order || []).map((entityId, index) => [entityId, index]));
+
+    return [...entities].sort((a, b) => {
+      if (ungrouped) {
+        const aIndex = ungroupedOrder.get(a.entity_id);
+        const bIndex = ungroupedOrder.get(b.entity_id);
+        if (aIndex !== undefined && bIndex !== undefined) return aIndex - bIndex;
+        if (aIndex !== undefined) return -1;
+        if (bIndex !== undefined) return 1;
+      } else {
+        const aMobileGroup = this._mobileEntityTypeKey(a.entity_id);
+        const bMobileGroup = this._mobileEntityTypeKey(b.entity_id);
+        if (aMobileGroup === bMobileGroup && aMobileGroup) {
+          const mobileGroupOrder = areaOptions?.groups_options?.[aMobileGroup]?.order || [];
+          const aMobileIndex = mobileGroupOrder.indexOf(a.entity_id);
+          const bMobileIndex = mobileGroupOrder.indexOf(b.entity_id);
+          if (aMobileIndex !== -1 && bMobileIndex !== -1) return aMobileIndex - bMobileIndex;
+          if (aMobileIndex !== -1) return -1;
+          if (bMobileIndex !== -1) return 1;
+        }
+
+        const aGroup = this._areaStrategyGroupKey(a.entity_id);
+        const bGroup = this._areaStrategyGroupKey(b.entity_id);
+        if (aGroup === bGroup && aGroup) {
+          const groupOrder = areaOptions?.groups_options?.[aGroup]?.order || [];
+          const aIndex = groupOrder.indexOf(a.entity_id);
+          const bIndex = groupOrder.indexOf(b.entity_id);
+          if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+          if (aIndex !== -1) return -1;
+          if (bIndex !== -1) return 1;
+        }
+      }
+
+      const nameA = this.hass.states[a.entity_id]?.attributes?.friendly_name || a.entity_id;
+      const nameB = this.hass.states[b.entity_id]?.attributes?.friendly_name || b.entity_id;
+      return nameA.localeCompare(nameB, ddLocale(this.hass));
+    });
+  }
+
+  private _renderEditableGeneratedCard(
+    area: AreaConfig,
+    entity: EntityConfig,
+    groupKey: string,
+    index: number,
+    orderedEntityIds: string[]
+  ) {
+    if (!this._editMode || !this._canManageDashboard()) {
+      return this._renderMobileEntityCard(area, entity);
+    }
+
+    const hidden = this._isAreaEntityHidden(area.area_id, entity.entity_id);
+    const dragging = this._generatedCardDrag?.areaId === area.area_id &&
+      this._generatedCardDrag.entityId === entity.entity_id;
+    const dragOver = this._generatedCardDragOver?.areaId === area.area_id &&
+      this._generatedCardDragOver.entityId === entity.entity_id &&
+      this._generatedCardDragOver.groupKey === groupKey;
+
+    return html`
+      <div
+        class=${classMap({
+          'dd-generated-card-wrap': true,
+          editing: true,
+          'is-hidden': hidden,
+          dragging,
+          'drag-over': dragOver,
+        })}
+        draggable="true"
+        @dragstart=${(event: DragEvent) => this._handleGeneratedCardDragStart(event, area.area_id, entity.entity_id, groupKey)}
+        @dragover=${(event: DragEvent) => this._handleGeneratedCardDragOver(event, area.area_id, entity.entity_id, groupKey)}
+        @drop=${(event: DragEvent) => this._handleGeneratedCardDrop(event, area.area_id, groupKey, index, orderedEntityIds)}
+        @dragend=${this._clearGeneratedCardDragState}
+        @click=${(event: Event) => event.stopPropagation()}
+      >
+        <div class="dd-generated-card-toolbar">
+          <button type="button" title=${this._t('layout.drag_card')} aria-label=${this._t('layout.drag_card')}>
+            <ha-icon icon="mdi:drag"></ha-icon>
+          </button>
+          <button
+            type="button"
+            title=${this._t(hidden ? 'common.show' : 'common.hide')}
+            aria-label=${this._t(hidden ? 'common.show' : 'common.hide')}
+            aria-pressed=${hidden ? 'true' : 'false'}
+            @click=${(event: Event) => this._toggleGeneratedCardVisibility(event, area.area_id, entity.entity_id)}
+          >
+            <ha-icon icon=${hidden ? 'mdi:eye' : 'mdi:eye-off-outline'}></ha-icon>
+          </button>
+        </div>
+        ${this._renderMobileEntityCard(area, entity)}
+      </div>
+    `;
+  }
+
+  private _handleGeneratedGroupDragStart(event: DragEvent, areaId: string, groupKey: string): void {
+    if (!this._editMode || !this._canManageDashboard()) {
+      event.preventDefault();
+      return;
+    }
+
+    event.stopPropagation();
+    this._clearCustomCardDragState();
+    this._clearGeneratedCardDragState();
+    this._generatedGroupDrag = { areaId, groupKey };
+    this._generatedGroupDragOver = null;
+    event.dataTransfer?.setData('text/plain', groupKey);
+    if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
+  }
+
+  private _handleGeneratedGroupDragOver(event: DragEvent, areaId: string, groupKey: string): void {
+    const drag = this._generatedGroupDrag;
+    if (!this._editMode || !drag || drag.areaId !== areaId) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+    this._generatedGroupDragOver = { areaId, groupKey };
+  }
+
+  private _handleGeneratedGroupDrop(
+    event: DragEvent,
+    areaId: string,
+    targetGroupKey: string,
+    orderedGroupKeys: string[]
+  ): void {
+    const drag = this._generatedGroupDrag;
+    if (!drag || drag.areaId !== areaId) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    const currentIndex = orderedGroupKeys.indexOf(drag.groupKey);
+    const targetIndex = orderedGroupKeys.indexOf(targetGroupKey);
+    if (currentIndex < 0 || targetIndex < 0 || currentIndex === targetIndex) {
+      this._clearGeneratedGroupDragState();
+      return;
+    }
+
+    const reordered = [...orderedGroupKeys];
+    const [moved] = reordered.splice(currentIndex, 1);
+    if (moved) reordered.splice(targetIndex, 0, moved);
+    void this._saveAreaOptionsPatch(areaId, { group_order: reordered });
+    this._clearGeneratedGroupDragState();
+  }
+
+  private _moveGeneratedGroup(
+    event: Event,
+    areaId: string,
+    orderedGroupKeys: string[],
+    index: number,
+    direction: -1 | 1
+  ): void {
+    event.preventDefault();
+    event.stopPropagation();
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= orderedGroupKeys.length) return;
+
+    const reordered = [...orderedGroupKeys];
+    const [moved] = reordered.splice(index, 1);
+    if (!moved) return;
+    reordered.splice(targetIndex, 0, moved);
+    void this._saveAreaOptionsPatch(areaId, { group_order: reordered });
+  }
+
+  private _clearGeneratedGroupDragState = (): void => {
+    this._generatedGroupDrag = null;
+    this._generatedGroupDragOver = null;
+  };
+
+  private _handleGeneratedCardDragStart(
+    event: DragEvent,
+    areaId: string,
+    entityId: string,
+    groupKey: string
+  ): void {
+    if (!this._editMode || !this._canManageDashboard()) {
+      event.preventDefault();
+      return;
+    }
+
+    this._clearCustomCardDragState();
+    this._generatedCardDrag = { areaId, entityId, groupKey };
+    this._generatedCardDragOver = null;
+    event.dataTransfer?.setData('text/plain', entityId);
+    if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
+  }
+
+  private _handleGeneratedCardDragOver(
+    event: DragEvent,
+    areaId: string,
+    entityId: string,
+    groupKey: string
+  ): void {
+    const drag = this._generatedCardDrag;
+    if (!this._editMode || !drag || drag.areaId !== areaId || drag.groupKey !== groupKey) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+    this._generatedCardDragOver = { areaId, entityId, groupKey };
+  }
+
+  private _handleGeneratedCardDrop(
+    event: DragEvent,
+    areaId: string,
+    groupKey: string,
+    dropIndex: number,
+    orderedEntityIds: string[]
+  ): void {
+    const drag = this._generatedCardDrag;
+    if (!drag || drag.areaId !== areaId || drag.groupKey !== groupKey) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const currentIndex = orderedEntityIds.indexOf(drag.entityId);
+    if (currentIndex < 0) {
+      this._clearGeneratedCardDragState();
+      return;
+    }
+
+    const reordered = [...orderedEntityIds];
+    const [moved] = reordered.splice(currentIndex, 1);
+    if (!moved) {
+      this._clearGeneratedCardDragState();
+      return;
+    }
+    reordered.splice(Math.max(0, Math.min(dropIndex, reordered.length)), 0, moved);
+
+    if (groupKey === UNGROUPED_AREA_EDIT_GROUP) {
+      void this._saveAreaOptionsPatch(areaId, { entity_order: reordered });
+      this._clearGeneratedCardDragState();
+      return;
+    }
+
+    const strategyGroups = new Set(
+      reordered.map(entityId => this._areaStrategyGroupKey(entityId) || groupKey)
+    );
+    const useMobileGroup = strategyGroups.size !== 1;
+    const storageGroup = useMobileGroup ? groupKey : Array.from(strategyGroups)[0] || groupKey;
+    const areaOptions = this.config?.areas_options?.[areaId];
+    const groupsOptions = areaOptions?.groups_options || {};
+    const groupOptions = groupsOptions[storageGroup] || {};
+    const editableEntities = this._getEditableAreaEntities(areaId);
+    const eligibleEntityIds = editableEntities
+      .filter(entity => useMobileGroup
+        ? this._mobileEntityTypeKey(entity.entity_id) === groupKey
+        : (this._areaStrategyGroupKey(entity.entity_id) || groupKey) === storageGroup)
+      .map(entity => entity.entity_id);
+    const existingOrder = groupOptions.order || [];
+    const baseOrder = [
+      ...existingOrder.filter((entityId, index) =>
+        eligibleEntityIds.includes(entityId) && existingOrder.indexOf(entityId) === index),
+      ...eligibleEntityIds.filter(entityId => !existingOrder.includes(entityId)),
+    ];
+    const movedIds = new Set(reordered);
+    let movedIndex = 0;
+    const mergedOrder = baseOrder.map(entityId =>
+      movedIds.has(entityId) ? reordered[movedIndex++] || entityId : entityId
+    );
+
+    void this._saveAreaOptionsPatch(areaId, {
+      groups_options: {
+        ...groupsOptions,
+        [storageGroup]: {
+          ...groupOptions,
+          order: mergedOrder,
+        },
+      },
+    });
+    this._clearGeneratedCardDragState();
+  }
+
+  private _clearGeneratedCardDragState = (): void => {
+    this._generatedCardDrag = null;
+    this._generatedCardDragOver = null;
+  };
+
+  private _isAreaEntityHidden(areaId: string, entityId: string): boolean {
+    const groupsOptions = this.config?.areas_options?.[areaId]?.groups_options || {};
+    return Object.values(groupsOptions).some(group => group.hidden?.includes(entityId));
+  }
+
+  private _toggleGeneratedCardVisibility(event: Event, areaId: string, entityId: string): void {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!this._canManageDashboard()) return;
+
+    const areaOptions = this.config?.areas_options?.[areaId];
+    const groupsOptions = areaOptions?.groups_options || {};
+    const currentlyHidden = this._isAreaEntityHidden(areaId, entityId);
+    const nextGroups: Record<string, EntitiesDisplay> = Object.fromEntries(
+      Object.entries(groupsOptions).map(([key, options]) => [
+        key,
+        { ...options, hidden: (options.hidden || []).filter(id => id !== entityId) },
+      ])
+    );
+
+    if (!currentlyHidden) {
+      const storageGroup = this._areaStrategyGroupKey(entityId) ||
+        this._mobileEntityTypeKey(entityId) ||
+        'others';
+      const storageOptions = nextGroups[storageGroup] || {};
+      nextGroups[storageGroup] = {
+        ...storageOptions,
+        hidden: [...(storageOptions.hidden || []), entityId],
+      };
+    }
+
+    void this._saveAreaOptionsPatch(areaId, { groups_options: nextGroups });
+  }
+
+  private _areaStrategyGroupKey(entityId: string): string | undefined {
+    const domain = entityId.split('.')[0] || '';
+    const deviceClass = String(this.hass.states[entityId]?.attributes?.device_class || '');
+
+    if (domain === 'light') return 'lights';
+    if (['climate', 'humidifier', 'water_heater', 'fan'].includes(domain)) return 'climate';
+    if (domain === 'cover') return 'covers';
+    if (domain === 'binary_sensor' && ['door', 'garage_door', 'window'].includes(deviceClass)) return 'covers';
+    if (domain === 'media_player') return 'media_players';
+    if (['alarm_control_panel', 'lock', 'camera'].includes(domain)) return 'security';
+    if (domain === 'binary_sensor' && ['motion', 'occupancy', 'presence'].includes(deviceClass)) return 'motion';
+    if (['script', 'scene', 'automation', 'todo'].includes(domain)) return 'actions';
+    if (['switch', 'button', 'input_boolean', 'vacuum', 'lawn_mower', 'valve', 'select', 'number',
+      'input_select', 'input_number', 'counter', 'timer', 'sensor'].includes(domain)) return 'others';
+    return undefined;
   }
 
   private _mobileEntityTypeKey(entityId: string): string | undefined {
@@ -14010,6 +14716,27 @@ export class DwainsLayoutCard extends LitElement {
     filteredEntities = filterHiddenDeviceEntities(this.hass, this.config, filteredEntities);
 
     return filteredEntities;
+  }
+
+  private _getEditableAreaEntities(areaId: string): EntityConfig[] {
+    let entities = this._getAreaEntities(areaId).filter(entity => {
+      const registry = this.hass.entities?.[entity.entity_id];
+      return Boolean(this.hass.states[entity.entity_id]) &&
+        !(registry?.hidden_by ||
+          (registry as any)?.disabled_by ||
+          registry?.entity_category === 'diagnostic' ||
+          registry?.entity_category === 'config');
+    });
+
+    // Area-hidden entities remain in edit mode so they can be enabled again in place.
+    if (this.config?.settings?.hide_unavailable_entities !== false) {
+      entities = entities.filter(entity => {
+        const state = this.hass.states[entity.entity_id];
+        return state && state.state !== 'unavailable' && state.state !== 'unknown';
+      });
+    }
+
+    return filterHiddenDeviceEntities(this.hass, this.config, entities);
   }
 
   private _getUnavailableAreaEntities(areaId: string): { unavailable: string[], unknown: string[] } {

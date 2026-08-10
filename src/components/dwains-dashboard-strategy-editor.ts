@@ -22,7 +22,7 @@ import { css, html, LitElement, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
 import type { HomeAssistant } from "../types/home-assistant";
-import type { AreaSortMode, DeviceConfig, DwainsDashboardConfig, HomeInformationCardKey, HomeSectionKey } from "../types/strategy";
+import type { AreaCustomCard, AreaEntityLayout, AreaSortMode, DeviceConfig, DwainsDashboardConfig, HomeInformationCardKey, HomeSectionKey } from "../types/strategy";
 import { openReplacementManager } from "./dwains-replacement-manager-dialog";
 import {
   AREA_STRATEGY_GROUPS,
@@ -103,6 +103,7 @@ interface HomeCameraSetting {
 let rememberedSettingsPage: SettingsPageKey = "overview";
 let rememberedSettingsPageAt = 0;
 const SETTINGS_PAGE_RESTORE_MS = 8000;
+const UNGROUPED_ENTITY_DRAG_GROUP = '__ungrouped__';
 
 function restoreSettingsPage(): SettingsPageKey {
   return Date.now() - rememberedSettingsPageAt < SETTINGS_PAGE_RESTORE_MS
@@ -195,6 +196,18 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
   @state()
   private _dragOverEntityIndex?: number;
+
+  @state()
+  private _draggedEntitySection?: AreaStrategyGroup;
+
+  @state()
+  private _dragOverEntitySection?: AreaStrategyGroup;
+
+  @state()
+  private _draggedAreaCustomCardId?: string;
+
+  @state()
+  private _dragOverAreaCustomCardTarget?: { placement: string; index: number };
 
   @state()
   private _showEntityPicker = false;
@@ -1182,6 +1195,169 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     `;
   }
 
+  private _getAreaEditorCustomCards(): AreaCustomCard[] {
+    if (!this._config || !this._area) return [];
+    const cards = this._config.areas_options?.[this._area]?.custom_cards;
+    return Array.isArray(cards)
+      ? cards.filter((entry) => entry?.id && entry?.card && typeof entry.card === 'object')
+      : [];
+  }
+
+  private _areaCustomCardTitle(entry: AreaCustomCard): string {
+    const card = entry.card as any;
+    const entityId = typeof card?.entity === 'string' ? card.entity : '';
+    const entityName = entityId
+      ? this.hass?.states?.[entityId]?.attributes?.friendly_name
+      : undefined;
+    const type = String(card?.type || 'card').replace(/^custom:/, '').replace(/-/g, ' ');
+    return String(card?.title || card?.name || entityName || type);
+  }
+
+  private _areaCustomCardSubtitle(entry: AreaCustomCard): string {
+    const type = String((entry.card as any)?.type || 'card').replace(/^custom:/, '');
+    return type;
+  }
+
+  private _areaCustomCardPlacementIndex(cards: AreaCustomCard[], entry: AreaCustomCard): number {
+    const cardIndex = cards.findIndex((candidate) => candidate.id === entry.id);
+    if (cardIndex < 0) return 0;
+    return cards.slice(0, cardIndex).filter((candidate) => candidate.placement === entry.placement).length;
+  }
+
+  private _domainCustomCardPlacementIndex(placement: string, group: string): number | undefined {
+    const prefix = `domain:${group}:`;
+    if (!placement.startsWith(prefix)) return undefined;
+    const index = Number(placement.slice(prefix.length));
+    return Number.isFinite(index) && index >= 0 ? index : undefined;
+  }
+
+  private _getAreaEditorDomainCardsForSlot(
+    cards: AreaCustomCard[],
+    group: AreaStrategyGroup,
+    slotIndex: number,
+    entityCount: number
+  ): AreaCustomCard[] {
+    const placement = `domain:${group}:${slotIndex}`;
+    return cards.filter((entry) => {
+      if (entry.placement === placement) return true;
+      const domainIndex = this._domainCustomCardPlacementIndex(entry.placement, group);
+      if (slotIndex === entityCount && domainIndex !== undefined && domainIndex > entityCount) return true;
+      return slotIndex === entityCount && entry.placement === `after:${group}`;
+    });
+  }
+
+  private _areaEditorFreeSlotForCard(
+    entry: AreaCustomCard,
+    entities: string[],
+    entityGroupById: Map<string, AreaStrategyGroup>
+  ): number | undefined {
+    const freeMatch = /^ungrouped:(\d+)$/.exec(entry.placement);
+    if (freeMatch) return Math.min(entities.length, Number(freeMatch[1]));
+
+    const domainMatch = /^domain:([^:]+):(\d+)$/.exec(entry.placement);
+    const afterMatch = /^after:(.+)$/.exec(entry.placement);
+    const group = (domainMatch?.[1] || afterMatch?.[1]) as AreaStrategyGroup | undefined;
+    if (!group || !AREA_STRATEGY_GROUPS.includes(group)) return undefined;
+
+    const groupEntityIndexes = entities
+      .map((entityId, index) => entityGroupById.get(entityId) === group ? index : -1)
+      .filter((index) => index >= 0);
+    if (!groupEntityIndexes.length) return entities.length;
+    if (afterMatch) return Math.min(entities.length, groupEntityIndexes[groupEntityIndexes.length - 1]! + 1);
+
+    const domainIndex = Number(domainMatch?.[2] || 0);
+    if (domainIndex <= 0) return groupEntityIndexes[0];
+    if (domainIndex >= groupEntityIndexes.length) {
+      return Math.min(entities.length, groupEntityIndexes[groupEntityIndexes.length - 1]! + 1);
+    }
+    return groupEntityIndexes[domainIndex];
+  }
+
+  private _getAreaEditorFreeCardsForSlot(
+    cards: AreaCustomCard[],
+    slotIndex: number,
+    entities: string[],
+    entityGroupById: Map<string, AreaStrategyGroup>
+  ): AreaCustomCard[] {
+    return cards.filter((entry) =>
+      entry.placement !== 'top' &&
+      entry.placement !== 'bottom' &&
+      this._areaEditorFreeSlotForCard(entry, entities, entityGroupById) === slotIndex
+    );
+  }
+
+  private _renderAreaCustomCardEditorRow(entry: AreaCustomCard) {
+    const cards = this._getAreaEditorCustomCards();
+    const placementIndex = this._areaCustomCardPlacementIndex(cards, entry);
+    const isDragging = this._draggedAreaCustomCardId === entry.id;
+    const isDragOver = this._dragOverAreaCustomCardTarget?.placement === entry.placement &&
+      this._dragOverAreaCustomCardTarget.index === placementIndex;
+
+    return html`
+      <div
+        class="sortable-item custom-card-item ${isDragging ? 'dragging' : ''} ${isDragOver ? 'drag-over' : ''}"
+        draggable="true"
+        @dragstart=${(event: DragEvent) => this._handleAreaCustomCardDragStart(event, entry.id)}
+        @dragend=${this._handleAreaCustomCardDragEnd}
+        @dragover=${(event: DragEvent) => this._handleAreaCustomCardDragOver(event, entry.placement, placementIndex)}
+        @drop=${(event: DragEvent) => this._handleAreaCustomCardDrop(event, entry.placement, placementIndex)}
+      >
+        <div class="entity-item">
+          <div class="handle"><ha-svg-icon .path=${mdiDrag}></ha-svg-icon></div>
+          <span class="custom-card-icon"><ha-icon icon="mdi:cards-outline"></ha-icon></span>
+          <span class="entity-name">
+            ${this._areaCustomCardTitle(entry)}
+            <small>${this._t('layout.custom_cards')} · ${this._areaCustomCardSubtitle(entry)}</small>
+          </span>
+          <span class="custom-card-badge">${this._t('layout.drag_card')}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  private _renderAreaCustomCardPlacement(
+    cards: AreaCustomCard[],
+    placement: 'top' | 'bottom',
+    label: string
+  ) {
+    const placementCards = cards.filter((entry) => entry.placement === placement);
+    if (!placementCards.length && !this._draggedAreaCustomCardId) return nothing;
+    const dragOver = this._dragOverAreaCustomCardTarget?.placement === placement &&
+      this._dragOverAreaCustomCardTarget.index === placementCards.length;
+
+    return html`
+      <section
+        class="area-custom-card-placement ${dragOver ? 'drag-over' : ''}"
+        @dragover=${(event: DragEvent) => this._handleAreaCustomCardDragOver(event, placement, placementCards.length)}
+        @drop=${(event: DragEvent) => this._handleAreaCustomCardDrop(event, placement, placementCards.length)}
+      >
+        <div class="area-custom-card-placement-title">
+          <ha-icon icon=${placement === 'top' ? 'mdi:format-vertical-align-top' : 'mdi:format-vertical-align-bottom'}></ha-icon>
+          <span>${label}</span>
+        </div>
+        <div class="sortable-container area-custom-card-list">
+          ${placementCards.map((entry) => this._renderAreaCustomCardEditorRow(entry))}
+          ${!placementCards.length ? html`<span class="area-custom-card-empty">${this._t('layout.drag_card')}</span>` : nothing}
+        </div>
+      </section>
+    `;
+  }
+
+  private _renderAreaCustomCardDropZone(placement: string) {
+    if (!this._draggedAreaCustomCardId) return nothing;
+    const dragOver = this._dragOverAreaCustomCardTarget?.placement === placement;
+    return html`
+      <div
+        class="area-custom-card-drop-zone ${dragOver ? 'drag-over' : ''}"
+        @dragover=${(event: DragEvent) => this._handleAreaCustomCardDragOver(event, placement, Number.POSITIVE_INFINITY)}
+        @drop=${(event: DragEvent) => this._handleAreaCustomCardDrop(event, placement, Number.POSITIVE_INFINITY)}
+      >
+        <ha-icon icon="mdi:cards-outline"></ha-icon>
+        <span>${this._t('layout.drag_card')}</span>
+      </div>
+    `;
+  }
+
   private _renderAreaEditor() {
     if (!this.hass || !this._config || !this._area) {
       return nothing;
@@ -1235,6 +1411,24 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       areaEntities,
       this.hass
     );
+    const areaOptions = this._config.areas_options?.[this._area] || {};
+    const entityLayout: AreaEntityLayout = areaOptions.entity_layout === 'ungrouped' ? 'ungrouped' : 'grouped';
+    const entityGroupById = new Map<string, AreaStrategyGroup>();
+    AREA_STRATEGY_GROUPS.forEach((group) => {
+      (groups[group] || []).forEach((entityId) => entityGroupById.set(entityId, group));
+    });
+    const allAreaEntityIds = AREA_STRATEGY_GROUPS.flatMap((group) => groups[group] || []);
+    const ungroupedOrder = areaOptions.entity_order || [];
+    const sortedUngroupedEntities = this._sortEntityIds(allAreaEntityIds, ungroupedOrder);
+    const customCards = this._getAreaEditorCustomCards();
+    const groupedSections = this._sortAreaStrategyGroups(
+      AREA_STRATEGY_GROUPS.filter((group) =>
+        (groups[group] || []).length > 0 || customCards.some((entry) =>
+          entry.placement === `after:${group}` ||
+          this._domainCustomCardPlacementIndex(entry.placement, group) !== undefined
+        )
+      )
+    );
 
     return html`
       <div class="editor-container">
@@ -1260,7 +1454,116 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           </div>
         </div>
 
-        ${AREA_STRATEGY_GROUPS.map((group) => {
+        ${customCards.length || this._draggedAreaCustomCardId ? html`
+          <section class="area-custom-cards-settings">
+            <div class="area-entity-layout-copy">
+              <strong>${this._t('layout.custom_cards')}</strong>
+              <span>${this._t('settings.area_entity_order_hint')}</span>
+            </div>
+            ${this._renderAreaCustomCardPlacement(customCards, 'top', this._t('layout.custom_cards_top'))}
+          </section>
+        ` : nothing}
+
+        <section class="area-entity-layout-settings">
+          <div class="area-entity-layout-copy">
+            <strong>${this._t('settings.area_entity_layout_title')}</strong>
+            <span>${this._t('settings.area_entity_layout_description')}</span>
+          </div>
+          <div class="area-order-modes">
+            <button
+              class="area-order-mode ${entityLayout === 'grouped' ? 'selected' : ''}"
+              type="button"
+              @click=${() => this._setAreaEntityLayout('grouped', sortedUngroupedEntities, entityGroupById)}
+            >
+              <ha-icon icon="mdi:format-list-group"></ha-icon>
+              <span>
+                <strong>${this._t('settings.area_entity_layout_grouped')}</strong>
+                <small>${this._t('settings.area_entity_layout_grouped_description')}</small>
+              </span>
+            </button>
+            <button
+              class="area-order-mode ${entityLayout === 'ungrouped' ? 'selected' : ''}"
+              type="button"
+              @click=${() => this._setAreaEntityLayout('ungrouped')}
+            >
+              <ha-icon icon="mdi:sort-variant"></ha-icon>
+              <span>
+                <strong>${this._t('settings.area_entity_layout_ungrouped')}</strong>
+                <small>${this._t('settings.area_entity_layout_ungrouped_description')}</small>
+              </span>
+            </button>
+          </div>
+        </section>
+
+        ${entityLayout === 'ungrouped' ? html`
+          <ha-expansion-panel expanded outlined>
+            <div slot="header">
+              <ha-icon icon="mdi:sort-variant"></ha-icon>
+              ${this._t('settings.area_entity_order')}
+            </div>
+            <p class="area-order-hint secondary">${this._t('settings.area_entity_order_hint')}</p>
+            <div class="sortable-container dragging-enabled ${this._draggedEntityGroup === UNGROUPED_ENTITY_DRAG_GROUP ? 'dragging' : ''}">
+              ${this._getAreaEditorFreeCardsForSlot(customCards, 0, sortedUngroupedEntities, entityGroupById)
+                .map((entry) => this._renderAreaCustomCardEditorRow(entry))}
+              ${repeat(
+                sortedUngroupedEntities,
+                (entityId) => entityId,
+                (entityId, index) => {
+                  const state = this.hass!.states[entityId];
+                  const entityGroup = entityGroupById.get(entityId) || 'others';
+                  const isHidden = new Set(areaOptions.groups_options?.[entityGroup]?.hidden || []).has(entityId);
+                  const isDragging = this._draggedEntityId === entityId && this._draggedEntityGroup === UNGROUPED_ENTITY_DRAG_GROUP;
+                  const isDragOver = this._dragOverEntityIndex === index &&
+                    this._draggedEntityGroup === UNGROUPED_ENTITY_DRAG_GROUP &&
+                    this._draggedEntityId && this._draggedEntityId !== entityId;
+
+                  return html`
+                    <div
+                      class="sortable-item ${isHidden ? 'hidden' : ''} ${isDragging ? 'dragging' : ''} ${isDragOver ? 'drag-over' : ''}"
+                      draggable="true"
+                      @dragstart=${(e: DragEvent) => this._handleEntityDragStart(e, entityId, UNGROUPED_ENTITY_DRAG_GROUP)}
+                      @dragend=${this._handleEntityDragEnd}
+                      @dragover=${(e: DragEvent) => this._handleAreaEditorDragOver(e, UNGROUPED_ENTITY_DRAG_GROUP, index)}
+                      @dragleave=${this._handleEntityDragLeave}
+                      @drop=${(e: DragEvent) => this._handleAreaEditorDrop(e, UNGROUPED_ENTITY_DRAG_GROUP, index)}
+                    >
+                      <div class="entity-item">
+                        <div class="handle"><ha-svg-icon .path=${mdiDrag}></ha-svg-icon></div>
+                        <ha-state-icon .stateObj=${state} class="entity-icon"></ha-state-icon>
+                        <span class="entity-name">
+                          ${state?.attributes?.friendly_name || entityId}
+                          <small>${this._getGroupTitle(entityGroup)}</small>
+                        </span>
+                        <div class="entity-order-buttons">
+                          <ha-icon-button
+                            .label=${this._t('settings.move_up')}
+                            .path=${mdiArrowUp}
+                            .disabled=${index === 0}
+                            @click=${() => this._moveUngroupedEntity(sortedUngroupedEntities, index, -1)}
+                          ></ha-icon-button>
+                          <ha-icon-button
+                            .label=${this._t('settings.move_down')}
+                            .path=${mdiArrowDown}
+                            .disabled=${index === sortedUngroupedEntities.length - 1}
+                            @click=${() => this._moveUngroupedEntity(sortedUngroupedEntities, index, 1)}
+                          ></ha-icon-button>
+                        </div>
+                        <ha-icon-button
+                          .label=${isHidden ? this._t('common.show') : this._t('common.hide')}
+                          .path=${isHidden ? mdiEye : mdiEyeOff}
+                          @click=${() => this._toggleEntityVisibility(entityId, entityGroup)}
+                        ></ha-icon-button>
+                      </div>
+                    </div>
+                    ${this._getAreaEditorFreeCardsForSlot(customCards, index + 1, sortedUngroupedEntities, entityGroupById)
+                      .map((entry) => this._renderAreaCustomCardEditorRow(entry))}
+                  `;
+                }
+              )}
+              ${this._renderAreaCustomCardDropZone(`ungrouped:${sortedUngroupedEntities.length}`)}
+            </div>
+          </ha-expansion-panel>
+        ` : groupedSections.map((group, groupIndex) => {
           // Get ALL entities for this group (don't filter hidden ones)
           const allGroupEntities = groups[group] || [];
           const groupOptions = this._config!.areas_options?.[this._area!]?.groups_options?.[group];
@@ -1280,17 +1583,46 @@ export class DwainsDashboardStrategyEditor extends LitElement {
             return nameA.localeCompare(nameB);
           });
 
-          if (allGroupEntities.length === 0) {
-            return nothing;
-          }
-
           return html`
-            <ha-expansion-panel expanded outlined>
-              <div slot="header">
-                <ha-icon icon=${AREA_STRATEGY_GROUP_ICONS[group]}></ha-icon>
-                ${this._getGroupTitle(group)}
-              </div>
-              <div class="sortable-container ${this._draggedEntityGroup === group ? 'dragging' : ''}">
+            <div
+              class="area-entity-section ${this._draggedEntitySection === group ? 'dragging' : ''} ${this._dragOverEntitySection === group ? 'drag-over' : ''}"
+              @dragover=${(event: DragEvent) => this._handleEntitySectionDragOver(event, group)}
+              @drop=${(event: DragEvent) => this._handleEntitySectionDrop(event, group, groupedSections)}
+            >
+              <ha-expansion-panel expanded outlined>
+                <div slot="header" class="area-entity-section-header">
+                  <ha-icon icon=${AREA_STRATEGY_GROUP_ICONS[group]}></ha-icon>
+                  <span>${this._getGroupTitle(group)}</span>
+                  <span class="area-entity-section-actions">
+                    <ha-icon-button
+                      .label=${this._t('settings.move_up')}
+                      .path=${mdiArrowUp}
+                      .disabled=${groupIndex === 0}
+                      @click=${(event: Event) => this._moveEntitySection(event, groupedSections, groupIndex, -1)}
+                    ></ha-icon-button>
+                    <ha-icon-button
+                      .label=${this._t('settings.move_down')}
+                      .path=${mdiArrowDown}
+                      .disabled=${groupIndex === groupedSections.length - 1}
+                      @click=${(event: Event) => this._moveEntitySection(event, groupedSections, groupIndex, 1)}
+                    ></ha-icon-button>
+                    <button
+                      class="area-entity-section-handle"
+                      type="button"
+                      draggable="true"
+                      title=${this._t('layout.drag_group')}
+                      aria-label=${this._t('layout.drag_group')}
+                      @click=${(event: Event) => event.stopPropagation()}
+                      @dragstart=${(event: DragEvent) => this._handleEntitySectionDragStart(event, group)}
+                      @dragend=${this._handleEntitySectionDragEnd}
+                    >
+                      <ha-svg-icon .path=${mdiDrag}></ha-svg-icon>
+                    </button>
+                  </span>
+                </div>
+                <div class="sortable-container ${this._draggedEntityGroup === group ? 'dragging' : ''}">
+                ${this._getAreaEditorDomainCardsForSlot(customCards, group, 0, sortedEntities.length)
+                  .map((entry) => this._renderAreaCustomCardEditorRow(entry))}
                 ${repeat(
                   sortedEntities,
                   (entityId) => entityId,
@@ -1311,9 +1643,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                         draggable="true"
                         @dragstart=${(e: DragEvent) => this._handleEntityDragStart(e, entityId, group)}
                         @dragend=${this._handleEntityDragEnd}
-                        @dragover=${(e: DragEvent) => this._handleEntityDragOver(e, group, index)}
+                        @dragover=${(e: DragEvent) => this._handleAreaEditorDragOver(e, group, index)}
                         @dragleave=${this._handleEntityDragLeave}
-                        @drop=${(e: DragEvent) => this._handleEntityDrop(e, group, index)}
+                        @drop=${(e: DragEvent) => this._handleAreaEditorDrop(e, group, index)}
                       >
                         <div class="entity-item">
                           <div class="handle">
@@ -1333,13 +1665,20 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                           ></ha-icon-button>
                         </div>
                       </div>
+                      ${this._getAreaEditorDomainCardsForSlot(customCards, group, index + 1, sortedEntities.length)
+                        .map((entry) => this._renderAreaCustomCardEditorRow(entry))}
                     `;
                   }
                 )}
-              </div>
-            </ha-expansion-panel>
+                  ${this._renderAreaCustomCardDropZone(`domain:${group}:${sortedEntities.length}`)}
+                </div>
+              </ha-expansion-panel>
+            </div>
           `;
         })}
+        ${customCards.length || this._draggedAreaCustomCardId
+          ? this._renderAreaCustomCardPlacement(customCards, 'bottom', this._t('layout.custom_cards_bottom'))
+          : nothing}
       </div>
     `;
   }
@@ -2268,6 +2607,83 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     return titles[group] || group;
   }
 
+  private _sortEntityIds(entityIds: string[], order: string[]): string[] {
+    const orderIndex = new Map(order.map((entityId, index) => [entityId, index]));
+    return [...entityIds].sort((a, b) => {
+      const aIndex = orderIndex.get(a);
+      const bIndex = orderIndex.get(b);
+      if (aIndex !== undefined && bIndex !== undefined) return aIndex - bIndex;
+      if (aIndex !== undefined) return -1;
+      if (bIndex !== undefined) return 1;
+      const nameA = this.hass?.states[a]?.attributes?.friendly_name || a;
+      const nameB = this.hass?.states[b]?.attributes?.friendly_name || b;
+      return nameA.localeCompare(nameB, ddLocale(this.hass));
+    });
+  }
+
+  private _setAreaEntityLayout(
+    layout: AreaEntityLayout,
+    entities: string[] = [],
+    entityGroupById: Map<string, AreaStrategyGroup> = new Map()
+  ): void {
+    if (!this._config || !this._area) return;
+    const areaOptions = this._config.areas_options?.[this._area];
+    const customCards = (areaOptions?.custom_cards || []).map((entry) => {
+      if (layout !== 'grouped' || !entry.placement.startsWith('ungrouped:')) return entry;
+
+      const slotIndex = Math.min(
+        entities.length,
+        Math.max(0, Number(entry.placement.slice('ungrouped:'.length)) || 0)
+      );
+      if (slotIndex >= entities.length) return { ...entry, placement: 'bottom' };
+
+      const targetEntityId = entities[slotIndex];
+      const targetGroup = targetEntityId ? entityGroupById.get(targetEntityId) : undefined;
+      if (!targetGroup) return { ...entry, placement: 'bottom' };
+      const domainIndex = entities
+        .slice(0, slotIndex)
+        .filter((entityId) => entityGroupById.get(entityId) === targetGroup)
+        .length;
+      return { ...entry, placement: `domain:${targetGroup}:${domainIndex}` };
+    });
+
+    this._fireConfigChanged({
+      ...this._config,
+      areas_options: {
+        ...this._config.areas_options,
+        [this._area]: {
+          ...areaOptions,
+          entity_layout: layout,
+          custom_cards: customCards,
+        },
+      },
+    });
+  }
+
+  private _saveUngroupedEntityOrder(order: string[]): void {
+    if (!this._config || !this._area) return;
+    this._fireConfigChanged({
+      ...this._config,
+      areas_options: {
+        ...this._config.areas_options,
+        [this._area]: {
+          ...this._config.areas_options?.[this._area],
+          entity_order: order,
+        },
+      },
+    });
+  }
+
+  private _moveUngroupedEntity(order: string[], index: number, direction: -1 | 1): void {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= order.length) return;
+    const nextOrder = [...order];
+    const [entityId] = nextOrder.splice(index, 1);
+    if (!entityId) return;
+    nextOrder.splice(targetIndex, 0, entityId);
+    this._saveUngroupedEntityOrder(nextOrder);
+  }
+
   private _getAreaGroupedEntitiesWithoutFiltering(
     areaEntities: { entity_id: string }[],
     hass: HomeAssistant
@@ -2548,7 +2964,233 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     });
   }
 
+  private _handleAreaCustomCardDragStart(event: DragEvent, cardId: string): void {
+    this._draggedAreaCustomCardId = cardId;
+    this._dragOverAreaCustomCardTarget = undefined;
+    this._handleEntityDragEnd();
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', `custom-card:${cardId}`);
+    }
+  }
+
+  private _handleAreaCustomCardDragEnd = (): void => {
+    this._draggedAreaCustomCardId = undefined;
+    this._dragOverAreaCustomCardTarget = undefined;
+  };
+
+  private _handleAreaCustomCardDragOver(event: DragEvent, placement: string, index: number): void {
+    if (!this._draggedAreaCustomCardId) return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+    this._dragOverAreaCustomCardTarget = { placement, index };
+  }
+
+  private _handleAreaCustomCardDrop(event: DragEvent, placement: string, index: number): void {
+    if (!this._draggedAreaCustomCardId) return;
+    event.preventDefault();
+    event.stopPropagation();
+    this._moveAreaEditorCustomCard(this._draggedAreaCustomCardId, placement, index);
+    this._handleAreaCustomCardDragEnd();
+  }
+
+  private _moveAreaEditorCustomCard(cardId: string, placement: string, placementIndex: number): void {
+    if (!this._config || !this._area) return;
+    const cards = [...this._getAreaEditorCustomCards()];
+    const currentIndex = cards.findIndex((entry) => entry.id === cardId);
+    if (currentIndex < 0) return;
+
+    const current = cards[currentIndex];
+    if (!current) return;
+    const currentPlacementIndex = cards
+      .slice(0, currentIndex)
+      .filter((entry) => entry.placement === current.placement)
+      .length;
+    const [moved] = cards.splice(currentIndex, 1);
+    if (!moved) return;
+
+    let nextPlacementIndex = placementIndex;
+    if (moved.placement === placement && currentPlacementIndex < placementIndex) {
+      nextPlacementIndex = Math.max(0, placementIndex - 1);
+    }
+    moved.placement = placement;
+
+    let seen = 0;
+    let insertAt = cards.length;
+    for (let index = 0; index < cards.length; index += 1) {
+      if (cards[index]?.placement !== placement) continue;
+      if (seen >= nextPlacementIndex) {
+        insertAt = index;
+        break;
+      }
+      seen += 1;
+    }
+    cards.splice(insertAt, 0, moved);
+
+    this._fireConfigChanged({
+      ...this._config,
+      areas_options: {
+        ...this._config.areas_options,
+        [this._area]: {
+          ...this._config.areas_options?.[this._area],
+          custom_cards: cards,
+        },
+      },
+    });
+  }
+
+  private _strategyGroupForOrderKey(groupKey: string): AreaStrategyGroup {
+    if ((AREA_STRATEGY_GROUPS as readonly string[]).includes(groupKey)) {
+      return groupKey as AreaStrategyGroup;
+    }
+    if (groupKey === 'light') return 'lights';
+    if (['climate', 'humidifier', 'water_heater', 'fan'].includes(groupKey)) return 'climate';
+    if (groupKey === 'cover') return 'covers';
+    if (groupKey === 'media_player') return 'media_players';
+    if (['alarm_control_panel', 'lock', 'camera', 'binary_sensor'].includes(groupKey)) return 'security';
+    if (groupKey === 'motion') return 'motion';
+    if (['script', 'scene', 'automation', 'todo', 'event'].includes(groupKey)) return 'actions';
+    return 'others';
+  }
+
+  private _sortAreaStrategyGroups(groups: readonly AreaStrategyGroup[]): AreaStrategyGroup[] {
+    const configuredOrder = this._config?.areas_options?.[this._area || '']?.group_order || [];
+    if (!configuredOrder.length) return [...groups];
+
+    const projectedOrder: AreaStrategyGroup[] = [];
+    configuredOrder.forEach((groupKey) => {
+      const strategyGroup = this._strategyGroupForOrderKey(groupKey);
+      if (!projectedOrder.includes(strategyGroup)) projectedOrder.push(strategyGroup);
+    });
+    const order = new Map(projectedOrder.map((group, index) => [group, index]));
+    return groups
+      .map((group, fallbackIndex) => ({ group, fallbackIndex }))
+      .sort((a, b) => {
+        const aIndex = order.get(a.group);
+        const bIndex = order.get(b.group);
+        if (aIndex !== undefined && bIndex !== undefined) return aIndex - bIndex;
+        if (aIndex !== undefined) return -1;
+        if (bIndex !== undefined) return 1;
+        return a.fallbackIndex - b.fallbackIndex;
+      })
+      .map(({ group }) => group);
+  }
+
+  private _saveEntitySectionOrder(visibleOrder: AreaStrategyGroup[]): void {
+    if (!this._config || !this._area) return;
+
+    const completeOrder = [
+      ...visibleOrder,
+      ...AREA_STRATEGY_GROUPS.filter(group => !visibleOrder.includes(group)),
+    ];
+    const previousOrder = this._config.areas_options?.[this._area]?.group_order || [];
+    const previousByGroup = new Map<AreaStrategyGroup, string[]>();
+    previousOrder.forEach((groupKey) => {
+      const strategyGroup = this._strategyGroupForOrderKey(groupKey);
+      const entries = previousByGroup.get(strategyGroup) || [];
+      if (!entries.includes(groupKey)) entries.push(groupKey);
+      previousByGroup.set(strategyGroup, entries);
+    });
+    const groupOrder = completeOrder.flatMap(group => previousByGroup.get(group) || [group]);
+
+    this._fireConfigChanged({
+      ...this._config,
+      areas_options: {
+        ...this._config.areas_options,
+        [this._area]: {
+          ...this._config.areas_options?.[this._area],
+          group_order: groupOrder,
+        },
+      },
+    });
+  }
+
+  private _handleEntitySectionDragStart(event: DragEvent, group: AreaStrategyGroup): void {
+    event.stopPropagation();
+    this._handleEntityDragEnd();
+    this._handleAreaCustomCardDragEnd();
+    this._draggedEntitySection = group;
+    this._dragOverEntitySection = undefined;
+    event.dataTransfer?.setData('text/plain', group);
+    if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
+  }
+
+  private _handleEntitySectionDragOver(event: DragEvent, group: AreaStrategyGroup): void {
+    if (!this._draggedEntitySection) return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+    this._dragOverEntitySection = group;
+  }
+
+  private _handleEntitySectionDrop(
+    event: DragEvent,
+    targetGroup: AreaStrategyGroup,
+    orderedGroups: AreaStrategyGroup[]
+  ): void {
+    const draggedGroup = this._draggedEntitySection;
+    if (!draggedGroup) return;
+    event.preventDefault();
+    event.stopPropagation();
+
+    const fromIndex = orderedGroups.indexOf(draggedGroup);
+    const targetIndex = orderedGroups.indexOf(targetGroup);
+    if (fromIndex >= 0 && targetIndex >= 0 && fromIndex !== targetIndex) {
+      const reordered = [...orderedGroups];
+      const [moved] = reordered.splice(fromIndex, 1);
+      if (moved) reordered.splice(targetIndex, 0, moved);
+      this._saveEntitySectionOrder(reordered);
+    }
+    this._handleEntitySectionDragEnd();
+  }
+
+  private _moveEntitySection(
+    event: Event,
+    orderedGroups: AreaStrategyGroup[],
+    index: number,
+    direction: -1 | 1
+  ): void {
+    event.preventDefault();
+    event.stopPropagation();
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= orderedGroups.length) return;
+    const reordered = [...orderedGroups];
+    const [moved] = reordered.splice(index, 1);
+    if (!moved) return;
+    reordered.splice(targetIndex, 0, moved);
+    this._saveEntitySectionOrder(reordered);
+  }
+
+  private _handleEntitySectionDragEnd = (): void => {
+    this._draggedEntitySection = undefined;
+    this._dragOverEntitySection = undefined;
+  };
+
+  private _handleAreaEditorDragOver(event: DragEvent, group: string, index: number): void {
+    if (this._draggedAreaCustomCardId) {
+      const placement = group === UNGROUPED_ENTITY_DRAG_GROUP
+        ? `ungrouped:${index}`
+        : `domain:${group}:${index}`;
+      this._handleAreaCustomCardDragOver(event, placement, Number.POSITIVE_INFINITY);
+      return;
+    }
+    this._handleEntityDragOver(event, group, index);
+  }
+
+  private _handleAreaEditorDrop(event: DragEvent, group: string, index: number): void {
+    if (this._draggedAreaCustomCardId) {
+      const placement = group === UNGROUPED_ENTITY_DRAG_GROUP
+        ? `ungrouped:${index}`
+        : `domain:${group}:${index}`;
+      this._handleAreaCustomCardDrop(event, placement, Number.POSITIVE_INFINITY);
+      return;
+    }
+    this._handleEntityDrop(event, group, index);
+  }
+
   private _handleEntityDragStart(e: DragEvent, entityId: string, group: string): void {
+    this._handleAreaCustomCardDragEnd();
     this._draggedEntityId = entityId;
     this._draggedEntityGroup = group;
     if (e.dataTransfer) {
@@ -2613,9 +3255,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
     // Get grouped entities
     const groups = this._getAreaGroupedEntitiesWithoutFiltering(areaEntities, this.hass!);
-    const allGroupEntities = groups[group as keyof typeof groups] || [];
+    const isUngrouped = group === UNGROUPED_ENTITY_DRAG_GROUP;
+    const allGroupEntities = isUngrouped
+      ? AREA_STRATEGY_GROUPS.flatMap((groupKey) => groups[groupKey] || [])
+      : groups[group as keyof typeof groups] || [];
     const groupOptions = this._config.areas_options?.[this._area]?.groups_options?.[group];
-    const entityOrder = groupOptions?.order || [];
+    const entityOrder = isUngrouped
+      ? this._config.areas_options?.[this._area]?.entity_order || []
+      : groupOptions?.order || [];
 
     // Sort entities according to current order
     const sortedEntities = [...allGroupEntities].sort((a, b) => {
@@ -2648,6 +3295,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
     // Create new order array
     const order = newSortedEntities;
+
+    if (isUngrouped) {
+      this._saveUngroupedEntityOrder(order);
+      this._handleEntityDragEnd();
+      return;
+    }
 
     const newConfig: DwainsDashboardConfig = {
       ...this._config!,
@@ -4202,6 +4855,68 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         gap: 16px;
       }
 
+      .area-entity-section {
+        position: relative;
+        border-radius: 8px;
+        transition: opacity 0.16s ease, outline-color 0.16s ease, background-color 0.16s ease;
+      }
+
+      .area-entity-section.dragging {
+        opacity: 0.46;
+      }
+
+      .area-entity-section.drag-over {
+        outline: 2px solid var(--primary-color);
+        outline-offset: 3px;
+        background: color-mix(in srgb, var(--primary-color) 5%, transparent);
+      }
+
+      .area-entity-section-header {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .area-entity-section-header > span:not(.area-entity-section-actions) {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .area-entity-section-actions {
+        margin-left: auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        flex: 0 0 auto;
+      }
+
+      .area-entity-section-actions ha-icon-button {
+        width: 36px;
+        height: 36px;
+      }
+
+      .area-entity-section-handle {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        display: inline-grid;
+        place-items: center;
+        border: 0;
+        border-radius: 999px;
+        color: var(--secondary-text-color);
+        background: transparent;
+        cursor: grab;
+        touch-action: none;
+      }
+
+      .area-entity-section-handle:active {
+        cursor: grabbing;
+      }
+
+      .area-entity-section-handle ha-svg-icon {
+        width: 20px;
+        height: 20px;
+      }
+
       .description {
         margin: 16px;
         color: var(--secondary-text-color);
@@ -4303,13 +5018,63 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         margin: 12px 0 0;
       }
 
+      .area-entity-layout-settings {
+        margin: 0 16px 16px;
+        padding: 16px;
+        display: grid;
+        gap: 12px;
+        border: 1px solid var(--divider-color);
+        border-radius: 8px;
+        background: var(--card-background-color);
+      }
+
+      .area-entity-layout-copy {
+        display: grid;
+        gap: 4px;
+      }
+
+      .area-entity-layout-copy strong {
+        font-size: 15px;
+      }
+
+      .area-entity-layout-copy span,
+      .entity-name small {
+        color: var(--secondary-text-color);
+        font-size: 12px;
+        line-height: 1.4;
+      }
+
+      .area-entity-layout-settings .area-order-modes {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .entity-name small {
+        display: block;
+        font-weight: 400;
+      }
+
+      .entity-order-buttons {
+        display: inline-flex;
+        align-items: center;
+        flex: 0 0 auto;
+      }
+
       @media (max-width: 700px) {
         .area-order-modes {
           grid-template-columns: 1fr;
         }
 
+        .area-entity-layout-settings .area-order-modes {
+          grid-template-columns: 1fr;
+        }
+
         .area-order-mode {
           min-height: 0;
+        }
+
+        .entity-order-buttons ha-icon-button {
+          width: 36px;
+          height: 36px;
         }
       }
 
@@ -4319,6 +5084,107 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         flex-direction: column;
         gap: 4px;
         padding: 0 16px 16px 16px;
+      }
+
+      .area-custom-cards-settings {
+        margin: 0 16px 16px;
+        padding: 14px;
+        display: grid;
+        gap: 12px;
+        border: 1px solid var(--divider-color);
+        border-radius: 8px;
+        background: var(--card-background-color);
+      }
+
+      .area-custom-card-placement {
+        overflow: hidden;
+        border: 1px dashed color-mix(in srgb, var(--primary-color) 35%, var(--divider-color));
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--primary-color) 4%, var(--card-background-color));
+      }
+
+      .area-custom-card-placement.drag-over,
+      .area-custom-card-drop-zone.drag-over {
+        border-color: var(--primary-color);
+        background: color-mix(in srgb, var(--primary-color) 10%, var(--card-background-color));
+      }
+
+      .area-custom-card-placement-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        color: var(--primary-text-color);
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .area-custom-card-placement-title ha-icon {
+        --mdc-icon-size: 18px;
+        color: var(--primary-color);
+      }
+
+      .area-custom-card-list {
+        padding: 0 8px 8px;
+      }
+
+      .area-custom-card-empty {
+        padding: 10px 12px;
+        color: var(--secondary-text-color);
+        font-size: 12px;
+      }
+
+      .custom-card-item {
+        border: 1px solid color-mix(in srgb, var(--primary-color) 24%, var(--divider-color));
+        background: color-mix(in srgb, var(--primary-color) 6%, var(--card-background-color));
+        cursor: grab;
+      }
+
+      .custom-card-item:active {
+        cursor: grabbing;
+      }
+
+      .custom-card-icon {
+        width: 36px;
+        height: 36px;
+        margin-right: 12px;
+        display: grid;
+        place-items: center;
+        flex: 0 0 36px;
+        border-radius: 6px;
+        color: var(--primary-color);
+        background: color-mix(in srgb, var(--primary-color) 12%, var(--card-background-color));
+      }
+
+      .custom-card-icon ha-icon {
+        --mdc-icon-size: 20px;
+      }
+
+      .custom-card-badge {
+        flex: 0 0 auto;
+        padding: 4px 8px;
+        border-radius: 999px;
+        color: var(--primary-color);
+        background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+        font-size: 11px;
+        font-weight: 600;
+      }
+
+      .area-custom-card-drop-zone {
+        min-height: 38px;
+        margin: 4px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border: 1px dashed var(--divider-color);
+        border-radius: 6px;
+        color: var(--secondary-text-color);
+        font-size: 12px;
+      }
+
+      .area-custom-card-drop-zone ha-icon {
+        --mdc-icon-size: 18px;
       }
 
       .sortable-item {
