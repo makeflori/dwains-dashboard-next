@@ -1,3 +1,5 @@
+import type { TranslationDictionary } from './en';
+
 export const ru = {
   'common.save': 'Сохранить',
   'common.back': 'Назад',
@@ -80,6 +82,7 @@ export const ru = {
   'person.nobody_home': 'Никого нет дома',
 
   'layout.custom_cards': 'Пользовательские карточки',
+  'layout.entities': 'Сущности',
   'layout.add_card': 'Добавить карточку',
   'layout.done_editing': 'Завершить редактирование',
   'layout.edit_custom_cards': 'Изменить пользовательские карточки',
@@ -87,15 +90,14 @@ export const ru = {
   'layout.custom_cards_after': 'После раздела «{section}»',
   'layout.custom_cards_bottom': 'В конце области',
   'layout.drag_card': 'Перетащить карточку',
+  'layout.drag_group': 'Перетащить раздел',
   'layout.edit_page': 'Изменить страницу',
   'layout.page_settings': 'Настройки / заполнить заново',
   'layout.delete_page': 'Удалить страницу',
   'layout.delete_page_confirm': 'Удалить страницу «{name}»?',
   'layout.delete_card_confirm': 'Удалить эту карточку?',
-  'layout.save_page_failed': 'Не удалось сохранить страницу (см. консоль):
-{error}',
-  'layout.save_card_failed': 'Не удалось сохранить карточку (см. консоль):
-{error}',
+  'layout.save_page_failed': 'Не удалось сохранить страницу (см. консоль):\n{error}',
+  'layout.save_card_failed': 'Не удалось сохранить карточку (см. консоль):\n{error}',
   'layout.swipe_cards': 'Прокручивать карточки',
   'layout.show_all_cards': 'Показать все карточки',
   'layout.switch_swipe_cards': 'Переключить на карточки с прокруткой',
@@ -305,8 +307,7 @@ export const ru = {
   'strategy.name': 'Название',
   'strategy.sidebar_icon': 'Значок боковой панели',
   'strategy.back': 'Назад',
-  'strategy.save_name_failed': 'Не удалось сохранить название/значок (см. консоль):
-{error}',
+  'strategy.save_name_failed': 'Не удалось сохранить название/значок (см. консоль):\n{error}',
   'strategy.edit_area_alert': 'Откройте «Настройки Home Assistant» > «Области и зоны», чтобы изменить область.',
 
   'devices.title': 'Устройства',
@@ -339,8 +340,7 @@ export const ru = {
   'devices.unavailable_device.other': '{count} недоступных устройств',
   'devices.new_description': 'Устройства, добавленные в Home Assistant за последние {hours} ч.',
   'devices.new_empty': 'За последние {hours} ч. в Home Assistant устройства не добавлялись.',
-  'devices.save_visibility_failed': 'Не удалось сохранить видимость устройств:
-{error}',
+  'devices.save_visibility_failed': 'Не удалось сохранить видимость устройств:\n{error}',
 
   'dialog.active_empty': 'Активные сущности не найдены',
   'dialog.problem_empty': 'Проблемные сущности не найдены',
@@ -428,6 +428,14 @@ export const ru = {
   'settings.permissions_description': 'Необязательные ограничения для пользователей Home Assistant без прав администратора.',
   'settings.people_page_description': 'Настройте отображение людей в карточках и на панели.',
   'settings.areas_page_description': 'Настройте видимые области, их порядок и фильтрацию сущностей комнат.',
+  'settings.area_entity_layout_title': 'Макет сущностей',
+  'settings.area_entity_layout_description': 'Выберите, будут ли созданные карточки сущностей сгруппированы по типу или показаны в одном списке со свободным порядком.',
+  'settings.area_entity_layout_grouped': 'Группировать по типу',
+  'settings.area_entity_layout_grouped_description': 'Сохраняет отдельные разделы для света, приводов, датчиков и других типов.',
+  'settings.area_entity_layout_ungrouped': 'Свободный порядок',
+  'settings.area_entity_layout_ungrouped_description': 'Показывает все созданные карточки сущностей в одном списке, порядок которого вы настраиваете.',
+  'settings.area_entity_order': 'Порядок сущностей',
+  'settings.area_entity_order_hint': 'Перетаскивайте сущности и пользовательские карточки или используйте стрелки, чтобы задать их положение в этой области.',
   'settings.area_order_title': 'Порядок областей',
   'settings.area_order_description': 'Выберите порядок областей во всём Dwains Dashboard.',
   'settings.area_order_home_assistant': 'Home Assistant',
@@ -609,7 +617,4 @@ export const ru = {
   'device_class.running': 'Работа',
   'device_class.update': 'Обновления',
   'device_class.door_lock': 'Замки',
-} as const;
-
-export type TranslationKey = keyof typeof ru;
-export type TranslationDictionary = Record<TranslationKey, string>;
+} as const satisfies TranslationDictionary;

@@ -16,7 +16,7 @@ export const TRANSLATIONS: Record<SupportedLanguage, TranslationDictionary> = {
   nl,
   de,
   fr,
-  ez,
+  es,
   ru,
   'zh-hans': zhHans,
   'zh-hant': zhHant,
