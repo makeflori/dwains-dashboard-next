@@ -38,8 +38,10 @@ export interface LovelaceCardConfig {
   [key: string]: any;
 }
 
-export type HomeSectionKey = 'summaries' | 'cameras' | 'areas' | 'devices' | 'todos' | 'favorites';
+export type HomeSectionKey = 'summaries' | 'cameras' | 'areas' | 'devices' | 'todos' | 'custom_cards' | 'favorites';
 export type HomeInformationCardKey = 'people' | 'climate' | 'power' | 'device_groups';
+export type MasterActionConfirmationDomain = 'light' | 'switch' | 'fan' | 'cover' | 'lock';
+export type MasterActionConfirmationSettings = Partial<Record<MasterActionConfirmationDomain, boolean>>;
 
 export interface DwainsDashboardSettings {
   theme?: string;
@@ -65,6 +67,7 @@ export interface DwainsDashboardSettings {
   home_camera_order?: string[];
   home_cameras_hidden?: string[];
   hidden_device_types?: string[];
+  master_action_confirmations?: MasterActionConfirmationSettings;
 }
 
 // New interfaces for areas configuration like Home Assistant
@@ -78,6 +81,11 @@ export type AreaCustomCardPlacement = 'top' | 'bottom' | string;
 export interface AreaCustomCard {
   id: string;
   placement: AreaCustomCardPlacement;
+  card: LovelaceCardConfig;
+}
+
+export interface HomeCustomCard {
+  id: string;
   card: LovelaceCardConfig;
 }
 
@@ -178,6 +186,8 @@ export interface DwainsDashboardConfig {
   areas_options?: Record<string, AreaOptions>;
   // Favorites functionality
   favorites?: string[];
+  // Lovelace cards added directly to the Home page.
+  home_custom_cards?: HomeCustomCard[];
   // Global options for custom card
   global_options?: GlobalOptions;
   // Blueprint-pagina's (DD3-stijl), client-side toegevoegd

@@ -6,7 +6,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
 import type { HomeAssistant } from '../types/home-assistant';
-import type { DwainsDashboardConfig, AreaConfig, EntityConfig, AreaData, AreaCustomCard, EntitiesDisplay, HomeInformationCardKey, HomeSectionKey } from '../types/strategy';
+import type { DwainsDashboardConfig, AreaConfig, EntityConfig, AreaData, AreaCustomCard, EntitiesDisplay, HomeCustomCard, HomeInformationCardKey, HomeSectionKey, MasterActionConfirmationDomain } from '../types/strategy';
 import { getAreaData, clearAreaDataCache, clearAreaDataCacheForArea } from '../utils/area';
 import { getAreaIcon, getDeviceClassIcon, getDomainColor, getDomainIcon } from '../utils/icons';
 import { getStatusDomains, getTotalWattage, type DomainCount as StatusDomainCount } from '../utils/header-status-domains';
@@ -28,6 +28,10 @@ import './utils/dd-card-host';
 import './utils/dd-tile-host';
 import { fireEvent } from './utils/fire-event';
 import { ddLocale, ddLocalize, ddLocalizePlural } from '../utils/localize';
+import {
+  masterActionConfirmationEnabled,
+  normalizeMasterActionConfirmationDomain,
+} from '../utils/master-action-confirmations';
 
 // Use DomainCount from header-status-domains utility
 type DomainCount = StatusDomainCount;
@@ -135,6 +139,13 @@ interface OptimisticEntityState {
   expiresAt: number;
 }
 
+interface ConfirmationDialogState {
+  title: string;
+  message: string;
+  confirmLabel: string;
+  destructive: boolean;
+}
+
 @customElement('dwains-dashboard-next-layout-card')
 export class DwainsLayoutCard extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
@@ -161,7 +172,6 @@ export class DwainsLayoutCard extends LitElement {
   @state() private _persistentNotifications: PersistentNotification[] = [];
   @state() private _notificationsLoading = false;
   @state() private _notificationsError = '';
-  @state() private _mobileDomainMenu: { areaId: string; groupKey: string } | null = null;
   @state() private _areaHeaderStuck = false;
   @state() private _areaHeaderRevealed = false;
   @state() private _mobileEntityLayout: 'rail' | 'grid' = 'rail';
@@ -187,6 +197,7 @@ export class DwainsLayoutCard extends LitElement {
   @state() private _settingsDirty = false;
   @state() private _settingsSavePending = false;
   @state() private _settingsSaveError = '';
+  @state() private _confirmationDialog: ConfirmationDialogState | null = null;
 
   // Performance optimizations
   private _areaEntitiesCache = new Map<string, { entities: EntityConfig[], timestamp: number }>();
@@ -202,7 +213,6 @@ export class DwainsLayoutCard extends LitElement {
   private _homeSummariesRefreshInterval?: number;
   private _favoriteSuggestionsLoaded = false;
   private _favoriteSuggestionsLoading = false;
-  private _mobileDomainMenuPortal?: HTMLElement;
   private _areaHeaderScrollRaf?: number;
   private _pendingAreaScrollTop = 0;
   private _optimisticCleanupTimer?: number;
@@ -215,6 +225,7 @@ export class DwainsLayoutCard extends LitElement {
   private _progressiveRenderCancel?: () => void;
   private _pendingSettingsConfig?: Partial<DwainsDashboardConfig>;
   private _settingsEditorInitialized = false;
+  private _confirmationResolve?: (confirmed: boolean) => void;
 
   // Debounce timers
   private _updateDebounceTimer?: number;
@@ -449,7 +460,7 @@ export class DwainsLayoutCard extends LitElement {
     .person-card,
     .favorite-card-wrapper,
     .favorite-quick-action,
-    .mobile-domain-more,
+    .mobile-domain-master,
     .mobile-layout-toggle,
     .mobile-entity-card,
     .mobile-entity-action,
@@ -488,6 +499,7 @@ export class DwainsLayoutCard extends LitElement {
     .home-camera-section,
     .home-status-section,
     .home-todos-section,
+    .home-custom-cards-section,
     .home-favorites-section,
     .home-summaries-section,
     .mobile-domain-group {
@@ -1895,6 +1907,30 @@ export class DwainsLayoutCard extends LitElement {
       min-width: 0;
     }
 
+    .home-custom-cards-section {
+      margin-bottom: 36px;
+    }
+
+    .home-custom-cards-section .home-status-heading ha-icon {
+      color: #0ea5a8;
+      background: color-mix(in srgb, #0ea5a8 12%, transparent);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, #0ea5a8 20%, transparent);
+    }
+
+    .home-custom-cards-grid {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+      align-items: start;
+      gap: 12px;
+    }
+
+    .home-custom-card,
+    .home-custom-card dwains-dashboard-next-card-host {
+      display: block;
+      min-width: 0;
+    }
+
     .home-summary-list {
       width: min(100%, 980px);
       display: grid;
@@ -3270,37 +3306,149 @@ export class DwainsLayoutCard extends LitElement {
       white-space: nowrap;
     }
 
-    .mobile-domain-more {
-      width: 32px;
-      height: 32px;
-      padding: 0;
+    .mobile-domain-master {
+      --mobile-domain-accent: var(--primary-color);
+      min-width: 58px;
+      height: 30px;
+      padding: 0 5px 0 7px;
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      border: 0;
+      justify-content: space-between;
+      gap: 6px;
+      border: 1px solid color-mix(in srgb, var(--divider-color) 72%, transparent);
       border-radius: 999px;
-      background: transparent;
+      background: color-mix(in srgb, var(--card-background-color) 92%, transparent);
       color: color-mix(in srgb, var(--primary-text-color) 54%, transparent);
       cursor: pointer;
       transition:
         background-color 0.18s ease,
+        border-color 0.18s ease,
         color 0.18s ease,
         transform 0.18s ease;
       z-index: 1202;
     }
 
-    .mobile-domain-more.active {
-      background: rgba(255, 255, 255, 0.78);
-      color: var(--primary-text-color);
-      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.16);
+    .mobile-domain-master.domain-light {
+      --mobile-domain-accent: #e89a17;
     }
 
-    .mobile-domain-more:active {
+    .mobile-domain-master.domain-switch,
+    .mobile-domain-master.domain-input_boolean {
+      --mobile-domain-accent: #3275d6;
+    }
+
+    .mobile-domain-master.domain-cover {
+      --mobile-domain-accent: #0d98aa;
+    }
+
+    .mobile-domain-master.domain-fan {
+      --mobile-domain-accent: #2d9d79;
+    }
+
+    .mobile-domain-master.domain-lock {
+      --mobile-domain-accent: #7657c8;
+    }
+
+    .mobile-domain-master.active {
+      border-color: color-mix(in srgb, var(--mobile-domain-accent) 42%, transparent);
+      background: color-mix(in srgb, var(--mobile-domain-accent) 11%, var(--card-background-color));
+      color: var(--mobile-domain-accent);
+    }
+
+    .mobile-domain-master:active {
       transform: scale(0.94);
     }
 
-    .mobile-domain-more ha-icon {
-      --mdc-icon-size: 20px;
+    .mobile-domain-master ha-icon {
+      --mdc-icon-size: 16px;
+    }
+
+    .mobile-domain-master-track {
+      position: relative;
+      width: 26px;
+      height: 16px;
+      flex: 0 0 auto;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--primary-text-color) 18%, transparent);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 6%, transparent);
+      transition: background-color 0.18s ease;
+    }
+
+    .mobile-domain-master-track::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.24);
+      transition: transform 0.18s ease;
+    }
+
+    .mobile-domain-master.active .mobile-domain-master-track {
+      background: var(--mobile-domain-accent);
+    }
+
+    .mobile-domain-master.active .mobile-domain-master-track::after {
+      transform: translateX(10px);
+    }
+
+    .mobile-domain-master-actions {
+      --mobile-domain-accent: var(--primary-color);
+      height: 30px;
+      display: inline-flex;
+      align-items: center;
+      overflow: hidden;
+      border: 1px solid color-mix(in srgb, var(--divider-color) 72%, transparent);
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--card-background-color) 92%, transparent);
+      color: color-mix(in srgb, var(--primary-text-color) 58%, transparent);
+      z-index: 1202;
+    }
+
+    .mobile-domain-master-actions.domain-cover {
+      --mobile-domain-accent: #0d98aa;
+    }
+
+    .mobile-domain-master-actions.domain-lock {
+      --mobile-domain-accent: #7657c8;
+    }
+
+    .mobile-domain-master-action {
+      width: 34px;
+      height: 30px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
+      transition:
+        background-color 0.18s ease,
+        color 0.18s ease,
+        transform 0.18s ease;
+    }
+
+    .mobile-domain-master-action + .mobile-domain-master-action {
+      border-left: 1px solid color-mix(in srgb, var(--divider-color) 72%, transparent);
+    }
+
+    .mobile-domain-master-action:hover,
+    .mobile-domain-master-action.active {
+      background: color-mix(in srgb, var(--mobile-domain-accent) 12%, var(--card-background-color));
+      color: var(--mobile-domain-accent);
+    }
+
+    .mobile-domain-master-action:active {
+      transform: scale(0.88);
+    }
+
+    .mobile-domain-master-action ha-icon {
+      --mdc-icon-size: 17px;
     }
 
     .mobile-entity-rail {
@@ -3742,10 +3890,6 @@ export class DwainsLayoutCard extends LitElement {
 
       .area-view .mobile-domain-count {
         font-size: 12px;
-      }
-
-      .area-view .mobile-domain-more {
-        background: transparent;
       }
 
       .area-view .mobile-entity-rail,
@@ -4298,6 +4442,7 @@ export class DwainsLayoutCard extends LitElement {
       .home-camera-section,
       .home-status-section,
       .home-todos-section,
+      .home-custom-cards-section,
       .home-favorites-section,
       .home-summaries-section,
       .mobile-domain-group,
@@ -4603,11 +4748,13 @@ export class DwainsLayoutCard extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(0,0,0,0.5);
-      z-index: 1000;
+      padding: 16px;
+      background: rgba(0, 0, 0, 0.48);
+      backdrop-filter: blur(2px);
+      z-index: 1100;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.3s ease;
+      transition: opacity 0.18s ease;
     }
 
     .confirmation-dialog.show {
@@ -4616,13 +4763,17 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .confirmation-content {
+      box-sizing: border-box;
       background: var(--card-background-color);
-      border-radius: 12px;
-      padding: 24px;
-      max-width: 400px;
-      width: 90%;
-      transform: scale(0.9);
-      transition: transform 0.3s ease;
+      color: var(--primary-text-color);
+      border: 1px solid var(--divider-color);
+      border-radius: 8px;
+      padding: 20px;
+      width: min(420px, calc(100vw - 32px));
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.28);
+      outline: none;
+      transform: scale(0.96);
+      transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     .confirmation-dialog.show .confirmation-content {
@@ -4630,14 +4781,17 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .confirmation-title {
-      font-size: 20px;
-      font-weight: 500;
-      margin-bottom: 12px;
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.25;
+      margin-bottom: 8px;
     }
 
     .confirmation-message {
-      margin-bottom: 24px;
-      opacity: 0.8;
+      margin-bottom: 20px;
+      color: var(--secondary-text-color);
+      font-size: 14px;
+      line-height: 1.5;
     }
 
     .confirmation-actions {
@@ -4876,13 +5030,14 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .confirmation-button {
-      padding: 8px 16px;
+      min-height: 40px;
+      padding: 9px 16px;
       border-radius: 8px;
       border: none;
       cursor: pointer;
       font-size: 14px;
-      font-weight: 500;
-      transition: all 0.2s ease;
+      font-weight: 650;
+      transition: transform 0.16s ease, box-shadow 0.16s ease;
     }
 
     .confirmation-button.cancel {
@@ -4893,6 +5048,11 @@ export class DwainsLayoutCard extends LitElement {
     .confirmation-button.confirm {
       background: var(--primary-color);
       color: var(--text-primary-color);
+    }
+
+    .confirmation-button.confirm.destructive {
+      background: var(--error-color, #db4437);
+      color: #fff;
     }
 
     .confirmation-button:hover {
@@ -5784,6 +5944,22 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .home-todos-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 10px;
+        padding: 2px 18px 16px;
+      }
+
+      .home-custom-cards-section {
+        min-width: 0;
+        margin: 0 -10px 18px;
+      }
+
+      .home-custom-cards-section .home-status-heading {
+        display: none;
+      }
+
+      .home-custom-cards-grid {
         display: grid;
         grid-template-columns: minmax(0, 1fr);
         gap: 10px;
@@ -6745,6 +6921,14 @@ export class DwainsLayoutCard extends LitElement {
       color: #b984ff;
     }
 
+    .area-quick-control.fan.active {
+      color: #55bda4;
+    }
+
+    .area-quick-control.climate.active {
+      color: #51aadd;
+    }
+
     .area-quick-control.active .area-quick-switch {
       background: currentColor;
     }
@@ -6767,6 +6951,53 @@ export class DwainsLayoutCard extends LitElement {
 
     .area-quick-direction ha-icon {
       --mdc-icon-size: 16px;
+    }
+
+    .area-quick-control.has-actions {
+      padding-right: 4px;
+      cursor: default;
+    }
+
+    .area-quick-control.has-actions:active {
+      transform: none;
+    }
+
+    .area-quick-actions {
+      display: inline-flex;
+      align-items: center;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.08);
+    }
+
+    .area-quick-action {
+      width: 25px;
+      height: 24px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      background: transparent;
+      color: currentColor;
+      cursor: pointer;
+      transition: background-color 0.18s ease, transform 0.18s ease;
+    }
+
+    .area-quick-action + .area-quick-action {
+      border-left: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+    }
+
+    .area-quick-action:hover {
+      background: color-mix(in srgb, currentColor 10%, transparent);
+    }
+
+    .area-quick-action:active {
+      transform: scale(0.86);
+    }
+
+    .area-quick-action ha-icon {
+      --mdc-icon-size: 15px;
     }
 
     .area-mobile-actions {
@@ -7614,6 +7845,14 @@ export class DwainsLayoutCard extends LitElement {
 
       .area-quick-control.cover.active {
         color: #b984ff;
+      }
+
+      .area-quick-control.fan.active {
+        color: #55bda4;
+      }
+
+      .area-quick-control.climate.active {
+        color: #51aadd;
       }
 
       .area-mobile-edit {
@@ -8555,6 +8794,20 @@ export class DwainsLayoutCard extends LitElement {
         grid-template-columns: repeat(3, minmax(0, 1fr));
       }
 
+      .area-content-area .area-mobile-quick-controls.count-4,
+      .area-content-area .area-mobile-quick-controls.count-5 {
+        display: flex;
+        justify-content: flex-start;
+        overflow-x: auto;
+      }
+
+      .area-content-area .area-mobile-quick-controls.count-4 > .area-quick-control,
+      .area-content-area .area-mobile-quick-controls.count-5 > .area-quick-control {
+        flex: 0 0 auto;
+        width: auto;
+        min-width: 88px;
+      }
+
       .area-content-area .area-mobile-quick-controls.count-1 {
         right: auto;
         width: min(148px, calc(50% - 20px));
@@ -8662,6 +8915,14 @@ export class DwainsLayoutCard extends LitElement {
 
       .area-content-area .area-header.has-picture:not(.is-stuck) .area-quick-control.cover {
         --domain-color: #7c4fc7;
+      }
+
+      .area-content-area .area-header.has-picture:not(.is-stuck) .area-quick-control.fan {
+        --domain-color: #15967f;
+      }
+
+      .area-content-area .area-header.has-picture:not(.is-stuck) .area-quick-control.climate {
+        --domain-color: #2f9ed6;
       }
 
       .area-content-area .area-header.has-picture:not(.is-stuck) .area-quick-switch {
@@ -9551,7 +9812,6 @@ export class DwainsLayoutCard extends LitElement {
     window.removeEventListener('pointercancel', this._handleSidebarResizeEnd);
     this._persistentNotificationsUnsub?.();
     this._persistentNotificationsUnsub = undefined;
-    this._removeMobileDomainMenuPortal();
     this._cleanupEventListeners();
     this._cleanupObservers();
     if (this._timeInterval) {
@@ -9577,6 +9837,9 @@ export class DwainsLayoutCard extends LitElement {
       this._progressiveRenderCancel();
       this._progressiveRenderCancel = undefined;
     }
+    this._confirmationResolve?.(false);
+    this._confirmationResolve = undefined;
+    this._confirmationDialog = null;
   }
 
   private _setupEventListeners() {
@@ -9592,7 +9855,6 @@ export class DwainsLayoutCard extends LitElement {
   }
 
   private _handleResize = () => {
-    this._closeMobileDomainMenu();
     this._checkMobile();
     if (!this._isMobile) {
       const clampedWidth = this._clampAreaSidebarWidth(this._areaSidebarWidth);
@@ -10921,6 +11183,8 @@ export class DwainsLayoutCard extends LitElement {
         return this._renderHomeStatusCards();
       case 'todos':
         return this._renderHomeTodos();
+      case 'custom_cards':
+        return this._renderHomeCustomCards();
       case 'favorites':
         return this._renderFavorites();
       default:
@@ -11021,6 +11285,61 @@ export class DwainsLayoutCard extends LitElement {
                       this.hass.entities?.[entityId]?.name ||
                       entityId,
                   }}
+                ></dwains-dashboard-next-card-host>
+              </div>
+            `
+          )}
+        </div>
+      </section>
+    `;
+  }
+
+  private _getHomeCustomCards(): HomeCustomCard[] {
+    const cards = this.config?.home_custom_cards;
+    if (!Array.isArray(cards)) return [];
+
+    return cards.filter(entry =>
+      Boolean(entry?.id) &&
+      Boolean(entry?.card) &&
+      typeof entry.card === 'object' &&
+      typeof entry.card.type === 'string'
+    );
+  }
+
+  private _renderHomeCustomCards() {
+    const cards = this._getHomeCustomCards();
+    if (!cards.length) return nothing;
+
+    const sectionTitle = this._t('home_section.custom_cards.label');
+    return html`
+      <section class="home-custom-cards-section">
+        <div class="home-status-heading">
+          <ha-icon icon="mdi:cards-outline"></ha-icon>
+          <span>${sectionTitle}</span>
+        </div>
+        <div class="mobile-section-heading">
+          <div class="mobile-section-title">
+            <button
+              class="mobile-layout-toggle active static"
+              type="button"
+              title=${sectionTitle}
+              aria-label=${sectionTitle}
+            >
+              <ha-icon icon="mdi:cards-outline"></ha-icon>
+            </button>
+            <span class="mobile-section-title-label">${sectionTitle}</span>
+          </div>
+        </div>
+        <div class="home-custom-cards-grid">
+          ${repeat(
+            cards,
+            entry => entry.id,
+            entry => html`
+              <div class="home-custom-card">
+                <dwains-dashboard-next-card-host
+                  eager
+                  .hass=${this.hass}
+                  .config=${entry.card}
                 ></dwains-dashboard-next-card-host>
               </div>
             `
@@ -12246,7 +12565,9 @@ export class DwainsLayoutCard extends LitElement {
     const hasMobileQuickControls = visibleAreaEntities.some(entity =>
       entity.entity_id.startsWith('light.') ||
       entity.entity_id.startsWith('switch.') ||
-      entity.entity_id.startsWith('cover.')
+      entity.entity_id.startsWith('cover.') ||
+      entity.entity_id.startsWith('fan.') ||
+      entity.entity_id.startsWith('climate.')
     );
     const deviceLabel = this._tp('common.device', deviceCount);
     const stickyMetrics = [
@@ -12948,6 +13269,8 @@ export class DwainsLayoutCard extends LitElement {
 
     // Switch toggle
     const switches = entities.filter(e => e.entity_id.startsWith('switch.'));
+    const fans = entities.filter(e => e.entity_id.startsWith('fan.'));
+    const climates = entities.filter(e => e.entity_id.startsWith('climate.'));
     if (switches.length > 0) {
       const allOff = this._areAllEntitiesOff(switches, 'switch');
       badges.push(html`
@@ -12957,6 +13280,31 @@ export class DwainsLayoutCard extends LitElement {
         >
           <ha-icon icon=${allOff ? 'mdi:toggle-switch' : 'mdi:toggle-switch-off'}></ha-icon>
           <span>${allOff ? this._t('action.all_switches_on') : this._t('action.all_switches_off')}</span>
+        </button>
+      `);
+    }
+
+    if (fans.length > 0) {
+      const allOff = this._areAllEntitiesOff(fans, 'fan');
+      badges.push(html`
+        <button
+          class="area-badge fan-toggle"
+          @click=${() => this._toggleAreaFans(area.area_id)}
+        >
+          <ha-icon icon=${allOff ? 'mdi:fan' : 'mdi:fan-off'}></ha-icon>
+          <span>${allOff ? this._t('action.all_fans_on') : this._t('action.all_fans_off')}</span>
+        </button>
+      `);
+    }
+
+    if (climates.length > 0) {
+      badges.push(html`
+        <button
+          class="area-badge climate-toggle"
+          @click=${() => this._openAreaClimateControls(area.area_id, climates)}
+        >
+          <ha-icon icon=${getDomainIcon('climate')}></ha-icon>
+          <span>${this._t('action.open_climate_controls')}</span>
         </button>
       `);
     }
@@ -13012,18 +13360,30 @@ export class DwainsLayoutCard extends LitElement {
     const lights = entities.filter(e => e.entity_id.startsWith('light.'));
     const switches = entities.filter(e => e.entity_id.startsWith('switch.'));
     const covers = entities.filter(e => e.entity_id.startsWith('cover.'));
+    const fans = entities.filter(e => e.entity_id.startsWith('fan.'));
+    const climates = entities.filter(e => e.entity_id.startsWith('climate.'));
 
-    if (!lights.length && !switches.length && !covers.length) {
+    if (!lights.length && !switches.length && !covers.length && !fans.length && !climates.length) {
       return html`<div class="area-mobile-quick-controls empty"></div>`;
     }
 
     const activeLights = this._countActiveEntities(lights, 'light');
     const activeSwitches = this._countActiveEntities(switches, 'switch');
     const openCovers = this._countActiveEntities(covers, 'cover');
+    const activeFans = this._countActiveEntities(fans, 'fan');
+    const activeClimates = this._countActiveEntities(climates, 'climate');
     const lightsActive = activeLights > 0;
     const switchesActive = activeSwitches > 0;
     const coversOpen = openCovers > 0;
-    const controlsCount = [lights.length, switches.length, covers.length].filter(Boolean).length;
+    const fansActive = activeFans > 0;
+    const climatesActive = activeClimates > 0;
+    const controlsCount = [lights.length, switches.length, covers.length, fans.length, climates.length].filter(Boolean).length;
+    const singleClimateState = climates.length === 1 ? this.hass.states[climates[0]!.entity_id] : undefined;
+    const currentTemperature = singleClimateState?.attributes?.current_temperature;
+    const temperatureUnit = (this.hass.config as any)?.unit_system?.temperature || '°';
+    const climateValue = currentTemperature !== undefined && currentTemperature !== null
+      ? `${currentTemperature}${temperatureUnit}`
+      : `${climates.length}`;
 
     return html`
       <div class="area-mobile-quick-controls count-${controlsCount}">
@@ -13056,18 +13416,66 @@ export class DwainsLayoutCard extends LitElement {
           </button>
         ` : nothing}
         ${covers.length ? html`
-          <button
-            class="area-quick-control cover ${coversOpen ? 'active' : ''}"
-            title=${this._t(coversOpen ? 'action.covers_close_summary' : 'action.covers_open_summary', { active: openCovers, total: covers.length })}
-            aria-label=${this._t(coversOpen ? 'action.covers_close_summary' : 'action.covers_open_summary', { active: openCovers, total: covers.length })}
-            @click=${() => this._toggleAreaCovers(areaId, true)}
-          >
+          <div class="area-quick-control cover has-actions ${coversOpen ? 'active' : ''}">
             <span class="area-quick-main">
               <ha-icon icon=${coversOpen ? 'mdi:window-shutter-open' : 'mdi:window-shutter'}></ha-icon>
               <span class="area-quick-count">${openCovers}/${covers.length}</span>
             </span>
+            <span class="area-quick-actions">
+              <button
+                class="area-quick-action"
+                type="button"
+                title=${this._t('action.open_all')}
+                aria-label=${this._t('action.open_all')}
+                @click=${(event: Event) => {
+                  event.stopPropagation();
+                  void this._setAreaCoverState(areaId, true);
+                }}
+              >
+                <ha-icon icon="mdi:arrow-up"></ha-icon>
+              </button>
+              <button
+                class="area-quick-action"
+                type="button"
+                title=${this._t('action.close_all')}
+                aria-label=${this._t('action.close_all')}
+                @click=${(event: Event) => {
+                  event.stopPropagation();
+                  void this._setAreaCoverState(areaId, false);
+                }}
+              >
+                <ha-icon icon="mdi:arrow-down"></ha-icon>
+              </button>
+            </span>
+          </div>
+        ` : nothing}
+        ${fans.length ? html`
+          <button
+            class="area-quick-control fan ${fansActive ? 'active' : ''}"
+            title=${this._t(fansActive ? 'action.fans_off_summary' : 'action.fans_on_summary', { active: activeFans, total: fans.length })}
+            aria-label=${this._t(fansActive ? 'action.fans_off_summary' : 'action.fans_on_summary', { active: activeFans, total: fans.length })}
+            @click=${() => this._toggleAreaFans(areaId)}
+          >
+            <span class="area-quick-main">
+              <ha-icon icon=${fansActive ? 'mdi:fan' : 'mdi:fan-off'}></ha-icon>
+              <span class="area-quick-count">${activeFans}/${fans.length}</span>
+            </span>
+            <span class="area-quick-switch" aria-hidden="true"></span>
+          </button>
+        ` : nothing}
+        ${climates.length ? html`
+          <button
+            class="area-quick-control climate ${climatesActive ? 'active' : ''}"
+            title=${this._t('action.open_climate_controls')}
+            aria-label=${this._t('action.open_climate_controls')}
+            @click=${() => this._openAreaClimateControls(areaId, climates)}
+          >
+            <span class="area-quick-main">
+              <ha-icon icon=${getDomainIcon('climate')}></ha-icon>
+              <span class="area-quick-count">${climateValue}</span>
+            </span>
             <span class="area-quick-direction" aria-hidden="true">
-              <ha-icon icon=${coversOpen ? 'mdi:arrow-down' : 'mdi:arrow-up'}></ha-icon>
+              <ha-icon icon="mdi:chevron-right"></ha-icon>
             </span>
           </button>
         ` : nothing}
@@ -13158,7 +13566,7 @@ export class DwainsLayoutCard extends LitElement {
 
     const groups = this._sortAreaEntityGroups(
       area.area_id,
-      this._mobileEntityGroups(orderedEntities)
+      this._mobileEntityGroups(area.area_id, orderedEntities)
     );
     if (!groups.length) return nothing;
     const renderedGroups = this._isMobile && !this._editMode && !this._renderAllMobileAreaEntities && groups.length > MOBILE_INITIAL_ENTITY_GROUPS
@@ -13179,7 +13587,6 @@ export class DwainsLayoutCard extends LitElement {
             <div
               class=${classMap({
                 'mobile-domain-group': true,
-                'menu-open': this._isMobileDomainMenuOpen(area.area_id, group.key),
                 'group-editing': this._editMode && this._canManageDashboard(),
                 'group-dragging': this._generatedGroupDrag?.areaId === area.area_id &&
                   this._generatedGroupDrag.groupKey === group.key,
@@ -13211,7 +13618,9 @@ export class DwainsLayoutCard extends LitElement {
                       `}
                   <span class="mobile-domain-title-copy">
                     <span class="mobile-domain-title-label">${group.name}</span>
-                    <span class="mobile-domain-count">(${group.entities.length} ${group.entities.length === 1 ? 'item' : 'items'})</span>
+                    ${group.entities.length > 0 ? html`
+                      <span class="mobile-domain-count">(${group.entities.length} ${group.entities.length === 1 ? 'item' : 'items'})</span>
+                    ` : nothing}
                   </span>
                 </div>
                 <div class="mobile-domain-header-actions">
@@ -13265,16 +13674,7 @@ export class DwainsLayoutCard extends LitElement {
                       <ha-icon icon="mdi:drag"></ha-icon>
                     </button>
                   ` : nothing}
-                  ${hasActions ? html`
-                    <button
-                      class="mobile-domain-more ${this._isMobileDomainMenuOpen(area.area_id, group.key) ? 'active' : ''}"
-                      type="button"
-                      title=${group.name}
-                      @click=${(event: Event) => this._toggleMobileDomainMenu(event, area.area_id, group)}
-                    >
-                      <ha-icon icon="mdi:dots-horizontal"></ha-icon>
-                    </button>
-                  ` : nothing}
+                  ${hasActions ? this._renderMobileDomainMaster(group) : nothing}
                 </div>
 	              </div>
 	              <div class="mobile-entity-rail">
@@ -13359,189 +13759,141 @@ export class DwainsLayoutCard extends LitElement {
     `;
   }
 
-  private _isMobileDomainMenuOpen(areaId: string, groupKey: string): boolean {
-    return this._mobileDomainMenu?.areaId === areaId && this._mobileDomainMenu.groupKey === groupKey;
-  }
+  private _renderMobileDomainMaster(group: MobileEntityGroup) {
+    const entities = this._mobileControllableEntities(group.entities);
+    if (!entities.length) return nothing;
 
-  private _toggleMobileDomainMenu(event: Event, areaId: string, group: MobileEntityGroup): void {
-    event.stopPropagation();
-    const anchor = event.currentTarget instanceof HTMLElement ? event.currentTarget : null;
-    if (this._isMobileDomainMenuOpen(areaId, group.key)) {
-      this._closeMobileDomainMenu();
-      return;
+    const domain = entities[0]!.entity_id.split('.')[0] || group.key;
+    const activeCount = entities.filter((entity) => {
+      const state = this._getEffectiveEntityState(this.hass.states[entity.entity_id]);
+      return this._isEntityActiveForUi(state, domain);
+    }).length;
+    const active = activeCount > 0;
+
+    if (domain === 'cover') {
+      return this._renderMobileDomainActions(
+        domain,
+        entities,
+        [
+          { turnOn: true, label: this._t('action.open_all'), icon: 'mdi:arrow-up', active },
+          { turnOn: false, label: this._t('action.close_all'), icon: 'mdi:arrow-down', active: !active },
+        ]
+      );
     }
 
-    this._mobileDomainMenu = { areaId, groupKey: group.key };
-    if (anchor) this._openMobileDomainMenuPortal(anchor, group);
-  }
-
-  private _closeMobileDomainMenu(): void {
-    this._mobileDomainMenu = null;
-    this._removeMobileDomainMenuPortal();
-  }
-
-  private _removeMobileDomainMenuPortal(): void {
-    this._mobileDomainMenuPortal?.remove();
-    this._mobileDomainMenuPortal = undefined;
-  }
-
-  private _openMobileDomainMenuPortal(anchor: HTMLElement, group: MobileEntityGroup): void {
-    this._removeMobileDomainMenuPortal();
-
-    if (!this._mobileControllableEntities(group.entities).length) return;
-
-    const actions = this._mobileGroupActionLabels(group.key);
-    const portal = document.createElement('div');
-    portal.setAttribute('data-dd-mobile-domain-menu', '');
-    Object.assign(portal.style, {
-      position: 'static',
-      pointerEvents: 'none',
-    });
-
-    const backdrop = document.createElement('button');
-    backdrop.type = 'button';
-    backdrop.setAttribute('aria-label', this._t('common.close'));
-    Object.assign(backdrop.style, {
-      position: 'fixed',
-      inset: '0',
-      zIndex: '2147483646',
-      padding: '0',
-      border: '0',
-      background: 'rgba(0, 0, 0, 0.52)',
-      cursor: 'default',
-      pointerEvents: 'auto',
-      WebkitTapHighlightColor: 'transparent',
-    });
-    backdrop.addEventListener('click', () => this._closeMobileDomainMenu());
-
-    const menu = document.createElement('div');
-    menu.setAttribute('role', 'menu');
-    const rect = anchor.getBoundingClientRect();
-    const menuWidth = 178;
-    const menuHeight = 94;
-    const viewportGap = 10;
-    const left = Math.max(viewportGap, Math.min(window.innerWidth - menuWidth - viewportGap, rect.right - menuWidth));
-    const preferredTop = rect.bottom + 8;
-    const top = preferredTop + menuHeight > window.innerHeight - viewportGap
-      ? Math.max(viewportGap, rect.top - menuHeight - 8)
-      : preferredTop;
-
-    Object.assign(menu.style, {
-      position: 'fixed',
-      left: `${left}px`,
-      top: `${top}px`,
-      zIndex: '2147483647',
-      width: `${menuWidth}px`,
-      overflow: 'hidden',
-      borderRadius: '10px',
-      background: 'var(--card-background-color, #fff)',
-      color: 'var(--primary-text-color, #111827)',
-      boxShadow: '0 18px 42px rgba(15, 23, 42, 0.26), inset 0 0 0 1px rgba(255, 255, 255, 0.56)',
-      backdropFilter: 'blur(18px)',
-      WebkitBackdropFilter: 'blur(18px)',
-      pointerEvents: 'auto',
-    });
-    menu.addEventListener('click', (portalEvent) => portalEvent.stopPropagation());
-
-    menu.appendChild(this._createMobileDomainMenuButton(actions.offLabel, actions.offIcon, () => {
-      void this._setMobileGroupState(group.entities, false);
-    }, true));
-    menu.appendChild(this._createMobileDomainMenuButton(actions.onLabel, actions.onIcon, () => {
-      void this._setMobileGroupState(group.entities, true);
-    }, false));
-
-    portal.append(backdrop, menu);
-    document.body.appendChild(portal);
-    this._mobileDomainMenuPortal = portal;
-  }
-
-  private _createMobileDomainMenuButton(label: string, icon: string, action: () => void, hasDivider: boolean): HTMLButtonElement {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.setAttribute('role', 'menuitem');
-    Object.assign(button.style, {
-      width: '100%',
-      minHeight: '46px',
-      padding: '0 12px 0 14px',
-      border: '0',
-      borderBottom: hasDivider ? '1px solid rgba(15, 23, 42, 0.12)' : '0',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      gap: '12px',
-      background: 'transparent',
-      color: 'inherit',
-      font: 'inherit',
-      fontSize: '15px',
-      fontWeight: '700',
-      textAlign: 'left',
-      cursor: 'pointer',
-      WebkitTapHighlightColor: 'transparent',
-    });
-
-    const labelNode = document.createElement('span');
-    labelNode.textContent = label;
-
-    const iconNode = document.createElement('ha-icon');
-    iconNode.setAttribute('icon', icon);
-    iconNode.style.setProperty('--mdc-icon-size', '22px');
-    iconNode.style.flex = '0 0 auto';
-
-    button.append(labelNode, iconNode);
-    button.addEventListener('click', (event) => {
-      event.stopPropagation();
-      action();
-    });
-
-    return button;
-  }
-
-  private _mobileGroupActionLabels(groupKey: string): { offLabel: string; onLabel: string; offIcon: string; onIcon: string } {
-    if (groupKey === 'cover') {
-      return {
-        offLabel: 'Close All',
-        onLabel: 'Open All',
-        offIcon: 'mdi:window-shutter',
-        onIcon: 'mdi:window-shutter-open',
-      };
+    if (domain === 'lock') {
+      return this._renderMobileDomainActions(
+        domain,
+        entities,
+        [
+          { turnOn: false, label: this._t('action.lock_all'), icon: 'mdi:lock-outline', active: !active },
+          { turnOn: true, label: this._t('action.unlock_all'), icon: 'mdi:lock-open-variant-outline', active },
+        ]
+      );
     }
 
-    if (groupKey === 'lock') {
-      return {
-        offLabel: 'Lock All',
-        onLabel: 'Unlock All',
-        offIcon: 'mdi:lock-outline',
-        onIcon: 'mdi:lock-open-variant-outline',
-      };
-    }
+    const label = this._mobileDomainMasterLabel(domain, active, activeCount, entities.length);
+    const icon = this._mobileDomainMasterIcon(domain, active);
 
-    if (groupKey === 'light') {
-      return {
-        offLabel: 'Turn Off All',
-        onLabel: 'Turn On All',
-        offIcon: 'mdi:lightbulb-off',
-        onIcon: 'mdi:lightbulb',
-      };
-    }
-
-    if (groupKey === 'fan') {
-      return {
-        offLabel: 'Turn Off All',
-        onLabel: 'Turn On All',
-        offIcon: 'mdi:fan-off',
-        onIcon: 'mdi:fan',
-      };
-    }
-
-    return {
-      offLabel: 'Turn Off All',
-      onLabel: 'Turn On All',
-      offIcon: 'mdi:toggle-switch-off',
-      onIcon: 'mdi:toggle-switch',
-    };
+    return html`
+      <button
+        class="mobile-domain-master domain-${domain} ${active ? 'active' : ''}"
+        type="button"
+        title=${label}
+        aria-label=${label}
+        aria-pressed=${active ? 'true' : 'false'}
+        @click=${(event: Event) => {
+          event.stopPropagation();
+          void this._requestMobileGroupState(entities, !active, domain);
+        }}
+      >
+        <ha-icon icon=${icon}></ha-icon>
+        <span class="mobile-domain-master-track" aria-hidden="true"></span>
+      </button>
+    `;
   }
 
-  private _mobileEntityGroups(entities: EntityConfig[]): MobileEntityGroup[] {
+  private _renderMobileDomainActions(
+    domain: string,
+    entities: EntityConfig[],
+    actions: Array<{ turnOn: boolean; label: string; icon: string; active: boolean }>
+  ) {
+    return html`
+      <div class="mobile-domain-master-actions domain-${domain}" role="group">
+        ${actions.map(action => html`
+          <button
+            class="mobile-domain-master-action ${action.active ? 'active' : ''}"
+            type="button"
+            title=${action.label}
+            aria-label=${action.label}
+            @click=${(event: Event) => {
+              event.stopPropagation();
+              void this._requestMobileGroupState(entities, action.turnOn, domain);
+            }}
+          >
+            <ha-icon icon=${action.icon}></ha-icon>
+          </button>
+        `)}
+      </div>
+    `;
+  }
+
+  private _mobileDomainMasterLabel(domain: string, active: boolean, activeCount: number, total: number): string {
+    if (domain === 'light') {
+      return this._t(active ? 'action.lights_off_summary' : 'action.lights_on_summary', {
+        active: activeCount,
+        total,
+      });
+    }
+    if (domain === 'cover') {
+      return this._t(active ? 'action.covers_close_summary' : 'action.covers_open_summary', {
+        active: activeCount,
+        total,
+      });
+    }
+    if (domain === 'fan') {
+      return this._t(active ? 'action.fans_off_summary' : 'action.fans_on_summary', {
+        active: activeCount,
+        total,
+      });
+    }
+    if (domain === 'lock') {
+      return this._t(active ? 'action.lock' : 'action.unlock');
+    }
+    return this._t(active ? 'action.switches_off_summary' : 'action.switches_on_summary', {
+      active: activeCount,
+      total,
+    });
+  }
+
+  private _mobileDomainMasterIcon(domain: string, active: boolean): string {
+    if (domain === 'light') return active ? 'mdi:lightbulb' : 'mdi:lightbulb-outline';
+    if (domain === 'switch') return active ? 'mdi:power-plug' : 'mdi:power-plug-off-outline';
+    if (domain === 'fan') return active ? 'mdi:fan' : 'mdi:fan-off';
+    if (domain === 'cover') return active ? 'mdi:window-shutter-open' : 'mdi:window-shutter';
+    if (domain === 'lock') return active ? 'mdi:lock-open-variant-outline' : 'mdi:lock-outline';
+    return active ? 'mdi:toggle-switch' : 'mdi:toggle-switch-off-outline';
+  }
+
+  private _customCardDomainGroupKeys(areaId: string): string[] {
+    const groupKeys: string[] = [];
+
+    this._getAreaCustomCards(areaId).forEach((entry) => {
+      let groupKey: string | undefined;
+      if (entry.placement.startsWith('domain:')) {
+        const match = /^domain:(.+):\d+$/.exec(entry.placement);
+        groupKey = match?.[1];
+      } else if (entry.placement.startsWith('after:')) {
+        groupKey = entry.placement.slice('after:'.length);
+      }
+
+      if (groupKey && !groupKeys.includes(groupKey)) groupKeys.push(groupKey);
+    });
+
+    return groupKeys;
+  }
+
+  private _mobileEntityGroups(areaId: string, entities: EntityConfig[]): MobileEntityGroup[] {
     const grouped = entities.reduce((acc, entity) => {
       const key = this._mobileEntityTypeKey(entity.entity_id);
       if (!key) return acc;
@@ -13549,6 +13901,12 @@ export class DwainsLayoutCard extends LitElement {
       acc[key].push(entity);
       return acc;
     }, {} as Record<string, EntityConfig[]>);
+
+    // A domain can contain custom cards even after its final generated card is hidden.
+    // Keep that section available so hiding a generated card never removes custom content.
+    this._customCardDomainGroupKeys(areaId).forEach((groupKey) => {
+      if (!grouped[groupKey]) grouped[groupKey] = [];
+    });
 
     const order = ['light', 'switch', 'cover', 'climate', 'todo', 'scene', 'event', 'motion', 'binary_sensor', 'sensor', 'media_player', 'fan', 'lock', 'camera', 'vacuum'];
 
@@ -14317,15 +14675,75 @@ export class DwainsLayoutCard extends LitElement {
     });
   }
 
-  private async _setMobileGroupState(entities: EntityConfig[], turnOn: boolean): Promise<void> {
+  private _masterActionLabel(domain: MasterActionConfirmationDomain, turnOn: boolean): string {
+    if (domain === 'cover') {
+      return this._t(turnOn ? 'action.open_all' : 'action.close_all');
+    }
+    if (domain === 'lock') {
+      return this._t(turnOn ? 'action.unlock_all' : 'action.lock_all');
+    }
+    return this._t(turnOn ? 'action.turn_on_all' : 'action.turn_off_all');
+  }
+
+  private _masterActionIsDestructive(domain: MasterActionConfirmationDomain, turnOn: boolean): boolean {
+    return domain === 'lock' ? turnOn : !turnOn;
+  }
+
+  private _areaDisplayName(areaId: string): string {
+    return this.config?.areas?.find(area => area.area_id === areaId)?.name || areaId;
+  }
+
+  private async _confirmMasterActionIfNeeded(
+    domain: string,
+    turnOn: boolean,
+    entityCount: number,
+    areaId: string
+  ): Promise<boolean> {
+    const normalizedDomain = normalizeMasterActionConfirmationDomain(domain);
+    if (!normalizedDomain || !masterActionConfirmationEnabled(this.config?.settings, normalizedDomain)) {
+      return true;
+    }
+
+    const actionLabel = this._masterActionLabel(normalizedDomain, turnOn);
+    return this._showConfirmation(
+      actionLabel,
+      this._t('action.confirm_master_action', {
+        count: entityCount,
+        area: this._areaDisplayName(areaId),
+      }),
+      {
+        confirmLabel: actionLabel,
+        destructive: this._masterActionIsDestructive(normalizedDomain, turnOn),
+      }
+    );
+  }
+
+  private async _requestMobileGroupState(
+    entities: EntityConfig[],
+    turnOn: boolean,
+    domain: string
+  ): Promise<void> {
+    const confirmed = await this._confirmMasterActionIfNeeded(
+      domain,
+      turnOn,
+      entities.length,
+      this._selectedArea || ''
+    );
+    if (!confirmed) return;
+    await this._setMobileGroupState(entities, turnOn, domain);
+  }
+
+  private async _setMobileGroupState(
+    entities: EntityConfig[],
+    turnOn: boolean,
+    requestedDomain: string
+  ): Promise<void> {
     const grouped = this._mobileControllableEntities(entities).reduce((acc, entity) => {
       const domain = entity.entity_id.split('.')[0] || '';
       if (!acc[domain]) acc[domain] = [];
       acc[domain].push(entity.entity_id);
       return acc;
     }, {} as Record<string, string[]>);
-
-    this._closeMobileDomainMenu();
 
     const affectedEntityIds: string[] = [];
 
@@ -14361,7 +14779,10 @@ export class DwainsLayoutCard extends LitElement {
       }));
 
       const count = Object.values(grouped).reduce((total, entityIds) => total + entityIds.length, 0);
-      if (count) this._showToast(`${count} ${count === 1 ? 'entity' : 'entities'} turned ${turnOn ? 'on' : 'off'}`);
+      const normalizedDomain = normalizeMasterActionConfirmationDomain(requestedDomain);
+      if (count && normalizedDomain) {
+        this._showToast(this._masterActionToast(normalizedDomain, turnOn));
+      }
     } catch (err) {
       this._clearOptimisticEntityStates(affectedEntityIds);
       console.warn('Failed to run mobile group action:', err);
@@ -14371,6 +14792,13 @@ export class DwainsLayoutCard extends LitElement {
 
   private _mobileEntitySupportsToggle(domain: string): boolean {
     return ['light', 'switch', 'fan', 'input_boolean', 'cover', 'lock'].includes(domain);
+  }
+
+  private _masterActionToast(domain: MasterActionConfirmationDomain, turnOn: boolean): string {
+    if (domain === 'light') return this._t(turnOn ? 'action.all_lights_on' : 'action.all_lights_off');
+    if (domain === 'switch') return this._t(turnOn ? 'action.all_switches_on' : 'action.all_switches_off');
+    if (domain === 'fan') return this._t(turnOn ? 'action.all_fans_on' : 'action.all_fans_off');
+    return this._masterActionLabel(domain, turnOn);
   }
 
   private _mobileEntityActionKind(domain: string): 'toggle' | 'cover' | 'lock' | 'scene' | 'more' {
@@ -14512,8 +14940,46 @@ export class DwainsLayoutCard extends LitElement {
   }
 
   private _renderConfirmationDialog() {
-    // TODO: Implement confirmation dialog state management
-    return nothing;
+    const dialog = this._confirmationDialog;
+    if (!dialog) return nothing;
+
+    return html`
+      <div
+        class="confirmation-dialog show"
+        role="presentation"
+        @click=${() => this._resolveConfirmation(false)}
+      >
+        <div
+          class="confirmation-content"
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="dd-confirmation-title"
+          aria-describedby="dd-confirmation-message"
+          tabindex="0"
+          @click=${(event: Event) => event.stopPropagation()}
+          @keydown=${this._handleConfirmationKeydown}
+        >
+          <div id="dd-confirmation-title" class="confirmation-title">${dialog.title}</div>
+          <div id="dd-confirmation-message" class="confirmation-message">${dialog.message}</div>
+          <div class="confirmation-actions">
+            <button
+              class="confirmation-button cancel"
+              type="button"
+              @click=${() => this._resolveConfirmation(false)}
+            >
+              ${this._t('common.cancel')}
+            </button>
+            <button
+              class=${`confirmation-button confirm ${dialog.destructive ? 'destructive' : ''}`}
+              type="button"
+              @click=${() => this._resolveConfirmation(true)}
+            >
+              ${dialog.confirmLabel}
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
   }
 
   // Helper Methods
@@ -14932,7 +15398,6 @@ export class DwainsLayoutCard extends LitElement {
 
   private _selectView(view: DwainsSelectedView) {
     if (view !== 'settings' && !this._confirmDiscardSettings()) return;
-    this._closeMobileDomainMenu();
     this._resetAreaHeaderScrollState(view === 'area');
     this._selectedView = view;
     if (view === 'home') {
@@ -14957,7 +15422,6 @@ export class DwainsLayoutCard extends LitElement {
 
   private _selectArea(areaId: string) {
     if (!this._confirmDiscardSettings()) return;
-    this._closeMobileDomainMenu();
     this._resetAreaHeaderScrollState(true);
     this._selectedArea = areaId;
     this._selectedView = 'area';
@@ -15383,7 +15847,6 @@ export class DwainsLayoutCard extends LitElement {
 
   private _openDashboardSettings = () => {
     if (!this._canManageDashboard()) return;
-    this._closeMobileDomainMenu();
     this._resetAreaHeaderScrollState(true);
     this._selectedArea = null;
     this._selectedView = 'settings';
@@ -15703,21 +16166,30 @@ export class DwainsLayoutCard extends LitElement {
     });
   }
 
-  private async _toggleAreaLights(areaId: string, confirmAction = true) {
+  private _openAreaClimateControls(areaId: string, climates: EntityConfig[]): void {
+    if (climates.length === 0) return;
+    if (climates.length === 1) {
+      this._showMoreInfo(climates[0]!.entity_id);
+      return;
+    }
+
+    showDomainEntitiesDialog(this, {
+      domain: 'climate',
+      areaId,
+      config: this.config,
+      customTitle: getDomainName(this.hass, 'climate'),
+      customEntities: climates.map(entity => entity.entity_id),
+    });
+  }
+
+  private async _toggleAreaLights(areaId: string) {
     const entities = this._getFilteredAreaEntities(areaId);
     const lights = entities.filter(e => e.entity_id.startsWith('light.'));
     if (lights.length === 0) return;
 
-    if (confirmAction) {
-      const confirmed = await this._showConfirmation(
-        this._t('action.toggle_lights'),
-        this._t('action.confirm_lights')
-      );
-
-      if (!confirmed) return;
-    }
-
     const allOff = this._areAllEntitiesOff(lights, 'light');
+    const confirmed = await this._confirmMasterActionIfNeeded('light', allOff, lights.length, areaId);
+    if (!confirmed) return;
 
     const service = allOff ? 'turn_on' : 'turn_off';
     const entityIds = lights.map(e => e.entity_id);
@@ -15737,21 +16209,14 @@ export class DwainsLayoutCard extends LitElement {
     }
   }
 
-  private async _toggleAreaSwitches(areaId: string, confirmAction = true) {
+  private async _toggleAreaSwitches(areaId: string) {
     const entities = this._getFilteredAreaEntities(areaId);
     const switches = entities.filter(e => e.entity_id.startsWith('switch.'));
     if (switches.length === 0) return;
 
-    if (confirmAction) {
-      const confirmed = await this._showConfirmation(
-        this._t('action.toggle_switches'),
-        this._t('action.confirm_switches')
-      );
-
-      if (!confirmed) return;
-    }
-
     const allOff = this._areAllEntitiesOff(switches, 'switch');
+    const confirmed = await this._confirmMasterActionIfNeeded('switch', allOff, switches.length, areaId);
+    if (!confirmed) return;
 
     const service = allOff ? 'turn_on' : 'turn_off';
     const entityIds = switches.map(e => e.entity_id);
@@ -15771,54 +16236,90 @@ export class DwainsLayoutCard extends LitElement {
     }
   }
 
-  private _hasOpenCovers(covers: EntityConfig[]): boolean {
-    return covers.some(entity => {
-      const state = this._getEffectiveEntityState(this.hass.states[entity.entity_id]);
-      const value = String(state?.state || '').toLowerCase();
-      return value === 'open' || value === 'opening';
-    });
+  private async _toggleAreaFans(areaId: string) {
+    const entities = this._getFilteredAreaEntities(areaId);
+    const fans = entities.filter(entity => entity.entity_id.startsWith('fan.'));
+    if (fans.length === 0) return;
+
+    const allOff = this._areAllEntitiesOff(fans, 'fan');
+    const confirmed = await this._confirmMasterActionIfNeeded('fan', allOff, fans.length, areaId);
+    if (!confirmed) return;
+    const service = allOff ? 'turn_on' : 'turn_off';
+    const entityIds = fans.map(entity => entity.entity_id);
+
+    this._setOptimisticEntityStates(entityIds, allOff ? 'on' : 'off');
+
+    try {
+      await this.hass.callService('fan', service, { entity_id: entityIds });
+      this._showToast(this._t(allOff ? 'action.all_fans_on' : 'action.all_fans_off'));
+    } catch (err) {
+      this._clearOptimisticEntityStates(entityIds);
+      console.warn(`Failed to toggle fans in area ${areaId}:`, err);
+      this._showToast(this._t('entity.fans_failed'));
+    }
   }
 
-  private async _toggleAreaCovers(areaId: string, confirmAction = false) {
+  private async _setAreaCoverState(areaId: string, open: boolean) {
     const entities = this._getFilteredAreaEntities(areaId);
     const covers = entities.filter(e => e.entity_id.startsWith('cover.'));
     if (covers.length === 0) return;
 
-    const hasOpen = this._hasOpenCovers(covers);
+    const confirmed = await this._confirmMasterActionIfNeeded('cover', open, covers.length, areaId);
+    if (!confirmed) return;
 
-    if (confirmAction) {
-      const confirmed = await this._showConfirmation(
-        this._t('action.toggle_covers'),
-        this._t('action.confirm_bulk', {
-          action: this._t(hasOpen ? 'action.close' : 'action.open'),
-          entities: getDomainName(this.hass, 'cover').toLocaleLowerCase(ddLocale(this.hass)),
-        })
-      );
-
-      if (!confirmed) return;
-    }
-
-    const service = hasOpen ? 'close_cover' : 'open_cover';
+    const service = open ? 'open_cover' : 'close_cover';
     const entityIds = covers.map(e => e.entity_id);
 
-    this._setOptimisticEntityStates(entityIds, hasOpen ? 'closed' : 'open');
+    this._setOptimisticEntityStates(entityIds, open ? 'open' : 'closed');
 
     try {
       await this.hass.callService('cover', service, {
         entity_id: entityIds
       });
 
-      this._showToast(this._t(hasOpen ? 'action.close_all' : 'action.open_all'));
+      this._showToast(this._t(open ? 'action.open_all' : 'action.close_all'));
     } catch (err) {
       this._clearOptimisticEntityStates(entityIds);
-      console.warn(`Failed to toggle covers in area ${areaId}:`, err);
+      console.warn(`Failed to ${open ? 'open' : 'close'} covers in area ${areaId}:`, err);
       this._showToast(this._t('entity.covers_failed'));
     }
   }
 
-  private async _showConfirmation(title: string, message: string): Promise<boolean> {
-    // TODO: Implement proper confirmation dialog
-    return confirm(`${title}\n\n${message}`);
+  private _resolveConfirmation(confirmed: boolean): void {
+    const resolve = this._confirmationResolve;
+    this._confirmationResolve = undefined;
+    this._confirmationDialog = null;
+    resolve?.(confirmed);
+  }
+
+  private _handleConfirmationKeydown = (event: KeyboardEvent): void => {
+    if (event.key !== 'Escape') return;
+    event.preventDefault();
+    this._resolveConfirmation(false);
+  };
+
+  private _showConfirmation(
+    title: string,
+    message: string,
+    options: { confirmLabel?: string; destructive?: boolean } = {}
+  ): Promise<boolean> {
+    if (this._confirmationResolve) {
+      this._resolveConfirmation(false);
+    }
+
+    return new Promise(resolve => {
+      this._confirmationResolve = resolve;
+      this._confirmationDialog = {
+        title,
+        message,
+        confirmLabel: options.confirmLabel || title,
+        destructive: options.destructive === true,
+      };
+
+      void this.updateComplete.then(() => {
+        this.shadowRoot?.querySelector<HTMLElement>('.confirmation-content')?.focus();
+      });
+    });
   }
 
   private _showToast(message: string) {

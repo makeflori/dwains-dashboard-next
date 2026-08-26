@@ -4,14 +4,17 @@ import {
   mdiArrowUp,
   mdiCardAccountDetailsStarOutline,
   mdiChevronRight,
+  mdiDelete,
   mdiDrag,
   mdiEye,
   mdiEyeOff,
   mdiFloorPlan,
   mdiFormatListBulletedType,
+  mdiGestureTapButton,
   mdiHeartOutline,
   mdiHomeEditOutline,
   mdiPackageVariantClosedCheck,
+  mdiPencil,
   mdiPuzzleEditOutline,
   mdiShieldAccount,
   mdiThermometerWater,
@@ -22,7 +25,7 @@ import { css, html, LitElement, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
 import type { HomeAssistant } from "../types/home-assistant";
-import type { AreaCustomCard, AreaEntityLayout, AreaSortMode, DeviceConfig, DwainsDashboardConfig, HomeInformationCardKey, HomeSectionKey } from "../types/strategy";
+import type { AreaCustomCard, AreaEntityLayout, AreaSortMode, DeviceConfig, DwainsDashboardConfig, HomeCustomCard, HomeInformationCardKey, HomeSectionKey, LovelaceCardConfig, MasterActionConfirmationDomain } from "../types/strategy";
 import { openReplacementManager } from "./dwains-replacement-manager-dialog";
 import {
   AREA_STRATEGY_GROUPS,
@@ -44,6 +47,11 @@ import {
   normalizeHomeSectionsOrder,
 } from "../utils/home-sections";
 import { DD_NEXT_VERSION } from "../version";
+import {
+  MASTER_ACTION_CONFIRMATION_DOMAINS,
+  masterActionConfirmationEnabled,
+} from "../utils/master-action-confirmations";
+import { showCardEditorDialog } from "./utils/show-card-editor-dialog";
 
 // We'll create our own entity picker since ha-entity-picker is external
 type SettingsPageKey =
@@ -51,6 +59,7 @@ type SettingsPageKey =
   | "dashboard"
   | "home"
   | "header"
+  | "controls"
   | "devices"
   | "people"
   | "areas"
@@ -121,6 +130,7 @@ const SETTINGS_ICON_PATHS: Record<string, string> = {
   "mdi:chevron-right": mdiChevronRight,
   "mdi:floor-plan": mdiFloorPlan,
   "mdi:format-list-bulleted-type": mdiFormatListBulletedType,
+  "mdi:gesture-tap-button": mdiGestureTapButton,
   "mdi:heart-outline": mdiHeartOutline,
   "mdi:home-edit-outline": mdiHomeEditOutline,
   "mdi:package-variant-closed-check": mdiPackageVariantClosedCheck,
@@ -533,6 +543,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       ? this._t('settings.unavailable_shown')
       : this._t('settings.unavailable_hidden');
     const areaSortMode = resolveAreaSortMode(this._config?.areas_display);
+    const protectedMasterActionCount = MASTER_ACTION_CONFIRMATION_DOMAINS
+      .filter((domain) => masterActionConfirmationEnabled(this._config?.settings, domain))
+      .length;
 
     return [
       {
@@ -561,6 +574,15 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         title: this._t('settings.header_status'),
         description: this._t('settings.header_status_description'),
         summary: `${this._config?.settings?.show_notifications === false ? this._t('settings.notifications_hidden') : this._t('settings.notifications_shown')} · ${this._config?.settings?.alarm_entity_id ? this._t('settings.alarm_selected') : this._t('settings.no_alarm_selected')}`,
+      },
+      {
+        page: "controls",
+        group: "general",
+        icon: "mdi:gesture-tap-button",
+        color: "#d97706",
+        title: this._t('settings.controls_confirmations'),
+        description: this._t('settings.controls_confirmations_description'),
+        summary: this._t('settings.controls_confirmations_summary', { count: protectedMasterActionCount }),
       },
       {
         page: "people",
@@ -712,6 +734,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           ${this._renderWeatherSettingsPanel()}
           ${this._renderAlarmSettingsPanel()}
         `;
+      case "controls":
+        return this._renderMasterActionConfirmationSettingsPanel();
       case "devices":
         return this._renderEntityDisplaySettingsPanel();
       case "people":
@@ -740,6 +764,48 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         ${content}
       </ha-expansion-panel>
     `;
+  }
+
+  private _renderMasterActionConfirmationSettingsPanel() {
+    return this._renderSettingsPanel(
+      "mdi:gesture-tap-button",
+      this._t('settings.master_confirmations'),
+      this._t('settings.master_confirmations_description'),
+      html`
+        <div class="master-confirmation-section">
+          <div class="master-confirmation-note">
+            <ha-icon icon="mdi:information-outline"></ha-icon>
+            <span>${this._t('settings.master_confirmations_note')}</span>
+          </div>
+          <div class="master-confirmation-list">
+            ${MASTER_ACTION_CONFIRMATION_DOMAINS.map((domain) => {
+              const enabled = masterActionConfirmationEnabled(this._config?.settings, domain);
+              return html`
+                <label
+                  class="master-confirmation-row"
+                  style=${`--master-confirmation-color: ${getDomainColor(domain)};`}
+                >
+                  <span class="master-confirmation-icon">
+                    <ha-icon icon=${getDomainIcon(domain)}></ha-icon>
+                  </span>
+                  <span class="master-confirmation-copy">
+                    <strong>${getDomainName(this.hass, domain)}</strong>
+                    <small>${this._t(`settings.confirm_${domain}_description`)}</small>
+                  </span>
+                  <span class="master-confirmation-control">
+                    <span>${this._t(enabled ? 'settings.confirmation_required' : 'settings.runs_immediately')}</span>
+                    <ha-switch
+                      .checked=${enabled}
+                      @change=${(event: Event) => this._toggleMasterActionConfirmation(domain, event)}
+                    ></ha-switch>
+                  </span>
+                </label>
+              `;
+            })}
+          </div>
+        </div>
+      `
+    );
   }
 
   private _renderSupportSection() {
@@ -817,6 +883,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       this._t('settings.home_layout_description'),
       html`
         ${this._renderHomeSectionOrder()}
+        ${this._renderHomeCustomCardsSettings()}
         ${this._renderHomeCameraSettings()}
         ${this._renderHomeInformationCardSettings()}
       `
@@ -1940,6 +2007,144 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         <button class="home-layout-reset" type="button" @click=${this._resetHomeSectionsOrder}>
           ${this._t('settings.reset_layout')}
         </button>
+      </div>
+    `;
+  }
+
+  private _getHomeCustomCards(): HomeCustomCard[] {
+    const cards = this._config?.home_custom_cards;
+    if (!Array.isArray(cards)) return [];
+
+    return cards.filter(entry =>
+      Boolean(entry?.id) &&
+      Boolean(entry?.card) &&
+      typeof entry.card === 'object' &&
+      typeof entry.card.type === 'string'
+    );
+  }
+
+  private _createHomeCustomCardId(): string {
+    return `home-card-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  }
+
+  private _homeCustomCardTitle(entry: HomeCustomCard): string {
+    const config = entry.card as Record<string, any>;
+    const entityId = typeof config.entity === 'string' ? config.entity : '';
+    return config.title || config.name ||
+      this.hass?.states?.[entityId]?.attributes?.friendly_name ||
+      entityId ||
+      config.type.replace(/^custom:/, '');
+  }
+
+  private _homeCustomCardSubtitle(entry: HomeCustomCard): string {
+    return entry.card.type.replace(/^custom:/, '');
+  }
+
+  private _updateHomeCustomCards(cards: HomeCustomCard[]): void {
+    if (!this._config) return;
+    this._fireConfigChanged({ ...this._config, home_custom_cards: cards });
+  }
+
+  private _addHomeCustomCard(): void {
+    showCardEditorDialog(this, {
+      areaName: this._t('home_section.custom_cards.label'),
+      onSave: (card: LovelaceCardConfig) => {
+        this._updateHomeCustomCards([
+          ...this._getHomeCustomCards(),
+          { id: this._createHomeCustomCardId(), card },
+        ]);
+      },
+    });
+  }
+
+  private _editHomeCustomCard(id: string): void {
+    const cards = this._getHomeCustomCards();
+    const entry = cards.find(card => card.id === id);
+    if (!entry) return;
+
+    showCardEditorDialog(this, {
+      card: entry.card,
+      areaName: this._t('home_section.custom_cards.label'),
+      onSave: (card: LovelaceCardConfig) => {
+        this._updateHomeCustomCards(cards.map(current => current.id === id ? { ...current, card } : current));
+      },
+    });
+  }
+
+  private _deleteHomeCustomCard(id: string): void {
+    if (!confirm(this._t('layout.delete_card_confirm'))) return;
+    this._updateHomeCustomCards(this._getHomeCustomCards().filter(card => card.id !== id));
+  }
+
+  private _moveHomeCustomCard(id: string, direction: -1 | 1): void {
+    const cards = this._getHomeCustomCards();
+    const index = cards.findIndex(card => card.id === id);
+    const target = index + direction;
+    if (index < 0 || target < 0 || target >= cards.length) return;
+
+    const next = [...cards];
+    [next[index], next[target]] = [next[target]!, next[index]!];
+    this._updateHomeCustomCards(next);
+  }
+
+  private _renderHomeCustomCardsSettings() {
+    const cards = this._getHomeCustomCards();
+
+    return html`
+      <div class="home-info-card-section home-custom-card-settings-section">
+        <div class="home-info-card-header">
+          <div>
+            <h4>${this._t('settings.home_custom_cards')}</h4>
+            <p>${this._t('settings.home_custom_cards_description')}</p>
+          </div>
+          <button class="home-custom-card-add" type="button" @click=${this._addHomeCustomCard}>
+            <ha-icon icon="mdi:plus"></ha-icon>
+            ${this._t('settings.add_home_card')}
+          </button>
+        </div>
+        ${cards.length ? html`
+          <div class="home-custom-card-settings-list">
+            ${repeat(
+              cards,
+              entry => entry.id,
+              (entry, index) => html`
+                <div class="home-info-card-item home-custom-card-settings-item">
+                  <div class="home-section-icon"><ha-icon icon="mdi:cards-outline"></ha-icon></div>
+                  <div class="home-section-copy">
+                    <div class="home-section-title">${this._homeCustomCardTitle(entry)}</div>
+                    <div class="home-section-description">${this._homeCustomCardSubtitle(entry)}</div>
+                  </div>
+                  <div class="home-section-actions">
+                    <ha-icon-button
+                      .label=${this._t('settings.move_up')}
+                      .path=${mdiArrowUp}
+                      .disabled=${index === 0}
+                      @click=${() => this._moveHomeCustomCard(entry.id, -1)}
+                    ></ha-icon-button>
+                    <ha-icon-button
+                      .label=${this._t('settings.move_down')}
+                      .path=${mdiArrowDown}
+                      .disabled=${index === cards.length - 1}
+                      @click=${() => this._moveHomeCustomCard(entry.id, 1)}
+                    ></ha-icon-button>
+                    <ha-icon-button
+                      .label=${this._t('common.edit')}
+                      .path=${mdiPencil}
+                      @click=${() => this._editHomeCustomCard(entry.id)}
+                    ></ha-icon-button>
+                    <ha-icon-button
+                      .label=${this._t('common.delete')}
+                      .path=${mdiDelete}
+                      @click=${() => this._deleteHomeCustomCard(entry.id)}
+                    ></ha-icon-button>
+                  </div>
+                </div>
+              `
+            )}
+          </div>
+        ` : html`
+          <div class="home-camera-settings-empty">${this._t('settings.no_home_custom_cards')}</div>
+        `}
       </div>
     `;
   }
@@ -3642,16 +3847,22 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
   private _renderEntityPicker() {
     const allEntities = Object.keys(this.hass?.states || {});
+    const query = this._entitySearchFilter.trim().toLocaleLowerCase(ddLocale(this.hass));
     const filteredEntities = allEntities.filter(entityId => {
-      if (!this._entitySearchFilter) return true;
+      if (!query) return true;
       const state = this.hass?.states[entityId];
       const friendlyName = state?.attributes?.friendly_name || entityId;
-      return friendlyName.toLowerCase().includes(this._entitySearchFilter.toLowerCase()) ||
-             entityId.toLowerCase().includes(this._entitySearchFilter.toLowerCase());
+      return friendlyName.toLocaleLowerCase(ddLocale(this.hass)).includes(query) ||
+             entityId.toLocaleLowerCase(ddLocale(this.hass)).includes(query);
+    }).sort((left, right) => {
+      const leftName = this.hass?.states[left]?.attributes?.friendly_name || left;
+      const rightName = this.hass?.states[right]?.attributes?.friendly_name || right;
+      return leftName.localeCompare(rightName, ddLocale(this.hass));
     });
 
     const favorites = this._config?.favorites || [];
     const availableEntities = filteredEntities.filter(entityId => !favorites.includes(entityId));
+    const visibleEntities = query ? availableEntities : availableEntities.slice(0, 50);
 
     return html`
       <div class="entity-picker-modal">
@@ -3679,7 +3890,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
           <div class="entity-list">
             ${repeat(
-              availableEntities.slice(0, 50), // Limit to 50 results
+              visibleEntities,
               (entityId) => entityId,
               (entityId) => {
                 const state = this.hass?.states[entityId];
@@ -3697,6 +3908,17 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                 `;
               }
             )}
+            ${visibleEntities.length === 0 ? html`
+              <div class="entity-picker-hint empty">${this._t('settings.no_entities_found')}</div>
+            ` : nothing}
+            ${!query && availableEntities.length > visibleEntities.length ? html`
+              <div class="entity-picker-hint">
+                ${this._t('settings.entity_picker_limited', {
+                  count: visibleEntities.length,
+                  total: availableEntities.length,
+                })}
+              </div>
+            ` : nothing}
           </div>
         </div>
       </div>
@@ -3793,6 +4015,25 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         ...this._config!.settings,
         show_notifications: showNotifications
       }
+    };
+
+    this._fireConfigChanged(newConfig);
+  }
+
+  private _toggleMasterActionConfirmation(
+    domain: MasterActionConfirmationDomain,
+    event: Event
+  ): void {
+    const target = event.target as any;
+    const newConfig: DwainsDashboardConfig = {
+      ...this._config!,
+      settings: {
+        ...this._config!.settings,
+        master_action_confirmations: {
+          ...this._config!.settings?.master_action_confirmations,
+          [domain]: Boolean(target.checked),
+        },
+      },
     };
 
     this._fireConfigChanged(newConfig);
@@ -4037,6 +4278,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       blueprint_replacements: config.blueprint_replacements || {},
       device_admission: config.device_admission || {},
       favorites: config.favorites || [],
+      home_custom_cards: config.home_custom_cards || [],
       settings: config.settings || {}
     };
 
@@ -4494,6 +4736,38 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         padding: 0 16px 16px;
       }
 
+      .home-custom-card-settings-section {
+        padding: 0 16px 16px;
+      }
+
+      .home-custom-card-settings-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .home-custom-card-add {
+        min-height: 36px;
+        padding: 8px 12px;
+        border: 0;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--primary-color);
+        background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+        font: inherit;
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      .home-custom-card-add ha-icon {
+        --mdc-icon-size: 18px;
+      }
+
+      .home-custom-card-settings-item .home-section-actions {
+        align-items: center;
+      }
+
       .home-camera-settings-list {
         display: grid;
         gap: 8px;
@@ -4669,7 +4943,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           gap: 8px;
         }
 
-        .home-camera-settings-section {
+        .home-camera-settings-section,
+        .home-custom-card-settings-section {
           padding-inline: 10px;
         }
       }
@@ -5346,9 +5621,126 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .time-section,
       .weather-section,
       .alarm-section,
+      .master-confirmation-section,
       .entity-display-section,
       .replacement-section {
         padding: 0 16px 16px 16px;
+      }
+
+      .master-confirmation-section {
+        display: grid;
+        gap: 12px;
+      }
+
+      .master-confirmation-note {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 12px;
+        border-radius: 8px;
+        color: var(--secondary-text-color);
+        background: color-mix(in srgb, var(--primary-color) 8%, var(--secondary-background-color));
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .master-confirmation-note ha-icon {
+        flex: 0 0 auto;
+        color: var(--primary-color);
+        --mdc-icon-size: 20px;
+      }
+
+      .master-confirmation-list {
+        overflow: hidden;
+        border: 1px solid var(--divider-color);
+        border-radius: 8px;
+        background: var(--card-background-color);
+      }
+
+      .master-confirmation-row {
+        display: grid;
+        grid-template-columns: 42px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 12px;
+        min-height: 62px;
+        padding: 10px 12px;
+        cursor: pointer;
+      }
+
+      .master-confirmation-row + .master-confirmation-row {
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .master-confirmation-row:hover {
+        background: color-mix(in srgb, var(--primary-color) 4%, transparent);
+      }
+
+      .master-confirmation-icon {
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        color: var(--master-confirmation-color);
+        background: color-mix(in srgb, var(--master-confirmation-color) 12%, transparent);
+      }
+
+      .master-confirmation-icon ha-icon {
+        --mdc-icon-size: 22px;
+      }
+
+      .master-confirmation-copy {
+        min-width: 0;
+        display: grid;
+        gap: 3px;
+      }
+
+      .master-confirmation-copy strong {
+        color: var(--primary-text-color);
+        font-size: 14px;
+        line-height: 1.3;
+      }
+
+      .master-confirmation-copy small {
+        color: var(--secondary-text-color);
+        font-size: 12px;
+        line-height: 1.4;
+      }
+
+      .master-confirmation-control {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .master-confirmation-control > span {
+        max-width: 130px;
+        color: var(--secondary-text-color);
+        font-size: 12px;
+        font-weight: 600;
+        text-align: right;
+      }
+
+      @media (max-width: 600px) {
+        .master-confirmation-section {
+          padding-inline: 10px;
+        }
+
+        .master-confirmation-row {
+          grid-template-columns: 38px minmax(0, 1fr) auto;
+          gap: 10px;
+          padding-inline: 10px;
+        }
+
+        .master-confirmation-icon {
+          width: 38px;
+          height: 38px;
+        }
+
+        .master-confirmation-control > span {
+          display: none;
+        }
       }
 
       .replacement-summary {
@@ -5872,6 +6264,17 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         gap: 8px;
         max-height: 400px;
         overflow-y: auto;
+      }
+
+      .entity-picker-hint {
+        padding: 10px 14px;
+        color: var(--secondary-text-color);
+        font-size: 12px;
+        line-height: 1.4;
+      }
+
+      .entity-picker-hint.empty {
+        text-align: center;
       }
 
       .entity-option {

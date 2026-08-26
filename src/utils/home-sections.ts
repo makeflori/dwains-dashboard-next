@@ -6,6 +6,7 @@ export const DEFAULT_HOME_SECTIONS_ORDER: HomeSectionKey[] = [
   'areas',
   'devices',
   'todos',
+  'custom_cards',
   'favorites',
   'summaries',
 ];
@@ -41,6 +42,11 @@ export const HOME_SECTION_META: Record<HomeSectionKey, LocalizedMeta> = {
     labelKey: 'home_section.todos.label',
     icon: 'mdi:format-list-checks',
     descriptionKey: 'home_section.todos.description',
+  },
+  custom_cards: {
+    labelKey: 'home_section.custom_cards.label',
+    icon: 'mdi:cards-outline',
+    descriptionKey: 'home_section.custom_cards.description',
   },
   favorites: {
     labelKey: 'home_section.favorites.label',
