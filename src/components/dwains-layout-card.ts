@@ -12050,28 +12050,58 @@ export class DwainsLayoutCard extends LitElement {
   }
 
   private _getHouseClimateSummary(): HouseClimateSummary {
-    const values: Record<HouseClimateMetric['kind'], Array<{ value: number; unit: string; entityId: string }>> = {
+    const values: Record<HouseClimateMetric['kind'], Array<{ value: number; unit: string; entityIds: string[] }>> = {
       temperature: [],
       humidity: [],
     };
+    const contributingEntityIds = new Set<string>();
 
     this._getVisibleSortedAreas().forEach(area => {
-      this._getFilteredAreaEntities(area.area_id).forEach(entity => {
-        const state = this.hass?.states?.[entity.entity_id];
-        if (!state || !state.entity_id?.startsWith('sensor.')) return;
+      const climateOptions = this.config?.areas_options?.[area.area_id]?.climate;
+      if (climateOptions?.include_in_house_average === false) return;
 
-        const deviceClass = String(state.attributes?.device_class || '').toLowerCase();
-        if (deviceClass !== 'temperature' && deviceClass !== 'humidity') return;
+      const areaEntities = this._getFilteredAreaEntities(area.area_id);
+      const areaRegistry = this.hass?.areas?.[area.area_id] as any;
 
-        const value = Number.parseFloat(state.state);
-        if (!Number.isFinite(value)) return;
+      (['temperature', 'humidity'] as const).forEach((kind) => {
+        const configured = kind === 'temperature' ? climateOptions?.temperature_entities : climateOptions?.humidity_entities;
+        const registryEntityId = kind === 'temperature' ? areaRegistry?.temperature_entity_id : areaRegistry?.humidity_entity_id;
 
-        values[deviceClass].push({
-          value,
-          unit: String(state.attributes?.unit_of_measurement || (deviceClass === 'temperature'
-            ? this.hass?.config?.unit_system?.temperature || '°C'
-            : '%')),
-          entityId: entity.entity_id,
+        let entityIds: string[];
+        if (configured !== undefined) {
+          entityIds = configured;
+        } else if (registryEntityId) {
+          entityIds = [registryEntityId];
+        } else {
+          entityIds = areaEntities
+            .map((entity) => entity.entity_id)
+            .filter((entityId) => {
+              const state = this.hass?.states?.[entityId];
+              return Boolean(
+                state &&
+                entityId.startsWith('sensor.') &&
+                String(state.attributes?.device_class || '').toLowerCase() === kind
+              );
+            });
+        }
+
+        const valid = entityIds
+          .map((entityId) => ({ entityId, state: this.hass?.states?.[entityId] }))
+          .filter(({ state }) => Boolean(state && state.state !== 'unavailable' && state.state !== 'unknown'))
+          .map(({ entityId, state }) => ({
+            entityId,
+            value: Number(state!.state),
+            unit: String(state!.attributes?.unit_of_measurement || (kind === 'temperature' ? '°C' : '%')),
+          }))
+          .filter((entry) => Number.isFinite(entry.value));
+
+        if (!valid.length) return;
+        const average = valid.reduce((sum, entry) => sum + entry.value, 0) / valid.length;
+        valid.forEach((entry) => contributingEntityIds.add(entry.entityId));
+        values[kind].push({
+          value: average,
+          unit: valid[0]!.unit,
+          entityIds: valid.map((entry) => entry.entityId),
         });
       });
     });
@@ -12083,14 +12113,14 @@ export class DwainsLayoutCard extends LitElement {
     if (humidity) metrics.push(humidity);
 
     return {
-      sensorCount: values.temperature.length + values.humidity.length,
+      sensorCount: contributingEntityIds.size,
       metrics,
     };
   }
 
   private _houseClimateMetric(
     kind: HouseClimateMetric['kind'],
-    values: Array<{ value: number; unit: string; entityId: string }>
+    values: Array<{ value: number; unit: string; entityIds: string[] }>
   ): HouseClimateMetric | undefined {
     if (!values.length) return undefined;
 
@@ -12107,7 +12137,7 @@ export class DwainsLayoutCard extends LitElement {
       count: values.length,
       icon: kind === 'temperature' ? getDeviceClassIcon('sensor', 'temperature') : getDeviceClassIcon('sensor', 'humidity'),
       color: kind === 'temperature' ? getDomainColor('sensor', 'temperature') : getDomainColor('sensor', 'humidity'),
-      entityIds: values.map(item => item.entityId),
+      entityIds: [...new Set(values.flatMap(item => item.entityIds))],
     };
   }
 
