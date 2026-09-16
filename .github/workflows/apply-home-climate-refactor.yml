@@ -1,0 +1,55 @@
+name: Apply home climate refactor
+
+on:
+  push:
+    branches:
+      - tmp/refactor-home-climate-settings
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout helper branch
+        uses: actions/checkout@v4
+        with:
+          ref: tmp/refactor-home-climate-settings
+          fetch-depth: 0
+
+      - name: Preserve helper script
+        run: cp scripts/refactor-home-climate-settings.mjs /tmp/refactor-home-climate-settings.mjs
+
+      - name: Checkout feature branch
+        run: |
+          git fetch origin feature/home-information-climate-filter
+          git checkout feature/home-information-climate-filter
+          git reset --hard origin/feature/home-information-climate-filter
+
+      - name: Apply refactor
+        run: node /tmp/refactor-home-climate-settings.mjs
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Build
+        run: npm run build
+
+      - name: Commit feature
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/types/strategy.ts src/components/dwains-dashboard-strategy-editor.ts src/components/dwains-layout-card.ts src/i18n/locales
+          git commit -m "Move home climate filtering to House information"
+          git push origin HEAD:feature/home-information-climate-filter
