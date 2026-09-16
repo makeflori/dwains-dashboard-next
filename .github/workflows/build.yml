@@ -55,7 +55,12 @@ jobs:
             echo "Unexpected current dev version: $CURRENT"
             exit 1
           fi
-          NEXT="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.${BASH_REMATCH[3]}-dev.$((BASH_REMATCH[4] + 1))"
+          MAJOR="${BASH_REMATCH[1]}"
+          MINOR="${BASH_REMATCH[2]}"
+          PATCH="${BASH_REMATCH[3]}"
+          COUNTER=$((BASH_REMATCH[4] + 1))
+          NEXT="${MAJOR}.${MINOR}.${PATCH}-dev.${COUNTER}"
+          HACS_TAG="v${MAJOR}.${MINOR}.${COUNTER}"
           npm version "$NEXT" --no-git-tag-version
           NEXT_VERSION="$NEXT" node - <<'NODE'
           const fs = require('fs');
@@ -68,7 +73,7 @@ jobs:
           fs.writeFileSync(path, text);
           NODE
           echo "version=$NEXT" >> "$GITHUB_OUTPUT"
-          echo "tag=v$NEXT" >> "$GITHUB_OUTPUT"
+          echo "tag=$HACS_TAG" >> "$GITHUB_OUTPUT"
 
       - name: Type check
         run: npm run type-check
@@ -103,5 +108,5 @@ jobs:
           fi
           gh release create "$TAG" \
             --target "$RELEASE_SHA" \
-            --title "$TAG" \
-            --notes "Development build $VERSION."
+            --title "$TAG (development build $VERSION)" \
+            --notes "Development build $VERSION. The stable-looking tag is intentional so HACS tracks this dev channel without requiring the pre-release switch."
