@@ -29,7 +29,9 @@ jobs:
           git reset --hard origin/feature/home-information-climate-filter
 
       - name: Apply refactor
-        run: node /tmp/refactor-home-climate-settings-v2.mjs
+        run: |
+          node /tmp/refactor-home-climate-settings-v2.mjs
+          sed -i "s/import type { HomeAssistant } from '..\/types\/home-assistant';/import type { HomeAssistant, HassEntity } from '..\/types\/home-assistant';/" src/utils/area.ts
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
