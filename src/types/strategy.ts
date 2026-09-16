@@ -91,8 +91,18 @@ export interface HomeCustomCard {
 
 export type AreaEntityLayout = 'grouped' | 'ungrouped';
 
+export interface AreaClimateOptions {
+  /** Include this area in the house climate average. Defaults to true. */
+  include_in_house_average?: boolean;
+  /** Undefined uses the Home Assistant area sensor; an array enables custom selection. */
+  temperature_entities?: string[];
+  /** Undefined uses the Home Assistant area sensor; an array enables custom selection. */
+  humidity_entities?: string[];
+}
+
 export interface AreaOptions {
   card_size?: 'small' | 'large';
+  climate?: AreaClimateOptions;
   /** Group generated entity cards by domain, or show one freely ordered list. */
   entity_layout?: AreaEntityLayout;
   /** Order of generated domain sections when entity_layout is grouped. */
