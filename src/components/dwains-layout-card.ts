@@ -15299,23 +15299,43 @@ export class DwainsLayoutCard extends LitElement {
     `;
   }
 
+  private _formatAssignedAreaClimate(areaId: string, kind: 'temperature' | 'humidity'): string | undefined {
+    const areaRegistry = this.hass?.areas?.[areaId] as any;
+    const entityId = kind === 'temperature'
+      ? areaRegistry?.temperature_entity_id
+      : areaRegistry?.humidity_entity_id;
+    if (!entityId) return undefined;
+
+    const state = this.hass?.states?.[entityId];
+    if (!state || state.state === 'unavailable' || state.state === 'unknown') return undefined;
+    return this.hass.formatEntityState(state);
+  }
+
+  private _withFreshAreaClimateFormatting(areaId: string, data: AreaData): AreaData {
+    return {
+      ...data,
+      temperature: this._formatAssignedAreaClimate(areaId, 'temperature'),
+      humidity: this._formatAssignedAreaClimate(areaId, 'humidity'),
+    };
+  }
+
   private _getCachedAreaData(area: AreaConfig): AreaData {
-    // Check cache first
+    // The structural area data can be cached, but temperature/humidity formatting
+    // must always use the current Home Assistant display settings (precision, locale, etc.).
     const cached = this._areaDataCache.get(area.area_id);
     if (cached && Date.now() - cached.timestamp < this._CACHE_DURATION) {
-      return cached.data;
+      return this._withFreshAreaClimateFormatting(area.area_id, cached.data);
     }
 
     const entities = this._getFilteredAreaEntities(area.area_id);
     const data = getAreaData(area, this.hass, entities, this.config);
 
-    // Cache the result
     this._areaDataCache.set(area.area_id, {
       data,
       timestamp: Date.now()
     });
 
-    return data;
+    return this._withFreshAreaClimateFormatting(area.area_id, data);
   }
 
   private _getPictureContrastClass(picture?: string | null): string {
