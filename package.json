@@ -1,6 +1,6 @@
 {
   "name": "dwains-dashboard-next",
-  "version": "1.8.1-dev.1",
+  "version": "1.8.1-dev.2",
   "description": "Dwains Dashboard Next for Home Assistant",
   "main": "dist/dwains-dashboard-next.js",
   "type": "module",
@@ -26,11 +26,12 @@
   "author": "Dwain Scheeren",
   "license": "MIT",
   "devDependencies": {
+    "@mdi/js": "^7.4.47",
+    "@playwright/test": "^1.61.1",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.5",
-    "@playwright/test": "^1.61.1",
     "@types/node": "^20.10.5",
     "rollup": "^4.9.1",
     "tslib": "^2.6.2",
