@@ -1,0 +1,27 @@
+name: Apply consistent home status fix
+on:
+  push:
+    branches:
+      - tmp/fix-consistent-home-status
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: node scripts/apply-consistent-home-status.mjs
+      - run: npm run type-check
+      - name: Commit result
+        run: |
+          rm scripts/apply-consistent-home-status.mjs
+          rm .github/workflows/apply-consistent-home-status.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/components/dwains-layout-card.ts scripts/apply-consistent-home-status.mjs .github/workflows/apply-consistent-home-status.yml
+          git commit -m "Use consistent localized home status"
+          git push
