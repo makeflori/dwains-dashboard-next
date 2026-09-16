@@ -34,7 +34,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/components/dwains-layout-card.ts
+          git add src/components/dwains-layout-card.ts src/utils/power-usage.ts
           git rm scripts/apply-ui-localization-fix.mjs .github/workflows/apply-ui-localization-fix.yml
           git commit -m "Localize UI labels and normalize formatting"
           git push
