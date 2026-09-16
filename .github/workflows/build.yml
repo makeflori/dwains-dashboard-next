@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -15,6 +19,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -25,21 +31,57 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Decide whether to publish a new dev build
+        id: dev_release
+        shell: bash
+        run: |
+          SHOULD_RELEASE=false
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/dev" ]]; then
+            MESSAGE=$(git log -1 --pretty=%s)
+            if [[ ! "$MESSAGE" =~ ^Build\ dev\ release\ v ]]; then
+              SHOULD_RELEASE=true
+            fi
+          fi
+          echo "should_release=$SHOULD_RELEASE" >> "$GITHUB_OUTPUT"
+
+      - name: Bump dev version
+        if: steps.dev_release.outputs.should_release == 'true'
+        id: version
+        shell: bash
+        run: |
+          CURRENT=$(node -p "require('./package.json').version")
+          if [[ ! "$CURRENT" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)-dev\.([0-9]+)$ ]]; then
+            echo "Unexpected current dev version: $CURRENT"
+            exit 1
+          fi
+          NEXT="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.${BASH_REMATCH[3]}-dev.$((BASH_REMATCH[4] + 1))"
+          npm version "$NEXT" --no-git-tag-version
+          NEXT_VERSION="$NEXT" node - <<'NODE'
+          const fs = require('fs');
+          const version = process.env.NEXT_VERSION;
+          const path = 'README.md';
+          let text = fs.readFileSync(path, 'utf8');
+          if (/Development version: `[^`]+`/.test(text)) {
+            text = text.replace(/Development version: `[^`]+`/, `Development version: \`${version}\``);
+          }
+          fs.writeFileSync(path, text);
+          NODE
+          echo "version=$NEXT" >> "$GITHUB_OUTPUT"
+
       - name: Type check
         run: npm run type-check
 
       - name: Build
         run: npm run build
 
-      - name: Commit dev bundle
-        if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+      - name: Commit complete dev release
+        if: steps.dev_release.outputs.should_release == 'true'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        shell: bash
         run: |
-          if git diff --quiet -- dist/dwains-dashboard-next.js; then
-            echo "No bundle changes to commit."
-            exit 0
-          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add dist/dwains-dashboard-next.js
-          git commit -m "Build dev bundle"
+          git add package.json package-lock.json README.md dist/dwains-dashboard-next.js
+          git commit -m "Build dev release v$VERSION"
           git push
