@@ -32,8 +32,7 @@ export const getAreaData = (area: AreaConfig, hass: HomeAssistant, areaEntities:
   const entityStatesHash = areaEntities
     .map(entity => `${entity.entity_id}:${hass.states[entity.entity_id]?.state}`)
     .join('|');
-  const climateOptionsHash = JSON.stringify(config?.areas_options?.[area.area_id]?.climate || {});
-  const cacheKey = `${area.area_id}-${areaEntities.length}-${entityStatesHash.substring(0, 50)}-${climateOptionsHash}`;
+  const cacheKey = `${area.area_id}-${areaEntities.length}-${entityStatesHash.substring(0, 50)}`;
 
   const cached = areaDataCache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
@@ -45,38 +44,23 @@ export const getAreaData = (area: AreaConfig, hass: HomeAssistant, areaEntities:
   let wattage: string | undefined;
   let totalEnergy: string | undefined;
 
-  // Resolve room climate from custom dashboard settings when configured,
-  // otherwise preserve Home Assistant's assigned area sensor behaviour.
+  // Use the temperature and humidity sensors assigned to the area in Home Assistant.
   const areaRegistry = hass.areas[area.area_id] as any;
-  const climateOptions = config?.areas_options?.[area.area_id]?.climate || {};
+  const temperatureEntityId = areaRegistry?.temperature_entity_id;
+  const humidityEntityId = areaRegistry?.humidity_entity_id;
 
-  const formatClimateSelection = (entityIds: string[] | undefined, registryEntityId: string | undefined): string | undefined => {
-    if (entityIds === undefined) {
-      const state = registryEntityId ? hass.states[registryEntityId] : undefined;
-      if (!state || state.state === 'unavailable' || state.state === 'unknown') return undefined;
-      return hass.formatEntityState(state);
+  if (temperatureEntityId) {
+    const state = hass.states[temperatureEntityId];
+    if (state && state.state !== 'unavailable' && state.state !== 'unknown') {
+      temperature = hass.formatEntityState(state);
     }
-
-    const values = entityIds
-      .map((entityId) => hass.states[entityId])
-      .filter((state): state is HassEntity => Boolean(state && state.state !== 'unavailable' && state.state !== 'unknown'))
-      .map((state) => ({ value: Number(state.state), unit: String(state.attributes.unit_of_measurement || '') }))
-      .filter((entry) => Number.isFinite(entry.value));
-
-    if (!values.length) return undefined;
-    const average = values.reduce((sum, entry) => sum + entry.value, 0) / values.length;
-    const unit = values[0]?.unit || '';
-    return unit ? `${average.toFixed(1)} ${unit}` : average.toFixed(1);
-  };
-
-  temperature = formatClimateSelection(
-    climateOptions.temperature_entities,
-    areaRegistry?.temperature_entity_id
-  );
-  humidity = formatClimateSelection(
-    climateOptions.humidity_entities,
-    areaRegistry?.humidity_entity_id
-  );
+  }
+  if (humidityEntityId) {
+    const state = hass.states[humidityEntityId];
+    if (state && state.state !== 'unavailable' && state.state !== 'unknown') {
+      humidity = hass.formatEntityState(state);
+    }
+  }
 
   // Calculate total wattage from sensors with unit_of_measurement 'W'
   let totalWattage = 0;
