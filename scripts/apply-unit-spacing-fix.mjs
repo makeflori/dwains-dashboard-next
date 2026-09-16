@@ -23,3 +23,4 @@ for (const [before, after] of replacements) {
 
 fs.writeFileSync(path, source);
 console.log('Normalized remaining temperature unit spacing.');
+// Trigger patch workflow after the workflow file exists on the branch.
