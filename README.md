@@ -55,7 +55,7 @@ More desktop, mobile, light-mode and dark-mode screenshots are available in the 
 
 ## Status
 
-Development version: `1.8.1-dev.2`
+Development version: `1.8.1-dev.3`
 
 ## Community And Support
 
