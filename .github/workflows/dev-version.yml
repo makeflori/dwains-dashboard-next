@@ -1,0 +1,74 @@
+name: Bump Dev Version
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [dev]
+  push:
+    paths:
+      - .github/workflows/dev-version.yml
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    if: >
+      github.event_name == 'push' ||
+      (github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'dev')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout dev
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Calculate next dev version
+        id: version
+        shell: bash
+        run: |
+          CURRENT=$(node -p "require('./package.json').version")
+          if [[ ! "$CURRENT" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)-dev\.([0-9]+)$ ]]; then
+            echo "Unexpected current version: $CURRENT"
+            exit 1
+          fi
+          NEXT="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.${BASH_REMATCH[3]}-dev.$((BASH_REMATCH[4] + 1))"
+          echo "current=$CURRENT" >> "$GITHUB_OUTPUT"
+          echo "next=$NEXT" >> "$GITHUB_OUTPUT"
+          echo "Bumping $CURRENT -> $NEXT"
+
+      - name: Update package metadata
+        env:
+          NEXT_VERSION: ${{ steps.version.outputs.next }}
+        shell: bash
+        run: |
+          npm version "$NEXT_VERSION" --no-git-tag-version
+          node - <<'NODE'
+          const fs = require('fs');
+          const version = process.env.NEXT_VERSION;
+          const path = 'README.md';
+          let text = fs.readFileSync(path, 'utf8');
+          if (/Development version: `[^`]+`/.test(text)) {
+            text = text.replace(/Development version: `[^`]+`/, `Development version: \`${version}\``);
+          }
+          fs.writeFileSync(path, text);
+          NODE
+
+      - name: Commit version bump
+        env:
+          NEXT_VERSION: ${{ steps.version.outputs.next }}
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json README.md
+          git commit -m "Bump dev version to $NEXT_VERSION"
+          git push
