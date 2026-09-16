@@ -7,16 +7,8 @@ import type {
 } from '../types/strategy';
 
 export class DwainsViewStrategy implements LovelaceViewStrategy {
-  async generate(config: LovelaceViewStrategyConfig & DwainsDashboardConfig, hass: HomeAssistant): Promise<LovelaceViewConfig> {
+  async generate(config: LovelaceViewStrategyConfig & DwainsDashboardConfig, _hass: HomeAssistant): Promise<LovelaceViewConfig> {
     console.log('Dwains View Strategy generate called', config);
-
-    // Set floors in hass if available
-    if (config.floors) {
-      (hass as any).floors = config.floors.reduce((acc, floor) => {
-        acc[floor.floor_id] = floor;
-        return acc;
-      }, {} as Record<string, any>);
-    }
 
     return {
       panel: true,
