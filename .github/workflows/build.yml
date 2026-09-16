@@ -20,6 +20,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event_name == 'push' && github.ref == 'refs/heads/dev' && 'dev' || github.sha }}
           fetch-depth: 0
 
       - name: Setup Node.js
@@ -84,4 +85,4 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add package.json package-lock.json README.md dist/dwains-dashboard-next.js
           git commit -m "Build dev release v$VERSION"
-          git push
+          git push origin HEAD:dev
