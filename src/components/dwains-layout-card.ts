@@ -10354,6 +10354,38 @@ export class DwainsLayoutCard extends LitElement {
     }
   }
 
+  private _hasAreaClimateDisplayMetadataChanges(
+    oldHass: HomeAssistant,
+    newHass: HomeAssistant
+  ): boolean {
+    const areaIds = new Set([
+      ...Object.keys(oldHass.areas || {}),
+      ...Object.keys(newHass.areas || {}),
+    ]);
+
+    for (const areaId of areaIds) {
+      const oldArea = oldHass.areas?.[areaId] as any;
+      const newArea = newHass.areas?.[areaId] as any;
+      const oldTemperature = oldArea?.temperature_entity_id;
+      const newTemperature = newArea?.temperature_entity_id;
+      const oldHumidity = oldArea?.humidity_entity_id;
+      const newHumidity = newArea?.humidity_entity_id;
+
+      if (oldTemperature !== newTemperature || oldHumidity !== newHumidity) return true;
+
+      const entityIds = new Set<string>(
+        [oldTemperature, newTemperature, oldHumidity, newHumidity].filter(Boolean) as string[]
+      );
+      for (const entityId of entityIds) {
+        const oldEntry = oldHass.entities?.[entityId] as any;
+        const newEntry = newHass.entities?.[entityId] as any;
+        if (oldEntry?.display_precision !== newEntry?.display_precision) return true;
+      }
+    }
+
+    return false;
+  }
+
   protected override shouldUpdate(changedProps: PropertyValues): boolean {
     if (!this.config || !this.hass) return false;
 
@@ -10372,6 +10404,7 @@ export class DwainsLayoutCard extends LitElement {
       if (!oldHass) return true;
 
       if (this._hasUpdateEntityChanges(oldHass, this.hass)) return true;
+      if (this._hasAreaClimateDisplayMetadataChanges(oldHass, this.hass)) return true;
 
       // Check if any visible entities changed
       const relevantEntities = this._getRelevantEntities();
