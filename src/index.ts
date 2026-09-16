@@ -1,6 +1,3 @@
-import { DwainsDashboardStrategy } from './strategies/dashboard-strategy';
-import { DwainsViewStrategy } from './strategies/view-strategy';
-
 import { DD_NEXT_VERSION } from './version';
 
 console.log('Dwains Dashboard Next - Loading...');
@@ -23,19 +20,26 @@ const safeDefine = (name: string, constructor: CustomElementConstructor) => {
 
 const createDashboardStrategyElement = () => class extends HTMLElement {
   static async generate(config: any, hass: any) {
-    await uiElementsReady;
+    const [{ DwainsDashboardStrategy }] = await Promise.all([
+      import('./strategies/dashboard-strategy'),
+      uiElementsReady,
+    ]);
     const strategy = new DwainsDashboardStrategy();
     return strategy.generate(config, hass);
   }
 
   static async getConfigElement() {
+    const { DwainsDashboardStrategy } = await import('./strategies/dashboard-strategy');
     return DwainsDashboardStrategy.getConfigElement();
   }
 };
 
 const createViewStrategyElement = () => class extends HTMLElement {
   static async generate(config: any, hass: any) {
-    await uiElementsReady;
+    const [{ DwainsViewStrategy }] = await Promise.all([
+      import('./strategies/view-strategy'),
+      uiElementsReady,
+    ]);
     const strategy = new DwainsViewStrategy();
     return strategy.generate(config, hass);
   }
@@ -231,5 +235,3 @@ if (!Array.isArray(window.customCards)) {
   });
 }
 
-// Export for external use if needed
-export { DwainsDashboardStrategy, DwainsViewStrategy };

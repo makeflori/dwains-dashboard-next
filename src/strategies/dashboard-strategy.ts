@@ -53,31 +53,6 @@ export class DwainsDashboardStrategy implements LovelaceStrategy {
     console.log('Entities met resolved area_id:', entitiesWithResolvedAreas.filter(e => e.resolved_area_id).slice(0, 10));
     console.log('Entities zonder resolved area_id count:', entitiesWithResolvedAreas.filter(e => !e.resolved_area_id).length);
 
-    // Store floors in hass object for easy access
-    if (floors.length > 0) {
-      hass.floors = floors.reduce((acc: any, floor: any) => {
-        acc[floor.floor_id] = floor;
-        return acc;
-      }, {});
-    }
-
-    // Store areas in hass object for easy access
-    hass.areas = areas.reduce((acc: any, area: any) => {
-      acc[area.area_id] = area;
-      return acc;
-    }, {});
-
-    // Store entities registry in hass for easy access
-    hass.entities = entities.reduce((acc: any, entity: any) => {
-      acc[entity.entity_id] = entity;
-      return acc;
-    }, {});
-
-    hass.devices = devices.reduce((acc: any, device: any) => {
-      acc[device.id] = device;
-      return acc;
-    }, {});
-
     // Convert to our config format
     const areaConfigs: AreaConfig[] = areas.map(area => ({
       area_id: area.area_id,
