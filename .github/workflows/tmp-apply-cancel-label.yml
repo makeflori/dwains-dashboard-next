@@ -30,17 +30,25 @@ jobs:
           from pathlib import Path
           p = Path('src/components/dwains-dashboard-strategy-editor.ts')
           s = p.read_text(encoding='utf-8')
+
           if '_hostDialogObserver' not in s:
               s = s.replace(
                   'export class DwainsDashboardStrategyEditor extends LitElement {\n',
                   'export class DwainsDashboardStrategyEditor extends LitElement {\n  private _hostDialogObserver?: MutationObserver;\n',
                   1,
               )
+
+              old_connected = '''  connectedCallback() {\n    super.connectedCallback();\n    // Always fetch fresh data when component connects\n    if (this.hass) {\n      void this._fetchData();\n    }\n  }\n'''
+              new_connected = '''  connectedCallback() {\n    super.connectedCallback();\n    // Always fetch fresh data when component connects\n    if (this.hass) {\n      void this._fetchData();\n    }\n    queueMicrotask(() => this._installHostDialogCancelLabel());\n  }\n\n  disconnectedCallback() {\n    this._hostDialogObserver?.disconnect();\n    this._hostDialogObserver = undefined;\n    super.disconnectedCallback();\n  }\n'''
+              if old_connected not in s:
+                  raise SystemExit('connectedCallback marker not found')
+              s = s.replace(old_connected, new_connected, 1)
+
               marker = '  private _getDashboardUrlPath(): string | undefined {\n'
-              block = '''  public connectedCallback(): void {\n    super.connectedCallback();\n    queueMicrotask(() => this._installHostDialogCancelLabel());\n  }\n\n  public disconnectedCallback(): void {\n    this._hostDialogObserver?.disconnect();\n    this._hostDialogObserver = undefined;\n    super.disconnectedCallback();\n  }\n\n  private _installHostDialogCancelLabel(): void {\n    let node: Node = this;\n    let dialog: HTMLElement | undefined;\n\n    for (let depth = 0; depth < 8; depth += 1) {\n      const root = node.getRootNode();\n      if (!(root instanceof ShadowRoot)) break;\n      const host = root.host as HTMLElement;\n      if (host.localName === 'dialog-dashboard-strategy-editor') {\n        dialog = host;\n        break;\n      }\n      node = host;\n    }\n\n    const root = dialog?.shadowRoot;\n    if (!root) return;\n\n    const updateLabel = () => {\n      const secondaryButtons = Array.from(\n        root.querySelectorAll<HTMLElement>('ha-button[slot="secondaryAction"]')\n      );\n      const cancelButton = secondaryButtons.find((button) => button.getAttribute('variant') !== 'danger');\n      if (!cancelButton) return;\n\n      const label = this._t('common.cancel');\n      if (cancelButton.textContent?.trim() !== label) {\n        cancelButton.textContent = label;\n      }\n    };\n\n    updateLabel();\n    this._hostDialogObserver?.disconnect();\n    this._hostDialogObserver = new MutationObserver(updateLabel);\n    this._hostDialogObserver.observe(root, { childList: true, subtree: true });\n  }\n\n'''
+              helper = '''  private _installHostDialogCancelLabel(): void {\n    let node: Node = this;\n    let dialog: HTMLElement | undefined;\n\n    for (let depth = 0; depth < 8; depth += 1) {\n      const root = node.getRootNode();\n      if (!(root instanceof ShadowRoot)) break;\n      const host = root.host as HTMLElement;\n      if (host.localName === 'dialog-dashboard-strategy-editor') {\n        dialog = host;\n        break;\n      }\n      node = host;\n    }\n\n    const root = dialog?.shadowRoot;\n    if (!root) return;\n\n    const updateLabel = () => {\n      const secondaryButtons = Array.from(\n        root.querySelectorAll<HTMLElement>('ha-button[slot="secondaryAction"]')\n      );\n      const cancelButton = secondaryButtons.find((button) => button.getAttribute('variant') !== 'danger');\n      if (!cancelButton) return;\n\n      const label = this._t('common.cancel');\n      if (cancelButton.textContent?.trim() !== label) {\n        cancelButton.textContent = label;\n      }\n    };\n\n    updateLabel();\n    this._hostDialogObserver?.disconnect();\n    this._hostDialogObserver = new MutationObserver(updateLabel);\n    this._hostDialogObserver.observe(root, { childList: true, subtree: true });\n  }\n\n'''
               if marker not in s:
-                  raise SystemExit('Insertion marker not found')
-              s = s.replace(marker, block + marker, 1)
+                  raise SystemExit('helper insertion marker not found')
+              s = s.replace(marker, helper + marker, 1)
               p.write_text(s, encoding='utf-8')
           PY
             npm ci
