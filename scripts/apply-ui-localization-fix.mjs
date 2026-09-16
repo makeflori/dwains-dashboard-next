@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 
-const file = 'src/components/dwains-layout-card.ts';
-let text = fs.readFileSync(file, 'utf8');
+const layoutFile = 'src/components/dwains-layout-card.ts';
+let text = fs.readFileSync(layoutFile, 'utf8');
 
 function replaceExact(from, to, label) {
   if (!text.includes(from)) throw new Error(`Missing expected text: ${label}`);
@@ -50,10 +50,21 @@ replaceExact(
   'desktop greeting spacing'
 );
 
-const statusStart = text.indexOf('  private _statusCardTitle(domain: DomainCount): string {');
-const statusEndMarker = '\n  private _getStatusDomains(): DomainCount[] {';
-const statusEnd = text.indexOf(statusEndMarker, statusStart);
-if (statusStart < 0 || statusEnd < 0) throw new Error('Could not locate status-card localization block');
+replaceExact(
+  'return areaName ? `${activeLabel.singular} in ${areaName}` : activeLabel.singular;',
+  'return areaName ? `${activeLabel.singular} · ${areaName}` : activeLabel.singular;',
+  'localized status area separator'
+);
+
+replaceExact(
+  'if (areaName) return `${domain.name} in ${areaName}`;',
+  'if (areaName) return `${domain.name} · ${areaName}`;',
+  'localized domain area separator'
+);
+
+const statusStart = text.indexOf('  private _statusCardActiveLabel(domain: DomainCount): { singular: string; plural: string } | undefined {');
+const nextPrivate = text.indexOf('\n\n  private ', statusStart + 20);
+if (statusStart < 0 || nextPrivate < 0) throw new Error('Could not locate status-card label function');
 
 const statusBlock = `  private _statusLabel(key: string, count: number, plural = true): string {
     const localized = plural ? this._tp(key, count) : this._t(key, { count });
@@ -66,24 +77,6 @@ const statusBlock = `  private _statusLabel(key: string, count: number, plural =
       singular: this._statusLabel(key, 1, plural),
       plural: this._statusLabel(key, 2, plural),
     };
-  }
-
-  private _statusCardTitle(domain: DomainCount): string {
-    const activeLabel = this._statusCardActiveLabel(domain);
-    if (activeLabel) {
-      const label = domain.count === 1 ? activeLabel.singular : activeLabel.plural;
-      if (domain.count === 1 && domain.entities?.length === 1) {
-        const areaName = this._entityAreaName(domain.entities[0]!);
-        return areaName ? \`${'${label}'} · ${'${areaName}'}\` : label;
-      }
-      return label;
-    }
-
-    if (domain.count === 1 && domain.entities?.length === 1) {
-      const areaName = this._entityAreaName(domain.entities[0]!);
-      if (areaName) return \`${'${domain.name}'} · ${'${areaName}'}\`;
-    }
-    return domain.name;
   }
 
   private _statusCardActiveLabel(domain: DomainCount): { singular: string; plural: string } | undefined {
@@ -118,10 +111,17 @@ const statusBlock = `  private _statusLabel(key: string, count: number, plural =
     }
 
     return undefined;
-  }
-`;
+  }`;
 
-text = text.slice(0, statusStart) + statusBlock + text.slice(statusEnd);
+text = text.slice(0, statusStart) + statusBlock + text.slice(nextPrivate);
+fs.writeFileSync(layoutFile, text);
 
-fs.writeFileSync(file, text);
+const powerFile = 'src/utils/power-usage.ts';
+let power = fs.readFileSync(powerFile, 'utf8');
+power = power.replace("formattedTotal: '0 W',", "formattedTotal: '0\u202FW',");
+power = power.replace("return `${(watts / 1000).toFixed(0)} kW`;", "return `${(watts / 1000).toFixed(0)}\u202FkW`;");
+power = power.replace("return `${(watts / 1000).toFixed(1)} kW`;", "return `${(watts / 1000).toFixed(1)}\u202FkW`;");
+power = power.replace("return `${Math.round(watts)} W`;", "return `${Math.round(watts)}\u202FW`;");
+fs.writeFileSync(powerFile, power);
+
 console.log('Applied UI localization and formatting fixes.');
