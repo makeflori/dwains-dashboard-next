@@ -12009,7 +12009,7 @@ export class DwainsLayoutCard extends LitElement {
       this.hass?.config?.unit_system?.temperature ||
       '';
 
-    return `${temperature}${unit}`;
+    return `${temperature} ${unit}`;
   }
 
   private _weatherTitle(weatherEntity?: any): string {
@@ -14845,8 +14845,8 @@ export class DwainsLayoutCard extends LitElement {
       const current = state.attributes?.current_temperature;
       const target = state.attributes?.temperature;
       const unit = this.hass?.config?.unit_system?.temperature || '°C';
-      if (current !== undefined && target !== undefined) return `${current}${unit} · ${this._t('entity.climate_set', { value: `${target}${unit}` })}`;
-      if (current !== undefined) return `${current}${unit}`;
+      if (current !== undefined && target !== undefined) return `${current} ${unit} · ${this._t('entity.climate_set', { value: `${target} ${unit}` })}`;
+      if (current !== undefined) return `${current} ${unit}`;
     }
 
     if (domain === 'media_player' && state.attributes?.media_title) {
