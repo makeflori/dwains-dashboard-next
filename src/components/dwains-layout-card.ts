@@ -10616,8 +10616,8 @@ export class DwainsLayoutCard extends LitElement {
             </div>
             <div class="notifications-subtitle">
               ${hasNotifications
-                ? `${count} persistent ${count === 1 ? 'notification' : 'notifications'}`
-                : 'Persistent notifications from Home Assistant'}
+                ? `${count} ${this._t(count === 1 ? 'home.notification' : 'home.notifications').toLocaleLowerCase()}`
+                : this._t('home.notifications_description')}
             </div>
           </div>
           <div class="notifications-actions">
@@ -10827,7 +10827,7 @@ export class DwainsLayoutCard extends LitElement {
 
     return sortedFloors.map(([floorName, areas]) => {
       const floorTitle = floorName === 'no_floor' ?
-        this.hass.localize('ui.components.area-picker.no_floor') || 'Unassigned spaces' :
+        this.hass.localize('ui.components.area-picker.no_floor') || this._t('home.unassigned_spaces') :
         floorName;
 
       return html`
@@ -11955,12 +11955,18 @@ export class DwainsLayoutCard extends LitElement {
 
     if (personEntities.length) {
       const homeCount = personEntities.filter(person => person.state === 'home').length;
-      parts.push(`${homeCount}/${personEntities.length} home`);
+      const homeLabel = this._t('person.home');
+      const localizedHome = homeLabel ? homeLabel.charAt(0).toLocaleLowerCase() + homeLabel.slice(1) : homeLabel;
+      parts.push(`${homeCount}/${personEntities.length} ${localizedHome}`);
     }
 
     if (this._showNotificationsUi() && this._persistentNotifications.length) {
       const count = this._persistentNotifications.length;
-      parts.push(`${count} ${count === 1 ? 'notification' : 'notifications'}`);
+      const notificationLabel = this._t(count === 1 ? 'home.notification' : 'home.notifications');
+      const localizedNotification = notificationLabel
+        ? notificationLabel.charAt(0).toLocaleLowerCase() + notificationLabel.slice(1)
+        : notificationLabel;
+      parts.push(`${count} ${localizedNotification}`);
     }
 
     const attentionCount = this._getHomeSummaryCards()
