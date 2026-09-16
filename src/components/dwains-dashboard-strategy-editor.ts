@@ -392,21 +392,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   ): void {
     if (!this.hass) return;
 
-    this.hass.areas = areas.reduce((acc: any, area: any) => {
-      acc[area.area_id] = area;
-      return acc;
-    }, {});
-
-    this.hass.entities = entities.reduce((acc: any, entity: any) => {
-      acc[entity.entity_id] = entity;
-      return acc;
-    }, {});
-
-    this.hass.devices = devices.reduce((acc: any, device: any) => {
-      acc[device.id] = device;
-      return acc;
-    }, {});
-
+    // Keep Home Assistant's own live registries intact. In particular,
+    // hass.entities is the frontend display registry and contains derived fields
+    // such as display_precision. Replacing it with config/entity_registry/list
+    // entries breaks hass.formatEntityState() until the frontend is reloaded.
     this._config = {
       ...(this._config || { type: "custom:dwains-dashboard-next" }),
       areas: areas.map(area => ({
