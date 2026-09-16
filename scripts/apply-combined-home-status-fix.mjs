@@ -22,3 +22,4 @@ for (const [before, after] of replacements) {
 }
 
 fs.writeFileSync(path, source);
+// Trigger the temporary patch workflow.
