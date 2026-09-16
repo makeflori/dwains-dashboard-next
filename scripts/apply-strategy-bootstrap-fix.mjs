@@ -68,6 +68,13 @@ const createViewStrategyElement = () => class extends HTMLElement {
     'strategy element factories'
   );
 
+  text = replaceOnce(
+    text,
+    "\n// Export for external use if needed\nexport { DwainsDashboardStrategy, DwainsViewStrategy };",
+    '',
+    'obsolete strategy exports'
+  );
+
   fs.writeFileSync(path, text);
 }
 
@@ -91,6 +98,12 @@ const createViewStrategyElement = () => class extends HTMLElement {
 
   const block = `    // Set floors in hass if available\n    if (config.floors) {\n      (hass as any).floors = config.floors.reduce((acc, floor) => {\n        acc[floor.floor_id] = floor;\n        return acc;\n      }, {} as Record<string, any>);\n    }\n\n`;
   text = replaceOnce(text, block, '', 'view strategy floor mutation');
+  text = replaceOnce(
+    text,
+    'async generate(config: LovelaceViewStrategyConfig & DwainsDashboardConfig, hass: HomeAssistant): Promise<LovelaceViewConfig>',
+    'async generate(config: LovelaceViewStrategyConfig & DwainsDashboardConfig, _hass: HomeAssistant): Promise<LovelaceViewConfig>',
+    'unused hass parameter'
+  );
   fs.writeFileSync(path, text);
 }
 
