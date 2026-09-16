@@ -1,4 +1,4 @@
-name: Apply dev release automation
+name: Sync dev package lock
 
 on:
   push:
@@ -20,18 +20,15 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - run: npm ci
-      - run: node scripts/sync-dev-version.mjs
-      - run: npm run type-check
-      - name: Commit synced dev release metadata
+      - run: npm install --package-lock-only --ignore-scripts
+      - name: Commit package lock
         run: |
-          rm -f scripts/sync-dev-version.mjs .github/workflows/apply-dev-release-automation.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add package-lock.json README.md .github/workflows/dev-release.yml scripts/sync-dev-version.mjs .github/workflows/apply-dev-release-automation.yml
+          git add package-lock.json
           if git diff --cached --quiet; then
-            echo "No changes to commit."
+            echo "No package-lock changes to commit."
             exit 0
           fi
-          git commit -m "Automate versioned dev prereleases"
+          git commit -m "Sync dev package lock"
           git push origin HEAD:dev
