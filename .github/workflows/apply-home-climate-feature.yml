@@ -19,10 +19,8 @@ jobs:
           ref: tmp/apply-home-climate-feature-2
           fetch-depth: 0
 
-      - name: Preserve helper scripts
-        run: |
-          cp scripts/apply-home-climate-feature.mjs /tmp/apply-home-climate-feature.mjs
-          cp scripts/fix-home-climate-feature.mjs /tmp/fix-home-climate-feature.mjs
+      - name: Preserve helper script
+        run: cp scripts/apply-home-climate-feature-v3.mjs /tmp/apply-home-climate-feature-v3.mjs
 
       - name: Checkout feature branch
         run: |
@@ -31,9 +29,7 @@ jobs:
           git reset --hard origin/feature/home-climate-sensor-selection
 
       - name: Apply feature patch
-        run: |
-          node /tmp/apply-home-climate-feature.mjs
-          node /tmp/fix-home-climate-feature.mjs
+        run: node /tmp/apply-home-climate-feature-v3.mjs
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
