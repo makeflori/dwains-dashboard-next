@@ -1583,11 +1583,14 @@ const e=["en","nl","de","fr","es","zh-hans","zh-hant","ru"],t={en:{"common.save"
           </div>
 
           <div class="entity-search">
-            <ha-textfield
-              .label=${this._t("settings.search")}
+            <input
+              class="entity-search-input"
+              type="search"
+              placeholder=${this._t("settings.search")}
+              aria-label=${this._t("settings.search")}
               .value=${this._entitySearchFilter}
               @input=${e=>this._entitySearchFilter=e.target.value}
-            ></ha-textfield>
+            />
           </div>
 
           <div class="entity-list">
@@ -3604,6 +3607,23 @@ const e=["en","nl","de","fr","es","zh-hans","zh-hant","ru"],t={en:{"common.save"
 
       .entity-search {
         margin-bottom: 16px;
+      }
+
+      .entity-search-input {
+        width: 100%;
+        min-height: 44px;
+        box-sizing: border-box;
+        padding: 0 14px;
+        border: 1px solid var(--divider-color);
+        border-radius: 8px;
+        outline: none;
+        background: var(--card-background-color);
+        color: var(--primary-text-color);
+        font: inherit;
+      }
+
+      .entity-search-input:focus {
+        border-color: var(--primary-color);
       }
 
       .entity-list {
