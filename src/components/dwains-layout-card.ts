@@ -12046,72 +12046,27 @@ export class DwainsLayoutCard extends LitElement {
   }
 
   private _getHouseClimateSummary(): HouseClimateSummary {
-    const values: Record<HouseClimateMetric['kind'], Array<{ value: number; unit: string; entityIds: string[] }>> = {
-      temperature: [],
-      humidity: [],
-    };
-    const contributingEntityIds = new Set<string>();
-
+    const values: Record<HouseClimateMetric['kind'], Array<{ value: number; unit: string; entityIds: string[] }>> = { temperature: [], humidity: [] };
+    const excludedAreas = new Set(this.config?.settings?.home_climate_excluded_areas || []);
     this._getVisibleSortedAreas().forEach(area => {
-      const climateOptions = this.config?.areas_options?.[area.area_id]?.climate;
-      if (climateOptions?.include_in_house_average === false) return;
-
-      const areaEntities = this._getFilteredAreaEntities(area.area_id);
+      if (excludedAreas.has(area.area_id)) return;
       const areaRegistry = this.hass?.areas?.[area.area_id] as any;
-
-      (['temperature', 'humidity'] as const).forEach((kind) => {
-        const configured = kind === 'temperature' ? climateOptions?.temperature_entities : climateOptions?.humidity_entities;
-        const registryEntityId = kind === 'temperature' ? areaRegistry?.temperature_entity_id : areaRegistry?.humidity_entity_id;
-
-        let entityIds: string[];
-        if (configured !== undefined) {
-          entityIds = configured;
-        } else if (registryEntityId) {
-          entityIds = [registryEntityId];
-        } else {
-          entityIds = areaEntities
-            .map((entity) => entity.entity_id)
-            .filter((entityId) => {
-              const state = this.hass?.states?.[entityId];
-              return Boolean(
-                state &&
-                entityId.startsWith('sensor.') &&
-                String(state.attributes?.device_class || '').toLowerCase() === kind
-              );
-            });
-        }
-
-        const valid = entityIds
-          .map((entityId) => ({ entityId, state: this.hass?.states?.[entityId] }))
-          .filter(({ state }) => Boolean(state && state.state !== 'unavailable' && state.state !== 'unknown'))
-          .map(({ entityId, state }) => ({
-            entityId,
-            value: Number(state!.state),
-            unit: String(state!.attributes?.unit_of_measurement || (kind === 'temperature' ? '°C' : '%')),
-          }))
-          .filter((entry) => Number.isFinite(entry.value));
-
-        if (!valid.length) return;
-        const average = valid.reduce((sum, entry) => sum + entry.value, 0) / valid.length;
-        valid.forEach((entry) => contributingEntityIds.add(entry.entityId));
-        values[kind].push({
-          value: average,
-          unit: valid[0]!.unit,
-          entityIds: valid.map((entry) => entry.entityId),
-        });
+      (['temperature', 'humidity'] as const).forEach(kind => {
+        const entityId = kind === 'temperature' ? areaRegistry?.temperature_entity_id : areaRegistry?.humidity_entity_id;
+        if (!entityId) return;
+        const state = this.hass?.states?.[entityId];
+        if (!state || state.state === 'unavailable' || state.state === 'unknown') return;
+        const value = Number.parseFloat(state.state);
+        if (!Number.isFinite(value)) return;
+        values[kind].push({ value, unit: String(state.attributes?.unit_of_measurement || (kind === 'temperature' ? this.hass?.config?.unit_system?.temperature || '°C' : '%')), entityIds: [entityId] });
       });
     });
-
     const metrics: HouseClimateMetric[] = [];
     const temperature = this._houseClimateMetric('temperature', values.temperature);
     const humidity = this._houseClimateMetric('humidity', values.humidity);
     if (temperature) metrics.push(temperature);
     if (humidity) metrics.push(humidity);
-
-    return {
-      sensorCount: contributingEntityIds.size,
-      metrics,
-    };
+    return { sensorCount: values.temperature.length + values.humidity.length, metrics };
   }
 
   private _houseClimateMetric(

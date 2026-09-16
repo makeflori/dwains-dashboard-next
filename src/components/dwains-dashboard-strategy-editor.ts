@@ -240,6 +240,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   @state()
   private _settingsPage: SettingsPageKey = restoreSettingsPage();
 
+  @state()
+  private _homeSettingsDetail: 'overview' | 'house_information' | 'climate' = 'overview';
+
   // Dashboard-eigenschappen (naam + sidebar-icoon)
   @state() private _dashboardId?: string;
   @state() private _dashboardTitle = '';
@@ -877,6 +880,36 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   }
 
   private _renderHomeLayoutSettingsPanel() {
+    if (this._homeSettingsDetail === 'climate') {
+      return this._renderSettingsPanel(
+        "mdi:home-thermometer-outline",
+        this._t('home.indoor_climate'),
+        this._t('settings.home_climate_areas_description'),
+        html`
+          <button class="home-settings-back" type="button" @click=${() => { this._homeSettingsDetail = 'house_information'; }}>
+            <ha-svg-icon .path=${mdiArrowLeft}></ha-svg-icon>
+            ${this._t('settings.house_information_cards')}
+          </button>
+          ${this._renderHomeClimateAreaSettings()}
+        `
+      );
+    }
+
+    if (this._homeSettingsDetail === 'house_information') {
+      return this._renderSettingsPanel(
+        "mdi:home-edit-outline",
+        this._t('settings.house_information_cards'),
+        this._t('settings.house_information_cards_description'),
+        html`
+          <button class="home-settings-back" type="button" @click=${() => { this._homeSettingsDetail = 'overview'; }}>
+            <ha-svg-icon .path=${mdiArrowLeft}></ha-svg-icon>
+            ${this._t('settings.home_layout')}
+          </button>
+          ${this._renderHomeInformationCardSettings()}
+        `
+      );
+    }
+
     return this._renderSettingsPanel(
       "mdi:home-edit-outline",
       this._t('settings.home_layout'),
@@ -885,7 +918,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         ${this._renderHomeSectionOrder()}
         ${this._renderHomeCustomCardsSettings()}
         ${this._renderHomeCameraSettings()}
-        ${this._renderHomeInformationCardSettings()}
+        <button class="home-settings-detail-card" type="button" @click=${() => { this._homeSettingsDetail = 'house_information'; }}>
+          <span class="home-section-icon"><ha-icon icon="mdi:home-heart"></ha-icon></span>
+          <span class="home-section-copy">
+            <strong class="home-section-title">${this._t('settings.house_information_cards')}</strong>
+            <span class="home-section-description">${this._t('settings.house_information_cards_description')}</span>
+          </span>
+          <ha-svg-icon class="home-settings-detail-chevron" .path=${mdiChevronRight}></ha-svg-icon>
+        </button>
       `
     );
   }
@@ -1425,159 +1465,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     `;
   }
 
-  private _getAreaClimateCandidates(areaId: string, kind: 'temperature' | 'humidity'): string[] {
-    if (!this.hass || !this._config) return [];
-    const deviceIds = new Set(
-      (this._config.devices || []).filter((device) => device.area_id === areaId).map((device) => device.device_id)
-    );
-    return (this._config.entities || [])
-      .filter((entity) => entity.area_id === areaId || Boolean(entity.device_id && deviceIds.has(entity.device_id)))
-      .map((entity) => entity.entity_id)
-      .filter((entityId) => {
-        const state = this.hass?.states?.[entityId];
-        return Boolean(state && entityId.startsWith('sensor.') && String(state.attributes?.device_class || '').toLowerCase() === kind);
-      })
-      .sort((a, b) => this._areaClimateEntityName(a).localeCompare(this._areaClimateEntityName(b)));
-  }
-
-  private _areaClimateEntityName(entityId: string): string {
-    return String(this.hass?.states?.[entityId]?.attributes?.friendly_name || entityId);
-  }
-
-  private _setAreaClimateHouseAverage(enabled: boolean): void {
-    if (!this._config || !this._area) return;
-    const areaOptions = this._config.areas_options?.[this._area] || {};
-    this._fireConfigChanged({
-      ...this._config,
-      areas_options: {
-        ...this._config.areas_options,
-        [this._area]: {
-          ...areaOptions,
-          climate: { ...areaOptions.climate, include_in_house_average: enabled },
-        },
-      },
-    });
-  }
-
-  private _setAreaClimateMode(kind: 'temperature' | 'humidity', custom: boolean): void {
-    if (!this._config || !this._area) return;
-    const areaOptions = this._config.areas_options?.[this._area] || {};
-    const key = kind === 'temperature' ? 'temperature_entities' : 'humidity_entities';
-    const climate = { ...areaOptions.climate } as any;
-    if (custom) climate[key] = this._getAreaClimateCandidates(this._area, kind);
-    else delete climate[key];
-    this._fireConfigChanged({
-      ...this._config,
-      areas_options: { ...this._config.areas_options, [this._area]: { ...areaOptions, climate } },
-    });
-  }
-
-  private _toggleAreaClimateEntity(kind: 'temperature' | 'humidity', entityId: string, checked: boolean): void {
-    if (!this._config || !this._area) return;
-    const areaOptions = this._config.areas_options?.[this._area] || {};
-    const key = kind === 'temperature' ? 'temperature_entities' : 'humidity_entities';
-    const current = new Set<string>(((areaOptions.climate as any)?.[key] || []) as string[]);
-    checked ? current.add(entityId) : current.delete(entityId);
-    const climate = { ...areaOptions.climate, [key]: [...current] };
-    this._fireConfigChanged({
-      ...this._config,
-      areas_options: { ...this._config.areas_options, [this._area]: { ...areaOptions, climate } },
-    });
-  }
-
-  private _renderAreaClimateSensorList(kind: 'temperature' | 'humidity', candidates: string[], selected: Set<string>) {
-    if (!candidates.length) {
-      return html`<div class="area-climate-empty">${this._t('settings.climate_no_sensors')}</div>`;
-    }
-    return html`
-      <div class="area-climate-sensors">
-        ${candidates.map((entityId) => html`
-          <label class="area-climate-sensor">
-            <ha-checkbox
-              .checked=${selected.has(entityId)}
-              @change=${(event: Event) => this._toggleAreaClimateEntity(kind, entityId, (event.target as any).checked)}
-            ></ha-checkbox>
-            <span>
-              <strong>${this._areaClimateEntityName(entityId)}</strong>
-              <small>${entityId}</small>
-            </span>
-          </label>
-        `)}
-      </div>
-    `;
-  }
-
-  private _renderAreaClimateMetric(areaId: string, kind: 'temperature' | 'humidity') {
-    if (!this._config) return nothing;
-    const areaOptions = this._config.areas_options?.[areaId] || {};
-    const climate = areaOptions.climate || {};
-    const key = kind === 'temperature' ? 'temperature_entities' : 'humidity_entities';
-    const customSelection = (climate as any)[key] as string[] | undefined;
-    const custom = customSelection !== undefined;
-    const selected = new Set(customSelection || []);
-    const candidates = this._getAreaClimateCandidates(areaId, kind);
-    const label = kind === 'temperature' ? this._t('home.temperature') : this._t('home.humidity');
-
-    return html`
-      <div class="area-climate-metric">
-        <div class="area-climate-metric-title">${label}</div>
-        <div class="area-order-modes area-climate-modes">
-          <button
-            class="area-order-mode ${!custom ? 'selected' : ''}"
-            type="button"
-            @click=${() => this._setAreaClimateMode(kind, false)}
-          >
-            <ha-icon icon="mdi:home-assistant"></ha-icon>
-            <span>
-              <strong>${this._t('settings.climate_home_assistant')}</strong>
-              <small>${this._t('settings.climate_home_assistant_description')}</small>
-            </span>
-          </button>
-          <button
-            class="area-order-mode ${custom ? 'selected' : ''}"
-            type="button"
-            @click=${() => this._setAreaClimateMode(kind, true)}
-          >
-            <ha-icon icon="mdi:tune-variant"></ha-icon>
-            <span>
-              <strong>${this._t('settings.climate_custom_selection')}</strong>
-              <small>${this._t('settings.climate_custom_selection_description')}</small>
-            </span>
-          </button>
-        </div>
-        ${custom ? this._renderAreaClimateSensorList(kind, candidates, selected) : nothing}
-      </div>
-    `;
-  }
-
-  private _renderAreaClimateSettings(areaId: string) {
-    if (!this._config) return nothing;
-    const areaOptions = this._config.areas_options?.[areaId] || {};
-    const climate = areaOptions.climate || {};
-    const includeInHouseAverage = climate.include_in_house_average !== false;
-
-    return html`
-      <section class="area-entity-layout-settings area-climate-settings">
-        <div class="area-entity-layout-copy">
-          <strong>${this._t('settings.area_climate_title')}</strong>
-          <span>${this._t('settings.area_climate_description')}</span>
-        </div>
-        <div class="area-climate-house-average">
-          <div>
-            <strong>${this._t('settings.climate_include_house_average')}</strong>
-            <small>${this._t('settings.climate_include_house_average_description')}</small>
-          </div>
-          <ha-switch
-            .checked=${includeInHouseAverage}
-            @change=${(event: Event) => this._setAreaClimateHouseAverage((event.target as any).checked)}
-          ></ha-switch>
-        </div>
-        ${this._renderAreaClimateMetric(areaId, 'temperature')}
-        ${this._renderAreaClimateMetric(areaId, 'humidity')}
-      </section>
-    `;
-  }
-
   private _renderAreaEditor() {
     if (!this.hass || !this._config || !this._area) {
       return nothing;
@@ -1684,7 +1571,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           </section>
         ` : nothing}
 
-        ${this._renderAreaClimateSettings(this._area!)}
 
         <section class="area-entity-layout-settings">
           <div class="area-entity-layout-copy">
@@ -2304,6 +2190,42 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     `;
   }
 
+  private _getExcludedHomeClimateAreas(): Set<string> {
+    return new Set(this._config?.settings?.home_climate_excluded_areas || []);
+  }
+
+  private _toggleHomeClimateArea(areaId: string, included: boolean): void {
+    if (!this._config) return;
+    const excluded = this._getExcludedHomeClimateAreas();
+    if (included) excluded.delete(areaId); else excluded.add(areaId);
+    this._fireConfigChanged({
+      ...this._config,
+      settings: { ...this._config.settings, home_climate_excluded_areas: [...excluded] },
+    });
+  }
+
+  private _renderHomeClimateAreaSettings() {
+    if (!this._config || !this.hass) return nothing;
+    const excluded = this._getExcludedHomeClimateAreas();
+    const hiddenAreas = new Set(this._config.areas_display?.hidden || []);
+    const areas = sortAreas(this._config.areas || [], { ...this._config.areas_display, hidden: [] }, ddLocale(this.hass))
+      .filter(area => !hiddenAreas.has(area.area_id));
+    return html`
+      <div class="home-info-card-section">
+        <div class="home-info-card-header"><div><h4>${this._t('settings.home_climate_areas_title')}</h4><p>${this._t('settings.home_climate_areas_description')}</p></div></div>
+        <div class="home-info-card-list">
+          ${areas.map(area => { const included = !excluded.has(area.area_id); return html`
+            <div class="home-info-card-item ${included ? 'enabled' : 'disabled'}">
+              <div class="home-section-icon"><ha-icon icon="mdi:floor-plan"></ha-icon></div>
+              <div class="home-section-copy"><div class="home-section-title">${area.name}</div><div class="home-section-description">${included ? this._t('settings.home_climate_area_included') : this._t('settings.home_climate_area_excluded')}</div></div>
+              <ha-switch .checked=${included} @change=${(event: Event) => this._toggleHomeClimateArea(area.area_id, (event.target as any).checked)}></ha-switch>
+            </div>
+          `; })}
+        </div>
+      </div>
+    `;
+  }
+
   private _renderHomeInformationCardSettings() {
     const hiddenCards = this._getHiddenHomeInformationCards();
     const visibleCount = DEFAULT_HOME_INFORMATION_CARDS.filter(card => !hiddenCards.has(card)).length;
@@ -2324,17 +2246,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
             return html`
               <div class="home-info-card-item ${enabled ? 'enabled' : 'disabled'}">
-                <div class="home-section-icon">
-                  <ha-icon icon=${meta.icon}></ha-icon>
-                </div>
-                <div class="home-section-copy">
-                  <div class="home-section-title">${this._t(meta.labelKey)}</div>
-                  <div class="home-section-description">${this._t(meta.descriptionKey)}</div>
-                </div>
-                <ha-switch
-                  .checked=${enabled}
-                  @change=${() => this._toggleHomeInformationCardEnabled(card)}
-                ></ha-switch>
+                <div class="home-section-icon"><ha-icon icon=${meta.icon}></ha-icon></div>
+                <button class="home-info-card-open" type="button" ?disabled=${card !== 'climate'} @click=${() => { if (card === 'climate') this._homeSettingsDetail = 'climate'; }}>
+                  <span class="home-section-copy"><span class="home-section-title">${this._t(meta.labelKey)}</span><span class="home-section-description">${this._t(meta.descriptionKey)}</span></span>
+                  ${card === 'climate' ? html`<ha-svg-icon .path=${mdiChevronRight}></ha-svg-icon>` : nothing}
+                </button>
+                <ha-switch .checked=${enabled} @change=${() => this._toggleHomeInformationCardEnabled(card)}></ha-switch>
               </div>
             `;
           })}
@@ -4882,7 +4799,17 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         grid-template-columns: 42px minmax(0, 1fr) auto;
       }
 
-      .home-info-card-section {
+      .home-settings-detail-card { width: 100%; display: flex; align-items: center; gap: 12px; padding: 14px; margin-top: 16px; border: 1px solid var(--divider-color); border-radius: 12px; background: var(--card-background-color); color: var(--primary-text-color); text-align: left; cursor: pointer; }
+    .home-settings-detail-card .home-section-copy { flex: 1; }
+    .home-settings-detail-chevron { width: 20px; height: 20px; }
+    .home-settings-back { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 16px; padding: 8px 10px; border: 0; border-radius: 8px; background: transparent; color: var(--primary-text-color); cursor: pointer; font: inherit; }
+    .home-settings-back ha-svg-icon { width: 20px; height: 20px; }
+    .home-info-card-open { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0; border: 0; background: transparent; color: inherit; text-align: left; font: inherit; }
+    .home-info-card-open:not(:disabled) { cursor: pointer; }
+    .home-info-card-open:disabled { opacity: 1; }
+    .home-info-card-open ha-svg-icon { width: 20px; height: 20px; flex: 0 0 auto; }
+
+    .home-info-card-section {
         display: grid;
         gap: 10px;
       }
@@ -5448,66 +5375,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         margin: 12px 0 0;
       }
 
-      .area-climate-settings {
-      display: grid;
-      gap: 18px;
-    }
-
-    .area-climate-house-average {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-      padding: 12px 14px;
-      border: 1px solid var(--divider-color);
-      border-radius: 10px;
-    }
-
-    .area-climate-house-average > div,
-    .area-climate-sensor > span {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-
-    .area-climate-house-average small,
-    .area-climate-sensor small,
-    .area-climate-empty {
-      color: var(--secondary-text-color);
-      font-size: 12px;
-      font-weight: 400;
-    }
-
-    .area-climate-metric {
-      display: grid;
-      gap: 10px;
-    }
-
-    .area-climate-metric-title {
-      font-weight: 600;
-    }
-
-    .area-climate-modes {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .area-climate-sensors {
-      display: grid;
-      gap: 4px;
-      padding: 6px 10px;
-      border: 1px solid var(--divider-color);
-      border-radius: 10px;
-    }
-
-    .area-climate-sensor {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 6px 0;
-      cursor: pointer;
-    }
-
-    .area-entity-layout-settings {
+      .area-entity-layout-settings {
         margin: 0 16px 16px;
         padding: 16px;
         display: grid;
