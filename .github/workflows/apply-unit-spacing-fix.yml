@@ -1,0 +1,49 @@
+name: Apply unit spacing fix
+
+on:
+  push:
+    branches:
+      - fix/consistent-unit-spacing
+    paths:
+      - scripts/apply-unit-spacing-fix.mjs
+      - .github/workflows/apply-unit-spacing-fix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout fix branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/consistent-unit-spacing
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Apply source changes
+        run: node scripts/apply-unit-spacing-fix.mjs
+      - name: Install dependencies
+        run: npm ci
+      - name: Type check
+        run: npm run type-check
+      - name: Translation check
+        run: npm run i18n:check
+      - name: Build
+        run: npm run build
+      - name: Commit clean source fix
+        shell: bash
+        run: |
+          git restore --worktree dist || true
+          git rm scripts/apply-unit-spacing-fix.mjs .github/workflows/apply-unit-spacing-fix.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/utils/unit-format.ts src/utils/area.ts src/components/dwains-layout-card.ts src/components/dwains-domain-entities-dialog.ts src/components/dwains-devices-card.ts src/i18n/locales/*.ts
+          git commit -m "[Fix] Normalize unit spacing across DD Next"
+          git push origin HEAD:fix/consistent-unit-spacing
