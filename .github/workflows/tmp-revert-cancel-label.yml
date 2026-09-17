@@ -70,3 +70,6 @@ jobs:
 
           rollback_branch fix/revert-dashboard-cancel-label
           rollback_branch fix/ui-localization-and-formatting
+
+      - name: Done
+        run: echo rollback-complete
