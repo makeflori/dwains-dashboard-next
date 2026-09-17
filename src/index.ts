@@ -70,6 +70,7 @@ async function loadUiElements(): Promise<void> {
       import('./components/dwains-layout-card'),
       import('./components/dwains-domain-entities-dialog'),
       import('./components/dwains-dashboard-strategy-editor'),
+      import('./components/settings-flat-layout-patch'),
       import('./components/dwains-page-card'),
       import('./components/dwains-devices-card'),
       import('./components/dwains-bottom-nav'),
