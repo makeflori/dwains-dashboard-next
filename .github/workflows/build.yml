@@ -106,7 +106,12 @@ jobs:
             echo "$TAG already exists; nothing to do."
             exit 0
           fi
+
+          CHANGELOG=$(git log -1 --pretty=%s HEAD^)
+          CHANGELOG=$(echo "$CHANGELOG" | sed -E 's/^\[[^]]+\][[:space:]]*//')
+          NOTES=$(printf '### Änderungen\n- %s' "$CHANGELOG")
+
           gh release create "$TAG" \
             --target "$RELEASE_SHA" \
             --title "$TAG (development build $VERSION)" \
-            --notes "Development build $VERSION. The stable-looking tag is intentional so HACS tracks this dev channel without requiring the pre-release switch."
+            --notes "$NOTES"
