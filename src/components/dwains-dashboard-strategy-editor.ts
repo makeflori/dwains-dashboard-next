@@ -246,41 +246,63 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   @state() private _dashboardTitle = '';
   @state() private _dashboardIcon = '';
 
-  private _installHostDialogCancelLabel(): void {
-    let node: Node = this;
+  private _installHostDialogCancelLabel(attempt = 0): void {
+    let node: Node | null = this;
     let dialog: HTMLElement | undefined;
 
-    for (let depth = 0; depth < 8; depth += 1) {
-      const root = node.getRootNode();
-      if (!(root instanceof ShadowRoot)) break;
-      const host = root.host as HTMLElement;
-      if (host.localName === 'dialog-dashboard-strategy-editor') {
-        dialog = host;
+    // Walk the composed tree. Depending on the Home Assistant frontend version,
+    // the strategy editor may be connected through light DOM, shadow DOM, or both.
+    for (let depth = 0; node && depth < 20; depth += 1) {
+      if (node instanceof HTMLElement && node.localName === 'dialog-dashboard-strategy-editor') {
+        dialog = node;
         break;
       }
-      node = host;
+
+      if (node.parentNode) {
+        node = node.parentNode;
+        continue;
+      }
+
+      const root = node.getRootNode();
+      node = root instanceof ShadowRoot ? root.host : null;
     }
 
     const root = dialog?.shadowRoot;
-    if (!root) return;
+    if (!root) {
+      if (attempt < 8) {
+        window.setTimeout(() => this._installHostDialogCancelLabel(attempt + 1), 100 * (attempt + 1));
+      }
+      return;
+    }
 
     const updateLabel = () => {
-      const secondaryButtons = Array.from(
-        root.querySelectorAll<HTMLElement>('ha-button[slot="secondaryAction"]')
-      );
-      const cancelButton = secondaryButtons.find((button) => button.getAttribute('variant') !== 'danger');
+      const buttons = Array.from(root.querySelectorAll<HTMLElement>('ha-button'));
+      const saveLabel = this._hass?.localize?.('ui.common.save') || this._t('common.save');
+      const backLabel = this._hass?.localize?.('ui.common.back') || 'Back';
+      const hasSaveAction = buttons.some((button) => {
+        const text = button.textContent?.trim() || '';
+        return button.getAttribute('slot') === 'primaryAction' || text === saveLabel || text === 'Save' || text === 'Speichern';
+      });
+      if (!hasSaveAction) return;
+
+      const cancelButton = buttons.find((button) => {
+        if (button.getAttribute('variant') === 'danger') return false;
+        const text = button.textContent?.trim() || '';
+        return button.getAttribute('slot') === 'secondaryAction' || text === backLabel || text === 'Back';
+      });
       if (!cancelButton) return;
 
       const label = this._t('common.cancel');
       if (cancelButton.textContent?.trim() !== label) {
         cancelButton.textContent = label;
       }
+      cancelButton.setAttribute('aria-label', label);
     };
 
     updateLabel();
     this._hostDialogObserver?.disconnect();
     this._hostDialogObserver = new MutationObserver(updateLabel);
-    this._hostDialogObserver.observe(root, { childList: true, subtree: true });
+    this._hostDialogObserver.observe(root, { childList: true, subtree: true, characterData: true });
   }
 
   private _getDashboardUrlPath(): string | undefined {
