@@ -32,48 +32,60 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Decide whether to publish a new dev build
+      - name: Decide whether to publish a new release
         id: dev_release
         shell: bash
         run: |
           SHOULD_RELEASE=false
           if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/dev" ]]; then
             MESSAGE=$(git log -1 --pretty=%s)
-            if [[ ! "$MESSAGE" =~ ^Build\ dev\ release\ v ]]; then
+            if [[ ! "$MESSAGE" =~ ^Build\ (dev\ )?release\ v ]]; then
               SHOULD_RELEASE=true
             fi
           fi
           echo "should_release=$SHOULD_RELEASE" >> "$GITHUB_OUTPUT"
 
-      - name: Bump dev version
+      - name: Bump fork release version
         if: steps.dev_release.outputs.should_release == 'true'
         id: version
         shell: bash
         run: |
           CURRENT=$(node -p "require('./package.json').version")
-          if [[ ! "$CURRENT" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)-dev\.([0-9]+)$ ]]; then
-            echo "Unexpected current dev version: $CURRENT"
+
+          if [[ "$CURRENT" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)-dev\.([0-9]+)$ ]]; then
+            # One-time migration from the old dual-version scheme, e.g.
+            # 1.8.1-dev.18 -> 1.8.19.
+            MAJOR="${BASH_REMATCH[1]}"
+            MINOR="${BASH_REMATCH[2]}"
+            RELEASE=$((BASH_REMATCH[4] + 1))
+          elif [[ "$CURRENT" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            MAJOR="${BASH_REMATCH[1]}"
+            MINOR="${BASH_REMATCH[2]}"
+            RELEASE=$((BASH_REMATCH[3] + 1))
+          else
+            echo "Unexpected fork version: $CURRENT"
             exit 1
           fi
-          MAJOR="${BASH_REMATCH[1]}"
-          MINOR="${BASH_REMATCH[2]}"
-          PATCH="${BASH_REMATCH[3]}"
-          COUNTER=$((BASH_REMATCH[4] + 1))
-          NEXT="${MAJOR}.${MINOR}.${PATCH}-dev.${COUNTER}"
-          HACS_TAG="v${MAJOR}.${MINOR}.${COUNTER}"
+
+          NEXT="${MAJOR}.${MINOR}.${RELEASE}"
+          TAG="v${NEXT}"
           npm version "$NEXT" --no-git-tag-version
+
           NEXT_VERSION="$NEXT" node - <<'NODE'
           const fs = require('fs');
           const version = process.env.NEXT_VERSION;
           const path = 'README.md';
           let text = fs.readFileSync(path, 'utf8');
           if (/Development version: `[^`]+`/.test(text)) {
-            text = text.replace(/Development version: `[^`]+`/, `Development version: \`${version}\``);
+            text = text.replace(/Development version: `[^`]+`/, `Fork version: \`${version}\``);
+          } else if (/Fork version: `[^`]+`/.test(text)) {
+            text = text.replace(/Fork version: `[^`]+`/, `Fork version: \`${version}\``);
           }
           fs.writeFileSync(path, text);
           NODE
+
           echo "version=$NEXT" >> "$GITHUB_OUTPUT"
-          echo "tag=$HACS_TAG" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
       - name: Type check
         run: npm run type-check
@@ -81,7 +93,7 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Commit complete dev release
+      - name: Commit complete release
         if: steps.dev_release.outputs.should_release == 'true'
         env:
           VERSION: ${{ steps.version.outputs.version }}
@@ -90,7 +102,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add package.json package-lock.json README.md dist/dwains-dashboard-next.js
-          git commit -m "Build dev release v$VERSION"
+          git commit -m "Build release v$VERSION"
           git push origin HEAD:dev
 
       - name: Create tagged GitHub release
@@ -98,7 +110,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.version.outputs.tag }}
-          VERSION: ${{ steps.version.outputs.version }}
         shell: bash
         run: |
           RELEASE_SHA=$(git rev-parse HEAD)
@@ -107,11 +118,27 @@ jobs:
             exit 0
           fi
 
-          CHANGELOG=$(git log -1 --pretty=%s HEAD^)
-          CHANGELOG=$(echo "$CHANGELOG" | sed -E 's/^\[[^]]+\][[:space:]]*//')
-          NOTES=$(printf '### Änderungen\n- %s' "$CHANGELOG")
+          SOURCE_COMMIT="HEAD^"
+          SOURCE_SUBJECT=$(git log -1 --pretty=%s "$SOURCE_COMMIT")
+          NOTES_FILE=$(mktemp)
+          printf '### Änderungen\n\n' > "$NOTES_FILE"
+
+          if [[ "$SOURCE_SUBJECT" =~ ^Merge\ pull\ request\ \#([0-9]+) ]]; then
+            PR_NUMBER="${BASH_REMATCH[1]}"
+            PR_TITLE=$(gh pr view "$PR_NUMBER" --json title --jq '.title')
+            PR_BODY=$(gh pr view "$PR_NUMBER" --json body --jq '.body // ""')
+            PR_TITLE=$(echo "$PR_TITLE" | sed -E 's/^\[[^]]+\][[:space:]]*//')
+
+            printf '**%s**\n' "$PR_TITLE" >> "$NOTES_FILE"
+            if [[ -n "${PR_BODY//[[:space:]]/}" ]]; then
+              printf '\n%s\n' "$PR_BODY" >> "$NOTES_FILE"
+            fi
+          else
+            CHANGELOG=$(echo "$SOURCE_SUBJECT" | sed -E 's/^\[[^]]+\][[:space:]]*//')
+            printf -- '- %s\n' "$CHANGELOG" >> "$NOTES_FILE"
+          fi
 
           gh release create "$TAG" \
             --target "$RELEASE_SHA" \
-            --title "$TAG (development build $VERSION)" \
-            --notes "$NOTES"
+            --title "$TAG" \
+            --notes-file "$NOTES_FILE"
