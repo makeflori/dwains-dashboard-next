@@ -144,3 +144,5 @@ jobs:
           git add src/components/dwains-dashboard-strategy-editor.ts .github/workflows/build.yml
           git commit -m "fix: localize dashboard cancel action on mobile"
           git push origin HEAD:fix/mobile-settings-cancel-label-v2
+
+# trigger
