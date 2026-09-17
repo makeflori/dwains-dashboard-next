@@ -61,7 +61,7 @@ jobs:
           PY
             npm ci
             npm run type-check
-            git add -A src/components/dwains-dashboard-strategy-editor.ts src/index.ts src/utils/dashboard-strategy-dialog-localization.ts
+            git add -A src/components src/index.ts src/utils
             if ! git diff --cached --quiet; then
               git commit -m "revert: remove dashboard cancel-label override"
               git push origin "HEAD:$branch"
