@@ -1,0 +1,52 @@
+name: Prepare upstream home settings PR
+
+on:
+  push:
+    branches:
+      - tmp/upstream-home-settings-pr
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout helper branch
+        uses: actions/checkout@v4
+        with:
+          ref: tmp/upstream-home-settings-pr
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Create clean feature branch from main
+        run: |
+          git fetch origin main dev
+          git checkout -B feature/home-settings-navigation-climate origin/main
+
+      - name: Apply selected feature commits
+        run: |
+          git cherry-pick d2f36f16553487bff61961318292d02aba5c39b9
+          git cherry-pick a54101e2078c836672b882669b25d9204175781f
+          git cherry-pick 58a04a2e8c849f7b9b89ee5a16ec64b7344c63d6
+          git cherry-pick f8fbe198d0800d447d8d3edce5c4bf90b833dbd8
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Build
+        run: npm run build
+
+      - name: Remove generated dist changes
+        run: git restore dist/dwains-dashboard-next.js
+
+      - name: Push clean feature branch
+        run: git push --force-with-lease origin feature/home-settings-navigation-climate
