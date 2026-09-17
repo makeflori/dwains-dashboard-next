@@ -2251,13 +2251,13 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     const areas = sortAreas(this._config.areas || [], { ...this._config.areas_display, hidden: [] }, ddLocale(this.hass))
       .filter(area => !hiddenAreas.has(area.area_id));
     return html`
-      <div class="home-info-card-section">
+      <div class="home-info-card-section home-climate-area-settings">
         <div class="home-info-card-header"><div><h4>${this._t('settings.home_climate_areas_title')}</h4><p>${this._t('settings.home_climate_areas_description')}</p></div></div>
         <div class="home-info-card-list">
           ${areas.map(area => { const included = !excluded.has(area.area_id); return html`
             <div class="home-info-card-item ${included ? 'enabled' : 'disabled'}">
-              <div class="home-section-icon"><ha-icon icon="mdi:floor-plan"></ha-icon></div>
-              <div class="home-section-copy"><div class="home-section-title">${area.name}</div><div class="home-section-description">${included ? this._t('settings.home_climate_area_included') : this._t('settings.home_climate_area_excluded')}</div></div>
+              <div class="home-section-icon"><ha-icon icon=${area.icon || 'mdi:floor-plan'}></ha-icon></div>
+              <div class="home-section-copy"><div class="home-section-title">${area.name}</div></div>
               <ha-switch .checked=${included} @change=${(event: Event) => this._toggleHomeClimateArea(area.area_id, (event.target as any).checked)}></ha-switch>
             </div>
           `; })}
@@ -4893,7 +4893,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         gap: 10px;
       }
 
-      .home-information-card-settings {
+      .home-information-card-settings,
+      .home-climate-area-settings {
         padding: 0 16px 16px;
       }
 
