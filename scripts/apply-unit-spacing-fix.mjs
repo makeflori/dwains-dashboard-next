@@ -36,13 +36,12 @@ export function normalizeUnitSpacing(
   unit: string | null | undefined
 ): string {
   const formattedUnit = String(unit || '').trim();
-  if (!formattedState || !formattedUnit) return formattedState;
+  if (!formattedState || !formattedUnit || !formattedState.endsWith(formattedUnit)) {
+    return formattedState;
+  }
 
-  const escapedUnit = formattedUnit.replace(/[.*+?^\${}()|[\\]\\]/g, '\\$&');
-  return formattedState.replace(
-    new RegExp(\`\\\\s*\${escapedUnit}$\`),
-    \`${NARROW_NBSP}\${formattedUnit}\`
-  );
+  const value = formattedState.slice(0, -formattedUnit.length).trimEnd();
+  return \`${'${value}'}${NARROW_NBSP}${'${formattedUnit}'}\`;
 }
 
 export function formatEntityStateWithUnit(
