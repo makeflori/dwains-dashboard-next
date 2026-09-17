@@ -221,7 +221,7 @@ export const fr = {
   'entity.update_failed': 'Impossible de mettre à jour l\'entité',
   'entity.selector_failed': 'Impossible de mettre à jour le sélecteur',
   'entity.cover_failed': 'Impossible de mettre à jour la couverture',
-  'entity.brightness': 'Luminosité {value} %',
+  'entity.brightness': 'Luminosité {value} %',
   'entity.climate_set': 'réglé sur {value}',
   'entity.lock_failed': 'Impossible de mettre à jour le verrouillage',
   'entity.lights_failed': 'Impossible de mettre à jour les lumières',
