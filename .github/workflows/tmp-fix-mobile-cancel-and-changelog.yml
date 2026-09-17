@@ -1,0 +1,146 @@
+name: Temp fix mobile cancel and changelog
+
+on:
+  push:
+    branches:
+      - fix/mobile-settings-cancel-label-v2
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('src/components/dwains-dashboard-strategy-editor.ts')
+          s = p.read_text(encoding='utf-8')
+          pattern = re.compile(r"  private _installHostDialogCancelLabel\(attempt = 0\): void \{.*?\n  \}\n\n  private _getDashboardUrlPath", re.S)
+          replacement = '''  private _installHostDialogCancelLabel(attempt = 0): void {
+    // Home Assistant mounts dialogs below nested shadow roots on mobile.
+    // Search all open shadow roots, but only ever target the dashboard strategy dialog.
+    const findDialog = (): HTMLElement | undefined => {
+      const roots: Array<Document | ShadowRoot> = [document];
+      const visited = new Set<Document | ShadowRoot>();
+
+      while (roots.length) {
+        const root = roots.pop()!;
+        if (visited.has(root)) continue;
+        visited.add(root);
+
+        const dialog = root.querySelector<HTMLElement>('dialog-dashboard-strategy-editor');
+        if (dialog) return dialog;
+
+        for (const element of Array.from(root.querySelectorAll<HTMLElement>('*'))) {
+          if (element.shadowRoot) roots.push(element.shadowRoot);
+        }
+      }
+      return undefined;
+    };
+
+    const dialog = findDialog();
+    const root = dialog?.shadowRoot;
+    if (!root) {
+      if (attempt < 20) {
+        window.setTimeout(() => this._installHostDialogCancelLabel(attempt + 1), 100);
+      }
+      return;
+    }
+
+    const updateLabel = () => {
+      const footer = root.querySelector('ha-dialog-footer');
+      if (!footer) return;
+
+      const secondaryButtons = Array.from(
+        footer.querySelectorAll<HTMLElement>('ha-button[slot="secondaryAction"]')
+      );
+      const cancelButton = secondaryButtons.find(
+        (button) => button.getAttribute('variant') !== 'danger'
+      );
+      if (!cancelButton) return;
+
+      const label = this._t('common.cancel');
+      if (cancelButton.textContent?.trim() !== label) {
+        cancelButton.textContent = label;
+      }
+      cancelButton.setAttribute('aria-label', label);
+    };
+
+    updateLabel();
+    this._hostDialogObserver?.disconnect();
+    this._hostDialogObserver = new MutationObserver(updateLabel);
+    this._hostDialogObserver.observe(root, { childList: true, subtree: true, characterData: true });
+  }
+
+  private _getDashboardUrlPath'''
+          s2, n = pattern.subn(replacement, s, count=1)
+          if n != 1:
+            raise SystemExit(f'cancel helper replacement count: {n}')
+          p.write_text(s2, encoding='utf-8')
+
+          w = Path('.github/workflows/build.yml')
+          b = w.read_text(encoding='utf-8')
+          old = '''      - name: Create tagged GitHub release
+        if: steps.dev_release.outputs.should_release == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+        shell: bash
+        run: |
+          RELEASE_SHA=$(git rev-parse HEAD)
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "$TAG already exists; nothing to do."
+            exit 0
+          fi
+          gh release create "$TAG" \\
+            --target "$RELEASE_SHA" \\
+            --title "$TAG (development build $VERSION)" \\
+            --notes "Development build $VERSION. The stable-looking tag is intentional so HACS tracks this dev channel without requiring the pre-release switch."
+'''
+          new = '''      - name: Create tagged GitHub release
+        if: steps.dev_release.outputs.should_release == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+        shell: bash
+        run: |
+          RELEASE_SHA=$(git rev-parse HEAD)
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "$TAG already exists; nothing to do."
+            exit 0
+          fi
+
+          CHANGELOG=$(git log -1 --pretty=%s HEAD^)
+          CHANGELOG=$(echo "$CHANGELOG" | sed -E 's/^\\[[^]]+\\][[:space:]]*//')
+          NOTES=$(printf '### Änderungen\\n- %s' "$CHANGELOG")
+
+          gh release create "$TAG" \\
+            --target "$RELEASE_SHA" \\
+            --title "$TAG (development build $VERSION)" \\
+            --notes "$NOTES"
+'''
+          if old not in b:
+            raise SystemExit('release block not found')
+          w.write_text(b.replace(old, new, 1), encoding='utf-8')
+          PY
+
+          npm ci
+          npm run type-check
+          git add src/components/dwains-dashboard-strategy-editor.ts .github/workflows/build.yml
+          git commit -m "fix: localize dashboard cancel action on mobile"
+          git push origin HEAD:fix/mobile-settings-cancel-label-v2
