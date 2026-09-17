@@ -1,0 +1,55 @@
+name: Apply home climate UI adjustments
+
+on:
+  push:
+    branches:
+      - tmp/strategy-bootstrap-fix
+    paths:
+      - scripts/apply-home-climate-ui-adjustments.mjs
+      - .github/workflows/apply-home-climate-ui-adjustments.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout helper branch
+        uses: actions/checkout@v4
+        with:
+          ref: tmp/strategy-bootstrap-fix
+
+      - name: Preserve helper
+        run: cp scripts/apply-home-climate-ui-adjustments.mjs /tmp/apply-home-climate-ui-adjustments.mjs
+
+      - name: Checkout improvement branch
+        run: |
+          git fetch origin improvement/home-climate-settings-ui
+          git checkout improvement/home-climate-settings-ui
+
+      - name: Apply adjustments
+        run: node /tmp/apply-home-climate-ui-adjustments.mjs
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+
+      - name: Commit adjustments
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/components/dwains-dashboard-strategy-editor.ts
+          git commit -m "Refine room climate area settings"
+          git push origin improvement/home-climate-settings-ui
