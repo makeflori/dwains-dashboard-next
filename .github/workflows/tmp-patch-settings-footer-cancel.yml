@@ -1,0 +1,53 @@
+name: Temp patch settings footer cancel
+
+on:
+  push:
+    branches:
+      - fix/settings-footer-cancel-label
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Patch target branches
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin fix/settings-footer-cancel-label fix/ui-localization-and-formatting
+
+          patch_branch() {
+            branch="$1"
+            git checkout -B "$branch" "origin/$branch"
+            python - <<'PY'
+          from pathlib import Path
+          p = Path('src/components/dwains-dashboard-strategy-editor.ts')
+          s = p.read_text(encoding='utf-8')
+
+          old = '''  private _installHostDialogCancelLabel(attempt = 0): void {\n    let node: Node | null = this;\n    let dialog: HTMLElement | undefined;\n\n    // Walk the composed tree. Depending on the Home Assistant frontend version,\n    // the strategy editor may be connected through light DOM, shadow DOM, or both.\n    for (let depth = 0; node && depth < 20; depth += 1) {\n      if (node instanceof HTMLElement && node.localName === 'dialog-dashboard-strategy-editor') {\n        dialog = node;\n        break;\n      }\n\n      if (node.parentNode) {\n        node = node.parentNode;\n        continue;\n      }\n\n      const root = node.getRootNode();\n      node = root instanceof ShadowRoot ? root.host : null;\n    }\n\n    const root = dialog?.shadowRoot;\n    if (!root) {\n      if (attempt < 8) {\n        window.setTimeout(() => this._installHostDialogCancelLabel(attempt + 1), 100 * (attempt + 1));\n      }\n      return;\n    }\n\n    const updateLabel = () => {\n      const buttons = Array.from(root.querySelectorAll<HTMLElement>('ha-button'));\n      const saveLabel = this._hass?.localize?.('ui.common.save') || this._t('common.save');\n      const backLabel = this._hass?.localize?.('ui.common.back') || 'Back';\n      const hasSaveAction = buttons.some((button) => {\n        const text = button.textContent?.trim() || '';\n        return button.getAttribute('slot') === 'primaryAction' || text === saveLabel || text === 'Save' || text === 'Speichern';\n      });\n      if (!hasSaveAction) return;\n\n      const cancelButton = buttons.find((button) => {\n        if (button.getAttribute('variant') === 'danger') return false;\n        const text = button.textContent?.trim() || '';\n        return button.getAttribute('slot') === 'secondaryAction' || text === backLabel || text === 'Back';\n      });\n      if (!cancelButton) return;\n\n      const label = this._t('common.cancel');\n      if (cancelButton.textContent?.trim() !== label) {\n        cancelButton.textContent = label;\n      }\n      cancelButton.setAttribute('aria-label', label);\n    };\n\n    updateLabel();\n    this._hostDialogObserver?.disconnect();\n    this._hostDialogObserver = new MutationObserver(updateLabel);\n    this._hostDialogObserver.observe(root, { childList: true, subtree: true, characterData: true });\n  }\n'''
+
+          new = '''  private _installHostDialogCancelLabel(attempt = 0): void {\n    // Target only Home Assistant's dashboard strategy editor dialog.\n    // Do not touch any Back buttons inside Dwains Dashboard itself.\n    const dialog = document.querySelector<HTMLElement>('dialog-dashboard-strategy-editor');\n    const root = dialog?.shadowRoot;\n\n    if (!root) {\n      if (attempt < 12) {\n        window.setTimeout(() => this._installHostDialogCancelLabel(attempt + 1), 100);\n      }\n      return;\n    }\n\n    const updateLabel = () => {\n      const footer = root.querySelector('ha-dialog-footer');\n      if (!footer) return;\n\n      const secondaryButtons = Array.from(\n        footer.querySelectorAll<HTMLElement>('ha-button[slot="secondaryAction"]')\n      );\n      const cancelButton = secondaryButtons.find(\n        (button) => button.getAttribute('variant') !== 'danger'\n      );\n      if (!cancelButton) return;\n\n      const label = this._t('common.cancel');\n      if (cancelButton.textContent?.trim() !== label) {\n        cancelButton.textContent = label;\n      }\n      cancelButton.setAttribute('aria-label', label);\n    };\n\n    updateLabel();\n    this._hostDialogObserver?.disconnect();\n    this._hostDialogObserver = new MutationObserver(updateLabel);\n    this._hostDialogObserver.observe(root, { childList: true, subtree: true, characterData: true });\n  }\n'''
+
+          if old not in s:
+              raise SystemExit('Previous cancel-label helper not found')
+          s = s.replace(old, new, 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+            npm ci
+            npm run type-check
+            git add src/components/dwains-dashboard-strategy-editor.ts
+            if ! git diff --cached --quiet; then
+              git commit -m "fix: target settings footer cancel action"
+              git push origin "HEAD:$branch"
+            fi
+          }
+
+          patch_branch fix/settings-footer-cancel-label
+          patch_branch fix/ui-localization-and-formatting
