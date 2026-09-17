@@ -2,111 +2,95 @@ name: Build
 
 on:
   push:
-  pull_request:
-  workflow_dispatch:
+    branches:
+      - fix/mobile-settings-cancel-label-v2
 
 permissions:
   contents: write
 
-concurrency:
-  group: build-${{ github.ref }}
-  cancel-in-progress: false
-
 jobs:
-  build:
+  patch:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'push' && github.ref == 'refs/heads/dev' && 'dev' || github.sha }}
           fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Decide whether to publish a new dev build
-        id: dev_release
+      - name: Patch mobile cancel label
         shell: bash
         run: |
-          SHOULD_RELEASE=false
-          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/dev" ]]; then
-            MESSAGE=$(git log -1 --pretty=%s)
-            if [[ ! "$MESSAGE" =~ ^Build\ dev\ release\ v ]]; then
-              SHOULD_RELEASE=true
-            fi
-          fi
-          echo "should_release=$SHOULD_RELEASE" >> "$GITHUB_OUTPUT"
-
-      - name: Bump dev version
-        if: steps.dev_release.outputs.should_release == 'true'
-        id: version
-        shell: bash
-        run: |
-          CURRENT=$(node -p "require('./package.json').version")
-          if [[ ! "$CURRENT" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)-dev\.([0-9]+)$ ]]; then
-            echo "Unexpected current dev version: $CURRENT"
-            exit 1
-          fi
-          MAJOR="${BASH_REMATCH[1]}"
-          MINOR="${BASH_REMATCH[2]}"
-          PATCH="${BASH_REMATCH[3]}"
-          COUNTER=$((BASH_REMATCH[4] + 1))
-          NEXT="${MAJOR}.${MINOR}.${PATCH}-dev.${COUNTER}"
-          HACS_TAG="v${MAJOR}.${MINOR}.${COUNTER}"
-          npm version "$NEXT" --no-git-tag-version
-          NEXT_VERSION="$NEXT" node - <<'NODE'
-          const fs = require('fs');
-          const version = process.env.NEXT_VERSION;
-          const path = 'README.md';
-          let text = fs.readFileSync(path, 'utf8');
-          if (/Development version: `[^`]+`/.test(text)) {
-            text = text.replace(/Development version: `[^`]+`/, `Development version: \`${version}\``);
-          }
-          fs.writeFileSync(path, text);
-          NODE
-          echo "version=$NEXT" >> "$GITHUB_OUTPUT"
-          echo "tag=$HACS_TAG" >> "$GITHUB_OUTPUT"
-
-      - name: Type check
-        run: npm run type-check
-
-      - name: Build
-        run: npm run build
-
-      - name: Commit complete dev release
-        if: steps.dev_release.outputs.should_release == 'true'
-        env:
-          VERSION: ${{ steps.version.outputs.version }}
-        shell: bash
-        run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add package.json package-lock.json README.md dist/dwains-dashboard-next.js
-          git commit -m "Build dev release v$VERSION"
-          git push origin HEAD:dev
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path('src/components/dwains-dashboard-strategy-editor.ts')
+          s = p.read_text(encoding='utf-8')
+          pattern = re.compile(r"  private _installHostDialogCancelLabel\(attempt = 0\): void \{.*?\n  \}\n\n  private _getDashboardUrlPath", re.S)
+          replacement = '''  private _installHostDialogCancelLabel(attempt = 0): void {
+    // Home Assistant mounts dialogs below nested shadow roots on mobile.
+    // Search all open shadow roots, but only ever target the dashboard strategy dialog.
+    const findDialog = (): HTMLElement | undefined => {
+      const roots: Array<Document | ShadowRoot> = [document];
+      const visited = new Set<Document | ShadowRoot>();
 
-      - name: Create tagged GitHub release
-        if: steps.dev_release.outputs.should_release == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TAG: ${{ steps.version.outputs.tag }}
-          VERSION: ${{ steps.version.outputs.version }}
-        shell: bash
-        run: |
-          RELEASE_SHA=$(git rev-parse HEAD)
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            echo "$TAG already exists; nothing to do."
-            exit 0
+      while (roots.length) {
+        const root = roots.pop()!;
+        if (visited.has(root)) continue;
+        visited.add(root);
+
+        const dialog = root.querySelector<HTMLElement>('dialog-dashboard-strategy-editor');
+        if (dialog) return dialog;
+
+        for (const element of Array.from(root.querySelectorAll<HTMLElement>('*'))) {
+          if (element.shadowRoot) roots.push(element.shadowRoot);
+        }
+      }
+      return undefined;
+    };
+
+    const dialog = findDialog();
+    const root = dialog?.shadowRoot;
+    if (!root) {
+      if (attempt < 20) {
+        window.setTimeout(() => this._installHostDialogCancelLabel(attempt + 1), 100);
+      }
+      return;
+    }
+
+    const updateLabel = () => {
+      const footer = root.querySelector('ha-dialog-footer');
+      if (!footer) return;
+
+      const secondaryButtons = Array.from(
+        footer.querySelectorAll<HTMLElement>('ha-button[slot="secondaryAction"]')
+      );
+      const cancelButton = secondaryButtons.find(
+        (button) => button.getAttribute('variant') !== 'danger'
+      );
+      if (!cancelButton) return;
+
+      const label = this._t('common.cancel');
+      if (cancelButton.textContent?.trim() !== label) {
+        cancelButton.textContent = label;
+      }
+      cancelButton.setAttribute('aria-label', label);
+    };
+
+    updateLabel();
+    this._hostDialogObserver?.disconnect();
+    this._hostDialogObserver = new MutationObserver(updateLabel);
+    this._hostDialogObserver.observe(root, { childList: true, subtree: true, characterData: true });
+  }
+
+  private _getDashboardUrlPath'''
+          s2, n = pattern.subn(replacement, s, count=1)
+          if n != 1:
+            raise SystemExit(f'cancel helper replacement count: {n}')
+          p.write_text(s2, encoding='utf-8')
+          PY
+          git add src/components/dwains-dashboard-strategy-editor.ts
+          if ! git diff --cached --quiet; then
+            git commit -m "fix: localize dashboard cancel action on mobile"
+            git push origin HEAD:fix/mobile-settings-cancel-label-v2
           fi
-          gh release create "$TAG" \
-            --target "$RELEASE_SHA" \
-            --title "$TAG (development build $VERSION)" \
-            --notes "Development build $VERSION. The stable-looking tag is intentional so HACS tracks this dev channel without requiring the pre-release switch."
