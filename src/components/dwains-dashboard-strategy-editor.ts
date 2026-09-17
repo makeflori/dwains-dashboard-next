@@ -142,7 +142,6 @@ const SETTINGS_ICON_PATHS: Record<string, string> = {
 
 @customElement("dwains-dashboard-next-strategy-editor")
 export class DwainsDashboardStrategyEditor extends LitElement {
-  private _hostDialogObserver?: MutationObserver;
   private _hass?: HomeAssistant;
   private _fetchDataPromise?: Promise<void>;
   private _registryData?: {
@@ -249,44 +248,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   @state() private _dashboardTitle = '';
   @state() private _dashboardIcon = '';
 
-  private _installHostDialogCancelLabel(attempt = 0): void {
-    // Target only Home Assistant's dashboard strategy editor dialog.
-    // Do not touch any Back buttons inside Dwains Dashboard itself.
-    const dialog = document.querySelector<HTMLElement>('dialog-dashboard-strategy-editor');
-    const root = dialog?.shadowRoot;
-
-    if (!root) {
-      if (attempt < 12) {
-        window.setTimeout(() => this._installHostDialogCancelLabel(attempt + 1), 100);
-      }
-      return;
-    }
-
-    const updateLabel = () => {
-      const footer = root.querySelector('ha-dialog-footer');
-      if (!footer) return;
-
-      const secondaryButtons = Array.from(
-        footer.querySelectorAll<HTMLElement>('ha-button[slot="secondaryAction"]')
-      );
-      const cancelButton = secondaryButtons.find(
-        (button) => button.getAttribute('variant') !== 'danger'
-      );
-      if (!cancelButton) return;
-
-      const label = this._t('common.cancel');
-      if (cancelButton.textContent?.trim() !== label) {
-        cancelButton.textContent = label;
-      }
-      cancelButton.setAttribute('aria-label', label);
-    };
-
-    updateLabel();
-    this._hostDialogObserver?.disconnect();
-    this._hostDialogObserver = new MutationObserver(updateLabel);
-    this._hostDialogObserver.observe(root, { childList: true, subtree: true, characterData: true });
-  }
-
   private _getDashboardUrlPath(): string | undefined {
     const seg = window.location.pathname.split('/')[1];
     if (!seg || seg === 'lovelace') return undefined;
@@ -372,14 +333,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     if (this.hass) {
       void this._fetchData();
     }
-    queueMicrotask(() => this._installHostDialogCancelLabel());
   }
 
-  disconnectedCallback() {
-    this._hostDialogObserver?.disconnect();
-    this._hostDialogObserver = undefined;
-    super.disconnectedCallback();
-  }
 
   private async _fetchData() {
     if (!this.hass) return;
