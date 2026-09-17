@@ -69,8 +69,8 @@ export function formatEntityStateWithUnit(
     "import type { AreaConfig, AreaData, AlertInfo, DomainCounts, EntityConfig } from '../types/strategy';\nimport { formatEntityStateWithUnit, formatValueWithUnit } from './unit-format';",
     'area import'
   );
-  content = content.replace(/temperature = hass\.formatEntityState\(state\);/g, 'temperature = formatEntityStateWithUnit(hass, state);');
-  content = content.replace(/humidity = hass\.formatEntityState\(state\);/g, 'humidity = formatEntityStateWithUnit(hass, state);');
+  content = content.replace(/temperature = hass\.formatEntityState\(([^)]+)\);/g, 'temperature = formatEntityStateWithUnit(hass, $1);');
+  content = content.replace(/humidity = hass\.formatEntityState\(([^)]+)\);/g, 'humidity = formatEntityStateWithUnit(hass, $1);');
   content = replaceOnce(content, "wattage = `${(totalWattage / 1000).toFixed(1)} kW`;", "wattage = formatValueWithUnit((totalWattage / 1000).toFixed(1), 'kW');", 'room kW');
   content = replaceOnce(content, "wattage = `${Math.round(totalWattage)} W`;", "wattage = formatValueWithUnit(Math.round(totalWattage), 'W');", 'room W');
   content = replaceOnce(content, "totalEnergy = `${(totalEnergyValue / 1000).toFixed(1)} MWh`;", "totalEnergy = formatValueWithUnit((totalEnergyValue / 1000).toFixed(1), 'MWh');", 'room MWh');
