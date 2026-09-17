@@ -19,6 +19,7 @@ import { navigateHomeAssistant } from '../utils/navigation';
 import { isHassDarkTheme } from '../utils/theme';
 import { normalizeHiddenHomeInformationCards, normalizeHiddenHomeSections, normalizeHomeSectionsOrder } from '../utils/home-sections';
 import { buildHousePowerUsage } from '../utils/power-usage';
+import { formatEntityStateWithUnit, formatValueWithUnit } from '../utils/unit-format';
 import { showDomainEntitiesDialog } from './utils/show-domain-entities-dialog';
 import { showCardEditorDialog } from './utils/show-card-editor-dialog';
 import { ensureBottomNav } from './dwains-bottom-nav';
@@ -12042,7 +12043,7 @@ export class DwainsLayoutCard extends LitElement {
       this.hass?.config?.unit_system?.temperature ||
       '';
 
-    return `${temperature} ${unit}`;
+    return formatValueWithUnit(temperature, unit);
   }
 
   private _weatherTitle(weatherEntity?: any): string {
@@ -12114,9 +12115,7 @@ export class DwainsLayoutCard extends LitElement {
 
     const average = values.reduce((total, item) => total + item.value, 0) / values.length;
     const unit = values[0]?.unit || (kind === 'temperature' ? '°C' : '%');
-    const value = kind === 'temperature'
-      ? `${average.toFixed(1)} ${unit}`
-      : `${Math.round(average)} ${unit}`;
+    const value = formatValueWithUnit(kind === 'temperature' ? average.toFixed(1) : Math.round(average), unit);
 
     return {
       kind,
@@ -12393,11 +12392,7 @@ export class DwainsLayoutCard extends LitElement {
   private _formatFavoriteState(state: any): string {
     const effectiveState = this._getEffectiveEntityState(state);
 
-    try {
-      return this.hass.formatEntityState(effectiveState);
-    } catch {
-      return String(effectiveState?.state || '');
-    }
+    return formatEntityStateWithUnit(this.hass, effectiveState);
   }
 
   private _getEffectiveEntityState<T extends { entity_id?: string; state?: string } | null | undefined>(state: T): T {
@@ -13404,7 +13399,7 @@ export class DwainsLayoutCard extends LitElement {
     const currentTemperature = singleClimateState?.attributes?.current_temperature;
     const temperatureUnit = (this.hass.config as any)?.unit_system?.temperature || '°';
     const climateValue = currentTemperature !== undefined && currentTemperature !== null
-      ? `${currentTemperature} ${temperatureUnit}`
+      ? formatValueWithUnit(currentTemperature, temperatureUnit)
       : `${climates.length}`;
 
     return html`
@@ -14856,15 +14851,15 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     if (domain === 'cover' && typeof state.attributes?.current_position === 'number') {
-      return `${formatted} · ${state.attributes.current_position}%`;
+      return `${formatted} · ${formatValueWithUnit(state.attributes.current_position, '%')}`;
     }
 
     if (domain === 'climate') {
       const current = state.attributes?.current_temperature;
       const target = state.attributes?.temperature;
       const unit = this.hass?.config?.unit_system?.temperature || '°C';
-      if (current !== undefined && target !== undefined) return `${current} ${unit} · ${this._t('entity.climate_set', { value: `${target} ${unit}` })}`;
-      if (current !== undefined) return `${current} ${unit}`;
+      if (current !== undefined && target !== undefined) return `${formatValueWithUnit(current, unit)} · ${this._t('entity.climate_set', { value: formatValueWithUnit(target, unit) })}`;
+      if (current !== undefined) return formatValueWithUnit(current, unit);
     }
 
     if (domain === 'media_player' && state.attributes?.media_title) {
@@ -15296,7 +15291,7 @@ export class DwainsLayoutCard extends LitElement {
 
     const state = this.hass?.states?.[entityId];
     if (!state || state.state === 'unavailable' || state.state === 'unknown') return undefined;
-    return this.hass.formatEntityState(state);
+    return formatEntityStateWithUnit(this.hass, state);
   }
 
   private _withFreshAreaClimateFormatting(areaId: string, data: AreaData): AreaData {

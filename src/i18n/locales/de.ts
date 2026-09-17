@@ -221,7 +221,7 @@ export const de = {
   'entity.update_failed': 'Entität konnte nicht aktualisiert werden',
   'entity.selector_failed': 'Auswahl konnte nicht aktualisiert werden',
   'entity.cover_failed': 'Steuerung konnte nicht aktualisiert werden',
-  'entity.brightness': '{value} % Helligkeit',
+  'entity.brightness': '{value} % Helligkeit',
   'entity.climate_set': 'eingestellt auf {value}',
   'entity.lock_failed': 'Schloss konnte nicht aktualisiert werden',
   'entity.lights_failed': 'Lichter konnten nicht aktualisiert werden',
