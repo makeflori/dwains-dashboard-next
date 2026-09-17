@@ -1,5 +1,4 @@
 import { DD_NEXT_VERSION } from './version';
-import { installDashboardStrategyDialogLocalization } from './utils/dashboard-strategy-dialog-localization';
 
 console.log('Dwains Dashboard Next - Loading...');
 console.log(`%cDwains Dashboard Next ${DD_NEXT_VERSION}`, 'background:#3a7;color:#fff;padding:2px 8px;border-radius:6px;font-weight:bold');
@@ -191,7 +190,6 @@ function installDefaultDashboardRedirect(): void {
 }
 
 installDefaultDashboardRedirect();
-installDashboardStrategyDialogLocalization();
 
 // Register the dashboard strategy in Home Assistant's Add dashboard dialog.
 // This appears under Community dashboards and requires HA 2026.5+.
