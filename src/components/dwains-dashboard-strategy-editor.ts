@@ -250,49 +250,28 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   @state() private _dashboardIcon = '';
 
   private _installHostDialogCancelLabel(attempt = 0): void {
-    let node: Node | null = this;
-    let dialog: HTMLElement | undefined;
-
-    // Walk the composed tree. Depending on the Home Assistant frontend version,
-    // the strategy editor may be connected through light DOM, shadow DOM, or both.
-    for (let depth = 0; node && depth < 20; depth += 1) {
-      if (node instanceof HTMLElement && node.localName === 'dialog-dashboard-strategy-editor') {
-        dialog = node;
-        break;
-      }
-
-      if (node.parentNode) {
-        node = node.parentNode;
-        continue;
-      }
-
-      const root = node.getRootNode();
-      node = root instanceof ShadowRoot ? root.host : null;
-    }
-
+    // Target only Home Assistant's dashboard strategy editor dialog.
+    // Do not touch any Back buttons inside Dwains Dashboard itself.
+    const dialog = document.querySelector<HTMLElement>('dialog-dashboard-strategy-editor');
     const root = dialog?.shadowRoot;
+
     if (!root) {
-      if (attempt < 8) {
-        window.setTimeout(() => this._installHostDialogCancelLabel(attempt + 1), 100 * (attempt + 1));
+      if (attempt < 12) {
+        window.setTimeout(() => this._installHostDialogCancelLabel(attempt + 1), 100);
       }
       return;
     }
 
     const updateLabel = () => {
-      const buttons = Array.from(root.querySelectorAll<HTMLElement>('ha-button'));
-      const saveLabel = this._hass?.localize?.('ui.common.save') || this._t('common.save');
-      const backLabel = this._hass?.localize?.('ui.common.back') || 'Back';
-      const hasSaveAction = buttons.some((button) => {
-        const text = button.textContent?.trim() || '';
-        return button.getAttribute('slot') === 'primaryAction' || text === saveLabel || text === 'Save' || text === 'Speichern';
-      });
-      if (!hasSaveAction) return;
+      const footer = root.querySelector('ha-dialog-footer');
+      if (!footer) return;
 
-      const cancelButton = buttons.find((button) => {
-        if (button.getAttribute('variant') === 'danger') return false;
-        const text = button.textContent?.trim() || '';
-        return button.getAttribute('slot') === 'secondaryAction' || text === backLabel || text === 'Back';
-      });
+      const secondaryButtons = Array.from(
+        footer.querySelectorAll<HTMLElement>('ha-button[slot="secondaryAction"]')
+      );
+      const cancelButton = secondaryButtons.find(
+        (button) => button.getAttribute('variant') !== 'danger'
+      );
       if (!cancelButton) return;
 
       const label = this._t('common.cancel');
