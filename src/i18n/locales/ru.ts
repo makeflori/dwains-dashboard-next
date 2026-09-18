@@ -657,8 +657,8 @@ export const ru = {
   'device_class.running': 'Работа',
   'device_class.update': 'Обновления',
   'device_class.door_lock': 'Замки',
-  'settings.home_climate_areas_title': "Areas included in indoor climate",
-  'settings.home_climate_areas_description': "Choose which Home Assistant areas are included in the average temperature and humidity shown in House information.",
+  'settings.home_climate_areas_title': "Зоны микроклимата",
+  'settings.home_climate_areas_description': "Выберите зоны, чьи датчики температуры и влажности учитываются при расчёте средних значений в информации о доме.",
   'settings.home_climate_area_included': "Included in house average",
   'settings.home_climate_area_excluded': "Excluded from house average",
 
