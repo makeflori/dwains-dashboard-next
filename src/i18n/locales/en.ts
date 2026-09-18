@@ -655,8 +655,8 @@ export const en = {
   'device_class.running': 'Running',
   'device_class.update': 'Updates',
   'device_class.door_lock': 'Locks',
-  'settings.home_climate_areas_title': "Areas included in indoor climate",
-  'settings.home_climate_areas_description': "Choose which Home Assistant areas are included in the average temperature and humidity shown in House information.",
+  'settings.home_climate_areas_title': "Indoor climate areas",
+  'settings.home_climate_areas_description': "Choose the areas whose temperature and humidity sensors are included in the averages shown in House information.",
   'settings.home_climate_area_included': "Included in house average",
   'settings.home_climate_area_excluded': "Excluded from house average",
 
