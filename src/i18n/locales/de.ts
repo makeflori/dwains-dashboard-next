@@ -634,8 +634,8 @@ export const de = {
   'device_class.running': 'Läuft',
   'device_class.update': 'Aktualisierungen',
   'device_class.door_lock': 'Schlösser',
-  'settings.home_climate_areas_title': "Bereiche im Raumklima",
-  'settings.home_climate_areas_description': "Lege fest, welche Home-Assistant-Bereiche bei der durchschnittlichen Temperatur und Luftfeuchtigkeit in den Hausinformationen berücksichtigt werden.",
+  'settings.home_climate_areas_title': "Raumklima-Bereiche",
+  'settings.home_climate_areas_description': "Wähle die Bereiche, deren Temperatur- und Luftfeuchtigkeitssensoren in die Durchschnittswerte der Hausinformationen einfließen.",
   'settings.home_climate_area_included': "Im Hausdurchschnitt enthalten",
   'settings.home_climate_area_excluded': "Vom Hausdurchschnitt ausgeschlossen",
 
