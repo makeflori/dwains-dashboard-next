@@ -634,8 +634,8 @@ export const nl = {
   'device_class.running': 'Actief',
   'device_class.update': 'Updates',
   'device_class.door_lock': 'Sloten',
-  'settings.home_climate_areas_title': "Areas included in indoor climate",
-  'settings.home_climate_areas_description': "Choose which Home Assistant areas are included in the average temperature and humidity shown in House information.",
+  'settings.home_climate_areas_title': "Gebieden voor binnenklimaat",
+  'settings.home_climate_areas_description': "Kies de gebieden waarvan de temperatuur- en luchtvochtigheidssensoren meetellen voor de gemiddelden in Woninginformatie.",
   'settings.home_climate_area_included': "Included in house average",
   'settings.home_climate_area_excluded': "Excluded from house average",
 
