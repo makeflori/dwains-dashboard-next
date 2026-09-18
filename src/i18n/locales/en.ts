@@ -470,6 +470,7 @@ export const en = {
   'settings.hidden_devices': 'Hidden devices',
   'settings.no_hidden_devices': 'No devices with visible entities were found.',
   'settings.selected_entities': 'Selected entities',
+  'settings.manual_favorites': "Your favorites",
   'settings.selected_weather': 'Selected weather entity',
   'settings.selected_alarm': 'Selected alarm entity',
   'settings.no_weather': 'No weather entity selected. Weather is hidden on the home page.',
@@ -479,8 +480,8 @@ export const en = {
   'settings.hidden_in_dd': 'Hidden in DD',
   'settings.discard_confirm': 'Discard unsaved dashboard settings?',
 
-  'settings.show_suggested_favorites': 'Show suggested favorites from Home Assistant',
-  'settings.suggested_favorites_description': 'Adds frequently used entities suggested by Home Assistant next to your pinned favorites.',
+  'settings.show_suggested_favorites': "Automatic favorites",
+  'settings.suggested_favorites_description': "Home Assistant automatically adds frequently used suggested entities. Your own favorites remain separately manageable.",
   'settings.add_entity': 'Add entity',
   'settings.show_time': 'Show time and date in header',
   'settings.show_notifications': 'Show notifications in Dwains Dashboard',
