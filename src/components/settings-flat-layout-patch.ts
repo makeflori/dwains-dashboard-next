@@ -1,6 +1,6 @@
 import { mdiArrowDown, mdiArrowUp, mdiDrag } from "@mdi/js";
 import { html, nothing } from "lit";
-import type { HomeSectionKey } from "../types/strategy";
+import type { HomeInformationCardKey, HomeSectionKey } from "../types/strategy";
 import { DEFAULT_HOME_INFORMATION_CARDS, HOME_INFORMATION_CARD_META, HOME_SECTION_META } from "../utils/home-sections";
 
 const EDITOR_TAG = "dwains-dashboard-next-strategy-editor";
@@ -94,7 +94,7 @@ function applyFlatSettingsLayout(): void {
             <span>${this._t("settings.visible_count", { visible: visibleCount, total: DEFAULT_HOME_INFORMATION_CARDS.length })}</span>
           </div>
           <div class="home-info-card-list">
-            ${DEFAULT_HOME_INFORMATION_CARDS.map((card: any) => {
+            ${DEFAULT_HOME_INFORMATION_CARDS.map((card: HomeInformationCardKey) => {
               const meta = HOME_INFORMATION_CARD_META[card];
               const enabled = !hiddenCards.has(card);
               const isClimate = card === "climate";
