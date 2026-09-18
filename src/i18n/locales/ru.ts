@@ -472,6 +472,7 @@ export const ru = {
   'settings.hidden_devices': 'Скрытые устройства',
   'settings.no_hidden_devices': 'Устройств с видимыми сущностями не найдено.',
   'settings.selected_entities': 'Выбранные сущности',
+  'settings.manual_favorites': "Моё избранное",
   'settings.selected_weather': 'Выбранная сущность погоды',
   'settings.selected_alarm': 'Выбранная сущность сигнализации',
   'settings.no_weather': 'Сущность погоды не выбрана. Погода скрыта на главной странице.',
@@ -481,8 +482,8 @@ export const ru = {
   'settings.hidden_in_dd': 'Скрыто в DD',
   'settings.discard_confirm': 'Отменить несохранённые настройки панели?',
 
-  'settings.show_suggested_favorites': 'Показывать рекомендуемые избранные Home Assistant',
-  'settings.suggested_favorites_description': 'Добавляет часто используемые сущности, рекомендованные Home Assistant, рядом с закреплёнными избранными.',
+  'settings.show_suggested_favorites': "Автоматическое избранное",
+  'settings.suggested_favorites_description': "Home Assistant автоматически добавляет часто используемые рекомендуемые сущности. Собранное вручную избранное управляется отдельно.",
   'settings.add_entity': 'Добавить сущность',
   'settings.show_time': 'Показывать время и дату в заголовке',
   'settings.show_notifications': 'Показывать уведомления в Dwains Dashboard',
