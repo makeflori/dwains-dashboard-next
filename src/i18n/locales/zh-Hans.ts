@@ -632,8 +632,8 @@ export const zhHans = {
   'device_class.running': '运行',
   'device_class.update': '更新',
   'device_class.door_lock': '锁',
-  'settings.home_climate_areas_title': "Areas included in indoor climate",
-  'settings.home_climate_areas_description': "Choose which Home Assistant areas are included in the average temperature and humidity shown in House information.",
+  'settings.home_climate_areas_title': "室内气候区域",
+  'settings.home_climate_areas_description': "选择要将其温度和湿度传感器计入“房屋信息”平均值的区域。",
   'settings.home_climate_area_included': "Included in house average",
   'settings.home_climate_area_excluded': "Excluded from house average",
 
