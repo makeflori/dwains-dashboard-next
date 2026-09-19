@@ -480,8 +480,8 @@ export const en = {
   'settings.hidden_in_dd': 'Hidden in DD',
   'settings.discard_confirm': 'Discard unsaved dashboard settings?',
 
-  'settings.show_suggested_favorites': "Automatic",
-  'settings.suggested_favorites_description': "Home Assistant automatically selects frequently used suggested entities as favorites.",
+  'settings.show_suggested_favorites': "Show suggested favorites",
+  'settings.suggested_favorites_description': "Adds frequently used entities suggested by Home Assistant alongside your own favorites. Your manually selected favorites always remain.",
   'settings.add_entity': 'Add entity',
   'settings.show_time': 'Show time and date in header',
   'settings.show_notifications': 'Show notifications in Dwains Dashboard',
