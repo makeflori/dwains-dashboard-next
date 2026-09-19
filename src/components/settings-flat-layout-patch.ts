@@ -55,38 +55,33 @@ function applyFlatSettingsLayout(): void {
     };
 
     proto._renderFavoritesSettingsPanel = function () {
-      const automatic = this._config?.settings?.show_suggested_favorites !== false;
-      const setMode = (nextAutomatic: boolean) => {
-        this._toggleSuggestedFavorites({ target: { checked: nextAutomatic } } as any);
-      };
+      const suggestedEnabled = this._config?.settings?.show_suggested_favorites !== false;
 
       return html`
         <div class="favorites-section dd-favorites-inline">
-          <div class="dd-favorite-mode" role="radiogroup" aria-label=${this._t("home_section.favorites.label")}>
-            <button type="button" class=${automatic ? "selected" : ""} aria-pressed=${automatic ? "true" : "false"} @click=${() => setMode(true)}>
-              ${this._t("settings.show_suggested_favorites")}
-            </button>
-            <button type="button" class=${!automatic ? "selected" : ""} aria-pressed=${!automatic ? "true" : "false"} @click=${() => setMode(false)}>
-              ${this._t("settings.manual_favorites")}
-            </button>
+          <div class="dd-favorite-suggestions-row">
+            <div class="dd-favorite-suggestions-copy">
+              <strong>${this._t("settings.show_suggested_favorites")}</strong>
+              <span>${this._t("settings.suggested_favorites_description")}</span>
+            </div>
+            <ha-switch
+              .checked=${suggestedEnabled}
+              @change=${this._toggleSuggestedFavorites}
+            ></ha-switch>
           </div>
 
-          <p class="dd-favorite-mode-description">
-            ${automatic ? this._t("settings.suggested_favorites_description") : this._t("settings.favorites_description")}
-          </p>
-
-          ${!automatic ? html`
-            <div class="entity-picker dd-favorites-picker">
-              <div class="dd-favorites-add-row">
-                <mwc-button @click=${this._addFavoriteEntity} outlined>
-                  <ha-icon icon="mdi:plus"></ha-icon>
-                  ${this._t("settings.add_entity")}
-                </mwc-button>
-              </div>
-              ${this._renderSelectedEntities()}
-              ${this._showEntityPicker ? this._renderEntityPicker() : nothing}
+          <div class="entity-picker dd-favorites-picker">
+            <div class="entity-picker-header">
+              <h4>${this._t("settings.selected_entities")}</h4>
+              <mwc-button @click=${this._addFavoriteEntity} outlined>
+                <ha-icon icon="mdi:plus"></ha-icon>
+                ${this._t("settings.add_entity")}
+              </mwc-button>
             </div>
-          ` : nothing}
+
+            ${this._renderSelectedEntities()}
+            ${this._showEntityPicker ? this._renderEntityPicker() : nothing}
+          </div>
         </div>
       `;
     };
@@ -523,35 +518,33 @@ function renderFlatSettingsStyles() {
       .dd-flat-subdetail .home-info-card-item { border: 0; border-top: 1px solid var(--divider-color); border-radius: 0; background: transparent; }
 
       .dd-favorites-inline { padding: 4px; }
-      .dd-favorite-mode {
+      .dd-favorite-suggestions-row {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 14px;
+        padding: 8px 4px 14px;
+        border-bottom: 1px solid var(--divider-color);
+      }
+      .dd-favorite-suggestions-copy {
+        min-width: 0;
+        display: grid;
         gap: 4px;
-        padding: 4px;
-        border-radius: 12px;
-        background: var(--secondary-background-color);
       }
-      .dd-favorite-mode button {
-        min-height: 40px;
-        padding: 8px 12px;
-        border: 0;
-        border-radius: 9px;
-        background: transparent;
-        color: var(--secondary-text-color);
-        font: inherit;
-        font-size: 13px;
-        font-weight: 700;
-        cursor: pointer;
-      }
-      .dd-favorite-mode button.selected {
+      .dd-favorite-suggestions-copy strong {
         color: var(--primary-text-color);
-        background: var(--card-background-color);
-        box-shadow: 0 1px 3px rgba(0,0,0,.14);
+        font-size: 14px;
+        line-height: 1.3;
       }
-      .dd-favorite-mode-description { margin: 10px 4px 14px; color: var(--secondary-text-color); font-size: 12px; line-height: 1.45; }
-      .dd-favorites-picker { padding-top: 2px; }
-      .dd-favorites-add-row { display: flex; justify-content: flex-end; margin-bottom: 10px; }
-      .dd-favorites-add-row mwc-button ha-icon { --mdc-icon-size: 18px; margin-right: 6px; }
+      .dd-favorite-suggestions-copy span {
+        color: var(--secondary-text-color);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+      .dd-favorites-picker { padding-top: 12px; }
+      .dd-favorites-picker .entity-picker-header { margin-bottom: 10px; }
+      .dd-favorites-picker .entity-picker-header h4 { margin: 0; }
+      .dd-favorites-picker mwc-button ha-icon { --mdc-icon-size: 18px; margin-right: 6px; }
 
       @media (max-width: 700px) {
         .dd-flat-settings { padding-inline: 10px; }
