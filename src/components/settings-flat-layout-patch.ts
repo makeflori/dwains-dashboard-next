@@ -100,12 +100,14 @@ function applyFlatSettingsLayout(): void {
           </div>
 
           <div class="entity-picker dd-favorites-picker">
-            <div class="entity-picker-header">
-              <h4>${this._t("settings.selected_entities")}</h4>
-              <mwc-button @click=${this._addFavoriteEntity} outlined>
+            <div class="dd-inline-section-heading dd-inline-section-heading-action dd-favorites-manual-heading">
+              <div>
+                <strong>${this._t("settings.selected_entities")}</strong>
+              </div>
+              <button class="home-custom-card-add dd-favorites-add" type="button" @click=${this._addFavoriteEntity}>
                 <ha-icon icon="mdi:plus"></ha-icon>
-                ${this._t("settings.add_entity")}
-              </mwc-button>
+                ${this._t("common.add")}
+              </button>
             </div>
 
             ${this._renderSelectedEntities()}
@@ -521,11 +523,11 @@ function renderFlatSettingsStyles() {
       .dd-home-section-block .home-section-actions,
       .home-info-card-actions {
         display: grid;
-        grid-template-columns: 38px 38px;
+        grid-template-columns: 38px 26px;
         align-items: center;
         justify-content: end;
         gap: 2px;
-        width: 78px;
+        width: 66px;
       }
       .dd-inline-actions {
         display: inline-flex;
@@ -536,7 +538,10 @@ function renderFlatSettingsStyles() {
       }
 
       .dd-home-detail-toggle,
-      .dd-home-detail-spacer,
+      .dd-home-detail-spacer {
+        width: 26px;
+        height: 38px;
+      }
       .dd-icon-action {
         width: 38px;
         height: 38px;
@@ -568,11 +573,15 @@ function renderFlatSettingsStyles() {
       .dd-home-detail-toggle ha-icon,
       .dd-icon-action ha-icon { --mdc-icon-size: 19px; }
 
-      .dd-home-inline-detail,
-      .dd-flat-subdetail {
+      .dd-home-inline-detail {
         margin-left: 12px;
         padding: 10px 0 12px 12px;
         border-left: 2px solid color-mix(in srgb, var(--divider-color) 78%, var(--primary-color));
+      }
+      .dd-flat-subdetail {
+        margin-left: 12px;
+        padding: 8px 0 10px 12px;
+        border-left: 0;
       }
       .dd-home-house-information { display: block; }
 
@@ -585,7 +594,8 @@ function renderFlatSettingsStyles() {
       .dd-inline-section-heading > strong,
       .dd-inline-section-heading > div > strong {
         color: var(--primary-text-color);
-        font-size: 14px;
+        font-size: 13px;
+        font-weight: 600;
         line-height: 1.3;
       }
       .dd-inline-section-heading > span,
@@ -634,6 +644,10 @@ function renderFlatSettingsStyles() {
         line-height: 1.35;
       }
       .dd-flat-subdetail .home-info-card-section { padding: 0; }
+      .dd-flat-subdetail ha-switch {
+        transform: scale(.9);
+        transform-origin: right center;
+      }
       .dd-flat-subdetail .home-info-card-header { padding: 4px 2px 8px; }
       .dd-flat-subdetail .home-info-card-list {
         border: 0;
@@ -666,30 +680,31 @@ function renderFlatSettingsStyles() {
         grid-template-columns: minmax(0, 1fr) auto;
         align-items: center;
         gap: 12px;
-        padding: 6px 2px 12px;
+        padding: 4px 2px 10px;
         border-bottom: 1px solid var(--divider-color);
       }
       .dd-favorite-suggestions-copy {
         min-width: 0;
         display: grid;
-        gap: 4px;
+        gap: 3px;
       }
       .dd-favorite-suggestions-copy strong {
         color: var(--primary-text-color);
-        font-size: 14px;
+        font-size: 13px;
+        font-weight: 600;
         line-height: 1.3;
       }
       .dd-favorite-suggestions-copy span {
         color: var(--secondary-text-color);
-        font-size: 12px;
-        line-height: 1.45;
+        font-size: 11px;
+        line-height: 1.4;
       }
-      .dd-favorites-picker { padding-top: 10px; }
-      .dd-favorites-picker .entity-picker-header { margin-bottom: 8px; }
-      .dd-favorites-picker .entity-picker-header h4 { margin: 0; }
-      .dd-favorites-picker mwc-button ha-icon {
+      .dd-favorites-picker { padding-top: 8px; }
+      .dd-favorites-manual-heading {
+        padding: 0 0 8px;
+      }
+      .dd-favorites-add ha-icon {
         --mdc-icon-size: 18px;
-        margin-right: 6px;
       }
 
       /* The dialog footer buttons intentionally keep their existing size. */
@@ -712,7 +727,7 @@ function renderFlatSettingsStyles() {
 
         .dd-home-section-block .home-section-item,
         .dd-home-section-block .home-section-item.has-detail {
-          grid-template-columns: 22px 36px minmax(0, 1fr) 70px;
+          grid-template-columns: 22px 36px minmax(0, 1fr) 60px;
           gap: 8px;
           padding: 9px 8px;
         }
@@ -721,22 +736,25 @@ function renderFlatSettingsStyles() {
           height: 36px;
         }
         .dd-home-section-block .home-section-actions {
-          grid-template-columns: 34px 34px;
-          width: 70px;
+          grid-template-columns: 34px 24px;
+          width: 60px;
           grid-column: auto;
           justify-self: end;
         }
         .home-info-card-actions {
-          grid-template-columns: 34px 34px;
-          width: 70px;
+          grid-template-columns: 34px 24px;
+          width: 60px;
         }
         .dd-home-section-block .home-section-toggle,
+        .dd-flat-subitem-row .home-section-toggle {
+          width: 34px;
+          height: 34px;
+        }
         .dd-home-section-block .dd-home-detail-toggle,
         .dd-home-section-block .dd-home-detail-spacer,
-        .dd-flat-subitem-row .home-section-toggle,
         .dd-flat-subitem-row .dd-home-detail-toggle,
         .dd-flat-subitem-row .dd-home-detail-spacer {
-          width: 34px;
+          width: 24px;
           height: 34px;
         }
         .dd-home-section-block .home-section-toggle ha-icon,
@@ -751,14 +769,17 @@ function renderFlatSettingsStyles() {
           line-height: 1.3;
         }
 
-        .dd-home-inline-detail,
-        .dd-flat-subdetail {
+          .dd-home-inline-detail {
           margin-left: 10px;
           padding: 8px 0 10px 10px;
         }
+        .dd-flat-subdetail {
+          margin-left: 8px;
+          padding: 6px 0 8px 10px;
+        }
 
         .dd-flat-subitem-row {
-          grid-template-columns: 36px minmax(0, 1fr) 70px;
+          grid-template-columns: 36px minmax(0, 1fr) 60px;
           gap: 8px;
           padding: 8px 2px;
         }
@@ -783,6 +804,13 @@ function renderFlatSettingsStyles() {
         }
         .dd-inline-section-heading-action .home-custom-card-add {
           justify-self: start;
+        }
+        .dd-favorites-manual-heading {
+          grid-template-columns: 1fr auto;
+          align-items: center;
+        }
+        .dd-favorites-manual-heading .home-custom-card-add {
+          justify-self: end;
         }
 
         .dd-settings-version-footer {
