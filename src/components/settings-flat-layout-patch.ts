@@ -2,6 +2,7 @@ import { mdiDrag } from "@mdi/js";
 import { html, nothing } from "lit";
 import type { HomeInformationCardKey, HomeSectionKey } from "../types/strategy";
 import { DEFAULT_HOME_INFORMATION_CARDS, HOME_INFORMATION_CARD_META, HOME_SECTION_META } from "../utils/home-sections";
+import { DD_NEXT_VERSION } from "../version";
 
 const EDITOR_TAG = "dwains-dashboard-next-strategy-editor";
 
@@ -12,10 +13,35 @@ function applyFlatSettingsLayout(): void {
     if (!proto || proto.__ddFlatSettingsLayoutApplied) return;
     proto.__ddFlatSettingsLayoutApplied = true;
 
-    const nativeSettingsOverview = proto._renderSettingsOverview;
     proto._renderSettingsOverview = function () {
       scheduleCancelButtonLabel(this);
-      return nativeSettingsOverview.call(this);
+      const groups = [
+        { key: "general", title: this._t("settings.general") },
+        { key: "layout", title: this._t("settings.dashboard_layout") },
+        { key: "advanced", title: this._t("settings.advanced") },
+      ];
+      const items = this._settingsOverviewItems();
+
+      return html`
+        <div class="editor-container dd-flat-settings dd-settings-overview">
+          ${renderFlatSettingsStyles()}
+          ${groups.map((group: any) => {
+            const groupItems = items.filter((item: any) => item.group === group.key);
+            if (!groupItems.length) return nothing;
+            return html`
+              <section class="settings-nav-section">
+                <h3>${group.title}</h3>
+                <div class="settings-nav-list">
+                  ${groupItems.map((item: any) => this._renderSettingsNavItem(item))}
+                </div>
+              </section>
+            `;
+          })}
+          <div class="dd-settings-version-footer">
+            Dwains Dashboard Next · v${DD_NEXT_VERSION}
+          </div>
+        </div>
+      `;
     };
 
     proto._renderSettingsDetailPage = function (page: string) {
@@ -46,12 +72,15 @@ function applyFlatSettingsLayout(): void {
 
     proto._renderHomeLayoutSettingsPanel = function () {
       this._homeSettingsDetail ||= "overview";
-      return this._renderSettingsPanel(
-        "mdi:home-edit-outline",
-        this._t("settings.home_layout"),
-        this._t("settings.home_layout_description"),
-        this._renderHomeSectionOrder(),
-      );
+      return html`
+        <section class="dd-home-layout-panel">
+          <div class="dd-home-layout-heading">
+            <strong>${this._t("settings.home_layout")}</strong>
+            <span>${this._t("settings.home_layout_description")}</span>
+          </div>
+          ${this._renderHomeSectionOrder()}
+        </section>
+      `;
     };
 
     proto._renderFavoritesSettingsPanel = function () {
@@ -130,7 +159,7 @@ function applyFlatSettingsLayout(): void {
                         <button class="dd-home-detail-toggle" type="button" aria-expanded=${climateOpen ? "true" : "false"} aria-label=${this._t(meta.labelKey)} @click=${toggleClimate}>
                           <ha-icon icon=${climateOpen ? "mdi:chevron-up" : "mdi:chevron-down"}></ha-icon>
                         </button>
-                      ` : nothing}
+                      ` : html`<span class="dd-home-detail-spacer" aria-hidden="true"></span>`}
                     </div>
                   </div>
                   ${isClimate && climateOpen ? html`
@@ -194,7 +223,7 @@ function applyFlatSettingsLayout(): void {
             <button class="home-layout-reset" type="button" @click=${this._resetHomeCameraSettings}>
               ${this._t("settings.reset_camera_cards")}
             </button>
-          ` : html`<div class="home-camera-settings-empty">${this._t("settings.home_camera_cards_empty")}</div>`}
+          ` : html`<div class="dd-empty-state">${this._t("settings.home_camera_cards_empty")}</div>`}
         </div>
       `;
     };
@@ -261,7 +290,7 @@ function applyFlatSettingsLayout(): void {
                 </div>
               `)}
             </div>
-          ` : html`<div class="home-camera-settings-empty">${this._t("settings.no_home_custom_cards")}</div>`}
+          ` : html`<div class="dd-empty-state">${this._t("settings.no_home_custom_cards")}</div>`}
         </div>
       `;
     };
@@ -355,7 +384,7 @@ function applyFlatSettingsLayout(): void {
                         >
                           <ha-icon icon=${open ? "mdi:chevron-up" : "mdi:chevron-down"}></ha-icon>
                         </button>
-                      ` : nothing}
+                      ` : html`<span class="dd-home-detail-spacer" aria-hidden="true"></span>`}
                     </div>
                   </div>
                   ${open ? html`<div class="dd-home-inline-detail">${renderDetail(section)}</div>` : nothing}
@@ -402,6 +431,17 @@ function renderFlatSettingsStyles() {
       .dd-flat-settings .settings-nav-section,
       .dd-flat-settings .settings-detail-content { max-width: 940px; margin-inline: auto; }
 
+      .dd-settings-overview .settings-nav-section:first-of-type { margin-top: 0; }
+      .dd-settings-version-footer {
+        max-width: 940px;
+        margin: 22px auto 4px;
+        padding-top: 14px;
+        border-top: 1px solid var(--divider-color);
+        color: var(--secondary-text-color);
+        font-size: 11px;
+        text-align: center;
+      }
+
       .dd-subpage-header {
         max-width: 940px;
         min-height: 52px;
@@ -416,22 +456,47 @@ function renderFlatSettingsStyles() {
         background: color-mix(in srgb, var(--card-background-color) 96%, var(--primary-color));
       }
       .dd-subpage-back {
-        width: 38px; height: 38px; flex: 0 0 38px;
-        display: inline-grid; place-items: center;
-        border: 0; border-radius: 999px;
+        width: 38px;
+        height: 38px;
+        flex: 0 0 38px;
+        display: inline-grid;
+        place-items: center;
+        border: 0;
+        border-radius: 999px;
         color: var(--primary-color);
         background: color-mix(in srgb, var(--primary-color) 9%, transparent);
         cursor: pointer;
       }
       .dd-subpage-back ha-icon { --mdc-icon-size: 20px; }
       .dd-subpage-title {
-        min-width: 0; overflow: hidden;
+        min-width: 0;
+        overflow: hidden;
         color: var(--primary-text-color);
-        font-size: 18px; font-weight: 800; line-height: 1.2;
-        text-overflow: ellipsis; white-space: nowrap;
+        font-size: 18px;
+        font-weight: 800;
+        line-height: 1.2;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
-      .dd-home-flat-layout { padding-top: 2px; }
+      .dd-home-layout-panel { min-width: 0; }
+      .dd-home-layout-heading {
+        display: grid;
+        gap: 5px;
+        margin: 0 0 14px;
+      }
+      .dd-home-layout-heading strong {
+        color: var(--primary-text-color);
+        font-size: 15px;
+        line-height: 1.3;
+      }
+      .dd-home-layout-heading span {
+        color: var(--secondary-text-color);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .dd-home-flat-layout { padding-top: 0; }
       .dd-home-section-block {
         overflow: hidden;
         border: 1px solid transparent;
@@ -439,8 +504,8 @@ function renderFlatSettingsStyles() {
         transition: border-color .16s ease, background .16s ease;
       }
       .dd-home-section-block.open {
-        border-color: color-mix(in srgb, var(--primary-color) 22%, var(--divider-color));
-        background: color-mix(in srgb, var(--primary-color) 2%, var(--card-background-color));
+        border-color: var(--divider-color);
+        background: color-mix(in srgb, var(--primary-color) 1.5%, var(--card-background-color));
       }
       .dd-home-section-block.open > .home-section-item {
         border: 0;
@@ -452,8 +517,16 @@ function renderFlatSettingsStyles() {
       .dd-home-section-block .home-section-item.has-detail {
         grid-template-columns: 32px 42px minmax(0, 1fr) auto;
       }
+
       .dd-home-section-block .home-section-actions,
-      .home-info-card-actions,
+      .home-info-card-actions {
+        display: grid;
+        grid-template-columns: 38px 38px;
+        align-items: center;
+        justify-content: end;
+        gap: 2px;
+        width: 78px;
+      }
       .dd-inline-actions {
         display: inline-flex;
         align-items: center;
@@ -461,69 +534,139 @@ function renderFlatSettingsStyles() {
         gap: 2px;
         white-space: nowrap;
       }
+
+      .dd-home-detail-toggle,
+      .dd-home-detail-spacer,
+      .dd-icon-action {
+        width: 38px;
+        height: 38px;
+      }
       .dd-home-detail-toggle,
       .dd-icon-action {
-        width: 38px; height: 38px;
-        display: inline-grid; place-items: center;
-        border: 0; border-radius: 999px;
+        display: inline-grid;
+        place-items: center;
+        border: 0;
+        border-radius: 0;
         color: var(--secondary-text-color);
         background: transparent;
         cursor: pointer;
       }
+      .dd-home-detail-spacer {
+        display: block;
+        pointer-events: none;
+      }
+      .dd-home-detail-toggle:hover,
+      .dd-icon-action:hover {
+        color: var(--primary-text-color);
+        background: transparent;
+      }
       .dd-home-section-block.open > .home-section-item .dd-home-detail-toggle,
       .dd-flat-subitem.open > .dd-flat-subitem-row .dd-home-detail-toggle {
         color: var(--primary-color);
-        background: color-mix(in srgb, var(--primary-color) 9%, transparent);
+        background: transparent;
       }
       .dd-home-detail-toggle ha-icon,
       .dd-icon-action ha-icon { --mdc-icon-size: 19px; }
 
-      .dd-home-inline-detail { padding: 10px 14px 14px; }
+      .dd-home-inline-detail,
+      .dd-flat-subdetail {
+        margin-left: 12px;
+        padding: 10px 0 12px 12px;
+        border-left: 2px solid color-mix(in srgb, var(--divider-color) 78%, var(--primary-color));
+      }
       .dd-home-house-information { display: block; }
-      .dd-inline-section { min-width: 0; }
-      .dd-inline-section-heading { display: grid; gap: 4px; padding: 4px 4px 12px; }
-      .dd-inline-section-heading > strong,
-      .dd-inline-section-heading > div > strong { color: var(--primary-text-color); font-size: 14px; line-height: 1.3; }
-      .dd-inline-section-heading > span,
-      .dd-inline-section-heading > div > span { color: var(--secondary-text-color); font-size: 12px; line-height: 1.4; }
-      .dd-inline-section-heading-action { grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; }
-      .dd-inline-section-heading-action > div { display: grid; gap: 4px; }
 
-      .dd-flat-sublist { overflow: hidden; border-top: 1px solid var(--divider-color); }
-      .dd-flat-subitem + .dd-flat-subitem,
-      .dd-flat-subitem-row + .dd-flat-subitem-row { border-top: 1px solid var(--divider-color); }
-      .dd-flat-subitem-row {
-        min-height: 62px;
+      .dd-inline-section { min-width: 0; }
+      .dd-inline-section-heading {
         display: grid;
-        grid-template-columns: 42px minmax(0, 1fr) auto;
+        gap: 4px;
+        padding: 2px 2px 10px;
+      }
+      .dd-inline-section-heading > strong,
+      .dd-inline-section-heading > div > strong {
+        color: var(--primary-text-color);
+        font-size: 14px;
+        line-height: 1.3;
+      }
+      .dd-inline-section-heading > span,
+      .dd-inline-section-heading > div > span {
+        color: var(--secondary-text-color);
+        font-size: 12px;
+        line-height: 1.4;
+      }
+      .dd-inline-section-heading-action {
+        grid-template-columns: minmax(0, 1fr) auto;
         align-items: center;
         gap: 10px;
-        padding: 9px 4px;
+      }
+      .dd-inline-section-heading-action > div { display: grid; gap: 4px; }
+
+      .dd-flat-sublist {
+        overflow: hidden;
+        border-top: 1px solid var(--divider-color);
+      }
+      .dd-flat-subitem + .dd-flat-subitem,
+      .dd-flat-subitem-row + .dd-flat-subitem-row {
+        border-top: 1px solid var(--divider-color);
+      }
+      .dd-flat-subitem-row {
+        min-height: 58px;
+        display: grid;
+        grid-template-columns: 40px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 9px;
+        padding: 8px 2px;
         box-sizing: border-box;
       }
-      .dd-draggable-subitem { grid-template-columns: 24px 42px minmax(0, 1fr) auto; cursor: grab; }
+      .dd-draggable-subitem {
+        grid-template-columns: 22px 40px minmax(0, 1fr) auto;
+        cursor: grab;
+      }
       .dd-draggable-subitem:active { cursor: grabbing; }
-      .dd-flat-subitem-row .home-section-icon { width: 42px; height: 42px; }
+      .dd-flat-subitem-row .home-section-icon {
+        width: 40px;
+        height: 40px;
+      }
       .dd-flat-subitem-row .home-section-copy { min-width: 0; }
       .dd-flat-subitem-row .home-section-title { font-size: 14px; }
-      .dd-flat-subitem-row .home-section-description { font-size: 12px; line-height: 1.35; }
-      .dd-flat-subdetail {
-        margin-left: 52px;
-        padding: 0 0 12px 12px;
-        border-left: 2px solid color-mix(in srgb, var(--primary-color) 45%, var(--divider-color));
+      .dd-flat-subitem-row .home-section-description {
+        font-size: 12px;
+        line-height: 1.35;
       }
       .dd-flat-subdetail .home-info-card-section { padding: 0; }
-      .dd-flat-subdetail .home-info-card-header { padding: 10px 4px 8px; }
-      .dd-flat-subdetail .home-info-card-list { border: 0; border-radius: 0; }
-      .dd-flat-subdetail .home-info-card-item { border: 0; border-top: 1px solid var(--divider-color); border-radius: 0; background: transparent; }
+      .dd-flat-subdetail .home-info-card-header { padding: 4px 2px 8px; }
+      .dd-flat-subdetail .home-info-card-list {
+        border: 0;
+        border-radius: 0;
+      }
+      .dd-flat-subdetail .home-info-card-item {
+        border: 0;
+        border-top: 1px solid var(--divider-color);
+        border-radius: 0;
+        background: transparent;
+      }
 
-      .dd-favorites-inline { padding: 4px; }
+      .dd-empty-state,
+      .no-favorites {
+        margin: 8px 2px 2px;
+        padding: 14px 10px;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        color: var(--secondary-text-color);
+        text-align: center;
+        font-size: 12px;
+        line-height: 1.45;
+      }
+      .no-favorites p { margin: 0; }
+
+      .dd-favorites-inline { padding: 2px; }
       .dd-favorite-suggestions-row {
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
         align-items: center;
-        gap: 14px;
-        padding: 8px 4px 14px;
+        gap: 12px;
+        padding: 6px 2px 12px;
         border-bottom: 1px solid var(--divider-color);
       }
       .dd-favorite-suggestions-copy {
@@ -541,49 +684,111 @@ function renderFlatSettingsStyles() {
         font-size: 12px;
         line-height: 1.45;
       }
-      .dd-favorites-picker { padding-top: 12px; }
-      .dd-favorites-picker .entity-picker-header { margin-bottom: 10px; }
+      .dd-favorites-picker { padding-top: 10px; }
+      .dd-favorites-picker .entity-picker-header { margin-bottom: 8px; }
       .dd-favorites-picker .entity-picker-header h4 { margin: 0; }
-      .dd-favorites-picker mwc-button ha-icon { --mdc-icon-size: 18px; margin-right: 6px; }
+      .dd-favorites-picker mwc-button ha-icon {
+        --mdc-icon-size: 18px;
+        margin-right: 6px;
+      }
+
+      /* The dialog footer buttons intentionally keep their existing size. */
 
       @media (max-width: 700px) {
         .dd-flat-settings { padding-inline: 10px; }
         .dd-flat-settings .settings-nav-section,
         .dd-flat-settings .settings-detail-content,
-        .dd-subpage-header { max-width: none; }
-        .dd-subpage-header { margin-bottom: 10px; border-radius: 12px; }
+        .dd-subpage-header,
+        .dd-settings-version-footer { max-width: none; }
+        .dd-subpage-header {
+          margin-bottom: 10px;
+          border-radius: 12px;
+        }
         .dd-subpage-title { font-size: 17px; }
       }
 
       @media (max-width: 600px) {
+        .dd-home-layout-heading { margin-bottom: 10px; }
+
         .dd-home-section-block .home-section-item,
         .dd-home-section-block .home-section-item.has-detail {
-          grid-template-columns: 22px 36px minmax(0, 1fr) auto;
+          grid-template-columns: 22px 36px minmax(0, 1fr) 70px;
           gap: 8px;
-          padding: 10px 8px;
+          padding: 9px 8px;
         }
-        .dd-home-section-block .home-section-icon { width: 36px; height: 36px; }
-        .dd-home-section-block .home-section-actions { grid-column: auto; justify-self: end; }
+        .dd-home-section-block .home-section-icon {
+          width: 36px;
+          height: 36px;
+        }
+        .dd-home-section-block .home-section-actions {
+          grid-template-columns: 34px 34px;
+          width: 70px;
+          grid-column: auto;
+          justify-self: end;
+        }
+        .home-info-card-actions {
+          grid-template-columns: 34px 34px;
+          width: 70px;
+        }
         .dd-home-section-block .home-section-toggle,
-        .dd-home-section-block .dd-home-detail-toggle { width: 34px; height: 34px; }
-        .dd-home-section-block .home-section-toggle ha-icon,
-        .dd-home-section-block .dd-home-detail-toggle ha-icon { --mdc-icon-size: 18px; }
-        .dd-home-section-block .home-section-title { font-size: 14px; }
-        .dd-home-section-block .home-section-description { font-size: 11px; line-height: 1.3; }
-        .dd-home-inline-detail { padding: 8px 10px 12px; }
-
-        .dd-flat-subitem-row { grid-template-columns: 36px minmax(0, 1fr) auto; gap: 8px; padding: 9px 2px; }
-        .dd-draggable-subitem { grid-template-columns: 20px 36px minmax(0, 1fr) auto; }
-        .dd-flat-subitem-row .home-section-icon { width: 36px; height: 36px; }
+        .dd-home-section-block .dd-home-detail-toggle,
+        .dd-home-section-block .dd-home-detail-spacer,
         .dd-flat-subitem-row .home-section-toggle,
         .dd-flat-subitem-row .dd-home-detail-toggle,
-        .dd-flat-subitem-row .dd-icon-action { width: 32px; height: 32px; }
+        .dd-flat-subitem-row .dd-home-detail-spacer {
+          width: 34px;
+          height: 34px;
+        }
+        .dd-home-section-block .home-section-toggle ha-icon,
+        .dd-home-section-block .dd-home-detail-toggle ha-icon,
         .dd-flat-subitem-row .home-section-toggle ha-icon,
-        .dd-flat-subitem-row .dd-home-detail-toggle ha-icon,
-        .dd-flat-subitem-row .dd-icon-action ha-icon { --mdc-icon-size: 17px; }
-        .dd-flat-subdetail { margin-left: 44px; padding-left: 10px; }
-        .dd-inline-section-heading-action { grid-template-columns: 1fr; align-items: stretch; }
-        .dd-inline-section-heading-action .home-custom-card-add { justify-self: start; }
+        .dd-flat-subitem-row .dd-home-detail-toggle ha-icon {
+          --mdc-icon-size: 18px;
+        }
+        .dd-home-section-block .home-section-title { font-size: 14px; }
+        .dd-home-section-block .home-section-description {
+          font-size: 11px;
+          line-height: 1.3;
+        }
+
+        .dd-home-inline-detail,
+        .dd-flat-subdetail {
+          margin-left: 10px;
+          padding: 8px 0 10px 10px;
+        }
+
+        .dd-flat-subitem-row {
+          grid-template-columns: 36px minmax(0, 1fr) 70px;
+          gap: 8px;
+          padding: 8px 2px;
+        }
+        .dd-draggable-subitem {
+          grid-template-columns: 20px 36px minmax(0, 1fr) auto;
+        }
+        .dd-flat-subitem-row .home-section-icon {
+          width: 36px;
+          height: 36px;
+        }
+        .dd-flat-subitem-row .dd-icon-action {
+          width: 32px;
+          height: 32px;
+        }
+        .dd-flat-subitem-row .dd-icon-action ha-icon {
+          --mdc-icon-size: 17px;
+        }
+
+        .dd-inline-section-heading-action {
+          grid-template-columns: 1fr;
+          align-items: stretch;
+        }
+        .dd-inline-section-heading-action .home-custom-card-add {
+          justify-self: start;
+        }
+
+        .dd-settings-version-footer {
+          margin-top: 18px;
+          font-size: 10px;
+        }
       }
     </style>
   `;
