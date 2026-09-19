@@ -482,8 +482,8 @@ export const ru = {
   'settings.hidden_in_dd': 'Скрыто в DD',
   'settings.discard_confirm': 'Отменить несохранённые настройки панели?',
 
-  'settings.show_suggested_favorites': "Автоматически",
-  'settings.suggested_favorites_description': "Home Assistant автоматически выбирает часто используемые рекомендуемые сущности в качестве избранных.",
+  'settings.show_suggested_favorites': "Показывать предложенное избранное",
+  'settings.suggested_favorites_description': "Добавляет часто используемые сущности, предложенные Home Assistant, рядом с вашим собственным избранным. Выбранные вручную элементы всегда сохраняются.",
   'settings.add_entity': 'Добавить сущность',
   'settings.show_time': 'Показывать время и дату в заголовке',
   'settings.show_notifications': 'Показывать уведомления в Dwains Dashboard',
