@@ -238,7 +238,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _alarmSearchFilter = '';
 
   @state()
-  private _settingsPage: SettingsPageKey = restoreSettingsPage();
+  private _settingsPage: SettingsPageKey = "overview";
 
   @state()
   private _homeSettingsDetail: 'overview' | 'house_information' | 'climate' | 'cameras' | 'custom_cards' | 'favorites' = 'overview';
