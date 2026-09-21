@@ -4,7 +4,6 @@ import {
   mdiArrowUp,
   mdiCardAccountDetailsStarOutline,
   mdiChevronRight,
-  mdiDelete,
   mdiDrag,
   mdiEye,
   mdiEyeOff,
@@ -14,7 +13,6 @@ import {
   mdiHeartOutline,
   mdiHomeEditOutline,
   mdiPackageVariantClosedCheck,
-  mdiPencil,
   mdiPuzzleEditOutline,
   mdiShieldAccount,
   mdiThermometerWater,
@@ -827,33 +825,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     this._showAlarmPicker = false;
   }
 
-  private _homeSettingsDetailHeader(): { title: string; description: string; backLabel: string } | undefined {
-    if (this._homeSettingsDetail === 'overview') return undefined;
-
-    if (this._homeSettingsDetail === 'climate') {
-      return {
-        title: this._t('home.indoor_climate'),
-        description: this._t('settings.home_climate_areas_description'),
-        backLabel: this._t('home_section.devices.label'),
-      };
-    }
-
-    const section: HomeSectionKey = this._homeSettingsDetail === 'house_information'
-      ? 'devices'
-      : this._homeSettingsDetail;
-    const meta = HOME_SECTION_META[section];
-    return {
-      title: this._t(meta.labelKey),
-      description: this._t(meta.descriptionKey),
-      backLabel: this._t('settings.home_page'),
-    };
-  }
-
-  private _backFromHomeSettingsDetail = (): void => {
-    this._homeSettingsDetail = this._homeSettingsDetail === 'climate' ? 'house_information' : 'overview';
-    this._closeInlinePickers();
-  };
-
   private _renderSettingsDetailPage(page: SettingsPageKey) {
     scheduleIntegratedSettingsHeader(this, true);
     const item = this._settingsOverviewItems().find((candidate) => candidate.page === page);
@@ -1040,13 +1011,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     if (section === 'custom_cards') return 'custom_cards';
     if (section === 'favorites') return 'favorites';
     return undefined;
-  }
-
-  private _openHomeSectionDetail(section: HomeSectionKey): void {
-    const detail = this._homeSectionDetail(section);
-    if (!detail) return;
-    this._homeSettingsDetail = detail;
-    this._closeInlinePickers();
   }
 
   private _renderHomeLayoutSettingsPanel() {
@@ -1983,15 +1947,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     });
   }
 
-  private _moveHomeCamera(entityId: string, direction: -1 | 1): void {
-    const order = this._getHomeCameraSettings().map(camera => camera.entityId);
-    const index = order.indexOf(entityId);
-    const target = index + direction;
-    if (index < 0 || target < 0 || target >= order.length) return;
-    [order[index], order[target]] = [order[target]!, order[index]!];
-    this._setHomeCameraOrder(order);
-  }
-
   private _toggleHomeCamera(entityId: string): void {
     if (!this._config) return;
     const hidden = new Set(this._config.settings?.home_cameras_hidden || []);
@@ -2047,18 +2002,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     };
 
     this._fireConfigChanged(newConfig);
-  }
-
-  private _moveHomeSection(section: HomeSectionKey, direction: -1 | 1): void {
-    const order = this._getHomeSectionsOrder();
-    const index = order.indexOf(section);
-    const targetIndex = index + direction;
-
-    if (index < 0 || targetIndex < 0 || targetIndex >= order.length) return;
-
-    const next = [...order];
-    [next[index], next[targetIndex]] = [next[targetIndex]!, next[index]!];
-    this._setHomeSectionsOrder(next);
   }
 
   private _resetHomeSectionsOrder = (): void => {
@@ -2260,17 +2203,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     this._updateHomeCustomCards(this._getHomeCustomCards().filter(card => card.id !== id));
   }
 
-  private _moveHomeCustomCard(id: string, direction: -1 | 1): void {
-    const cards = this._getHomeCustomCards();
-    const index = cards.findIndex(card => card.id === id);
-    const target = index + direction;
-    if (index < 0 || target < 0 || target >= cards.length) return;
-
-    const next = [...cards];
-    [next[index], next[target]] = [next[target]!, next[index]!];
-    this._updateHomeCustomCards(next);
-  }
-
   private _renderHomeCustomCardsSettings() {
     const cards = this._getHomeCustomCards();
 
@@ -2450,9 +2382,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
             ${cameras.map((camera, index) => {
               const enabled = !hidden.has(camera.entityId);
               const unavailable = ['unavailable', 'unknown'].includes(String(this.hass?.states[camera.entityId]?.state || '').toLowerCase());
+              const dragOver = this._dragOverHomeCameraIndex === index &&
+                Boolean(this._draggedHomeCamera) &&
+                this._draggedHomeCamera !== camera.entityId;
               return html`
                 <div
-                  class="dd-flat-subitem-row dd-draggable-subitem"
+                  class="dd-flat-subitem-row dd-draggable-subitem ${dragOver ? 'drag-over' : ''}"
                   draggable="true"
                   @dragstart=${(event: DragEvent) => this._handleHomeCameraDragStart(event, camera.entityId)}
                   @dragend=${this._handleHomeCameraDragEnd}
