@@ -126,6 +126,165 @@ const SETTINGS_ICON_PATHS: Record<string, string> = {
   "mdi:view-dashboard-edit": mdiViewDashboardEdit,
 };
 
+
+function scheduleIntegratedSettingsHeader(editor: any, detail = false): void {
+  window.setTimeout(() => {
+    const desktop = window.matchMedia("(min-width: 701px)").matches;
+    const saveLabel = String(editor?._t?.("common.save") || "Save");
+    const cancelLabel = String(editor?._t?.("common.cancel") || "Cancel");
+    const backLabel = String(editor?._t?.("common.back") || "Back");
+    const titleLabel = String(editor?._t?.("settings.title") || "Dashboard settings");
+    const subtitleLabel = String(editor?._t?.("settings.subtitle") || "");
+
+    const state = (window as any).__ddIntegratedSettingsHeaderState || ((window as any).__ddIntegratedSettingsHeaderState = {
+      header: undefined,
+      subtitle: undefined,
+      backButton: undefined,
+      resizeBound: false,
+      editor: undefined,
+    });
+    state.editor = editor;
+
+    if (!state.resizeBound) {
+      state.resizeBound = true;
+      window.addEventListener("resize", () => {
+        if (state.editor) scheduleIntegratedSettingsHeader(state.editor, state.editor._settingsPage !== "overview");
+      });
+    }
+
+    const roots: Array<Document | ShadowRoot | Element> = [document];
+    const seen = new Set<any>();
+    const collect = (root: Document | ShadowRoot | Element) => {
+      if (seen.has(root)) return;
+      seen.add(root);
+      const all = root.querySelectorAll?.("*") || [];
+      all.forEach((node: any) => {
+        if (node.shadowRoot) {
+          roots.push(node.shadowRoot);
+          collect(node.shadowRoot);
+        }
+      });
+    };
+    collect(document);
+
+    const textOf = (node: any) => String(node?.textContent || "").replace(/\s+/g, " ").trim();
+    const findControl = (labels: string[]) => {
+      for (const root of roots) {
+        const nodes = root.querySelectorAll?.("button, ha-button, mwc-button") || [];
+        for (const node of nodes as any) {
+          const text = textOf(node);
+          if (labels.includes(text)) return node;
+        }
+      }
+      return undefined;
+    };
+
+    const saveButton = findControl([saveLabel, "Speichern", "Save"]);
+    const cancelButton = findControl([cancelLabel, "Abbrechen", "Cancel", "Back", "Zurück"]);
+
+    let titleNode: any;
+    for (const root of roots) {
+      const nodes = root.querySelectorAll?.("h1, h2, h3, div, span") || [];
+      for (const node of nodes as any) {
+        const text = textOf(node);
+        if (text === titleLabel || text === "Dashboard-Einstellungen" || text === "Dashboard Settings") {
+          titleNode = node;
+          break;
+        }
+      }
+      if (titleNode) break;
+    }
+
+    if (!saveButton || !cancelButton || !titleNode) return;
+
+    let header: any = saveButton;
+    while (header && header !== document.body) {
+      if (header.contains?.(titleNode) && header.contains?.(cancelButton)) break;
+      header = header.parentElement || header.getRootNode?.()?.host;
+    }
+    if (!header || header === document.body) return;
+
+    state.header = header;
+
+    // Normalize the cancel label after Home Assistant has rendered its action.
+    if (textOf(cancelButton) !== cancelLabel) cancelButton.textContent = cancelLabel;
+
+    // Hide the self-explanatory subtitle in the outer settings header.
+    let subtitleNode: any;
+    const candidates = header.querySelectorAll?.("p, small, div, span") || [];
+    for (const node of candidates as any) {
+      const text = textOf(node);
+      if (subtitleLabel && text === subtitleLabel) {
+        subtitleNode = node;
+        break;
+      }
+      if (text === "Wähle einen Abschnitt aus. Änderungen werden mit „Speichern“ übernommen.") {
+        subtitleNode = node;
+        break;
+      }
+    }
+    if (subtitleNode) {
+      state.subtitle = subtitleNode;
+      subtitleNode.style.display = desktop ? "none" : "";
+    }
+
+    if (!desktop) {
+      const style = header.style as CSSStyleDeclaration;
+      style.position = "";
+      style.top = "";
+      style.zIndex = "";
+      style.background = "";
+      style.boxShadow = "";
+      state.backButton?.remove?.();
+      state.backButton = undefined;
+      return;
+    }
+
+    const style = header.style as CSSStyleDeclaration;
+    style.position = "sticky";
+    style.top = "0";
+    style.zIndex = "45";
+    style.background = "var(--primary-background-color, var(--card-background-color))";
+    style.boxShadow = "0 8px 24px rgba(15, 23, 42, .08)";
+
+    if (detail) {
+      let back = state.backButton as any;
+      if (!back || !back.isConnected) {
+        back = document.createElement("ha-button") as any;
+        back.setAttribute("appearance", "plain");
+        back.className = "dd-desktop-settings-back";
+        const parent = cancelButton.parentNode;
+        parent?.insertBefore(back, cancelButton);
+        state.backButton = back;
+      }
+      back.textContent = backLabel;
+      back.onclick = () => editor._backToSettingsOverview();
+    } else {
+      state.backButton?.remove?.();
+      state.backButton = undefined;
+    }
+  }, 0);
+}
+
+function cleanupIntegratedSettingsHeader(): void {
+  const state = (window as any).__ddIntegratedSettingsHeaderState;
+  if (!state) return;
+  state.backButton?.remove?.();
+  if (state.subtitle) state.subtitle.style.display = "";
+  if (state.header) {
+    const style = state.header.style as CSSStyleDeclaration;
+    style.position = "";
+    style.top = "";
+    style.zIndex = "";
+    style.background = "";
+    style.boxShadow = "";
+  }
+  state.header = undefined;
+  state.subtitle = undefined;
+  state.backButton = undefined;
+  state.editor = undefined;
+}
+
 @customElement("dwains-dashboard-next-strategy-editor")
 export class DwainsDashboardStrategyEditor extends LitElement {
   private _hass?: HomeAssistant;
@@ -180,6 +339,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
   @state()
   private _draggedHomeCamera?: string;
+  private _draggedHomeCustomCard?: string;
 
   @state()
   private _dragOverHomeCameraIndex?: number;
@@ -319,6 +479,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     if (this.hass) {
       void this._fetchData();
     }
+  }
+
+  disconnectedCallback() {
+    cleanupIntegratedSettingsHeader();
+    super.disconnectedCallback();
   }
 
 
@@ -462,6 +627,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   }
 
   private _renderSettingsOverview() {
+    scheduleIntegratedSettingsHeader(this, false);
     const groups: Array<{ key: SettingsPageItem["group"]; title: string }> = [
       { key: "general", title: this._t('settings.general') },
       { key: "layout", title: this._t('settings.dashboard_layout') },
@@ -470,24 +636,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     const items = this._settingsOverviewItems();
 
     return html`
-      <div class="editor-container">
-        <div class="settings-overview-hero">
-          <div>
-            <h2>${this._t('settings.title')}</h2>
-            <p>${this._t('settings.subtitle')}</p>
-            <div class="settings-version-chip">
-              ${this._renderSettingsIcon("mdi:package-variant-closed-check")}
-              <span>${this._t('settings.loaded_version')}</span>
-              <strong>v${DD_NEXT_VERSION}</strong>
-            </div>
-          </div>
-          ${this._renderSettingsIcon("mdi:tune-variant", "settings-hero-icon")}
-        </div>
-
+      <div class="editor-container dd-flat-settings dd-settings-overview">
         ${groups.map((group) => {
           const groupItems = items.filter((item) => item.group === group.key);
           if (!groupItems.length) return nothing;
-
           return html`
             <section class="settings-nav-section">
               <h3>${group.title}</h3>
@@ -497,6 +649,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
             </section>
           `;
         })}
+        <div class="dd-settings-version-footer">Dwains Dashboard Next · v${DD_NEXT_VERSION}</div>
       </div>
     `;
   }
@@ -702,28 +855,24 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   };
 
   private _renderSettingsDetailPage(page: SettingsPageKey) {
+    scheduleIntegratedSettingsHeader(this, true);
     const item = this._settingsOverviewItems().find((candidate) => candidate.page === page);
     if (!item) return this._renderSettingsOverview();
 
-    const homeDetail = page === 'home' ? this._homeSettingsDetailHeader() : undefined;
-    const title = homeDetail?.title || item.title;
-    const description = homeDetail?.description || item.description;
-    const backLabel = homeDetail?.backLabel || this._t('settings.all_settings');
-    const backAction = homeDetail ? this._backFromHomeSettingsDetail : this._backToSettingsOverview;
-
     return html`
-      <div class="editor-container">
-        <div class="settings-detail-toolbar">
-          <button class="settings-back-button" type="button" @click=${backAction}>
+      <div class="editor-container dd-flat-settings">
+        <div class="dd-subpage-header">
+          <button
+            class="dd-subpage-back"
+            type="button"
+            aria-label=${this._t('settings.all_settings')}
+            @click=${this._backToSettingsOverview}
+          >
             <ha-icon icon="mdi:arrow-left"></ha-icon>
-            <span>${backLabel}</span>
           </button>
-          <div class="settings-detail-title">
-            <span>${title}</span>
-            <small>${description}</small>
-          </div>
+          <div class="dd-subpage-title">${item.title}</div>
         </div>
-        <div class="settings-detail-content">
+        <div class="settings-detail-content dd-flat-content">
           ${this._renderSettingsPageContent(page)}
         </div>
       </div>
@@ -901,54 +1050,13 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   }
 
   private _renderHomeLayoutSettingsPanel() {
-    if (this._homeSettingsDetail === 'climate') {
-      return this._renderSettingsPanel(
-        "mdi:home-thermometer-outline",
-        this._t('home.indoor_climate'),
-        this._t('settings.home_climate_areas_description'),
-        this._renderHomeClimateAreaSettings()
-      );
-    }
-
-    if (this._homeSettingsDetail === 'house_information') {
-      return this._renderSettingsPanel(
-        "mdi:home-edit-outline",
-        this._t('settings.house_information_cards'),
-        this._t('settings.house_information_cards_description'),
-        this._renderHomeInformationCardSettings()
-      );
-    }
-
-    if (this._homeSettingsDetail === 'cameras') {
-      const meta = HOME_SECTION_META.cameras;
-      return this._renderSettingsPanel(
-        meta.icon,
-        this._t(meta.labelKey),
-        this._t(meta.descriptionKey),
-        this._renderHomeCameraSettings()
-      );
-    }
-
-    if (this._homeSettingsDetail === 'custom_cards') {
-      const meta = HOME_SECTION_META.custom_cards;
-      return this._renderSettingsPanel(
-        meta.icon,
-        this._t(meta.labelKey),
-        this._t(meta.descriptionKey),
-        this._renderHomeCustomCardsSettings()
-      );
-    }
-
-    if (this._homeSettingsDetail === 'favorites') {
-      return this._renderFavoritesSettingsPanel();
-    }
-
-    return this._renderSettingsPanel(
-      "mdi:home-edit-outline",
-      this._t('settings.home_layout'),
-      this._t('settings.home_layout_description'),
-      this._renderHomeSectionOrder()
-    );
+    this._homeSettingsDetail ||= "overview";
+    return html`
+      <section class="dd-home-layout-panel">
+        <p class="dd-home-page-description">${this._t('settings.home_layout_description')}</p>
+        ${this._renderHomeSectionOrder()}
+      </section>
+    `;
   }
 
   private _renderReplacementsSettingsPanel() {
@@ -974,41 +1082,33 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   }
 
   private _renderFavoritesSettingsPanel() {
-    return this._renderSettingsPanel(
-      "mdi:star",
-      this._t('home_section.favorites.label'),
-      this._t('settings.favorites_description'),
-      html`
-        <div class="favorites-section">
-          <div class="favorite-suggestions-toggle">
-            <ha-formfield .label=${this._t('settings.show_suggested_favorites')}>
-              <ha-switch
-                .checked=${this._config?.settings?.show_suggested_favorites !== false}
-                @change=${this._toggleSuggestedFavorites}
-              ></ha-switch>
-            </ha-formfield>
-            <p class="toggle-description">
-              ${this._t('settings.suggested_favorites_description')}
-            </p>
-          </div>
-          <div class="entity-picker">
-            <div class="entity-picker-header">
-              <h4>${this._t('settings.selected_entities')}</h4>
-              <mwc-button @click=${this._addFavoriteEntity} outlined>
-                <svg viewBox="0 0 24 24" width="20" height="20" style="margin-right: 8px;">
-                  <path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
-                </svg>
-                ${this._t('settings.add_entity')}
-              </mwc-button>
-            </div>
+    const suggestedEnabled = this._config?.settings?.show_suggested_favorites !== false;
 
-            ${this._renderSelectedEntities()}
-
-            ${this._showEntityPicker ? this._renderEntityPicker() : ''}
+    return html`
+      <div class="favorites-section dd-favorites-inline">
+        <div class="dd-favorite-suggestions-row">
+          <div class="dd-favorite-suggestions-copy">
+            <strong>${this._t('settings.show_suggested_favorites')}</strong>
+            <span>${this._t('settings.suggested_favorites_description')}</span>
           </div>
+          <ha-switch
+            .checked=${suggestedEnabled}
+            @change=${this._toggleSuggestedFavorites}
+          ></ha-switch>
         </div>
-      `
-    );
+        <div class="entity-picker dd-favorites-picker">
+          <div class="dd-inline-action-row dd-favorites-action-row">
+            <span></span>
+            <button class="home-custom-card-add dd-favorites-add" type="button" @click=${this._addFavoriteEntity}>
+              <ha-icon icon="mdi:plus"></ha-icon>
+              ${this._t('common.add')}
+            </button>
+          </div>
+          ${this._renderSelectedEntities()}
+          ${this._showEntityPicker ? this._renderEntityPicker() : nothing}
+        </div>
+      </div>
+    `;
   }
 
   private _renderTimeSettingsPanel() {
@@ -2000,46 +2100,66 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _renderHomeSectionOrder() {
     const order = this._getHomeSectionsOrder();
     const hiddenSections = this._getHiddenHomeSections();
+    const activeDetail = this._homeSettingsDetail;
+
+    const sectionIsOpen = (section: HomeSectionKey) => {
+      if (section === 'devices') return activeDetail === 'house_information' || activeDetail === 'climate';
+      return this._homeSectionDetail(section) === activeDetail;
+    };
+
+    const toggleDetail = (section: HomeSectionKey) => {
+      const detail = this._homeSectionDetail(section);
+      if (!detail) return;
+      this._homeSettingsDetail = sectionIsOpen(section) ? 'overview' : detail;
+      this._closeInlinePickers();
+    };
+
+    const renderDetail = (section: HomeSectionKey) => {
+      if (!sectionIsOpen(section)) return nothing;
+      if (section === 'cameras') return this._renderHomeCameraSettings();
+      if (section === 'custom_cards') return this._renderHomeCustomCardsSettings();
+      if (section === 'favorites') return this._renderFavoritesSettingsPanel();
+      if (section === 'devices') {
+        return html`<div class="dd-home-house-information">${this._renderHomeInformationCardSettings()}</div>`;
+      }
+      return nothing;
+    };
 
     return html`
-      <div class="home-layout-section">
+      <div class="home-layout-section dd-home-flat-layout">
         <div class="home-section-list ${this._draggedHomeSection ? 'dragging' : ''}">
-          ${repeat(
-            order,
-            section => section,
-            (section, index) => {
-              const meta = HOME_SECTION_META[section];
-              const enabled = !hiddenSections.has(section);
-              const isDragging = this._draggedHomeSection === section;
-              const isDragOver = this._dragOverHomeSectionIndex === index &&
-                this._draggedHomeSection &&
-                this._draggedHomeSection !== section;
+          ${order.map((section, index) => {
+            const meta = HOME_SECTION_META[section];
+            const enabled = !hiddenSections.has(section);
+            const detail = this._homeSectionDetail(section);
+            const open = sectionIsOpen(section);
+            const isDragging = this._draggedHomeSection === section;
+            const isDragOver = this._dragOverHomeSectionIndex === index &&
+              Boolean(this._draggedHomeSection) &&
+              this._draggedHomeSection !== section;
 
-              const detail = this._homeSectionDetail(section);
-              return html`
+            return html`
+              <div class="dd-home-section-block ${open ? 'open' : ''}">
                 <div
                   class="home-section-item ${enabled ? '' : 'disabled'} ${detail ? 'has-detail' : ''} ${isDragging ? 'dragging' : ''} ${isDragOver ? 'drag-over' : ''}"
                   draggable="true"
                   data-section=${section}
                   data-index=${index}
-                  @click=${() => detail && this._openHomeSectionDetail(section)}
-                  @dragstart=${(e: DragEvent) => this._handleHomeSectionDragStart(e, section)}
+                  @click=${() => detail && toggleDetail(section)}
+                  @dragstart=${(event: DragEvent) => this._handleHomeSectionDragStart(event, section)}
                   @dragend=${this._handleHomeSectionDragEnd}
-                  @dragover=${(e: DragEvent) => this._handleHomeSectionDragOver(e, index)}
+                  @dragover=${(event: DragEvent) => this._handleHomeSectionDragOver(event, index)}
                   @dragleave=${this._handleHomeSectionDragLeave}
-                  @drop=${(e: DragEvent) => this._handleHomeSectionDrop(e, index)}
+                  @drop=${(event: DragEvent) => this._handleHomeSectionDrop(event, index)}
                 >
                   <div class="home-section-handle" @click=${(event: Event) => event.stopPropagation()}>
                     <ha-svg-icon .path=${mdiDrag}></ha-svg-icon>
                   </div>
-                  <div class="home-section-icon">
-                    <ha-icon icon=${meta.icon}></ha-icon>
-                  </div>
+                  <div class="home-section-icon"><ha-icon icon=${meta.icon}></ha-icon></div>
                   <div class="home-section-copy">
                     <div class="home-section-title">${this._t(meta.labelKey)}</div>
                     <div class="home-section-description">${this._t(meta.descriptionKey)}</div>
                   </div>
-                  ${detail ? html`<ha-svg-icon class="home-section-detail-chevron" .path=${mdiChevronRight}></ha-svg-icon>` : nothing}
                   <div class="home-section-actions" @click=${(event: Event) => event.stopPropagation()}>
                     <button
                       class="home-section-toggle ${enabled ? 'enabled' : ''}"
@@ -2051,23 +2171,22 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                     >
                       <ha-icon icon=${enabled ? 'mdi:eye-outline' : 'mdi:eye-off-outline'}></ha-icon>
                     </button>
-                    <ha-icon-button
-                      .label=${this._t('settings.move_up')}
-                      .path=${mdiArrowUp}
-                      .disabled=${index === 0}
-                      @click=${() => this._moveHomeSection(section, -1)}
-                    ></ha-icon-button>
-                    <ha-icon-button
-                      .label=${this._t('settings.move_down')}
-                      .path=${mdiArrowDown}
-                      .disabled=${index === order.length - 1}
-                      @click=${() => this._moveHomeSection(section, 1)}
-                    ></ha-icon-button>
+                    ${detail ? html`
+                      <button
+                        class="dd-home-detail-toggle"
+                        type="button"
+                        aria-expanded=${open ? 'true' : 'false'}
+                        @click=${() => toggleDetail(section)}
+                      >
+                        <ha-icon icon=${open ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
+                      </button>
+                    ` : html`<span class="dd-home-detail-spacer" aria-hidden="true"></span>`}
                   </div>
                 </div>
-              `;
-            }
-          )}
+                ${open ? html`<div class="dd-home-inline-detail">${renderDetail(section)}</div>` : nothing}
+              </div>
+            `;
+          })}
         </div>
         <button class="home-layout-reset" type="button" @click=${this._resetHomeSectionsOrder}>
           ${this._t('settings.reset_layout')}
@@ -2155,61 +2274,64 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _renderHomeCustomCardsSettings() {
     const cards = this._getHomeCustomCards();
 
+    const onDragStart = (event: DragEvent, id: string) => {
+      this._draggedHomeCustomCard = id;
+      event.dataTransfer?.setData('text/plain', id);
+      if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
+    };
+
+    const onDrop = (event: DragEvent, targetIndex: number) => {
+      event.preventDefault();
+      const id = this._draggedHomeCustomCard || event.dataTransfer?.getData('text/plain');
+      this._draggedHomeCustomCard = undefined;
+      const current = this._getHomeCustomCards();
+      const from = current.findIndex((entry) => entry.id === id);
+      if (from < 0 || from === targetIndex) return;
+      const next = [...current];
+      const [moved] = next.splice(from, 1);
+      if (!moved) return;
+      next.splice(targetIndex, 0, moved);
+      this._updateHomeCustomCards(next);
+    };
+
     return html`
-      <div class="home-info-card-section home-custom-card-settings-section">
-        <div class="home-info-card-header">
-          <div>
-            <h4>${this._t('settings.home_custom_cards')}</h4>
-            <p>${this._t('settings.home_custom_cards_description')}</p>
-          </div>
+      <div class="dd-inline-section">
+        <div class="dd-inline-action-row">
+          <p class="dd-inline-description">${this._t('settings.home_custom_cards_description')}</p>
           <button class="home-custom-card-add" type="button" @click=${this._addHomeCustomCard}>
             <ha-icon icon="mdi:plus"></ha-icon>
             ${this._t('settings.add_home_card')}
           </button>
         </div>
         ${cards.length ? html`
-          <div class="home-custom-card-settings-list">
-            ${repeat(
-              cards,
-              entry => entry.id,
-              (entry, index) => html`
-                <div class="home-info-card-item home-custom-card-settings-item">
-                  <div class="home-section-icon"><ha-icon icon="mdi:cards-outline"></ha-icon></div>
-                  <div class="home-section-copy">
-                    <div class="home-section-title">${this._homeCustomCardTitle(entry)}</div>
-                    <div class="home-section-description">${this._homeCustomCardSubtitle(entry)}</div>
-                  </div>
-                  <div class="home-section-actions">
-                    <ha-icon-button
-                      .label=${this._t('settings.move_up')}
-                      .path=${mdiArrowUp}
-                      .disabled=${index === 0}
-                      @click=${() => this._moveHomeCustomCard(entry.id, -1)}
-                    ></ha-icon-button>
-                    <ha-icon-button
-                      .label=${this._t('settings.move_down')}
-                      .path=${mdiArrowDown}
-                      .disabled=${index === cards.length - 1}
-                      @click=${() => this._moveHomeCustomCard(entry.id, 1)}
-                    ></ha-icon-button>
-                    <ha-icon-button
-                      .label=${this._t('common.edit')}
-                      .path=${mdiPencil}
-                      @click=${() => this._editHomeCustomCard(entry.id)}
-                    ></ha-icon-button>
-                    <ha-icon-button
-                      .label=${this._t('common.delete')}
-                      .path=${mdiDelete}
-                      @click=${() => this._deleteHomeCustomCard(entry.id)}
-                    ></ha-icon-button>
-                  </div>
+          <div class="dd-flat-sublist">
+            ${cards.map((entry, index) => html`
+              <div
+                class="dd-flat-subitem-row dd-draggable-subitem"
+                draggable="true"
+                @dragstart=${(event: DragEvent) => onDragStart(event, entry.id)}
+                @dragend=${() => { this._draggedHomeCustomCard = undefined; }}
+                @dragover=${(event: DragEvent) => event.preventDefault()}
+                @drop=${(event: DragEvent) => onDrop(event, index)}
+              >
+                <div class="home-section-handle"><ha-svg-icon .path=${mdiDrag}></ha-svg-icon></div>
+                <div class="home-section-icon"><ha-icon icon="mdi:cards-outline"></ha-icon></div>
+                <div class="home-section-copy">
+                  <div class="home-section-title">${this._homeCustomCardTitle(entry)}</div>
+                  <div class="home-section-description">${this._homeCustomCardSubtitle(entry)}</div>
                 </div>
-              `
-            )}
+                <div class="dd-inline-actions">
+                  <button type="button" class="dd-icon-action" aria-label=${this._t('common.edit')} @click=${() => this._editHomeCustomCard(entry.id)}>
+                    <ha-icon icon="mdi:pencil"></ha-icon>
+                  </button>
+                  <button type="button" class="dd-icon-action" aria-label=${this._t('common.delete')} @click=${() => this._deleteHomeCustomCard(entry.id)}>
+                    <ha-icon icon="mdi:delete"></ha-icon>
+                  </button>
+                </div>
+              </div>
+            `)}
           </div>
-        ` : html`
-          <div class="home-camera-settings-empty">${this._t('settings.no_home_custom_cards')}</div>
-        `}
+        ` : html`<div class="dd-empty-state">${this._t('settings.no_home_custom_cards')}</div>`}
       </div>
     `;
   }
@@ -2232,19 +2354,32 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     if (!this._config || !this.hass) return nothing;
     const excluded = this._getExcludedHomeClimateAreas();
     const hiddenAreas = new Set(this._config.areas_display?.hidden || []);
-    const areas = sortAreas(this._config.areas || [], { ...this._config.areas_display, hidden: [] }, ddLocale(this.hass))
-      .filter(area => !hiddenAreas.has(area.area_id));
+    const areas = sortAreas(
+      this._config.areas || [],
+      { ...this._config.areas_display, hidden: [] },
+      ddLocale(this.hass)
+    ).filter((area) => !hiddenAreas.has(area.area_id));
+
     return html`
-      <div class="home-info-card-section home-climate-area-settings">
-        <div class="home-info-card-header"><div><h4>${this._t('settings.home_climate_areas_title')}</h4><p>${this._t('settings.home_climate_areas_description')}</p></div></div>
+      <div class="home-info-card-section home-climate-area-settings dd-climate-area-settings">
+        <p class="dd-inline-description">${this._t('settings.home_climate_areas_description')}</p>
         <div class="home-info-card-list">
-          ${areas.map(area => { const included = !excluded.has(area.area_id); return html`
-            <div class="home-info-card-item ${included ? 'enabled' : 'disabled'}">
-              <div class="home-section-icon"><ha-icon icon=${area.icon || 'mdi:floor-plan'}></ha-icon></div>
-              <div class="home-section-copy"><div class="home-section-title">${area.name}</div></div>
-              <ha-switch .checked=${included} @change=${(event: Event) => this._toggleHomeClimateArea(area.area_id, (event.target as any).checked)}></ha-switch>
-            </div>
-          `; })}
+          ${areas.map((area) => {
+            const included = !excluded.has(area.area_id);
+            return html`
+              <div class="home-info-card-item ${included ? 'enabled' : 'disabled'}">
+                <div class="home-section-icon"><ha-icon icon=${area.icon || 'mdi:floor-plan'}></ha-icon></div>
+                <div class="home-section-copy"><div class="home-section-title">${area.name}</div></div>
+                <div class="dd-climate-actions">
+                  <ha-switch
+                    .checked=${included}
+                    @change=${(event: Event) => this._toggleHomeClimateArea(area.area_id, (event.target as any).checked)}
+                  ></ha-switch>
+                  <span class="dd-home-detail-spacer" aria-hidden="true"></span>
+                </div>
+              </div>
+            `;
+          })}
         </div>
       </div>
     `;
@@ -2252,46 +2387,49 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
   private _renderHomeInformationCardSettings() {
     const hiddenCards = this._getHiddenHomeInformationCards();
-    const visibleCount = DEFAULT_HOME_INFORMATION_CARDS.filter(card => !hiddenCards.has(card)).length;
+    const climateOpen = this._homeSettingsDetail === 'climate';
+
+    const toggleClimate = () => {
+      this._homeSettingsDetail = climateOpen ? 'house_information' : 'climate';
+      this._closeInlinePickers();
+    };
 
     return html`
-      <div class="home-info-card-section home-information-card-settings">
-        <div class="home-info-card-header">
-          <div>
-            <h4>${this._t('settings.house_information_cards')}</h4>
-            <p>${this._t('settings.house_information_cards_description')}</p>
-          </div>
-          <span>${this._t('settings.visible_count', { visible: visibleCount, total: DEFAULT_HOME_INFORMATION_CARDS.length })}</span>
-        </div>
-        <div class="home-info-card-list">
-          ${DEFAULT_HOME_INFORMATION_CARDS.map(card => {
+      <div class="dd-inline-section">
+        <p class="dd-inline-description">${this._t('settings.house_information_cards_description')}</p>
+        <div class="dd-flat-sublist">
+          ${DEFAULT_HOME_INFORMATION_CARDS.map((card) => {
             const meta = HOME_INFORMATION_CARD_META[card];
             const enabled = !hiddenCards.has(card);
-            const clickable = card === 'climate';
+            const isClimate = card === 'climate';
 
             return html`
-              <div
-                class="home-info-card-item ${enabled ? 'enabled' : 'disabled'} ${clickable ? 'has-detail' : ''}"
-                @click=${() => { if (clickable) this._homeSettingsDetail = 'climate'; }}
-              >
-                <div class="home-section-icon"><ha-icon icon=${meta.icon}></ha-icon></div>
-                <div class="home-section-copy">
-                  <div class="home-section-title">${this._t(meta.labelKey)}</div>
-                  <div class="home-section-description">${this._t(meta.descriptionKey)}</div>
+              <div class="dd-flat-subitem ${isClimate && climateOpen ? 'open' : ''}">
+                <div class="dd-flat-subitem-row" @click=${() => isClimate && toggleClimate()}>
+                  <div class="home-section-icon"><ha-icon icon=${meta.icon}></ha-icon></div>
+                  <div class="home-section-copy">
+                    <div class="home-section-title">${this._t(meta.labelKey)}</div>
+                    <div class="home-section-description">${this._t(meta.descriptionKey)}</div>
+                  </div>
+                  <div class="home-info-card-actions" @click=${(event: Event) => event.stopPropagation()}>
+                    <button
+                      class="home-section-toggle ${enabled ? 'enabled' : ''}"
+                      type="button"
+                      title=${enabled ? this._t('settings.hide_section') : this._t('settings.show_section')}
+                      aria-label=${enabled ? this._t('settings.hide_section') : this._t('settings.show_section')}
+                      aria-pressed=${enabled ? 'true' : 'false'}
+                      @click=${() => this._toggleHomeInformationCardEnabled(card)}
+                    >
+                      <ha-icon icon=${enabled ? 'mdi:eye-outline' : 'mdi:eye-off-outline'}></ha-icon>
+                    </button>
+                    ${isClimate ? html`
+                      <button class="dd-home-detail-toggle" type="button" aria-expanded=${climateOpen ? 'true' : 'false'} @click=${toggleClimate}>
+                        <ha-icon icon=${climateOpen ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
+                      </button>
+                    ` : html`<span class="dd-home-detail-spacer" aria-hidden="true"></span>`}
+                  </div>
                 </div>
-                <div class="home-info-card-actions" @click=${(event: Event) => event.stopPropagation()}>
-                  ${clickable ? html`<ha-svg-icon class="home-section-detail-chevron" .path=${mdiChevronRight}></ha-svg-icon>` : nothing}
-                  <button
-                    class="home-section-toggle ${enabled ? 'enabled' : ''}"
-                    type="button"
-                    title=${enabled ? this._t('settings.hide_section') : this._t('settings.show_section')}
-                    aria-label=${enabled ? this._t('settings.hide_section') : this._t('settings.show_section')}
-                    aria-pressed=${enabled ? 'true' : 'false'}
-                    @click=${() => this._toggleHomeInformationCardEnabled(card)}
-                  >
-                    <ha-icon icon=${enabled ? 'mdi:eye-outline' : 'mdi:eye-off-outline'}></ha-icon>
-                  </button>
-                </div>
+                ${isClimate && climateOpen ? html`<div class="dd-flat-subdetail">${this._renderHomeClimateAreaSettings()}</div>` : nothing}
               </div>
             `;
           })}
@@ -2303,80 +2441,52 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _renderHomeCameraSettings() {
     const cameras = this._getHomeCameraSettings();
     const hidden = new Set(this._config?.settings?.home_cameras_hidden || []);
-    const visibleCount = cameras.filter(camera => !hidden.has(camera.entityId)).length;
 
     return html`
-      <div class="home-info-card-section home-camera-settings-section">
-        <div class="home-info-card-header">
-          <div>
-            <h4>${this._t('settings.home_camera_cards')}</h4>
-            <p>${this._t('settings.home_camera_cards_description')}</p>
-          </div>
-          ${cameras.length
-            ? html`<span>${this._t('settings.visible_count', { visible: visibleCount, total: cameras.length })}</span>`
-            : nothing}
-        </div>
+      <div class="dd-inline-section">
+        <p class="dd-inline-description">${this._t('settings.home_camera_cards_description')}</p>
         ${cameras.length ? html`
-          <div class="home-camera-settings-list ${this._draggedHomeCamera ? 'dragging' : ''}">
-            ${repeat(
-              cameras,
-              camera => camera.entityId,
-              (camera, index) => {
-                const enabled = !hidden.has(camera.entityId);
-                const unavailable = ['unavailable', 'unknown'].includes(String(this.hass?.states[camera.entityId]?.state || '').toLowerCase());
-                const isDragging = this._draggedHomeCamera === camera.entityId;
-                const isDragOver = this._dragOverHomeCameraIndex === index && isDragging === false && Boolean(this._draggedHomeCamera);
-                return html`
-                  <div
-                    class="home-section-item home-camera-settings-item ${enabled ? '' : 'disabled'} ${isDragging ? 'dragging' : ''} ${isDragOver ? 'drag-over' : ''}"
-                    draggable="true"
-                    @dragstart=${(event: DragEvent) => this._handleHomeCameraDragStart(event, camera.entityId)}
-                    @dragend=${this._handleHomeCameraDragEnd}
-                    @dragover=${(event: DragEvent) => this._handleHomeCameraDragOver(event, index)}
-                    @dragleave=${this._handleHomeCameraDragLeave}
-                    @drop=${(event: DragEvent) => this._handleHomeCameraDrop(event, index)}
-                  >
-                    <div class="home-section-handle"><ha-svg-icon .path=${mdiDrag}></ha-svg-icon></div>
-                    <div class="home-section-icon"><ha-icon icon="mdi:cctv"></ha-icon></div>
-                    <div class="home-section-copy">
-                      <div class="home-section-title">${camera.name}</div>
-                      <div class="home-section-description">
-                        ${camera.areaName} · ${unavailable ? this._t('common.unavailable') : camera.state}
-                      </div>
-                    </div>
-                    <div class="home-section-actions">
-                      <button
-                        class="home-section-toggle ${enabled ? 'enabled' : ''}"
-                        type="button"
-                        title=${enabled ? this._t('settings.hide_section') : this._t('settings.show_section')}
-                        aria-label=${enabled ? this._t('settings.hide_section') : this._t('settings.show_section')}
-                        aria-pressed=${enabled ? 'true' : 'false'}
-                        @click=${() => this._toggleHomeCamera(camera.entityId)}
-                      >
-                        <ha-icon icon=${enabled ? 'mdi:eye-outline' : 'mdi:eye-off-outline'}></ha-icon>
-                      </button>
-                      <ha-icon-button
-                        .label=${this._t('settings.move_up')}
-                        .path=${mdiArrowUp}
-                        .disabled=${index === 0}
-                        @click=${() => this._moveHomeCamera(camera.entityId, -1)}
-                      ></ha-icon-button>
-                      <ha-icon-button
-                        .label=${this._t('settings.move_down')}
-                        .path=${mdiArrowDown}
-                        .disabled=${index === cameras.length - 1}
-                        @click=${() => this._moveHomeCamera(camera.entityId, 1)}
-                      ></ha-icon-button>
-                    </div>
+          <div class="dd-flat-sublist">
+            ${cameras.map((camera, index) => {
+              const enabled = !hidden.has(camera.entityId);
+              const unavailable = ['unavailable', 'unknown'].includes(String(this.hass?.states[camera.entityId]?.state || '').toLowerCase());
+              return html`
+                <div
+                  class="dd-flat-subitem-row dd-draggable-subitem"
+                  draggable="true"
+                  @dragstart=${(event: DragEvent) => this._handleHomeCameraDragStart(event, camera.entityId)}
+                  @dragend=${this._handleHomeCameraDragEnd}
+                  @dragover=${(event: DragEvent) => this._handleHomeCameraDragOver(event, index)}
+                  @dragleave=${this._handleHomeCameraDragLeave}
+                  @drop=${(event: DragEvent) => this._handleHomeCameraDrop(event, index)}
+                >
+                  <div class="home-section-handle"><ha-svg-icon .path=${mdiDrag}></ha-svg-icon></div>
+                  <div class="home-section-icon"><ha-icon icon="mdi:cctv"></ha-icon></div>
+                  <div class="home-section-copy">
+                    <div class="home-section-title">${camera.name}</div>
+                    <div class="home-section-description">${camera.areaName} · ${unavailable ? this._t('common.unavailable') : camera.state}</div>
                   </div>
-                `;
-              }
-            )}
+                  <div class="home-info-card-actions">
+                    <button
+                      class="home-section-toggle ${enabled ? 'enabled' : ''}"
+                      type="button"
+                      title=${enabled ? this._t('settings.hide_section') : this._t('settings.show_section')}
+                      aria-label=${enabled ? this._t('settings.hide_section') : this._t('settings.show_section')}
+                      aria-pressed=${enabled ? 'true' : 'false'}
+                      @click=${() => this._toggleHomeCamera(camera.entityId)}
+                    >
+                      <ha-icon icon=${enabled ? 'mdi:eye-outline' : 'mdi:eye-off-outline'}></ha-icon>
+                    </button>
+                    <span class="dd-home-detail-spacer" aria-hidden="true"></span>
+                  </div>
+                </div>
+              `;
+            })}
           </div>
           <button class="home-layout-reset" type="button" @click=${this._resetHomeCameraSettings}>
             ${this._t('settings.reset_camera_cards')}
           </button>
-        ` : html`<div class="home-camera-settings-empty">${this._t('settings.home_camera_cards_empty')}</div>`}
+        ` : html`<div class="dd-empty-state">${this._t('settings.home_camera_cards_empty')}</div>`}
       </div>
     `;
   }
@@ -6558,6 +6668,410 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         text-align: center;
         padding: 32px;
         color: var(--secondary-text-color);
+      }
+
+      /* Integrated flat settings UI */
+      .dd-flat-settings {
+        min-width: 0;
+      }
+
+      .dd-flat-settings .settings-nav-section,
+      .dd-flat-settings .settings-detail-content,
+      .dd-settings-version-footer {
+        max-width: 940px;
+        margin-inline: auto;
+      }
+
+      .dd-settings-overview .settings-nav-section:first-of-type {
+        margin-top: 0;
+      }
+
+      .dd-settings-version-footer {
+        margin-top: 22px;
+        padding-top: 14px;
+        border-top: 1px solid var(--divider-color);
+        color: var(--secondary-text-color);
+        font-size: 11px;
+        text-align: center;
+      }
+
+      .dd-subpage-header {
+        max-width: 940px;
+        min-height: 52px;
+        margin: 0 auto 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 10px;
+        box-sizing: border-box;
+        border: 1px solid color-mix(in srgb, var(--divider-color) 72%, transparent);
+        border-radius: 14px;
+        background: color-mix(in srgb, var(--card-background-color) 96%, var(--primary-color));
+      }
+
+      .dd-subpage-back {
+        width: 38px;
+        height: 38px;
+        flex: 0 0 38px;
+        display: inline-grid;
+        place-items: center;
+        border: 0;
+        border-radius: 999px;
+        color: var(--primary-color);
+        background: color-mix(in srgb, var(--primary-color) 9%, transparent);
+        cursor: pointer;
+      }
+
+      .dd-subpage-title {
+        min-width: 0;
+        overflow: hidden;
+        color: var(--primary-text-color);
+        font-size: 18px;
+        font-weight: 800;
+        line-height: 1.2;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .dd-home-layout-panel,
+      .dd-inline-section {
+        min-width: 0;
+      }
+
+      .dd-home-page-description,
+      .dd-inline-description {
+        margin: 0;
+        padding: 10px 0;
+        color: var(--secondary-text-color);
+        font-size: 12px;
+        line-height: 1.4;
+        font-weight: 400;
+      }
+
+      .dd-home-page-description {
+        padding-top: 0;
+        margin-bottom: 4px;
+      }
+
+      .dd-home-flat-layout {
+        padding-top: 0;
+      }
+
+      .dd-home-section-block {
+        overflow: hidden;
+        border: 1px solid transparent;
+        border-radius: 12px;
+      }
+
+      .dd-home-section-block.open {
+        border-color: var(--divider-color);
+        background: color-mix(in srgb, var(--primary-color) 1.5%, var(--card-background-color));
+      }
+
+      .dd-home-section-block.open > .home-section-item {
+        border: 0;
+        border-bottom: 1px solid var(--divider-color);
+        border-radius: 0;
+        box-shadow: none;
+      }
+
+      .dd-home-section-block .home-section-item,
+      .dd-home-section-block .home-section-item.has-detail {
+        min-height: 62px;
+        grid-template-columns: 32px 42px minmax(0, 1fr) 84px;
+      }
+
+      .dd-home-section-block .home-section-actions,
+      .home-info-card-actions,
+      .dd-climate-actions {
+        display: grid;
+        grid-template-columns: 48px 28px;
+        align-items: center;
+        justify-content: end;
+        justify-items: center;
+        justify-self: end;
+        gap: 8px;
+        width: 84px;
+        margin-left: auto;
+      }
+
+      .dd-home-detail-toggle,
+      .dd-home-detail-spacer {
+        width: 28px;
+        height: 40px;
+      }
+
+      .dd-home-detail-toggle {
+        display: inline-grid;
+        place-items: center;
+        border: 0;
+        border-radius: 0;
+        color: var(--secondary-text-color);
+        background: transparent;
+        cursor: pointer;
+      }
+
+      .dd-home-detail-spacer {
+        display: block;
+        pointer-events: none;
+      }
+
+      .dd-home-section-block.open > .home-section-item .dd-home-detail-toggle,
+      .dd-flat-subitem.open > .dd-flat-subitem-row .dd-home-detail-toggle {
+        color: var(--primary-color);
+      }
+
+      .dd-home-inline-detail,
+      .dd-flat-subdetail {
+        margin-left: 40px;
+        padding: 0 0 0 12px;
+        border-left: 2px solid color-mix(in srgb, var(--divider-color) 78%, var(--primary-color));
+      }
+
+      .dd-flat-subdetail {
+        border-left: 0;
+      }
+
+      .dd-home-house-information .dd-inline-section {
+        padding-bottom: 0;
+      }
+
+      .dd-flat-sublist,
+      .dd-climate-area-settings .home-info-card-list {
+        display: grid;
+        gap: 0;
+        overflow: hidden;
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .dd-flat-subitem + .dd-flat-subitem,
+      .dd-flat-subitem-row + .dd-flat-subitem-row {
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .dd-flat-subitem-row {
+        min-height: 58px;
+        display: grid;
+        grid-template-columns: 40px minmax(0, 1fr) 84px;
+        align-items: center;
+        gap: 9px;
+        padding: 7px 0;
+        box-sizing: border-box;
+      }
+
+      .dd-draggable-subitem {
+        grid-template-columns: 22px 40px minmax(0, 1fr) 84px;
+        cursor: grab;
+      }
+
+      .dd-flat-subitem-row .home-section-icon {
+        width: 40px;
+        height: 40px;
+      }
+
+      .dd-flat-subdetail .dd-inline-description {
+        padding: 10px 0;
+      }
+
+      .dd-climate-area-settings {
+        padding: 0;
+      }
+
+      .dd-climate-area-settings .home-info-card-item {
+        min-height: 0;
+        grid-template-columns: 32px minmax(0, 1fr) 84px;
+        gap: 10px;
+        margin: 0;
+        padding: 4px 0;
+        border: 0;
+        border-bottom: 1px solid var(--divider-color);
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .dd-climate-area-settings .home-info-card-item:last-child {
+        border-bottom: 0;
+      }
+
+      .dd-climate-area-settings .home-section-icon {
+        width: 32px;
+        height: 32px;
+      }
+
+      .dd-climate-area-settings .home-section-icon ha-icon {
+        --mdc-icon-size: 19px;
+      }
+
+      .dd-climate-actions ha-switch {
+        justify-self: center;
+        transform: scale(.9);
+        transform-origin: center center;
+      }
+
+      .dd-inline-action-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: start;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+
+      .dd-inline-action-row .dd-inline-description {
+        padding-top: 2px;
+      }
+
+      .dd-inline-actions {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 2px;
+        white-space: nowrap;
+      }
+
+      .dd-icon-action {
+        width: 38px;
+        height: 38px;
+        display: inline-grid;
+        place-items: center;
+        border: 0;
+        border-radius: 999px;
+        color: var(--secondary-text-color);
+        background: transparent;
+        cursor: pointer;
+      }
+
+      .dd-empty-state,
+      .no-favorites {
+        margin: 8px 0 2px;
+        padding: 14px 10px;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        color: var(--secondary-text-color);
+        text-align: center;
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .dd-favorites-inline {
+        padding: 2px 0;
+      }
+
+      .dd-favorite-suggestions-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 12px;
+        padding: 4px 0 10px;
+        border-bottom: 1px solid var(--divider-color);
+      }
+
+      .dd-favorite-suggestions-copy {
+        min-width: 0;
+        display: grid;
+        gap: 3px;
+      }
+
+      .dd-favorite-suggestions-copy strong {
+        color: var(--primary-text-color);
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1.3;
+      }
+
+      .dd-favorite-suggestions-copy span {
+        color: var(--secondary-text-color);
+        font-size: 11px;
+        line-height: 1.4;
+      }
+
+      .dd-favorites-picker {
+        padding-top: 8px;
+      }
+
+      .dd-favorites-action-row {
+        margin-bottom: 4px;
+      }
+
+      @media (min-width: 701px) {
+        .dd-subpage-header {
+          display: none;
+        }
+      }
+
+      @media (max-width: 700px) {
+        .dd-flat-settings {
+          padding-inline: 10px;
+        }
+
+        .dd-flat-settings .settings-nav-section,
+        .dd-flat-settings .settings-detail-content,
+        .dd-subpage-header,
+        .dd-settings-version-footer {
+          max-width: none;
+        }
+
+        .dd-subpage-header {
+          margin-bottom: 10px;
+          border-radius: 12px;
+        }
+
+        .dd-home-section-block .home-section-item,
+        .dd-home-section-block .home-section-item.has-detail {
+          min-height: 0;
+          grid-template-columns: 22px 36px minmax(0, 1fr) 76px;
+          gap: 8px;
+          padding: 9px 8px;
+        }
+
+        .dd-home-section-block .home-section-actions,
+        .home-info-card-actions,
+        .dd-climate-actions {
+          grid-template-columns: 42px 26px;
+          width: 76px;
+        }
+
+        .dd-home-inline-detail,
+        .dd-flat-subdetail {
+          margin-left: 30px;
+          padding-left: 10px;
+        }
+
+        .dd-flat-subitem-row {
+          grid-template-columns: 36px minmax(0, 1fr) 76px;
+          gap: 8px;
+          padding: 7px 0;
+        }
+
+        .dd-draggable-subitem {
+          grid-template-columns: 20px 36px minmax(0, 1fr) 76px;
+        }
+
+        .dd-climate-area-settings .home-info-card-item {
+          grid-template-columns: 30px minmax(0, 1fr) 76px;
+          gap: 8px;
+          padding: 3px 0;
+        }
+
+        .dd-climate-area-settings .home-section-icon {
+          width: 30px;
+          height: 30px;
+        }
+
+        .dd-inline-action-row {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+
+        .dd-favorites-action-row {
+          grid-template-columns: 1fr auto;
+        }
+
+        .dd-settings-version-footer {
+          margin-top: 18px;
+          font-size: 10px;
+        }
       }
     `;
   }
