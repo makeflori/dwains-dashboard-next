@@ -15,7 +15,7 @@ function applyFlatSettingsLayout(): void {
 
     proto._renderSettingsOverview = function () {
       scheduleCancelButtonLabel(this);
-      scheduleDesktopStickySettingsHeader(this);
+      scheduleDesktopFloatingSettingsActions(this);
       const groups = [
         { key: "general", title: this._t("settings.general") },
         { key: "layout", title: this._t("settings.dashboard_layout") },
@@ -47,7 +47,7 @@ function applyFlatSettingsLayout(): void {
 
     proto._renderSettingsDetailPage = function (page: string) {
       scheduleCancelButtonLabel(this);
-      scheduleDesktopStickySettingsHeader(this);
+      scheduleDesktopFloatingSettingsActions(this);
       const item = this._settingsOverviewItems().find((candidate: any) => candidate.page === page);
       if (!item) return this._renderSettingsOverview();
 
@@ -195,10 +195,13 @@ function applyFlatSettingsLayout(): void {
                   <div class="home-section-copy">
                     <div class="home-section-title">${area.name}</div>
                   </div>
-                  <ha-switch
-                    .checked=${included}
-                    @change=${(event: Event) => this._toggleHomeClimateArea(area.area_id, (event.target as any).checked)}
-                  ></ha-switch>
+                  <div class="dd-climate-actions">
+                    <ha-switch
+                      .checked=${included}
+                      @change=${(event: Event) => this._toggleHomeClimateArea(area.area_id, (event.target as any).checked)}
+                    ></ha-switch>
+                    <span class="dd-home-detail-spacer" aria-hidden="true"></span>
+                  </div>
                 </div>
               `;
             })}
@@ -452,16 +455,32 @@ function scheduleCancelButtonLabel(editor: any): void {
 }
 
 
-function scheduleDesktopStickySettingsHeader(editor: any): void {
+function scheduleDesktopFloatingSettingsActions(editor: any): void {
   window.setTimeout(() => {
     const desktop = window.matchMedia("(min-width: 701px)").matches;
     const saveLabel = String(editor?._t?.("common.save") || "Save");
     const cancelLabel = String(editor?._t?.("common.cancel") || "Cancel");
-    const titleLabel = String(editor?._t?.("settings.title") || "Dashboard settings");
+
+    const state = (window as any).__ddDesktopSettingsActionsState || ((window as any).__ddDesktopSettingsActionsState = {
+      wrapper: undefined,
+      savePlaceholder: undefined,
+      cancelPlaceholder: undefined,
+      saveButton: undefined,
+      cancelButton: undefined,
+      resizeBound: false,
+      editor: undefined,
+    });
+    state.editor = editor;
+
+    if (!state.resizeBound) {
+      state.resizeBound = true;
+      window.addEventListener("resize", () => {
+        if (state.editor) scheduleDesktopFloatingSettingsActions(state.editor);
+      });
+    }
 
     const allRoots: Array<Document | ShadowRoot | Element> = [document];
     const visited = new Set<any>();
-
     const collectRoots = (root: Document | ShadowRoot | Element) => {
       if (visited.has(root)) return;
       visited.add(root);
@@ -476,52 +495,97 @@ function scheduleDesktopStickySettingsHeader(editor: any): void {
     collectRoots(document);
 
     const textOf = (node: any) => String(node?.textContent || "").replace(/\s+/g, " ").trim();
-
-    let saveButton: any;
-    let cancelButton: any;
-    let titleNode: any;
-
-    for (const root of allRoots) {
-      const controls = root.querySelectorAll?.("button, ha-button, mwc-button") || [];
-      controls.forEach((node: any) => {
-        const text = textOf(node);
-        if (!saveButton && (text === saveLabel || text === "Speichern" || text === "Save")) saveButton = node;
-        if (!cancelButton && (text === cancelLabel || text === "Abbrechen" || text === "Cancel")) cancelButton = node;
-      });
-
-      const candidates = root.querySelectorAll?.("h1, h2, h3, header, div, span") || [];
-      candidates.forEach((node: any) => {
-        if (titleNode) return;
-        const text = textOf(node);
-        if (text === titleLabel || text === "Dashboard-Einstellungen" || text === "Dashboard Settings") {
-          titleNode = node;
+    const findAction = (label: string, fallbacks: string[]) => {
+      for (const root of allRoots) {
+        const controls = root.querySelectorAll?.("button, ha-button, mwc-button") || [];
+        for (const node of controls as any) {
+          const text = textOf(node);
+          if (text === label || fallbacks.includes(text)) return node;
         }
-      });
+      }
+      return undefined;
+    };
+
+    const saveButton = findAction(saveLabel, ["Speichern", "Save"]);
+    const cancelButton = findAction(cancelLabel, ["Abbrechen", "Cancel"]);
+
+    const restore = (button: any, placeholder: any) => {
+      if (button && placeholder?.parentNode) {
+        placeholder.parentNode.insertBefore(button, placeholder);
+        placeholder.remove();
+      }
+    };
+
+    if (!desktop) {
+      restore(state.cancelButton, state.cancelPlaceholder);
+      restore(state.saveButton, state.savePlaceholder);
+      state.cancelPlaceholder = undefined;
+      state.savePlaceholder = undefined;
+      state.cancelButton = undefined;
+      state.saveButton = undefined;
+      state.wrapper?.remove?.();
+      state.wrapper = undefined;
+      return;
     }
 
-    if (!saveButton || !titleNode) return;
+    if (!saveButton || !cancelButton) return;
 
-    let header: any = saveButton;
-    while (header && header !== document.body) {
-      if (header.contains?.(titleNode) && (!cancelButton || header.contains?.(cancelButton))) break;
-      header = header.parentElement || header.getRootNode?.()?.host;
+    // Undo the previous sticky-header styling, if present.
+    let candidate: any = saveButton;
+    while (candidate && candidate !== document.body) {
+      if (candidate.dataset?.ddDesktopStickySettingsHeader === "true") {
+        delete candidate.dataset.ddDesktopStickySettingsHeader;
+        const style = candidate.style as CSSStyleDeclaration;
+        style.position = "";
+        style.top = "";
+        style.zIndex = "";
+        style.background = "";
+        break;
+      }
+      candidate = candidate.parentElement || candidate.getRootNode?.()?.host;
     }
-    if (!header || header === document.body) return;
 
-    const style = header.style as CSSStyleDeclaration;
-    if (desktop) {
-      header.dataset.ddDesktopStickySettingsHeader = "true";
-      style.position = "sticky";
-      style.top = "0";
-      style.zIndex = "30";
-      style.background = "var(--primary-background-color, var(--card-background-color))";
-    } else if (header.dataset?.ddDesktopStickySettingsHeader === "true") {
-      delete header.dataset.ddDesktopStickySettingsHeader;
-      style.position = "";
-      style.top = "";
-      style.zIndex = "";
-      style.background = "";
+    let wrapper = state.wrapper as HTMLDivElement | undefined;
+    if (!wrapper || !wrapper.isConnected) {
+      wrapper = document.createElement("div");
+      wrapper.className = "dd-desktop-floating-settings-actions";
+      Object.assign(wrapper.style, {
+        position: "fixed",
+        left: "50%",
+        bottom: "24px",
+        transform: "translateX(-50%)",
+        zIndex: "40",
+        display: "flex",
+        alignItems: "center",
+        gap: "10px",
+        padding: "10px 12px",
+        border: "1px solid var(--divider-color)",
+        borderRadius: "18px",
+        background: "color-mix(in srgb, var(--card-background-color) 96%, transparent)",
+        boxShadow: "0 12px 32px rgba(15, 23, 42, .16)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+      } as Partial<CSSStyleDeclaration>);
+      document.body.appendChild(wrapper);
+      state.wrapper = wrapper;
     }
+
+    const moveIntoWrapper = (button: any, key: "save" | "cancel") => {
+      if (button.parentElement === wrapper) return;
+      const placeholder = document.createComment(`dd-${key}-settings-action`);
+      button.parentNode?.insertBefore(placeholder, button);
+      wrapper!.appendChild(button);
+      if (key === "save") {
+        state.savePlaceholder = placeholder;
+        state.saveButton = button;
+      } else {
+        state.cancelPlaceholder = placeholder;
+        state.cancelButton = button;
+      }
+    };
+
+    moveIntoWrapper(cancelButton, "cancel");
+    moveIntoWrapper(saveButton, "save");
   }, 0);
 }
 
@@ -690,6 +754,14 @@ function renderFlatSettingsStyles() {
         color: var(--secondary-text-color);
         font-size: 12px;
         line-height: 1.45;
+        font-weight: 400;
+      }
+      .dd-flat-subdetail .dd-inline-description {
+        margin: 0 0 10px;
+        color: var(--secondary-text-color);
+        font-size: 12px;
+        line-height: 1.45;
+        font-weight: 400;
       }
       .dd-inline-action-row {
         display: grid;
@@ -735,9 +807,31 @@ function renderFlatSettingsStyles() {
         line-height: 1.35;
       }
       .dd-flat-subdetail .home-info-card-section { padding: 0; }
+      .dd-climate-actions {
+        display: grid;
+        grid-template-columns: 38px 26px;
+        align-items: center;
+        justify-content: end;
+        gap: 2px;
+        width: 66px;
+      }
+      .dd-climate-actions ha-switch {
+        justify-self: center;
+      }
+      .dd-climate-area-settings .home-info-card-item {
+        min-height: 0;
+        padding: 6px 10px;
+      }
+      .dd-climate-area-settings .home-section-icon {
+        width: 36px;
+        height: 36px;
+      }
+      .dd-climate-area-settings .home-section-icon ha-icon {
+        --mdc-icon-size: 20px;
+      }
       .dd-flat-subdetail ha-switch {
         transform: scale(.9);
-        transform-origin: right center;
+        transform-origin: center center;
       }
       .dd-flat-subdetail .home-info-card-header { padding: 4px 2px 8px; }
       .dd-flat-subdetail .home-info-card-list {
@@ -839,7 +933,8 @@ function renderFlatSettingsStyles() {
           grid-column: auto;
           justify-self: end;
         }
-        .home-info-card-actions {
+        .home-info-card-actions,
+        .dd-climate-actions {
           grid-template-columns: 34px 24px;
           width: 60px;
         }
