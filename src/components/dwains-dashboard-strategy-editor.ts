@@ -125,19 +125,17 @@ const SETTINGS_ICON_PATHS: Record<string, string> = {
 };
 
 
-function scheduleIntegratedSettingsHeader(editor: any, detail = false): void {
-  window.setTimeout(() => {
+function scheduleIntegratedSettingsHeader(editor: any): void {
+  const apply = () => {
     const desktop = window.matchMedia("(min-width: 701px)").matches;
     const saveLabel = String(editor?._t?.("common.save") || "Save");
     const cancelLabel = String(editor?._t?.("common.cancel") || "Cancel");
-    const backLabel = String(editor?._t?.("common.back") || "Back");
     const titleLabel = String(editor?._t?.("settings.title") || "Dashboard settings");
     const subtitleLabel = String(editor?._t?.("settings.subtitle") || "");
 
     const state = (window as any).__ddIntegratedSettingsHeaderState || ((window as any).__ddIntegratedSettingsHeaderState = {
       header: undefined,
       subtitle: undefined,
-      backButton: undefined,
       resizeBound: false,
       editor: undefined,
     });
@@ -146,7 +144,7 @@ function scheduleIntegratedSettingsHeader(editor: any, detail = false): void {
     if (!state.resizeBound) {
       state.resizeBound = true;
       window.addEventListener("resize", () => {
-        if (state.editor) scheduleIntegratedSettingsHeader(state.editor, state.editor._settingsPage !== "overview");
+        if (state.editor) scheduleIntegratedSettingsHeader(state.editor);
       });
     }
 
@@ -193,21 +191,20 @@ function scheduleIntegratedSettingsHeader(editor: any, detail = false): void {
       if (titleNode) break;
     }
 
-    if (!saveButton || !cancelButton || !titleNode) return;
+    if (!saveButton || !cancelButton || !titleNode) return false;
 
     let header: any = saveButton;
     while (header && header !== document.body) {
       if (header.contains?.(titleNode) && header.contains?.(cancelButton)) break;
       header = header.parentElement || header.getRootNode?.()?.host;
     }
-    if (!header || header === document.body) return;
+    if (!header || header === document.body) return false;
 
     state.header = header;
 
-    // Normalize the cancel label after Home Assistant has rendered its action.
+    // Normalize Home Assistant's temporary "Back/Zurück" action before paint.
     if (textOf(cancelButton) !== cancelLabel) cancelButton.textContent = cancelLabel;
 
-    // Hide the self-explanatory subtitle in the outer settings header.
     let subtitleNode: any;
     const candidates = header.querySelectorAll?.("p, small, div, span") || [];
     for (const node of candidates as any) {
@@ -226,50 +223,32 @@ function scheduleIntegratedSettingsHeader(editor: any, detail = false): void {
       subtitleNode.style.display = desktop ? "none" : "";
     }
 
-    if (!desktop) {
-      const style = header.style as CSSStyleDeclaration;
+    const style = header.style as CSSStyleDeclaration;
+    if (desktop) {
+      style.position = "sticky";
+      style.top = "0";
+      style.zIndex = "45";
+      style.background = "var(--primary-background-color, var(--card-background-color))";
+      style.boxShadow = "0 8px 24px rgba(15, 23, 42, .08)";
+    } else {
       style.position = "";
       style.top = "";
       style.zIndex = "";
       style.background = "";
       style.boxShadow = "";
-      state.backButton?.remove?.();
-      state.backButton = undefined;
-      return;
     }
 
-    const style = header.style as CSSStyleDeclaration;
-    style.position = "sticky";
-    style.top = "0";
-    style.zIndex = "45";
-    style.background = "var(--primary-background-color, var(--card-background-color))";
-    style.boxShadow = "0 8px 24px rgba(15, 23, 42, .08)";
+    return true;
+  };
 
-    if (detail) {
-      let back = state.backButton as any;
-      if (!back || !back.isConnected) {
-        back = document.createElement("ha-button") as any;
-        back.setAttribute("appearance", "plain");
-        back.className = "dd-desktop-settings-back";
-        back.style.marginRight = "8px";
-        const parent = titleNode.parentNode;
-        parent?.insertBefore(back, titleNode);
-        state.backButton = back;
-      }
-      back.textContent = backLabel;
-      back.onclick = () => editor._backToSettingsOverview();
-    } else {
-      state.backButton?.remove?.();
-      state.backButton = undefined;
-    }
-  }, 0);
+  if (!apply()) {
+    queueMicrotask(() => apply());
+  }
 }
 
 function cleanupIntegratedSettingsHeader(): void {
   const state = (window as any).__ddIntegratedSettingsHeaderState;
-  if (!state) return;
-  state.backButton?.remove?.();
-  if (state.subtitle) state.subtitle.style.display = "";
+  if (!state) return;  if (state.subtitle) state.subtitle.style.display = "";
   if (state.header) {
     const style = state.header.style as CSSStyleDeclaration;
     style.position = "";
@@ -279,9 +258,7 @@ function cleanupIntegratedSettingsHeader(): void {
     style.boxShadow = "";
   }
   state.header = undefined;
-  state.subtitle = undefined;
-  state.backButton = undefined;
-  state.editor = undefined;
+  state.subtitle = undefined;  state.editor = undefined;
 }
 
 @customElement("dwains-dashboard-next-strategy-editor")
@@ -626,7 +603,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   }
 
   private _renderSettingsOverview() {
-    scheduleIntegratedSettingsHeader(this, false);
+    scheduleIntegratedSettingsHeader(this);
     const groups: Array<{ key: SettingsPageItem["group"]; title: string }> = [
       { key: "general", title: this._t('settings.general') },
       { key: "layout", title: this._t('settings.dashboard_layout') },
@@ -827,12 +804,20 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   }
 
   private _renderSettingsDetailPage(page: SettingsPageKey) {
-    scheduleIntegratedSettingsHeader(this, true);
+    scheduleIntegratedSettingsHeader(this);
     const item = this._settingsOverviewItems().find((candidate) => candidate.page === page);
     if (!item) return this._renderSettingsOverview();
 
     return html`
       <div class="editor-container dd-flat-settings">
+        <button
+          class="dd-desktop-floating-back"
+          type="button"
+          @click=${this._backToSettingsOverview}
+        >
+          <ha-icon icon="mdi:arrow-left"></ha-icon>
+          <span>${this._t('common.back')}</span>
+        </button>
         <div class="dd-subpage-header">
           <button
             class="dd-subpage-back"
@@ -2233,7 +2218,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           <p class="dd-inline-description">${this._t('settings.home_custom_cards_description')}</p>
           <button class="home-custom-card-add" type="button" @click=${this._addHomeCustomCard}>
             <ha-icon icon="mdi:plus"></ha-icon>
-            ${this._t('settings.add_home_card')}
+            ${this._t('common.add')}
           </button>
         </div>
         ${cards.length ? html`
@@ -2295,7 +2280,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
     return html`
       <div class="home-info-card-section home-climate-area-settings dd-climate-area-settings">
-        <p class="dd-inline-description">${this._t('settings.home_climate_areas_description')}</p>
+        <p class="dd-inline-description dd-inline-description-row">${this._t('settings.home_climate_areas_description')}</p>
         <div class="home-info-card-list">
           ${areas.map((area) => {
             const included = !excluded.has(area.area_id);
@@ -2329,7 +2314,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
     return html`
       <div class="dd-inline-section">
-        <p class="dd-inline-description">${this._t('settings.house_information_cards_description')}</p>
+        <p class="dd-inline-description dd-inline-description-row">${this._t('settings.house_information_cards_description')}</p>
         <div class="dd-flat-sublist">
           ${DEFAULT_HOME_INFORMATION_CARDS.map((card) => {
             const meta = HOME_INFORMATION_CARD_META[card];
@@ -6658,6 +6643,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         cursor: pointer;
       }
 
+      .dd-desktop-floating-back {
+        display: none;
+      }
+
       .dd-subpage-title {
         min-width: 0;
         overflow: hidden;
@@ -6682,6 +6671,13 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         font-size: 12px;
         line-height: 1.4;
         font-weight: 400;
+      }
+
+      .dd-inline-description-row {
+        margin: 0;
+        padding: 10px 14px;
+        border-top: 1px solid var(--divider-color);
+        border-bottom: 1px solid var(--divider-color);
       }
 
       .dd-home-page-description {
@@ -6715,6 +6711,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .dd-home-section-block .home-section-item.has-detail {
         min-height: 62px;
         grid-template-columns: 32px 42px minmax(0, 1fr) 84px;
+        padding-right: 12px;
       }
 
       .dd-home-section-block .home-section-actions,
@@ -6729,6 +6726,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         gap: 8px;
         width: 84px;
         margin-left: auto;
+        padding-right: 0;
       }
 
       .dd-home-detail-toggle,
@@ -6778,7 +6776,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         display: grid;
         gap: 0;
         overflow: hidden;
-        border-top: 1px solid var(--divider-color);
+        border-top: 0;
       }
 
       .dd-flat-subitem + .dd-flat-subitem,
@@ -6786,13 +6784,17 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         border-top: 1px solid var(--divider-color);
       }
 
+      .dd-flat-subitem.open > .dd-flat-subitem-row {
+        border-bottom: 0;
+      }
+
       .dd-flat-subitem-row {
-        min-height: 58px;
+        min-height: 50px;
         display: grid;
-        grid-template-columns: 40px minmax(0, 1fr) 84px;
+        grid-template-columns: 36px minmax(0, 1fr) 84px;
         align-items: center;
         gap: 9px;
-        padding: 7px 12px 7px 0;
+        padding: 5px 12px 5px 0;
         box-sizing: border-box;
       }
 
@@ -6802,17 +6804,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .dd-flat-subitem-row .home-section-icon {
-        width: 40px;
-        height: 40px;
+        width: 36px;
+        height: 36px;
       }
 
-      .dd-flat-subdetail .dd-inline-description {
+      .dd-flat-subdetail .dd-inline-description-row {
         margin: 0;
-        padding: 10px 0;
-        color: var(--secondary-text-color);
-        font-size: 12px;
-        line-height: 1.4;
-        font-weight: 400;
       }
 
       .dd-climate-area-settings {
@@ -6828,7 +6825,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         grid-template-columns: 32px minmax(0, 1fr) 84px;
         gap: 10px;
         margin: 0;
-        padding: 4px 12px 4px 0;
+        padding: 3px 12px 3px 0;
         border: 0;
         border-bottom: 1px solid var(--divider-color);
         border-radius: 0;
@@ -6858,9 +6855,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .dd-inline-action-row {
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
-        align-items: start;
+        align-items: center;
         gap: 12px;
-        margin-bottom: 10px;
+        margin: 0;
+        padding: 10px 12px 12px 0;
       }
 
       .dd-inline-action-row .dd-inline-description {
@@ -6944,9 +6942,37 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         .dd-subpage-header {
           display: none;
         }
+
+        .dd-desktop-floating-back {
+          position: fixed;
+          left: max(24px, calc((100vw - 940px) / 2 - 110px));
+          bottom: 24px;
+          z-index: 44;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          min-height: 44px;
+          padding: 0 16px;
+          border: 1px solid var(--divider-color);
+          border-radius: 999px;
+          color: var(--primary-color);
+          background: var(--card-background-color);
+          box-shadow: 0 10px 28px rgba(15, 23, 42, .14);
+          font: inherit;
+          font-weight: 700;
+          cursor: pointer;
+        }
+
+        .dd-desktop-floating-back ha-icon {
+          --mdc-icon-size: 20px;
+        }
       }
 
       @media (max-width: 700px) {
+        .dd-desktop-floating-back {
+          display: none;
+        }
+
         .dd-flat-settings {
           padding-inline: 10px;
         }
@@ -6993,9 +7019,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         }
 
         .dd-flat-subitem-row {
-          grid-template-columns: 36px minmax(0, 1fr) 76px;
+          min-height: 0;
+          grid-template-columns: 34px minmax(0, 1fr) 76px;
           gap: 8px;
-          padding: 7px 8px 7px 0;
+          padding: 5px 8px 5px 0;
         }
 
         .dd-draggable-subitem {
