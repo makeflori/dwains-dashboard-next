@@ -114,12 +114,6 @@ let rememberedSettingsPageAt = 0;
 const SETTINGS_PAGE_RESTORE_MS = 8000;
 const UNGROUPED_ENTITY_DRAG_GROUP = '__ungrouped__';
 
-function restoreSettingsPage(): SettingsPageKey {
-  return Date.now() - rememberedSettingsPageAt < SETTINGS_PAGE_RESTORE_MS
-    ? rememberedSettingsPage
-    : "overview";
-}
-
 function rememberSettingsPage(page: SettingsPageKey): void {
   rememberedSettingsPage = page;
   rememberedSettingsPageAt = Date.now();
