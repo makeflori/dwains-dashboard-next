@@ -463,10 +463,10 @@ function scheduleDesktopFloatingSettingsActions(editor: any): void {
 
     const state = (window as any).__ddDesktopSettingsActionsState || ((window as any).__ddDesktopSettingsActionsState = {
       wrapper: undefined,
-      savePlaceholder: undefined,
-      cancelPlaceholder: undefined,
       saveButton: undefined,
       cancelButton: undefined,
+      sourceSaveButton: undefined,
+      sourceCancelButton: undefined,
       resizeBound: false,
       editor: undefined,
     });
@@ -499,6 +499,7 @@ function scheduleDesktopFloatingSettingsActions(editor: any): void {
       for (const root of allRoots) {
         const controls = root.querySelectorAll?.("button, ha-button, mwc-button") || [];
         for (const node of controls as any) {
+          if (node?.classList?.contains("dd-desktop-floating-action")) continue;
           const text = textOf(node);
           if (text === label || fallbacks.includes(text)) return node;
         }
@@ -506,86 +507,67 @@ function scheduleDesktopFloatingSettingsActions(editor: any): void {
       return undefined;
     };
 
-    const saveButton = findAction(saveLabel, ["Speichern", "Save"]);
-    const cancelButton = findAction(cancelLabel, ["Abbrechen", "Cancel"]);
-
-    const restore = (button: any, placeholder: any) => {
-      if (button && placeholder?.parentNode) {
-        placeholder.parentNode.insertBefore(button, placeholder);
-        placeholder.remove();
-      }
-    };
+    const sourceSaveButton = findAction(saveLabel, ["Speichern", "Save"]);
+    const sourceCancelButton = findAction(cancelLabel, ["Abbrechen", "Cancel"]);
 
     if (!desktop) {
-      restore(state.cancelButton, state.cancelPlaceholder);
-      restore(state.saveButton, state.savePlaceholder);
-      state.cancelPlaceholder = undefined;
-      state.savePlaceholder = undefined;
-      state.cancelButton = undefined;
-      state.saveButton = undefined;
+      if (state.sourceSaveButton) state.sourceSaveButton.style.display = "";
+      if (state.sourceCancelButton) state.sourceCancelButton.style.display = "";
       state.wrapper?.remove?.();
       state.wrapper = undefined;
+      state.saveButton = undefined;
+      state.cancelButton = undefined;
+      state.sourceSaveButton = undefined;
+      state.sourceCancelButton = undefined;
       return;
     }
 
-    if (!saveButton || !cancelButton) return;
+    if (!sourceSaveButton || !sourceCancelButton) return;
 
-    // Undo the previous sticky-header styling, if present.
-    let candidate: any = saveButton;
-    while (candidate && candidate !== document.body) {
-      if (candidate.dataset?.ddDesktopStickySettingsHeader === "true") {
-        delete candidate.dataset.ddDesktopStickySettingsHeader;
-        const style = candidate.style as CSSStyleDeclaration;
-        style.position = "";
-        style.top = "";
-        style.zIndex = "";
-        style.background = "";
-        break;
-      }
-      candidate = candidate.parentElement || candidate.getRootNode?.()?.host;
-    }
+    state.sourceSaveButton = sourceSaveButton;
+    state.sourceCancelButton = sourceCancelButton;
+
+    // On desktop the header scrolls normally; only its actions are replaced by the floating bar.
+    sourceSaveButton.style.display = "none";
+    sourceCancelButton.style.display = "none";
 
     let wrapper = state.wrapper as HTMLDivElement | undefined;
     if (!wrapper || !wrapper.isConnected) {
       wrapper = document.createElement("div");
       wrapper.className = "dd-desktop-floating-settings-actions";
-      Object.assign(wrapper.style, {
-        position: "fixed",
-        left: "50%",
-        bottom: "24px",
-        transform: "translateX(-50%)",
-        zIndex: "40",
-        display: "flex",
-        alignItems: "center",
-        gap: "10px",
-        padding: "10px 12px",
-        border: "1px solid var(--divider-color)",
-        borderRadius: "18px",
-        background: "color-mix(in srgb, var(--card-background-color) 96%, transparent)",
-        boxShadow: "0 12px 32px rgba(15, 23, 42, .16)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
-      } as Partial<CSSStyleDeclaration>);
+
+      const cancel = document.createElement("button");
+      cancel.type = "button";
+      cancel.className = "dd-desktop-floating-action dd-desktop-floating-cancel";
+
+      const save = document.createElement("button");
+      save.type = "button";
+      save.className = "dd-desktop-floating-action dd-desktop-floating-save";
+
+      wrapper.append(cancel, save);
       document.body.appendChild(wrapper);
+
       state.wrapper = wrapper;
+      state.cancelButton = cancel;
+      state.saveButton = save;
     }
 
-    const moveIntoWrapper = (button: any, key: "save" | "cancel") => {
-      if (button.parentElement === wrapper) return;
-      const placeholder = document.createComment(`dd-${key}-settings-action`);
-      button.parentNode?.insertBefore(placeholder, button);
-      wrapper!.appendChild(button);
-      if (key === "save") {
-        state.savePlaceholder = placeholder;
-        state.saveButton = button;
-      } else {
-        state.cancelPlaceholder = placeholder;
-        state.cancelButton = button;
-      }
-    };
+    const cancel = state.cancelButton as HTMLButtonElement;
+    const save = state.saveButton as HTMLButtonElement;
 
-    moveIntoWrapper(cancelButton, "cancel");
-    moveIntoWrapper(saveButton, "save");
+    cancel.textContent = cancelLabel;
+    save.textContent = saveLabel;
+
+    cancel.onclick = () => sourceCancelButton.click();
+    save.onclick = () => sourceSaveButton.click();
+
+    const disabled = Boolean(
+      sourceSaveButton.disabled ||
+      sourceSaveButton.hasAttribute?.("disabled") ||
+      sourceSaveButton.getAttribute?.("aria-disabled") === "true"
+    );
+    save.disabled = disabled;
+    save.setAttribute("aria-disabled", disabled ? "true" : "false");
   }, 0);
 }
 
@@ -686,11 +668,11 @@ function renderFlatSettingsStyles() {
       .dd-home-section-block .home-section-actions,
       .home-info-card-actions {
         display: grid;
-        grid-template-columns: 38px 26px;
+        grid-template-columns: 48px 28px;
         align-items: center;
         justify-content: end;
-        gap: 2px;
-        width: 66px;
+        gap: 8px;
+        width: 84px;
       }
       .dd-inline-actions {
         display: inline-flex;
@@ -702,8 +684,8 @@ function renderFlatSettingsStyles() {
 
       .dd-home-detail-toggle,
       .dd-home-detail-spacer {
-        width: 26px;
-        height: 38px;
+        width: 28px;
+        height: 40px;
       }
       .dd-icon-action {
         width: 38px;
@@ -809,11 +791,11 @@ function renderFlatSettingsStyles() {
       .dd-flat-subdetail .home-info-card-section { padding: 0; }
       .dd-climate-actions {
         display: grid;
-        grid-template-columns: 38px 26px;
+        grid-template-columns: 48px 28px;
         align-items: center;
         justify-content: end;
-        gap: 2px;
-        width: 66px;
+        gap: 8px;
+        width: 84px;
       }
       .dd-climate-actions ha-switch {
         justify-self: center;
@@ -899,6 +881,47 @@ function renderFlatSettingsStyles() {
         --mdc-icon-size: 18px;
       }
 
+      .dd-desktop-floating-settings-actions {
+        position: fixed;
+        left: 50%;
+        bottom: 24px;
+        transform: translateX(-50%);
+        z-index: 40;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 12px;
+        border: 1px solid var(--divider-color);
+        border-radius: 22px;
+        background: color-mix(in srgb, var(--card-background-color) 97%, transparent);
+        box-shadow: 0 14px 36px rgba(15, 23, 42, .16);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+      }
+      .dd-desktop-floating-action {
+        min-width: 132px;
+        min-height: 46px;
+        padding: 0 22px;
+        border: 0;
+        border-radius: 999px;
+        font: inherit;
+        font-size: 14px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .dd-desktop-floating-cancel {
+        color: var(--primary-color);
+        background: transparent;
+      }
+      .dd-desktop-floating-save {
+        color: var(--text-primary-color, #fff);
+        background: var(--primary-color);
+      }
+      .dd-desktop-floating-save:disabled {
+        cursor: default;
+        opacity: .45;
+      }
+
       /* The dialog footer buttons intentionally keep their existing size. */
 
       @media (max-width: 700px) {
@@ -919,7 +942,7 @@ function renderFlatSettingsStyles() {
 
         .dd-home-section-block .home-section-item,
         .dd-home-section-block .home-section-item.has-detail {
-          grid-template-columns: 22px 36px minmax(0, 1fr) 60px;
+          grid-template-columns: 22px 36px minmax(0, 1fr) 76px;
           gap: 8px;
           padding: 9px 8px;
         }
@@ -928,15 +951,15 @@ function renderFlatSettingsStyles() {
           height: 36px;
         }
         .dd-home-section-block .home-section-actions {
-          grid-template-columns: 34px 24px;
-          width: 60px;
+          grid-template-columns: 42px 26px;
+          width: 76px;
           grid-column: auto;
           justify-self: end;
         }
         .home-info-card-actions,
         .dd-climate-actions {
-          grid-template-columns: 34px 24px;
-          width: 60px;
+          grid-template-columns: 42px 26px;
+          width: 76px;
         }
         .dd-home-section-block .home-section-toggle,
         .dd-flat-subitem-row .home-section-toggle {
@@ -947,7 +970,7 @@ function renderFlatSettingsStyles() {
         .dd-home-section-block .dd-home-detail-spacer,
         .dd-flat-subitem-row .dd-home-detail-toggle,
         .dd-flat-subitem-row .dd-home-detail-spacer {
-          width: 24px;
+          width: 26px;
           height: 34px;
         }
         .dd-home-section-block .home-section-toggle ha-icon,
@@ -972,7 +995,7 @@ function renderFlatSettingsStyles() {
         }
 
         .dd-flat-subitem-row {
-          grid-template-columns: 36px minmax(0, 1fr) 60px;
+          grid-template-columns: 36px minmax(0, 1fr) 76px;
           gap: 8px;
           padding: 8px 2px;
         }
