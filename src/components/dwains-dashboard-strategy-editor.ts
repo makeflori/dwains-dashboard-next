@@ -109,15 +109,7 @@ interface HomeCameraSetting {
   state: string;
 }
 
-let rememberedSettingsPage: SettingsPageKey = "overview";
-let rememberedSettingsPageAt = 0;
-const SETTINGS_PAGE_RESTORE_MS = 8000;
 const UNGROUPED_ENTITY_DRAG_GROUP = '__ungrouped__';
-
-function rememberSettingsPage(page: SettingsPageKey): void {
-  rememberedSettingsPage = page;
-  rememberedSettingsPageAt = Date.now();
-}
 
 const SETTINGS_ICON_PATHS: Record<string, string> = {
   "mdi:card-account-details-star-outline": mdiCardAccountDetailsStarOutline,
@@ -668,13 +660,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
   private _openSettingsPage(page: Exclude<SettingsPageKey, "overview">): void {
     this._settingsPage = page;
-    rememberSettingsPage(page);
     this._closeInlinePickers();
   }
 
   private _backToSettingsOverview = (): void => {
     this._settingsPage = "overview";
-    rememberSettingsPage("overview");
     this._closeInlinePickers();
   };
 
@@ -4388,7 +4378,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   }
 
   private _fireConfigChanged(config: DwainsDashboardConfig): void {
-    rememberSettingsPage(this._settingsPage);
 
     this._config = {
       ...this._config,
