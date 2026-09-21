@@ -151,12 +151,23 @@ function applyFlatSettingsLayout(): void {
                         <ha-icon icon=${enabled ? "mdi:eye-outline" : "mdi:eye-off-outline"}></ha-icon>
                       </button>
                       ${isClimate ? html`
-                        <button class="dd-home-detail-toggle" type="button" aria-expanded=${climateOpen ? "true" : "false"} aria-label=${this._t(meta.labelKey)} @click=${toggleClimate}>
+                        <button class="dd-home-detail-toggle dd-detail-desktop" type="button" aria-expanded=${climateOpen ? "true" : "false"} aria-label=${this._t(meta.labelKey)} @click=${toggleClimate}>
                           <ha-icon icon=${climateOpen ? "mdi:chevron-up" : "mdi:chevron-down"}></ha-icon>
                         </button>
-                      ` : html`<span class="dd-home-detail-spacer" aria-hidden="true"></span>`}
+                      ` : html`<span class="dd-home-detail-spacer dd-detail-desktop" aria-hidden="true"></span>`}
                     </div>
                   </div>
+                  ${isClimate ? html`
+                    <button
+                      class="dd-mobile-expand-row"
+                      type="button"
+                      aria-expanded=${climateOpen ? "true" : "false"}
+                      aria-label=${this._t(meta.labelKey)}
+                      @click=${toggleClimate}
+                    >
+                      <ha-icon icon=${climateOpen ? "mdi:chevron-up" : "mdi:chevron-down"}></ha-icon>
+                    </button>
+                  ` : nothing}
                   ${isClimate && climateOpen ? html`
                     <div class="dd-flat-subdetail">
                       ${this._renderHomeClimateAreaSettings()}
@@ -197,7 +208,6 @@ function applyFlatSettingsLayout(): void {
                       .checked=${included}
                       @change=${(event: Event) => this._toggleHomeClimateArea(area.area_id, (event.target as any).checked)}
                     ></ha-switch>
-                    <span class="dd-home-detail-spacer" aria-hidden="true"></span>
                   </div>
                 </div>
               `;
@@ -404,16 +414,26 @@ function applyFlatSettingsLayout(): void {
                       </button>
                       ${detail ? html`
                         <button
-                          class="dd-home-detail-toggle"
+                          class="dd-home-detail-toggle dd-detail-desktop"
                           type="button"
                           aria-expanded=${open ? "true" : "false"}
                           @click=${() => toggleDetail(section)}
                         >
                           <ha-icon icon=${open ? "mdi:chevron-up" : "mdi:chevron-down"}></ha-icon>
                         </button>
-                      ` : html`<span class="dd-home-detail-spacer" aria-hidden="true"></span>`}
+                      ` : html`<span class="dd-home-detail-spacer dd-detail-desktop" aria-hidden="true"></span>`}
                     </div>
                   </div>
+                  ${detail ? html`
+                    <button
+                      class="dd-mobile-expand-row"
+                      type="button"
+                      aria-expanded=${open ? "true" : "false"}
+                      @click=${() => toggleDetail(section)}
+                    >
+                      <ha-icon icon=${open ? "mdi:chevron-up" : "mdi:chevron-down"}></ha-icon>
+                    </button>
+                  ` : nothing}
                   ${open ? html`<div class="dd-home-inline-detail">${renderDetail(section)}</div>` : nothing}
                 </div>
               `;
@@ -429,18 +449,30 @@ function applyFlatSettingsLayout(): void {
 }
 
 function scheduleCancelButtonLabel(editor: any): void {
-  window.setTimeout(() => {
+  const apply = () => {
     const cancel = String(editor?._t?.("common.cancel") || "Cancel");
     const back = String(editor?._t?.("strategy.back") || "Back");
+    let changed = false;
 
     const visit = (root: Document | ShadowRoot | Element) => {
       const nodes = root.querySelectorAll?.("button, ha-button, mwc-button") || [];
       nodes.forEach((node: any) => {
-        const label = String(node.textContent || "").trim();
-        if (label === "Back" || label === back) {
-          node.textContent = cancel;
-        }
+        const text = String(node.textContent || "").replace(/\s+/g, " ").trim();
+        const aria = String(node.getAttribute?.("aria-label") || "").trim();
+        const title = String(node.getAttribute?.("title") || "").trim();
+        const label = String(node.label || "").trim();
+        const isBack = [text, aria, title, label].some((value) =>
+          value === "Back" || value === "Zurück" || value === back
+        );
+        if (!isBack) return;
+
+        node.textContent = cancel;
+        if ("label" in node) node.label = cancel;
+        node.setAttribute?.("aria-label", cancel);
+        node.setAttribute?.("title", cancel);
+        changed = true;
       });
+
       const all = root.querySelectorAll?.("*") || [];
       all.forEach((node: any) => {
         if (node.shadowRoot) visit(node.shadowRoot);
@@ -448,7 +480,10 @@ function scheduleCancelButtonLabel(editor: any): void {
     };
 
     visit(document);
-  }, 0);
+    return changed;
+  };
+
+  [0, 50, 150, 400].forEach((delay) => window.setTimeout(apply, delay));
 }
 
 
@@ -673,6 +708,28 @@ function renderFlatSettingsStyles() {
         grid-template-columns: 32px 42px minmax(0, 1fr) auto;
       }
 
+      /* Static icons are square information markers. */
+      .dd-home-flat-layout .home-section-icon,
+      .dd-flat-sublist .home-section-icon,
+      .dd-climate-area-settings .home-section-icon {
+        border-radius: 10px !important;
+        box-shadow: none !important;
+      }
+
+      /* Interactive visibility buttons are intentionally circular and outlined. */
+      .dd-home-flat-layout .home-section-toggle,
+      .dd-flat-sublist .home-section-toggle {
+        border: 1px solid color-mix(in srgb, var(--primary-color) 24%, var(--divider-color)) !important;
+        border-radius: 999px !important;
+        background: transparent !important;
+        box-shadow: none !important;
+      }
+      .dd-home-flat-layout .home-section-toggle.enabled,
+      .dd-flat-sublist .home-section-toggle.enabled {
+        color: var(--primary-color) !important;
+        background: color-mix(in srgb, var(--primary-color) 5%, transparent) !important;
+      }
+
       .dd-home-section-block .home-section-actions,
       .home-info-card-actions {
         display: grid;
@@ -712,15 +769,9 @@ function renderFlatSettingsStyles() {
         background: transparent;
         cursor: pointer;
       }
-      .dd-home-detail-spacer {
-        display: block;
-        pointer-events: none;
-      }
+      .dd-home-detail-spacer { display: block; pointer-events: none; }
       .dd-home-detail-toggle:hover,
-      .dd-icon-action:hover {
-        color: var(--primary-text-color);
-        background: transparent;
-      }
+      .dd-icon-action:hover { color: var(--primary-text-color); background: transparent; }
       .dd-home-section-block.open > .home-section-item .dd-home-detail-toggle,
       .dd-flat-subitem.open > .dd-flat-subitem-row .dd-home-detail-toggle {
         color: var(--primary-color);
@@ -728,6 +779,8 @@ function renderFlatSettingsStyles() {
       }
       .dd-home-detail-toggle ha-icon,
       .dd-icon-action ha-icon { --mdc-icon-size: 19px; }
+
+      .dd-mobile-expand-row { display: none; }
 
       .dd-home-inline-detail {
         margin-left: 52px;
@@ -763,18 +816,11 @@ function renderFlatSettingsStyles() {
         gap: 12px;
         margin-bottom: 10px;
       }
-      .dd-inline-action-row .dd-inline-description {
-        margin: 2px 0 0;
-      }
+      .dd-inline-action-row .dd-inline-description { margin: 2px 0 0; }
 
-      .dd-flat-sublist {
-        overflow: hidden;
-        border-top: 1px solid var(--divider-color);
-      }
+      .dd-flat-sublist { overflow: hidden; border-top: 1px solid var(--divider-color); }
       .dd-flat-subitem + .dd-flat-subitem,
-      .dd-flat-subitem-row + .dd-flat-subitem-row {
-        border-top: 1px solid var(--divider-color);
-      }
+      .dd-flat-subitem-row + .dd-flat-subitem-row { border-top: 1px solid var(--divider-color); }
       .dd-flat-subitem-row {
         min-height: 58px;
         display: grid;
@@ -789,55 +835,37 @@ function renderFlatSettingsStyles() {
         cursor: grab;
       }
       .dd-draggable-subitem:active { cursor: grabbing; }
-      .dd-flat-subitem-row .home-section-icon {
-        width: 40px;
-        height: 40px;
-      }
+      .dd-flat-subitem-row .home-section-icon { width: 40px; height: 40px; }
       .dd-flat-subitem-row .home-section-copy { min-width: 0; }
       .dd-flat-subitem-row .home-section-title { font-size: 14px; }
-      .dd-flat-subitem-row .home-section-description {
-        font-size: 12px;
-        line-height: 1.35;
-      }
+      .dd-flat-subitem-row .home-section-description { font-size: 12px; line-height: 1.35; }
       .dd-flat-subdetail .home-info-card-section { padding: 0; }
+
       .dd-climate-actions {
-        display: grid;
-        grid-template-columns: 48px 28px;
+        display: flex;
         align-items: center;
-        justify-content: end;
-        justify-items: end;
+        justify-content: flex-end;
         justify-self: end;
-        gap: 8px;
-        width: 84px;
+        width: 48px;
         margin-left: auto;
       }
-      .dd-climate-actions ha-switch {
-        justify-self: center;
-      }
+      .dd-climate-actions ha-switch { margin-left: auto; }
       .dd-home-section-block .home-section-actions > .home-section-toggle,
-      .home-info-card-actions > .home-section-toggle {
-        justify-self: center;
-      }
+      .home-info-card-actions > .home-section-toggle { justify-self: center; }
       .dd-home-section-block .home-section-actions > .dd-home-detail-toggle,
-      .home-info-card-actions > .dd-home-detail-toggle {
-        justify-self: center;
-      }
+      .home-info-card-actions > .dd-home-detail-toggle { justify-self: center; }
+
       .dd-climate-area-settings .home-info-card-item {
         min-height: 0;
-        grid-template-columns: 32px minmax(0, 1fr) 84px;
+        grid-template-columns: 32px minmax(0, 1fr) 48px;
         gap: 10px;
         padding: 4px 10px;
       }
-      .dd-climate-area-settings .home-section-icon {
-        width: 32px;
-        height: 32px;
-      }
-      .dd-climate-area-settings .home-section-icon ha-icon {
-        --mdc-icon-size: 19px;
-      }
+      .dd-climate-area-settings .home-section-icon { width: 32px; height: 32px; }
+      .dd-climate-area-settings .home-section-icon ha-icon { --mdc-icon-size: 19px; }
       .dd-flat-subdetail ha-switch {
         transform: scale(.9);
-        transform-origin: center center;
+        transform-origin: right center;
       }
       .dd-flat-subdetail .home-info-card-header { padding: 4px 2px 8px; }
       .dd-flat-subdetail .home-info-card-list {
@@ -854,9 +882,7 @@ function renderFlatSettingsStyles() {
         background: transparent;
         box-shadow: none;
       }
-      .dd-flat-subdetail .home-info-card-item:first-child {
-        border-top: 1px solid var(--divider-color);
-      }
+      .dd-flat-subdetail .home-info-card-item:first-child { border-top: 1px solid var(--divider-color); }
 
       .dd-empty-state,
       .no-favorites {
@@ -881,11 +907,7 @@ function renderFlatSettingsStyles() {
         padding: 4px 2px 10px;
         border-bottom: 1px solid var(--divider-color);
       }
-      .dd-favorite-suggestions-copy {
-        min-width: 0;
-        display: grid;
-        gap: 3px;
-      }
+      .dd-favorite-suggestions-copy { min-width: 0; display: grid; gap: 3px; }
       .dd-favorite-suggestions-copy strong {
         color: var(--primary-text-color);
         font-size: 13px;
@@ -898,9 +920,7 @@ function renderFlatSettingsStyles() {
         line-height: 1.4;
       }
       .dd-favorites-picker { padding-top: 8px; }
-      .dd-favorites-add ha-icon {
-        --mdc-icon-size: 18px;
-      }
+      .dd-favorites-add ha-icon { --mdc-icon-size: 18px; }
 
       /* The dialog footer buttons intentionally keep their existing size. */
 
@@ -910,10 +930,7 @@ function renderFlatSettingsStyles() {
         .dd-flat-settings .settings-detail-content,
         .dd-subpage-header,
         .dd-settings-version-footer { max-width: none; }
-        .dd-subpage-header {
-          margin-bottom: 10px;
-          border-radius: 12px;
-        }
+        .dd-subpage-header { margin-bottom: 10px; border-radius: 12px; }
         .dd-subpage-title { font-size: 17px; }
       }
 
@@ -922,99 +939,100 @@ function renderFlatSettingsStyles() {
 
         .dd-home-section-block .home-section-item,
         .dd-home-section-block .home-section-item.has-detail {
-          grid-template-columns: 22px 36px minmax(0, 1fr) 76px;
+          grid-template-columns: 22px 36px minmax(0, 1fr) 42px;
           gap: 8px;
-          padding: 9px 8px;
+          padding: 9px 8px 7px;
         }
-        .dd-home-section-block .home-section-icon {
+        .dd-home-section-block .home-section-icon { width: 36px; height: 36px; }
+
+        /* On mobile the main action stands alone at the far right. */
+        .dd-home-section-block .home-section-actions,
+        .home-info-card-actions {
+          display: flex;
+          width: 42px;
+          justify-content: flex-end;
+          justify-self: end;
+          margin-left: auto;
+        }
+        .dd-detail-desktop { display: none !important; }
+
+        .dd-home-section-block .home-section-toggle,
+        .dd-flat-subitem-row .home-section-toggle {
           width: 36px;
           height: 36px;
         }
-        .dd-home-section-block .home-section-actions {
-          grid-template-columns: 42px 26px;
-          width: 76px;
-          grid-column: auto;
-          justify-self: end;
-        }
-        .home-info-card-actions,
-        .dd-climate-actions {
-          grid-template-columns: 42px 26px;
-          width: 76px;
-        }
-        .dd-home-section-block .home-section-toggle,
-        .dd-flat-subitem-row .home-section-toggle {
-          width: 34px;
-          height: 34px;
-        }
-        .dd-home-section-block .dd-home-detail-toggle,
-        .dd-home-section-block .dd-home-detail-spacer,
-        .dd-flat-subitem-row .dd-home-detail-toggle,
-        .dd-flat-subitem-row .dd-home-detail-spacer {
-          width: 26px;
-          height: 34px;
-        }
         .dd-home-section-block .home-section-toggle ha-icon,
-        .dd-home-section-block .dd-home-detail-toggle ha-icon,
-        .dd-flat-subitem-row .home-section-toggle ha-icon,
-        .dd-flat-subitem-row .dd-home-detail-toggle ha-icon {
-          --mdc-icon-size: 18px;
-        }
-        .dd-home-section-block .home-section-title { font-size: 14px; }
-        .dd-home-section-block .home-section-description {
-          font-size: 11px;
-          line-height: 1.3;
-        }
+        .dd-flat-subitem-row .home-section-toggle ha-icon { --mdc-icon-size: 18px; }
 
+        /* Mobile chevrons get their own slim, centered expand row. */
+        .dd-mobile-expand-row {
+          width: 100%;
+          height: 24px;
+          display: grid;
+          place-items: center;
+          padding: 0;
+          border: 0;
+          border-top: 1px solid color-mix(in srgb, var(--divider-color) 65%, transparent);
+          color: var(--secondary-text-color);
+          background: transparent;
+          cursor: pointer;
+        }
+        .dd-mobile-expand-row[aria-expanded="true"] { color: var(--primary-color); }
+        .dd-mobile-expand-row ha-icon { --mdc-icon-size: 18px; }
+
+        .dd-home-section-block .home-section-title { font-size: 14px; }
+        .dd-home-section-block .home-section-description { font-size: 11px; line-height: 1.3; }
+
+        /* Center the hierarchy line under the parent icon: 8 + 22 + 8 + 18 = 56px. */
         .dd-home-inline-detail {
-          margin-left: 38px;
+          margin-left: 56px;
           padding: 8px 0 10px 10px;
+          border-left: 2px solid color-mix(in srgb, var(--divider-color) 78%, var(--primary-color));
         }
         .dd-flat-subdetail {
-          margin-left: 18px;
+          margin-left: 10px;
           padding: 8px 0 8px 10px;
+          border-left: 0;
         }
 
         .dd-flat-subitem-row {
-          grid-template-columns: 36px minmax(0, 1fr) 76px;
+          grid-template-columns: 36px minmax(0, 1fr) 42px;
           gap: 8px;
-          padding: 8px 2px;
+          padding: 8px 2px 7px;
         }
         .dd-draggable-subitem {
-          grid-template-columns: 20px 36px minmax(0, 1fr) auto;
+          grid-template-columns: 20px 36px minmax(0, 1fr) 42px;
         }
-        .dd-flat-subitem-row .home-section-icon {
-          width: 36px;
-          height: 36px;
-        }
-        .dd-flat-subitem-row .dd-icon-action {
-          width: 32px;
-          height: 32px;
-        }
-        .dd-flat-subitem-row .dd-icon-action ha-icon {
-          --mdc-icon-size: 17px;
-        }
+        .dd-flat-subitem-row .home-section-icon { width: 36px; height: 36px; }
+        .dd-flat-subitem-row .dd-icon-action { width: 32px; height: 32px; }
+        .dd-flat-subitem-row .dd-icon-action ha-icon { --mdc-icon-size: 17px; }
+
+        /* Climate switches are the main action and sit flush right. */
         .dd-climate-area-settings .home-info-card-item {
-          grid-template-columns: 30px minmax(0, 1fr) 76px;
+          grid-template-columns: 30px minmax(0, 1fr) 48px;
           gap: 8px;
-          padding: 4px 8px;
+          padding: 4px 2px 4px 8px;
         }
-        .dd-climate-area-settings .home-section-icon {
-          width: 30px;
-          height: 30px;
+        .dd-climate-area-settings .home-section-icon { width: 30px; height: 30px; }
+        .dd-climate-actions {
+          width: 48px;
+          justify-self: end;
+          justify-content: flex-end;
         }
 
+        /* Add actions follow one mobile rule across custom cards and favorites. */
         .dd-inline-action-row {
           grid-template-columns: 1fr;
           gap: 8px;
         }
         .dd-inline-action-row .home-custom-card-add {
-          justify-self: start;
+          width: 100%;
+          justify-self: stretch;
+          justify-content: center;
+          box-sizing: border-box;
         }
 
-        .dd-settings-version-footer {
-          margin-top: 18px;
-          font-size: 10px;
-        }
+        .dd-settings-version-footer { margin-top: 18px; font-size: 10px; }
       }
     </style>
   `;
