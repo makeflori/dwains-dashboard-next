@@ -6610,6 +6610,13 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       /* Integrated flat settings UI */
       .dd-flat-settings {
         min-width: 0;
+        scroll-padding-top: 96px;
+      }
+
+      .settings-detail-content,
+      .home-section-item,
+      .dd-flat-subitem-row {
+        scroll-margin-top: 96px;
       }
 
       .dd-flat-settings .settings-nav-section,
@@ -6691,9 +6698,17 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .dd-inline-description-row {
         margin: 0;
-        padding: 10px 0 10px 0;
+        padding: 10px 12px 10px 0;
         border-top: 1px solid var(--divider-color);
         border-bottom: 0;
+      }
+
+      .dd-home-house-information > .dd-inline-section > .dd-inline-description-row {
+        padding-left: 0;
+      }
+
+      .dd-flat-subdetail .dd-inline-description-row {
+        padding-left: 0;
       }
 
       .dd-home-page-description {
@@ -6771,14 +6786,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .dd-home-inline-detail {
-        margin-left: 96px;
-        padding: 0 0 0 12px;
+        margin-left: 72px;
+        padding: 0 0 0 10px;
         border-left: 2px solid color-mix(in srgb, var(--divider-color) 78%, var(--primary-color));
       }
 
       .dd-flat-subdetail {
-        margin-left: 48px;
-        padding: 0 0 0 12px;
+        margin-left: 40px;
+        padding: 0 0 0 10px;
         border-left: 2px solid color-mix(in srgb, var(--divider-color) 78%, var(--primary-color));
       }
 
@@ -6834,6 +6849,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .dd-climate-area-settings .home-info-card-list {
         margin-left: 0;
+      }
+
+      .dd-climate-area-settings .home-info-card-item {
+        padding-left: 0;
       }
 
       .dd-climate-area-settings .home-info-card-item {
@@ -6924,11 +6943,17 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .dd-favorite-suggestions-row {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-columns: minmax(0, 1fr) 84px;
         align-items: center;
         gap: 12px;
-        padding: 4px 0 10px;
+        padding: 4px 12px 10px 0;
         border-bottom: 1px solid var(--divider-color);
+      }
+
+      .dd-favorite-suggestions-row ha-switch {
+        justify-self: end;
+        transform: scale(.9);
+        transform-origin: right center;
       }
 
       .dd-favorite-suggestions-copy {
@@ -6965,24 +6990,28 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
         .dd-desktop-floating-back {
           position: fixed;
-          left: max(24px, calc((100vw - 940px) / 2 - 64px));
-          bottom: 24px;
+          left: max(24px, calc((100vw - 940px) / 2 + 8px));
+          bottom: 28px;
           z-index: 44;
           display: inline-grid;
           place-items: center;
-          width: 44px;
-          height: 44px;
+          width: 48px;
+          height: 48px;
           padding: 0;
-          border: 1px solid var(--divider-color);
+          border: 1px solid color-mix(in srgb, var(--primary-color) 35%, var(--divider-color));
           border-radius: 999px;
           color: var(--primary-color);
-          background: var(--card-background-color);
-          box-shadow: 0 10px 28px rgba(15, 23, 42, .14);
+          background: color-mix(in srgb, var(--primary-color) 12%, var(--card-background-color));
+          box-shadow: 0 12px 30px rgba(15, 23, 42, .18);
           cursor: pointer;
         }
 
+        .dd-desktop-floating-back:hover {
+          background: color-mix(in srgb, var(--primary-color) 18%, var(--card-background-color));
+        }
+
         .dd-desktop-floating-back ha-icon {
-          --mdc-icon-size: 22px;
+          --mdc-icon-size: 24px;
         }
       }
 
@@ -7023,13 +7052,13 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         }
 
         .dd-home-inline-detail {
-          margin-left: 66px;
-          padding-left: 10px;
+          margin-left: 50px;
+          padding-left: 8px;
         }
 
         .dd-flat-subdetail {
-          margin-left: 38px;
-          padding-left: 10px;
+          margin-left: 30px;
+          padding-left: 8px;
         }
 
         .dd-climate-area-settings .home-info-card-list {
@@ -7061,6 +7090,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         .dd-inline-action-row {
           grid-template-columns: 1fr;
           gap: 8px;
+        }
+
+        .dd-favorite-suggestions-row {
+          grid-template-columns: minmax(0, 1fr) 76px;
+          padding-right: 8px;
         }
 
         .dd-favorites-action-row {
