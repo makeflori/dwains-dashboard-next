@@ -100,16 +100,13 @@ function applyFlatSettingsLayout(): void {
           </div>
 
           <div class="entity-picker dd-favorites-picker">
-            <div class="dd-inline-section-heading dd-inline-section-heading-action dd-favorites-manual-heading">
-              <div>
-                <strong>${this._t("settings.selected_entities")}</strong>
-              </div>
+            <div class="dd-inline-action-row dd-favorites-action-row">
+              <span></span>
               <button class="home-custom-card-add dd-favorites-add" type="button" @click=${this._addFavoriteEntity}>
                 <ha-icon icon="mdi:plus"></ha-icon>
                 ${this._t("common.add")}
               </button>
             </div>
-
             ${this._renderSelectedEntities()}
             ${this._showEntityPicker ? this._renderEntityPicker() : nothing}
           </div>
@@ -128,10 +125,7 @@ function applyFlatSettingsLayout(): void {
 
       return html`
         <div class="dd-inline-section">
-          <div class="dd-inline-section-heading">
-            <strong>${this._t("settings.house_information_cards")}</strong>
-            <span>${this._t("settings.house_information_cards_description")}</span>
-          </div>
+          <p class="dd-inline-description">${this._t("settings.house_information_cards_description")}</p>
           <div class="dd-flat-sublist">
             ${DEFAULT_HOME_INFORMATION_CARDS.map((card: HomeInformationCardKey) => {
               const meta = HOME_INFORMATION_CARD_META[card];
@@ -177,16 +171,47 @@ function applyFlatSettingsLayout(): void {
       `;
     };
 
+    proto._renderHomeClimateAreaSettings = function () {
+      if (!this._config || !this.hass) return nothing;
+      const excluded = this._getExcludedHomeClimateAreas();
+      const hiddenAreas = new Set(this._config.areas_display?.hidden || []);
+      const areas = this._config.areas
+        ? [...this._config.areas]
+          .filter((area: any) => !hiddenAreas.has(area.area_id))
+          .sort((a: any, b: any) => String(a.name || "").localeCompare(String(b.name || ""), undefined, { sensitivity: "base" }))
+        : [];
+
+      return html`
+        <div class="home-info-card-section home-climate-area-settings dd-climate-area-settings">
+          <p class="dd-inline-description">${this._t("settings.home_climate_areas_description")}</p>
+          <div class="home-info-card-list">
+            ${areas.map((area: any) => {
+              const included = !excluded.has(area.area_id);
+              return html`
+                <div class="home-info-card-item ${included ? "enabled" : "disabled"}">
+                  <div class="home-section-icon"><ha-icon icon=${area.icon || "mdi:floor-plan"}></ha-icon></div>
+                  <div class="home-section-copy">
+                    <div class="home-section-title">${area.name}</div>
+                  </div>
+                  <ha-switch
+                    .checked=${included}
+                    @change=${(event: Event) => this._toggleHomeClimateArea(area.area_id, (event.target as any).checked)}
+                  ></ha-switch>
+                </div>
+              `;
+            })}
+          </div>
+        </div>
+      `;
+    };
+
     proto._renderHomeCameraSettings = function () {
       const cameras = this._getHomeCameraSettings();
       const hidden = new Set(this._config?.settings?.home_cameras_hidden || []);
 
       return html`
         <div class="dd-inline-section">
-          <div class="dd-inline-section-heading">
-            <strong>${this._t("settings.home_camera_cards")}</strong>
-            <span>${this._t("settings.home_camera_cards_description")}</span>
-          </div>
+          <p class="dd-inline-description">${this._t("settings.home_camera_cards_description")}</p>
           ${cameras.length ? html`
             <div class="dd-flat-sublist">
               ${cameras.map((camera: any, index: number) => {
@@ -254,16 +279,14 @@ function applyFlatSettingsLayout(): void {
 
       return html`
         <div class="dd-inline-section">
-          <div class="dd-inline-section-heading dd-inline-section-heading-action">
-            <div>
-              <strong>${this._t("settings.home_custom_cards")}</strong>
-              <span>${this._t("settings.home_custom_cards_description")}</span>
-            </div>
+          <div class="dd-inline-action-row">
+            <p class="dd-inline-description">${this._t("settings.home_custom_cards_description")}</p>
             <button class="home-custom-card-add" type="button" @click=${this._addHomeCustomCard}>
               <ha-icon icon="mdi:plus"></ha-icon>
               ${this._t("settings.add_home_card")}
             </button>
           </div>
+
           ${cards.length ? html`
             <div class="dd-flat-sublist">
               ${cards.map((entry: any, index: number) => html`
@@ -586,30 +609,22 @@ function renderFlatSettingsStyles() {
       .dd-home-house-information { display: block; }
 
       .dd-inline-section { min-width: 0; }
-      .dd-inline-section-heading {
-        display: grid;
-        gap: 4px;
-        padding: 2px 2px 10px;
-      }
-      .dd-inline-section-heading > strong,
-      .dd-inline-section-heading > div > strong {
-        color: var(--primary-text-color);
-        font-size: 13px;
-        font-weight: 600;
-        line-height: 1.3;
-      }
-      .dd-inline-section-heading > span,
-      .dd-inline-section-heading > div > span {
+      .dd-inline-description {
+        margin: 0 0 10px;
         color: var(--secondary-text-color);
         font-size: 12px;
-        line-height: 1.4;
+        line-height: 1.45;
       }
-      .dd-inline-section-heading-action {
+      .dd-inline-action-row {
+        display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
-        align-items: center;
-        gap: 10px;
+        align-items: start;
+        gap: 12px;
+        margin-bottom: 10px;
       }
-      .dd-inline-section-heading-action > div { display: grid; gap: 4px; }
+      .dd-inline-action-row .dd-inline-description {
+        margin: 2px 0 0;
+      }
 
       .dd-flat-sublist {
         overflow: hidden;
@@ -650,14 +665,21 @@ function renderFlatSettingsStyles() {
       }
       .dd-flat-subdetail .home-info-card-header { padding: 4px 2px 8px; }
       .dd-flat-subdetail .home-info-card-list {
+        display: grid;
+        gap: 0;
         border: 0;
         border-radius: 0;
       }
       .dd-flat-subdetail .home-info-card-item {
+        margin: 0;
         border: 0;
         border-top: 1px solid var(--divider-color);
         border-radius: 0;
         background: transparent;
+        box-shadow: none;
+      }
+      .dd-flat-subdetail .home-info-card-item:first-child {
+        border-top: 1px solid var(--divider-color);
       }
 
       .dd-empty-state,
@@ -700,8 +722,8 @@ function renderFlatSettingsStyles() {
         line-height: 1.4;
       }
       .dd-favorites-picker { padding-top: 8px; }
-      .dd-favorites-manual-heading {
-        padding: 0 0 8px;
+      .dd-favorites-action-row {
+        margin-bottom: 4px;
       }
       .dd-favorites-add ha-icon {
         --mdc-icon-size: 18px;
@@ -798,18 +820,17 @@ function renderFlatSettingsStyles() {
           --mdc-icon-size: 17px;
         }
 
-        .dd-inline-section-heading-action {
+        .dd-inline-action-row {
           grid-template-columns: 1fr;
-          align-items: stretch;
+          gap: 8px;
         }
-        .dd-inline-section-heading-action .home-custom-card-add {
+        .dd-inline-action-row .home-custom-card-add {
           justify-self: start;
         }
-        .dd-favorites-manual-heading {
+        .dd-favorites-action-row {
           grid-template-columns: 1fr auto;
-          align-items: center;
         }
-        .dd-favorites-manual-heading .home-custom-card-add {
+        .dd-favorites-action-row .home-custom-card-add {
           justify-self: end;
         }
 
