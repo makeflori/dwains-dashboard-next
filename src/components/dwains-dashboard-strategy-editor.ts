@@ -813,10 +813,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         <button
           class="dd-desktop-floating-back"
           type="button"
+          aria-label=${this._t('common.back')}
+          title=${this._t('common.back')}
           @click=${this._backToSettingsOverview}
         >
-          <ha-icon icon="mdi:arrow-left"></ha-icon>
-          <span>${this._t('common.back')}</span>
+          <ha-icon icon="mdi:chevron-left"></ha-icon>
         </button>
         <div class="dd-subpage-header">
           <button
@@ -6945,26 +6946,24 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
         .dd-desktop-floating-back {
           position: fixed;
-          left: max(24px, calc((100vw - 940px) / 2 - 110px));
+          left: max(24px, calc((100vw - 940px) / 2 - 64px));
           bottom: 24px;
           z-index: 44;
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          min-height: 44px;
-          padding: 0 16px;
+          display: inline-grid;
+          place-items: center;
+          width: 44px;
+          height: 44px;
+          padding: 0;
           border: 1px solid var(--divider-color);
           border-radius: 999px;
           color: var(--primary-color);
           background: var(--card-background-color);
           box-shadow: 0 10px 28px rgba(15, 23, 42, .14);
-          font: inherit;
-          font-weight: 700;
           cursor: pointer;
         }
 
         .dd-desktop-floating-back ha-icon {
-          --mdc-icon-size: 20px;
+          --mdc-icon-size: 22px;
         }
       }
 
