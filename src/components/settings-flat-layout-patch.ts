@@ -15,6 +15,7 @@ function applyFlatSettingsLayout(): void {
 
     proto._renderSettingsOverview = function () {
       scheduleCancelButtonLabel(this);
+      scheduleDesktopStickySettingsHeader(this);
       const groups = [
         { key: "general", title: this._t("settings.general") },
         { key: "layout", title: this._t("settings.dashboard_layout") },
@@ -46,6 +47,7 @@ function applyFlatSettingsLayout(): void {
 
     proto._renderSettingsDetailPage = function (page: string) {
       scheduleCancelButtonLabel(this);
+      scheduleDesktopStickySettingsHeader(this);
       const item = this._settingsOverviewItems().find((candidate: any) => candidate.page === page);
       if (!item) return this._renderSettingsOverview();
 
@@ -446,6 +448,80 @@ function scheduleCancelButtonLabel(editor: any): void {
     };
 
     visit(document);
+  }, 0);
+}
+
+
+function scheduleDesktopStickySettingsHeader(editor: any): void {
+  window.setTimeout(() => {
+    const desktop = window.matchMedia("(min-width: 701px)").matches;
+    const saveLabel = String(editor?._t?.("common.save") || "Save");
+    const cancelLabel = String(editor?._t?.("common.cancel") || "Cancel");
+    const titleLabel = String(editor?._t?.("settings.title") || "Dashboard settings");
+
+    const allRoots: Array<Document | ShadowRoot | Element> = [document];
+    const visited = new Set<any>();
+
+    const collectRoots = (root: Document | ShadowRoot | Element) => {
+      if (visited.has(root)) return;
+      visited.add(root);
+      const all = root.querySelectorAll?.("*") || [];
+      all.forEach((node: any) => {
+        if (node.shadowRoot) {
+          allRoots.push(node.shadowRoot);
+          collectRoots(node.shadowRoot);
+        }
+      });
+    };
+    collectRoots(document);
+
+    const textOf = (node: any) => String(node?.textContent || "").replace(/\s+/g, " ").trim();
+
+    let saveButton: any;
+    let cancelButton: any;
+    let titleNode: any;
+
+    for (const root of allRoots) {
+      const controls = root.querySelectorAll?.("button, ha-button, mwc-button") || [];
+      controls.forEach((node: any) => {
+        const text = textOf(node);
+        if (!saveButton && (text === saveLabel || text === "Speichern" || text === "Save")) saveButton = node;
+        if (!cancelButton && (text === cancelLabel || text === "Abbrechen" || text === "Cancel")) cancelButton = node;
+      });
+
+      const candidates = root.querySelectorAll?.("h1, h2, h3, header, div, span") || [];
+      candidates.forEach((node: any) => {
+        if (titleNode) return;
+        const text = textOf(node);
+        if (text === titleLabel || text === "Dashboard-Einstellungen" || text === "Dashboard Settings") {
+          titleNode = node;
+        }
+      });
+    }
+
+    if (!saveButton || !titleNode) return;
+
+    let header: any = saveButton;
+    while (header && header !== document.body) {
+      if (header.contains?.(titleNode) && (!cancelButton || header.contains?.(cancelButton))) break;
+      header = header.parentElement || header.getRootNode?.()?.host;
+    }
+    if (!header || header === document.body) return;
+
+    const style = header.style as CSSStyleDeclaration;
+    if (desktop) {
+      header.dataset.ddDesktopStickySettingsHeader = "true";
+      style.position = "sticky";
+      style.top = "0";
+      style.zIndex = "30";
+      style.background = "var(--primary-background-color, var(--card-background-color))";
+    } else if (header.dataset?.ddDesktopStickySettingsHeader === "true") {
+      delete header.dataset.ddDesktopStickySettingsHeader;
+      style.position = "";
+      style.top = "";
+      style.zIndex = "";
+      style.background = "";
+    }
   }, 0);
 }
 
