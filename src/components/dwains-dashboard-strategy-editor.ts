@@ -251,8 +251,9 @@ function scheduleIntegratedSettingsHeader(editor: any, detail = false): void {
         back = document.createElement("ha-button") as any;
         back.setAttribute("appearance", "plain");
         back.className = "dd-desktop-settings-back";
-        const parent = cancelButton.parentNode;
-        parent?.insertBefore(back, cancelButton);
+        back.style.marginRight = "8px";
+        const parent = titleNode.parentNode;
+        parent?.insertBefore(back, titleNode);
         state.backButton = back;
       }
       back.textContent = backLabel;
@@ -6723,7 +6724,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         grid-template-columns: 48px 28px;
         align-items: center;
         justify-content: end;
-        justify-items: center;
+        justify-items: end;
         justify-self: end;
         gap: 8px;
         width: 84px;
@@ -6756,14 +6757,15 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         color: var(--primary-color);
       }
 
-      .dd-home-inline-detail,
-      .dd-flat-subdetail {
+      .dd-home-inline-detail {
         margin-left: 40px;
         padding: 0 0 0 12px;
         border-left: 2px solid color-mix(in srgb, var(--divider-color) 78%, var(--primary-color));
       }
 
       .dd-flat-subdetail {
+        margin-left: 0;
+        padding: 0;
         border-left: 0;
       }
 
@@ -6790,7 +6792,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         grid-template-columns: 40px minmax(0, 1fr) 84px;
         align-items: center;
         gap: 9px;
-        padding: 7px 0;
+        padding: 7px 12px 7px 0;
         box-sizing: border-box;
       }
 
@@ -6805,11 +6807,20 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .dd-flat-subdetail .dd-inline-description {
+        margin: 0;
         padding: 10px 0;
+        color: var(--secondary-text-color);
+        font-size: 12px;
+        line-height: 1.4;
+        font-weight: 400;
       }
 
       .dd-climate-area-settings {
         padding: 0;
+      }
+
+      .dd-climate-area-settings .home-info-card-list {
+        margin-left: 40px;
       }
 
       .dd-climate-area-settings .home-info-card-item {
@@ -6817,7 +6828,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         grid-template-columns: 32px minmax(0, 1fr) 84px;
         gap: 10px;
         margin: 0;
-        padding: 4px 0;
+        padding: 4px 12px 4px 0;
         border: 0;
         border-bottom: 1px solid var(--divider-color);
         border-radius: 0;
@@ -6839,9 +6850,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .dd-climate-actions ha-switch {
-        justify-self: center;
+        justify-self: end;
         transform: scale(.9);
-        transform-origin: center center;
+        transform-origin: right center;
       }
 
       .dd-inline-action-row {
@@ -6967,16 +6978,24 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           width: 76px;
         }
 
-        .dd-home-inline-detail,
-        .dd-flat-subdetail {
+        .dd-home-inline-detail {
           margin-left: 30px;
           padding-left: 10px;
+        }
+
+        .dd-flat-subdetail {
+          margin-left: 0;
+          padding-left: 0;
+        }
+
+        .dd-climate-area-settings .home-info-card-list {
+          margin-left: 30px;
         }
 
         .dd-flat-subitem-row {
           grid-template-columns: 36px minmax(0, 1fr) 76px;
           gap: 8px;
-          padding: 7px 0;
+          padding: 7px 8px 7px 0;
         }
 
         .dd-draggable-subitem {
@@ -6986,7 +7005,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         .dd-climate-area-settings .home-info-card-item {
           grid-template-columns: 30px minmax(0, 1fr) 76px;
           gap: 8px;
-          padding: 3px 0;
+          padding: 3px 8px 3px 0;
         }
 
         .dd-climate-area-settings .home-section-icon {
