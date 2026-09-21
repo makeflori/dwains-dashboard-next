@@ -76,10 +76,7 @@ function applyFlatSettingsLayout(): void {
       this._homeSettingsDetail ||= "overview";
       return html`
         <section class="dd-home-layout-panel">
-          <div class="dd-home-layout-heading">
-            <strong>${this._t("settings.home_layout")}</strong>
-            <span>${this._t("settings.home_layout_description")}</span>
-          </div>
+          <p class="dd-home-page-description">${this._t("settings.home_layout_description")}</p>
           ${this._renderHomeSectionOrder()}
         </section>
       `;
@@ -647,17 +644,8 @@ function renderFlatSettingsStyles() {
       }
 
       .dd-home-layout-panel { min-width: 0; }
-      .dd-home-layout-heading {
-        display: grid;
-        gap: 5px;
+      .dd-home-page-description {
         margin: 0 0 14px;
-      }
-      .dd-home-layout-heading strong {
-        color: var(--primary-text-color);
-        font-size: 15px;
-        line-height: 1.3;
-      }
-      .dd-home-layout-heading span {
         color: var(--secondary-text-color);
         font-size: 12px;
         line-height: 1.45;
@@ -691,8 +679,11 @@ function renderFlatSettingsStyles() {
         grid-template-columns: 48px 28px;
         align-items: center;
         justify-content: end;
+        justify-items: end;
+        justify-self: end;
         gap: 8px;
         width: 84px;
+        margin-left: auto;
       }
       .dd-inline-actions {
         display: inline-flex;
@@ -739,13 +730,13 @@ function renderFlatSettingsStyles() {
       .dd-icon-action ha-icon { --mdc-icon-size: 19px; }
 
       .dd-home-inline-detail {
-        margin-left: 12px;
+        margin-left: 52px;
         padding: 10px 0 12px 12px;
         border-left: 2px solid color-mix(in srgb, var(--divider-color) 78%, var(--primary-color));
       }
       .dd-flat-subdetail {
-        margin-left: 12px;
-        padding: 8px 0 10px 12px;
+        margin-left: 24px;
+        padding: 10px 0 10px 12px;
         border-left: 0;
       }
       .dd-home-house-information { display: block; }
@@ -814,8 +805,11 @@ function renderFlatSettingsStyles() {
         grid-template-columns: 48px 28px;
         align-items: center;
         justify-content: end;
+        justify-items: end;
+        justify-self: end;
         gap: 8px;
         width: 84px;
+        margin-left: auto;
       }
       .dd-climate-actions ha-switch {
         justify-self: center;
@@ -830,14 +824,16 @@ function renderFlatSettingsStyles() {
       }
       .dd-climate-area-settings .home-info-card-item {
         min-height: 0;
-        padding: 6px 10px;
+        grid-template-columns: 32px minmax(0, 1fr) 84px;
+        gap: 10px;
+        padding: 4px 10px;
       }
       .dd-climate-area-settings .home-section-icon {
-        width: 36px;
-        height: 36px;
+        width: 32px;
+        height: 32px;
       }
       .dd-climate-area-settings .home-section-icon ha-icon {
-        --mdc-icon-size: 20px;
+        --mdc-icon-size: 19px;
       }
       .dd-flat-subdetail ha-switch {
         transform: scale(.9);
@@ -925,7 +921,7 @@ function renderFlatSettingsStyles() {
       }
 
       @media (max-width: 600px) {
-        .dd-home-layout-heading { margin-bottom: 10px; }
+        .dd-home-page-description { margin-bottom: 10px; }
 
         .dd-home-section-block .home-section-item,
         .dd-home-section-block .home-section-item.has-detail {
@@ -972,13 +968,13 @@ function renderFlatSettingsStyles() {
           line-height: 1.3;
         }
 
-          .dd-home-inline-detail {
-          margin-left: 10px;
+        .dd-home-inline-detail {
+          margin-left: 38px;
           padding: 8px 0 10px 10px;
         }
         .dd-flat-subdetail {
-          margin-left: 8px;
-          padding: 6px 0 8px 10px;
+          margin-left: 18px;
+          padding: 8px 0 8px 10px;
         }
 
         .dd-flat-subitem-row {
@@ -999,6 +995,15 @@ function renderFlatSettingsStyles() {
         }
         .dd-flat-subitem-row .dd-icon-action ha-icon {
           --mdc-icon-size: 17px;
+        }
+        .dd-climate-area-settings .home-info-card-item {
+          grid-template-columns: 30px minmax(0, 1fr) 76px;
+          gap: 8px;
+          padding: 4px 8px;
+        }
+        .dd-climate-area-settings .home-section-icon {
+          width: 30px;
+          height: 30px;
         }
 
         .dd-inline-action-row {
