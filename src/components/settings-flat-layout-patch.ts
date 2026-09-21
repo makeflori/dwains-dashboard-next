@@ -99,8 +99,8 @@ function applyFlatSettingsLayout(): void {
           </div>
 
           <div class="entity-picker dd-favorites-picker">
-            <div class="dd-inline-action-row dd-favorites-action-row">
-              <span></span>
+            <div class="dd-inline-action-row">
+              <p class="dd-inline-description">${this._t("settings.favorites_description")}</p>
               <button class="home-custom-card-add dd-favorites-add" type="button" @click=${this._addFavoriteEntity}>
                 <ha-icon icon="mdi:plus"></ha-icon>
                 ${this._t("common.add")}
@@ -898,9 +898,6 @@ function renderFlatSettingsStyles() {
         line-height: 1.4;
       }
       .dd-favorites-picker { padding-top: 8px; }
-      .dd-favorites-action-row {
-        margin-bottom: 4px;
-      }
       .dd-favorites-add ha-icon {
         --mdc-icon-size: 18px;
       }
@@ -1012,12 +1009,6 @@ function renderFlatSettingsStyles() {
         }
         .dd-inline-action-row .home-custom-card-add {
           justify-self: start;
-        }
-        .dd-favorites-action-row {
-          grid-template-columns: 1fr auto;
-        }
-        .dd-favorites-action-row .home-custom-card-add {
-          justify-self: end;
         }
 
         .dd-settings-version-footer {
