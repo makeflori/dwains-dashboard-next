@@ -510,13 +510,17 @@ function scheduleDesktopFloatingSettingsActions(editor: any): void {
     const sourceSaveButton = findAction(saveLabel, ["Speichern", "Save"]);
     const sourceCancelButton = findAction(cancelLabel, ["Abbrechen", "Cancel"]);
 
-    if (!desktop) {
-      if (state.sourceSaveButton) state.sourceSaveButton.style.display = "";
-      if (state.sourceCancelButton) state.sourceCancelButton.style.display = "";
+    const removeFloating = () => {
       state.wrapper?.remove?.();
       state.wrapper = undefined;
       state.saveButton = undefined;
       state.cancelButton = undefined;
+    };
+
+    if (!desktop) {
+      if (state.sourceSaveButton) state.sourceSaveButton.style.display = "";
+      if (state.sourceCancelButton) state.sourceCancelButton.style.display = "";
+      removeFloating();
       state.sourceSaveButton = undefined;
       state.sourceCancelButton = undefined;
       return;
@@ -527,7 +531,7 @@ function scheduleDesktopFloatingSettingsActions(editor: any): void {
     state.sourceSaveButton = sourceSaveButton;
     state.sourceCancelButton = sourceCancelButton;
 
-    // On desktop the header scrolls normally; only its actions are replaced by the floating bar.
+    // Let the desktop header scroll normally; hide only its actions.
     sourceSaveButton.style.display = "none";
     sourceCancelButton.style.display = "none";
 
@@ -535,14 +539,29 @@ function scheduleDesktopFloatingSettingsActions(editor: any): void {
     if (!wrapper || !wrapper.isConnected) {
       wrapper = document.createElement("div");
       wrapper.className = "dd-desktop-floating-settings-actions";
+      Object.assign(wrapper.style, {
+        position: "fixed",
+        left: "50%",
+        bottom: "24px",
+        transform: "translateX(-50%)",
+        zIndex: "1000",
+        display: "flex",
+        alignItems: "center",
+        gap: "12px",
+        padding: "10px 12px",
+        border: "1px solid var(--divider-color)",
+        borderRadius: "22px",
+        background: "var(--card-background-color)",
+        boxShadow: "0 14px 36px rgba(15, 23, 42, .16)",
+      } as Partial<CSSStyleDeclaration>);
 
-      const cancel = document.createElement("button");
-      cancel.type = "button";
-      cancel.className = "dd-desktop-floating-action dd-desktop-floating-cancel";
+      const cancel = document.createElement("ha-button") as any;
+      cancel.classList.add("dd-desktop-floating-action");
+      cancel.setAttribute("appearance", "plain");
 
-      const save = document.createElement("button");
-      save.type = "button";
-      save.className = "dd-desktop-floating-action dd-desktop-floating-save";
+      const save = document.createElement("ha-button") as any;
+      save.classList.add("dd-desktop-floating-action");
+      save.setAttribute("appearance", "accent");
 
       wrapper.append(cancel, save);
       document.body.appendChild(wrapper);
@@ -552,8 +571,8 @@ function scheduleDesktopFloatingSettingsActions(editor: any): void {
       state.saveButton = save;
     }
 
-    const cancel = state.cancelButton as HTMLButtonElement;
-    const save = state.saveButton as HTMLButtonElement;
+    const cancel = state.cancelButton as any;
+    const save = state.saveButton as any;
 
     cancel.textContent = cancelLabel;
     save.textContent = saveLabel;
@@ -567,7 +586,8 @@ function scheduleDesktopFloatingSettingsActions(editor: any): void {
       sourceSaveButton.getAttribute?.("aria-disabled") === "true"
     );
     save.disabled = disabled;
-    save.setAttribute("aria-disabled", disabled ? "true" : "false");
+    if (disabled) save.setAttribute("disabled", "");
+    else save.removeAttribute("disabled");
   }, 0);
 }
 
@@ -800,6 +820,14 @@ function renderFlatSettingsStyles() {
       .dd-climate-actions ha-switch {
         justify-self: center;
       }
+      .dd-home-section-block .home-section-actions > .home-section-toggle,
+      .home-info-card-actions > .home-section-toggle {
+        justify-self: center;
+      }
+      .dd-home-section-block .home-section-actions > .dd-home-detail-toggle,
+      .home-info-card-actions > .dd-home-detail-toggle {
+        justify-self: center;
+      }
       .dd-climate-area-settings .home-info-card-item {
         min-height: 0;
         padding: 6px 10px;
@@ -879,47 +907,6 @@ function renderFlatSettingsStyles() {
       }
       .dd-favorites-add ha-icon {
         --mdc-icon-size: 18px;
-      }
-
-      .dd-desktop-floating-settings-actions {
-        position: fixed;
-        left: 50%;
-        bottom: 24px;
-        transform: translateX(-50%);
-        z-index: 40;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 10px 12px;
-        border: 1px solid var(--divider-color);
-        border-radius: 22px;
-        background: color-mix(in srgb, var(--card-background-color) 97%, transparent);
-        box-shadow: 0 14px 36px rgba(15, 23, 42, .16);
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-      }
-      .dd-desktop-floating-action {
-        min-width: 132px;
-        min-height: 46px;
-        padding: 0 22px;
-        border: 0;
-        border-radius: 999px;
-        font: inherit;
-        font-size: 14px;
-        font-weight: 800;
-        cursor: pointer;
-      }
-      .dd-desktop-floating-cancel {
-        color: var(--primary-color);
-        background: transparent;
-      }
-      .dd-desktop-floating-save {
-        color: var(--text-primary-color, #fff);
-        background: var(--primary-color);
-      }
-      .dd-desktop-floating-save:disabled {
-        cursor: default;
-        opacity: .45;
       }
 
       /* The dialog footer buttons intentionally keep their existing size. */
