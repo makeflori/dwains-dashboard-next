@@ -560,20 +560,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   }
 
   private _renderLoadingShell() {
+    scheduleIntegratedSettingsHeader(this);
     return html`
-      <div class="editor-container settings-loading-shell" aria-busy="true">
-        <div class="settings-overview-hero settings-overview-hero-skeleton">
-          <div>
-            <h2>${this._t('settings.title')}</h2>
-            <p>${this._t('settings.loading')}</p>
-            <div class="settings-version-chip">
-              ${this._renderSettingsIcon("mdi:package-variant-closed-check")}
-              <span>${this._t('settings.loaded_version')}</span>
-              <strong>v${DD_NEXT_VERSION}</strong>
-            </div>
-          </div>
-          ${this._renderSettingsIcon("mdi:tune-variant", "settings-hero-icon")}
-        </div>
+      <div class="editor-container dd-flat-settings dd-settings-overview settings-loading-shell" aria-busy="true">
         <section class="settings-nav-section">
           <h3>${this._t('settings.loading')}</h3>
           <div class="settings-nav-list">
@@ -6703,7 +6692,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .dd-home-section-block.open > .home-section-item {
         border: 0;
-        border-bottom: 1px solid var(--divider-color);
         border-radius: 0;
         box-shadow: none;
       }
@@ -6757,7 +6745,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .dd-home-inline-detail {
-        margin-left: 40px;
+        margin-left: 56px;
         padding: 0 0 0 12px;
         border-left: 2px solid color-mix(in srgb, var(--divider-color) 78%, var(--primary-color));
       }
@@ -6818,7 +6806,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .dd-climate-area-settings .home-info-card-list {
-        margin-left: 40px;
+        margin-left: 56px;
       }
 
       .dd-climate-area-settings .home-info-card-item {
@@ -7004,7 +6992,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         }
 
         .dd-home-inline-detail {
-          margin-left: 30px;
+          margin-left: 38px;
           padding-left: 10px;
         }
 
@@ -7014,7 +7002,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         }
 
         .dd-climate-area-settings .home-info-card-list {
-          margin-left: 30px;
+          margin-left: 38px;
         }
 
         .dd-flat-subitem-row {
