@@ -261,15 +261,20 @@ function cleanupIntegratedSettingsHeader(): void {
   state.subtitle = undefined;  state.editor = undefined;
 }
 
+type SettingsRegistryData = {
+  areas: Array<{ area_id: string; name: string; picture: string | null; icon: string | null }>;
+  devices: Array<{ id: string; name: string; name_by_user: string | null; area_id: string | null; created_at?: string | null }>;
+  entities: Array<{ entity_id: string; area_id: string | null; device_id: string | null; created_at?: string | null }>;
+};
+
+let settingsRegistryCache: SettingsRegistryData | undefined;
+let settingsRegistryRefreshPromise: Promise<SettingsRegistryData | undefined> | undefined;
+
 @customElement("dwains-dashboard-next-strategy-editor")
 export class DwainsDashboardStrategyEditor extends LitElement {
   private _hass?: HomeAssistant;
   private _fetchDataPromise?: Promise<void>;
-  private _registryData?: {
-    areas: Array<{ area_id: string; name: string; picture: string | null; icon: string | null }>;
-    devices: Array<{ id: string; name: string; name_by_user: string | null; area_id: string | null; created_at?: string | null }>;
-    entities: Array<{ entity_id: string; area_id: string | null; device_id: string | null; created_at?: string | null }>;
-  };
+  private _registryData?: SettingsRegistryData;
 
   @property({ attribute: false })
   public set hass(value: HomeAssistant | undefined) {
@@ -472,12 +477,27 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       return;
     }
 
+    if (settingsRegistryCache) {
+      this._registryData = settingsRegistryCache;
+      this._applyRegistryData(settingsRegistryCache.areas, settingsRegistryCache.devices, settingsRegistryCache.entities);
+      this._loading = false;
+      this.requestUpdate();
+
+      // Refresh once in the background so reopening Settings is instant without keeping stale data forever.
+      if (!settingsRegistryRefreshPromise) {
+        settingsRegistryRefreshPromise = this._loadRegistryData(false).finally(() => {
+          settingsRegistryRefreshPromise = undefined;
+        });
+      }
+      return;
+    }
+
     if (this._fetchDataPromise) {
       return this._fetchDataPromise;
     }
 
     this._loading = true;
-    this._fetchDataPromise = this._loadRegistryData();
+    this._fetchDataPromise = this._loadRegistryData(true).then(() => undefined);
     try {
       await this._fetchDataPromise;
     } finally {
@@ -485,9 +505,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     }
   }
 
-  private async _loadRegistryData() {
+  private async _loadRegistryData(showLoading: boolean): Promise<SettingsRegistryData | undefined> {
     const hass = this.hass;
-    if (!hass) return;
+    if (!hass) return undefined;
+
+    if (showLoading) this._loading = true;
 
     try {
       const [areas, devices, entities] = await Promise.all([
@@ -502,14 +524,18 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         })
       ]);
 
-      this._registryData = { areas, devices, entities };
+      const data: SettingsRegistryData = { areas, devices, entities };
+      settingsRegistryCache = data;
+      this._registryData = data;
       this._applyRegistryData(areas, devices, entities);
-
       this._loading = false;
       this.requestUpdate();
+      return data;
     } catch (error) {
       console.error('Failed to fetch data:', error);
       this._loading = false;
+      this.requestUpdate();
+      return undefined;
     }
   }
 
@@ -6665,9 +6691,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .dd-inline-description-row {
         margin: 0;
-        padding: 10px 14px;
+        padding: 10px 0 10px 0;
         border-top: 1px solid var(--divider-color);
-        border-bottom: 1px solid var(--divider-color);
+        border-bottom: 0;
       }
 
       .dd-home-page-description {
@@ -6745,15 +6771,15 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .dd-home-inline-detail {
-        margin-left: 56px;
+        margin-left: 96px;
         padding: 0 0 0 12px;
         border-left: 2px solid color-mix(in srgb, var(--divider-color) 78%, var(--primary-color));
       }
 
       .dd-flat-subdetail {
-        margin-left: 0;
-        padding: 0;
-        border-left: 0;
+        margin-left: 48px;
+        padding: 0 0 0 12px;
+        border-left: 2px solid color-mix(in srgb, var(--divider-color) 78%, var(--primary-color));
       }
 
       .dd-home-house-information .dd-inline-section {
@@ -6799,6 +6825,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .dd-flat-subdetail .dd-inline-description-row {
         margin: 0;
+        padding-left: 0;
       }
 
       .dd-climate-area-settings {
@@ -6806,7 +6833,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .dd-climate-area-settings .home-info-card-list {
-        margin-left: 56px;
+        margin-left: 0;
       }
 
       .dd-climate-area-settings .home-info-card-item {
@@ -6820,6 +6847,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         border-radius: 0;
         background: transparent;
         box-shadow: none;
+      }
+
+      .dd-climate-area-settings .home-info-card-item:first-child {
+        border-top: 0;
       }
 
       .dd-climate-area-settings .home-info-card-item:last-child {
@@ -6992,17 +7023,17 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         }
 
         .dd-home-inline-detail {
-          margin-left: 38px;
+          margin-left: 66px;
           padding-left: 10px;
         }
 
         .dd-flat-subdetail {
-          margin-left: 0;
-          padding-left: 0;
+          margin-left: 38px;
+          padding-left: 10px;
         }
 
         .dd-climate-area-settings .home-info-card-list {
-          margin-left: 38px;
+          margin-left: 0;
         }
 
         .dd-flat-subitem-row {
