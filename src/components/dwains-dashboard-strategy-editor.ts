@@ -6659,7 +6659,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .dd-settings-version-footer {
         margin-top: 22px;
         padding-top: 14px;
-        border-top: 1px solid var(--divider-color);
+        border-top: 0;
         color: var(--secondary-text-color);
         font-size: 11px;
         text-align: center;
@@ -7065,25 +7065,16 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         .dd-home-section-block .home-section-item,
         .dd-home-section-block .home-section-item.has-detail {
           min-height: 0;
-          grid-template-columns: 22px 36px minmax(0, 1fr) 76px;
-          gap: 8px;
-          padding: 9px 8px;
         }
 
         .dd-home-section-block .home-section-actions,
         .home-info-card-actions,
         .dd-climate-actions {
-          grid-template-columns: 42px 26px;
-          width: 76px;
+          width: auto;
         }
 
-        .dd-home-inline-detail {
-          margin-left: 50px;
-          padding-left: 8px;
-        }
-
+        .dd-home-inline-detail,
         .dd-flat-subdetail {
-          margin-left: 30px;
           padding-left: 8px;
         }
 
@@ -7093,19 +7084,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
         .dd-flat-subitem-row {
           min-height: 0;
-          grid-template-columns: 34px minmax(0, 1fr) 76px;
-          gap: 8px;
-          padding: 5px 8px 5px 0;
         }
 
-        .dd-draggable-subitem {
-          grid-template-columns: 20px 36px minmax(0, 1fr) 76px;
-        }
-
+        .dd-draggable-subitem,
         .dd-climate-area-settings .home-info-card-item {
-          grid-template-columns: 30px minmax(0, 1fr) 76px;
-          gap: 8px;
-          padding: 3px 8px 3px 0;
+          min-height: 0;
         }
 
         .dd-climate-area-settings .home-section-icon {
