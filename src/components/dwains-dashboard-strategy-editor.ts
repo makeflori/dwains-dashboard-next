@@ -126,150 +126,43 @@ const SETTINGS_ICON_PATHS: Record<string, string> = {
 
 
 function scheduleIntegratedSettingsHeader(editor: any): void {
-  const state = (window as any).__ddIntegratedSettingsHeaderState || ((window as any).__ddIntegratedSettingsHeaderState = {
-    header: undefined,
-    subtitle: undefined,
-    saveButton: undefined,
-    cancelButton: undefined,
-    titleNode: undefined,
-    resizeBound: false,
-    pending: false,
-    editor: undefined,
-  });
-  state.editor = editor;
-
-  if (!state.resizeBound) {
-    state.resizeBound = true;
-    window.addEventListener("resize", () => {
-      if (state.editor) scheduleIntegratedSettingsHeader(state.editor);
-    });
-  }
-
-  if (state.pending) return;
-  state.pending = true;
-
-  requestAnimationFrame(() => {
-    state.pending = false;
-
-    const desktop = window.matchMedia("(min-width: 701px)").matches;
-    const saveLabel = String(editor?._t?.("common.save") || "Save");
+  const apply = () => {
     const cancelLabel = String(editor?._t?.("common.cancel") || "Cancel");
-    const titleLabel = String(editor?._t?.("settings.title") || "Dashboard settings");
-    const subtitleLabel = String(editor?._t?.("settings.subtitle") || "");
+    const roots: Array<Document | ShadowRoot | Element> = [];
+    let root: any = editor?.getRootNode?.();
+
+    while (root && !roots.includes(root)) {
+      roots.push(root);
+      const host = root.host;
+      if (!host) break;
+      root = host.getRootNode?.();
+    }
+    if (!roots.includes(document)) roots.push(document);
+
     const textOf = (node: any) => String(node?.textContent || "").replace(/\s+/g, " ").trim();
 
-    const cachedValid = Boolean(
-      state.header?.isConnected &&
-      state.saveButton?.isConnected &&
-      state.cancelButton?.isConnected &&
-      state.titleNode?.isConnected
-    );
-
-    if (!cachedValid) {
-      const roots: Array<Document | ShadowRoot | Element> = [document];
-      const seen = new Set<any>();
-      const collect = (root: Document | ShadowRoot | Element) => {
-        if (seen.has(root)) return;
-        seen.add(root);
-        const all = root.querySelectorAll?.("*") || [];
-        all.forEach((node: any) => {
-          if (node.shadowRoot) {
-            roots.push(node.shadowRoot);
-            collect(node.shadowRoot);
-          }
-        });
-      };
-      collect(document);
-
-      const findControl = (labels: string[]) => {
-        for (const root of roots) {
-          const nodes = root.querySelectorAll?.("button, ha-button, mwc-button") || [];
-          for (const node of nodes as any) {
-            if (labels.includes(textOf(node))) return node;
-          }
-        }
-        return undefined;
-      };
-
-      const saveButton = findControl([saveLabel, "Speichern", "Save"]);
-      const cancelButton = findControl([cancelLabel, "Abbrechen", "Cancel", "Back", "Zurück"]);
-
-      let titleNode: any;
-      for (const root of roots) {
-        const nodes = root.querySelectorAll?.("h1, h2, h3, div, span") || [];
-        for (const node of nodes as any) {
-          const text = textOf(node);
-          if (text === titleLabel || text === "Dashboard-Einstellungen" || text === "Dashboard Settings") {
-            titleNode = node;
-            break;
-          }
-        }
-        if (titleNode) break;
-      }
-
-      if (!saveButton || !cancelButton || !titleNode) return;
-
-      let header: any = saveButton;
-      while (header && header !== document.body) {
-        if (header.contains?.(titleNode) && header.contains?.(cancelButton)) break;
-        header = header.parentElement || header.getRootNode?.()?.host;
-      }
-      if (!header || header === document.body) return;
-
-      state.header = header;
-      state.saveButton = saveButton;
-      state.cancelButton = cancelButton;
-      state.titleNode = titleNode;
-      state.subtitle = undefined;
-    }
-
-    const header = state.header as any;
-    const cancelButton = state.cancelButton as any;
-
-    if (textOf(cancelButton) !== cancelLabel) {
-      cancelButton.textContent = cancelLabel;
-      if ("label" in cancelButton) cancelButton.label = cancelLabel;
-      cancelButton.setAttribute?.("aria-label", cancelLabel);
-    }
-
-    let subtitleNode = state.subtitle as any;
-    if (!subtitleNode?.isConnected) {
-      const candidates = header.querySelectorAll?.("p, small, div, span") || [];
-      for (const node of candidates as any) {
-        const text = textOf(node);
-        if (
-          (subtitleLabel && text === subtitleLabel) ||
-          text === "Wähle einen Abschnitt aus. Änderungen werden mit „Speichern“ übernommen."
-        ) {
-          subtitleNode = node;
-          break;
+    for (const scope of roots) {
+      const buttons = scope.querySelectorAll?.("button, ha-button, mwc-button") || [];
+      for (const button of buttons as any) {
+        const text = textOf(button);
+        const label = String(button.label || "").trim();
+        if ([text, label].some((value) => value === "Back" || value === "Zurück")) {
+          button.textContent = cancelLabel;
+          if ("label" in button) button.label = cancelLabel;
+          button.setAttribute?.("aria-label", cancelLabel);
+          return;
         }
       }
-      state.subtitle = subtitleNode;
     }
-    if (subtitleNode) subtitleNode.style.display = "none";
+  };
 
-    const style = header.style as CSSStyleDeclaration;
-    if (desktop) {
-      style.position = "sticky";
-      style.top = "0";
-      style.zIndex = "45";
-      style.background = "var(--primary-background-color, var(--card-background-color))";
-      style.boxShadow = "0 8px 24px rgba(15, 23, 42, .08)";
-    } else {
-      style.position = "";
-      style.top = "";
-      style.zIndex = "";
-      style.background = "";
-      style.boxShadow = "";
-    }
-  });
+  window.setTimeout(apply, 0);
+  window.setTimeout(apply, 120);
 }
 
 function cleanupIntegratedSettingsHeader(): void {
   const state = (window as any).__ddIntegratedSettingsHeaderState;
-  if (!state) return;
-  if (state.header) {
+  if (state?.header) {
     const style = state.header.style as CSSStyleDeclaration;
     style.position = "";
     style.top = "";
@@ -277,14 +170,9 @@ function cleanupIntegratedSettingsHeader(): void {
     style.background = "";
     style.boxShadow = "";
   }
-  state.header = undefined;
-  state.subtitle = undefined;
-  state.saveButton = undefined;
-  state.cancelButton = undefined;
-  state.titleNode = undefined;
-  state.pending = false;
-  state.editor = undefined;
+  (window as any).__ddIntegratedSettingsHeaderState = undefined;
 }
+
 
 type SettingsRegistryData = {
   areas: Array<{ area_id: string; name: string; picture: string | null; icon: string | null }>;
@@ -481,6 +369,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+    scheduleIntegratedSettingsHeader(this);
     // Always fetch fresh data when component connects
     if (this.hass) {
       void this._fetchData();
@@ -606,13 +495,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     if (!this.hass || this._loading) {
       return this._renderLoadingShell();
     }
-
-    scheduleIntegratedSettingsHeader(this);
     return this._area ? this._renderAreaEditor() : this._renderAreasEditor();
   }
 
   private _renderLoadingShell() {
-    scheduleIntegratedSettingsHeader(this);
     return html`
       <div class="editor-container dd-flat-settings dd-settings-overview settings-loading-shell" aria-busy="true">
         <section class="settings-nav-section">
@@ -644,7 +530,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   }
 
   private _renderSettingsOverview() {
-    scheduleIntegratedSettingsHeader(this);
     const groups: Array<{ key: SettingsPageItem["group"]; title: string }> = [
       { key: "general", title: this._t('settings.general') },
       { key: "layout", title: this._t('settings.dashboard_layout') },
@@ -845,7 +730,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   }
 
   private _renderSettingsDetailPage(page: SettingsPageKey) {
-    scheduleIntegratedSettingsHeader(this);
     const item = this._settingsOverviewItems().find((candidate) => candidate.page === page);
     if (!item) return this._renderSettingsOverview();
 

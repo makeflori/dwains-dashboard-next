@@ -384,7 +384,7 @@ export const ru = {
   'replacement.load_failed': 'Не удалось загрузить {name}: {error}',
 
   'settings.title': 'Настройки Dwains Dashboard',
-  'settings.subtitle': 'Выберите раздел для настройки. Изменения сохраняются кнопкой «Сохранить» ниже.',
+  'settings.subtitle': '',
   'settings.loaded_version': 'Загруженная версия',
   'settings.loading': 'Загрузка',
   'settings.all_settings': 'Все настройки',

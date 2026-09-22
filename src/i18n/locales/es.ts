@@ -366,7 +366,7 @@ export const es = {
   'replacement.search': 'Buscar blueprints replace-card',
   'replacement.load_failed': 'No se pudo cargar {name}: {error}',
   'settings.title': 'Configuración de Dwains Dashboard',
-  'settings.subtitle': 'Elija una sección para configurar. Los cambios se guardan con el botón Guardar a continuación.',
+  'settings.subtitle': '',
   'settings.loaded_version': 'Versión cargada',
   'settings.loading': 'Cargando',
   'settings.all_settings': 'Todas las configuraciones',

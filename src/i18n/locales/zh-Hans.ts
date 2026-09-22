@@ -366,7 +366,7 @@ export const zhHans = {
   'replacement.search': '搜索取代卡片蓝图',
   'replacement.load_failed': '无法加载 {name}:{error}',
   'settings.title': 'Dwains Dashboard 设置',
-  'settings.subtitle': '选择要配置的部分。使用下面的“保存”按钮保存更改。',
+  'settings.subtitle': '',
   'settings.loaded_version': '已加载版本',
   'settings.loading': '加载中',
   'settings.all_settings': '所有设置',
