@@ -1,7 +1,9 @@
 import { mdiDrag } from "@mdi/js";
 import { html, nothing } from "lit";
 import type { HomeInformationCardKey, HomeSectionKey } from "../types/strategy";
+import { sortAreas } from "../utils/area-entities";
 import { DEFAULT_HOME_INFORMATION_CARDS, HOME_INFORMATION_CARD_META, HOME_SECTION_META } from "../utils/home-sections";
+import { ddLocale } from "../utils/localize";
 import { DD_NEXT_VERSION } from "../version";
 
 const EDITOR_TAG = "dwains-dashboard-next-strategy-editor";
@@ -99,8 +101,7 @@ function applyFlatSettingsLayout(): void {
           </div>
 
           <div class="entity-picker dd-favorites-picker">
-            <div class="dd-inline-action-row">
-              <p class="dd-inline-description">${this._t("settings.favorites_description")}</p>
+            <div class="dd-inline-action-row dd-inline-action-only">
               <button class="home-custom-card-add dd-favorites-add" type="button" @click=${this._addFavoriteEntity}>
                 <ha-icon icon="mdi:plus"></ha-icon>
                 ${this._t("common.add")}
@@ -124,7 +125,6 @@ function applyFlatSettingsLayout(): void {
 
       return html`
         <div class="dd-inline-section">
-          <p class="dd-inline-description">${this._t("settings.house_information_cards_description")}</p>
           <div class="dd-flat-sublist">
             ${DEFAULT_HOME_INFORMATION_CARDS.map((card: HomeInformationCardKey) => {
               const meta = HOME_INFORMATION_CARD_META[card];
@@ -137,7 +137,6 @@ function applyFlatSettingsLayout(): void {
                     <div class="home-section-icon"><ha-icon icon=${meta.icon}></ha-icon></div>
                     <div class="home-section-copy">
                       <div class="home-section-title">${this._t(meta.labelKey)}</div>
-                      <div class="home-section-description">${this._t(meta.descriptionKey)}</div>
                     </div>
                     <div class="home-info-card-actions" @click=${(event: Event) => event.stopPropagation()}>
                       <button
@@ -185,15 +184,16 @@ function applyFlatSettingsLayout(): void {
       if (!this._config || !this.hass) return nothing;
       const excluded = this._getExcludedHomeClimateAreas();
       const hiddenAreas = new Set(this._config.areas_display?.hidden || []);
-      const areas = this._config.areas
-        ? [...this._config.areas]
-          .filter((area: any) => !hiddenAreas.has(area.area_id))
-          .sort((a: any, b: any) => String(a.name || "").localeCompare(String(b.name || ""), undefined, { sensitivity: "base" }))
-        : [];
+      const sourceAreas = Object.values(this.hass.areas || {});
+      const areas = sortAreas(
+        sourceAreas,
+        { ...this._config.areas_display, hidden: [] },
+        ddLocale(this.hass)
+      ).filter((area: any) => !hiddenAreas.has(area.area_id));
 
       return html`
         <div class="home-info-card-section home-climate-area-settings dd-climate-area-settings">
-          <p class="dd-inline-description">${this._t("settings.home_climate_areas_description")}</p>
+          <p class="dd-inline-description dd-climate-description">${this._t("settings.home_climate_areas_description")}</p>
           <div class="home-info-card-list">
             ${areas.map((area: any) => {
               const included = !excluded.has(area.area_id);
@@ -223,7 +223,6 @@ function applyFlatSettingsLayout(): void {
 
       return html`
         <div class="dd-inline-section">
-          <p class="dd-inline-description">${this._t("settings.home_camera_cards_description")}</p>
           ${cameras.length ? html`
             <div class="dd-flat-sublist">
               ${cameras.map((camera: any, index: number) => {
@@ -291,8 +290,7 @@ function applyFlatSettingsLayout(): void {
 
       return html`
         <div class="dd-inline-section">
-          <div class="dd-inline-action-row">
-            <p class="dd-inline-description">${this._t("settings.home_custom_cards_description")}</p>
+          <div class="dd-inline-action-row dd-inline-action-only">
             <button class="home-custom-card-add" type="button" @click=${this._addHomeCustomCard}>
               <ha-icon icon="mdi:plus"></ha-icon>
               ${this._t("settings.add_home_card")}
@@ -817,6 +815,11 @@ function renderFlatSettingsStyles() {
         margin-bottom: 10px;
       }
       .dd-inline-action-row .dd-inline-description { margin: 2px 0 0; }
+      .dd-inline-action-only {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+      }
 
       .dd-flat-sublist { overflow: hidden; border-top: 1px solid var(--divider-color); }
       .dd-flat-subitem + .dd-flat-subitem,
@@ -937,22 +940,43 @@ function renderFlatSettingsStyles() {
       @media (max-width: 600px) {
         .dd-home-page-description { margin-bottom: 10px; }
 
+        .dd-home-section-block {
+          border: 1px solid var(--divider-color);
+          border-radius: 12px;
+          background: var(--card-background-color);
+        }
         .dd-home-section-block .home-section-item,
         .dd-home-section-block .home-section-item.has-detail {
           grid-template-columns: 22px 36px minmax(0, 1fr) 42px;
           gap: 8px;
           padding: 9px 8px 7px;
+          border: 0 !important;
+          border-radius: 0 !important;
+          background: transparent !important;
+          box-shadow: none !important;
         }
         .dd-home-section-block .home-section-icon { width: 36px; height: 36px; }
 
-        /* On mobile the main action stands alone at the far right. */
-        .dd-home-section-block .home-section-actions,
+        /* Keep the main action in the same row as icon and copy. */
+        .dd-home-section-block .home-section-actions {
+          display: flex;
+          width: 42px;
+          grid-column: 4 !important;
+          grid-row: 1 !important;
+          align-self: center;
+          justify-content: flex-end;
+          justify-self: end;
+          margin-left: 0;
+        }
         .home-info-card-actions {
           display: flex;
           width: 42px;
+          grid-column: 3 !important;
+          grid-row: 1 !important;
+          align-self: center;
           justify-content: flex-end;
           justify-self: end;
-          margin-left: auto;
+          margin-left: 0;
         }
         .dd-detail-desktop { display: none !important; }
 
@@ -972,9 +996,9 @@ function renderFlatSettingsStyles() {
           place-items: center;
           padding: 0;
           border: 0;
-          border-top: 1px solid color-mix(in srgb, var(--divider-color) 65%, transparent);
+          border-top: 1px solid color-mix(in srgb, var(--divider-color) 70%, transparent);
           color: var(--secondary-text-color);
-          background: transparent;
+          background: color-mix(in srgb, var(--secondary-background-color) 45%, transparent);
           cursor: pointer;
         }
         .dd-mobile-expand-row[aria-expanded="true"] { color: var(--primary-color); }
@@ -982,6 +1006,8 @@ function renderFlatSettingsStyles() {
 
         .dd-home-section-block .home-section-title { font-size: 14px; }
         .dd-home-section-block .home-section-description { font-size: 11px; line-height: 1.3; }
+        .dd-flat-subitem-row .home-section-copy { align-self: center; }
+        .dd-flat-subitem-row .home-section-title { line-height: 1.25; }
 
         /* Center the hierarchy line under the parent icon: 8 + 22 + 8 + 18 = 56px. */
         .dd-home-inline-detail {
@@ -999,6 +1025,11 @@ function renderFlatSettingsStyles() {
           grid-template-columns: 36px minmax(0, 1fr) 42px;
           gap: 8px;
           padding: 8px 2px 7px;
+          align-items: center;
+        }
+        .dd-flat-subitem-row .home-info-card-actions {
+          grid-column: 3 !important;
+          grid-row: 1 !important;
         }
         .dd-draggable-subitem {
           grid-template-columns: 20px 36px minmax(0, 1fr) 42px;
@@ -1016,18 +1047,23 @@ function renderFlatSettingsStyles() {
         .dd-climate-area-settings .home-section-icon { width: 30px; height: 30px; }
         .dd-climate-actions {
           width: 48px;
+          grid-column: 3 !important;
+          grid-row: 1 !important;
+          align-self: center;
           justify-self: end;
           justify-content: flex-end;
         }
 
         /* Add actions follow one mobile rule across custom cards and favorites. */
-        .dd-inline-action-row {
-          grid-template-columns: 1fr;
+        .dd-inline-action-row,
+        .dd-inline-action-only {
+          display: flex;
+          width: 100%;
           gap: 8px;
         }
-        .dd-inline-action-row .home-custom-card-add {
+        .dd-inline-action-row .home-custom-card-add,
+        .dd-inline-action-only .home-custom-card-add {
           width: 100%;
-          justify-self: stretch;
           justify-content: center;
           box-sizing: border-box;
         }
