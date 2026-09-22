@@ -1,7 +1,9 @@
 import { mdiDrag } from "@mdi/js";
 import { html, nothing } from "lit";
 import type { HomeInformationCardKey, HomeSectionKey } from "../types/strategy";
+import { sortAreas } from "../utils/area-entities";
 import { DEFAULT_HOME_INFORMATION_CARDS, HOME_INFORMATION_CARD_META, HOME_SECTION_META } from "../utils/home-sections";
+import { ddLocale } from "../utils/localize";
 import { DD_NEXT_VERSION } from "../version";
 
 const EDITOR_TAG = "dwains-dashboard-next-strategy-editor";
