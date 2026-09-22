@@ -366,7 +366,7 @@ export const nl = {
   'replacement.search': 'Zoek replace-card-blueprints',
   'replacement.load_failed': 'Kan {name} niet laden: {error}',
   'settings.title': 'Dwains Dashboard-instellingen',
-  'settings.subtitle': 'Kies een sectie om te configureren. Wijzigingen worden opgeslagen met de knop Opslaan hieronder.',
+  'settings.subtitle': '',
   'settings.loaded_version': 'Geladen versie',
   'settings.loading': 'Laden',
   'settings.all_settings': 'Alle instellingen',
