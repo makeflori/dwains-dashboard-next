@@ -220,7 +220,7 @@ function scheduleIntegratedSettingsHeader(editor: any): void {
     }
     if (subtitleNode) {
       state.subtitle = subtitleNode;
-      subtitleNode.style.display = desktop ? "none" : "";
+      subtitleNode.style.display = "none";
     }
 
     const style = header.style as CSSStyleDeclaration;
