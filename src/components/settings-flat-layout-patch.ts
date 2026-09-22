@@ -15,9 +15,10 @@ function applyFlatSettingsLayout(): void {
     if (!proto || proto.__ddFlatSettingsLayoutApplied) return;
     proto.__ddFlatSettingsLayoutApplied = true;
 
+    cleanupDesktopFloatingSettingsActions();
+
     proto._renderSettingsOverview = function () {
       scheduleCancelButtonLabel(this);
-      scheduleDesktopFloatingSettingsActions(this);
       const groups = [
         { key: "general", title: this._t("settings.general") },
         { key: "layout", title: this._t("settings.dashboard_layout") },
@@ -49,7 +50,6 @@ function applyFlatSettingsLayout(): void {
 
     proto._renderSettingsDetailPage = function (page: string) {
       scheduleCancelButtonLabel(this);
-      scheduleDesktopFloatingSettingsActions(this);
       const item = this._settingsOverviewItems().find((candidate: any) => candidate.page === page);
       if (!item) return this._renderSettingsOverview();
 
@@ -485,6 +485,19 @@ function scheduleCancelButtonLabel(editor: any): void {
 }
 
 
+function cleanupDesktopFloatingSettingsActions(): void {
+  const state = (window as any).__ddDesktopSettingsActionsState;
+  if (!state) return;
+  if (state.sourceSaveButton) state.sourceSaveButton.style.display = "";
+  if (state.sourceCancelButton) state.sourceCancelButton.style.display = "";
+  state.wrapper?.remove?.();
+  state.wrapper = undefined;
+  state.saveButton = undefined;
+  state.cancelButton = undefined;
+  state.sourceSaveButton = undefined;
+  state.sourceCancelButton = undefined;
+}
+
 function scheduleDesktopFloatingSettingsActions(editor: any): void {
   window.setTimeout(() => {
     const desktop = window.matchMedia("(min-width: 701px)").matches;
@@ -633,10 +646,17 @@ function renderFlatSettingsStyles() {
         max-width: 940px;
         margin: 22px auto 4px;
         padding-top: 14px;
-        border-top: 1px solid var(--divider-color);
         color: var(--secondary-text-color);
         font-size: 11px;
         text-align: center;
+      }
+      .dd-settings-version-footer::before {
+        content: "";
+        display: block;
+        width: 34px;
+        height: 1px;
+        margin: 0 auto 10px;
+        background: var(--divider-color);
       }
 
       .dd-subpage-header {
@@ -665,6 +685,14 @@ function renderFlatSettingsStyles() {
         cursor: pointer;
       }
       .dd-subpage-back ha-icon { --mdc-icon-size: 20px; }
+      @media (min-width: 701px) {
+        .dd-subpage-header {
+          position: sticky;
+          top: 76px;
+          z-index: 34;
+        }
+      }
+
       .dd-subpage-title {
         min-width: 0;
         overflow: hidden;
@@ -957,9 +985,11 @@ function renderFlatSettingsStyles() {
         .dd-home-section-block .home-section-item,
         .dd-home-section-block .home-section-item.has-detail {
           position: relative;
+          width: 100%;
+          box-sizing: border-box;
           grid-template-columns: 22px 36px minmax(0, 1fr);
           gap: 8px;
-          padding: 9px 58px 7px 8px;
+          padding: 9px 50px 7px 8px;
           border: 0 !important;
           border-radius: 0 !important;
           background: transparent !important;
@@ -969,8 +999,10 @@ function renderFlatSettingsStyles() {
 
         /* Keep the main action locked to the far-right edge of the row. */
         .dd-home-section-block .home-section-actions {
-          position: absolute;
-          right: 10px;
+          position: absolute !important;
+          right: 4px !important;
+          inset-inline-end: 4px !important;
+          left: auto !important;
           top: 50%;
           transform: translateY(-50%);
           display: flex;
@@ -979,8 +1011,10 @@ function renderFlatSettingsStyles() {
           margin: 0;
         }
         .home-info-card-actions {
-          position: absolute;
-          right: 4px;
+          position: absolute !important;
+          right: 0 !important;
+          inset-inline-end: 0 !important;
+          left: auto !important;
           top: 50%;
           transform: translateY(-50%);
           display: flex;
@@ -1032,9 +1066,11 @@ function renderFlatSettingsStyles() {
 
         .dd-flat-subitem-row {
           position: relative;
+          width: 100%;
+          box-sizing: border-box;
           grid-template-columns: 36px minmax(0, 1fr);
           gap: 8px;
-          padding: 8px 52px 7px 2px;
+          padding: 8px 46px 7px 2px;
           align-items: center;
         }
         .dd-draggable-subitem {
@@ -1048,14 +1084,18 @@ function renderFlatSettingsStyles() {
         /* Climate switches are the main action and sit flush right. */
         .dd-climate-area-settings .home-info-card-item {
           position: relative;
+          width: 100%;
+          box-sizing: border-box;
           grid-template-columns: 30px minmax(0, 1fr);
           gap: 8px;
-          padding: 4px 58px 4px 8px;
+          padding: 4px 52px 4px 8px;
         }
         .dd-climate-area-settings .home-section-icon { width: 30px; height: 30px; }
         .dd-climate-actions {
-          position: absolute;
-          right: 4px;
+          position: absolute !important;
+          right: 0 !important;
+          inset-inline-end: 0 !important;
+          left: auto !important;
           top: 50%;
           transform: translateY(-50%);
           width: 48px;
