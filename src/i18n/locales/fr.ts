@@ -366,7 +366,7 @@ export const fr = {
   'replacement.search': 'Rechercher des blueprints replace-card',
   'replacement.load_failed': 'Impossible de charger {name} : {error}',
   'settings.title': 'Paramètres Dwains Dashboard',
-  'settings.subtitle': 'Choisissez une section à configurer. Les modifications sont enregistrées avec le bouton Enregistrer ci-dessous.',
+  'settings.subtitle': '',
   'settings.loaded_version': 'Version chargée',
   'settings.loading': 'Chargement',
   'settings.all_settings': 'Tous les paramètres',
