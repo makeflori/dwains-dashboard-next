@@ -366,7 +366,7 @@ export const zhHant = {
   'replacement.search': '搜尋取代卡片藍圖',
   'replacement.load_failed': '無法載入 {name}:{error}',
   'settings.title': 'Dwains Dashboard 設定',
-  'settings.subtitle': '選擇要配置的部分。使用下面的“儲存”按鈕儲存變更。',
+  'settings.subtitle': '',
   'settings.loaded_version': '已載入版本',
   'settings.loading': '載入中',
   'settings.all_settings': '所有設定',
