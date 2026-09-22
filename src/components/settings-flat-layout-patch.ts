@@ -462,6 +462,10 @@ function renderFlatSettingsStyles() {
   return html`
     <style>
       .dd-flat-settings { min-width: 0; }
+      .dd-flat-settings [data-dd-settings-subtitle],
+      .dd-flat-settings .settings-subtitle {
+        display: none !important;
+      }
       .dd-flat-settings .settings-nav-section,
       .dd-flat-settings .settings-detail-content { max-width: 940px; margin-inline: auto; }
 
@@ -678,6 +682,10 @@ function renderFlatSettingsStyles() {
       }
       .dd-inline-action-only .home-custom-card-add,
       .dd-inline-action-row .home-custom-card-add {
+        margin-left: auto;
+      }
+      .dd-inline-action-only .home-custom-card-add,
+      .dd-inline-action-row .home-custom-card-add {
         width: auto !important;
         max-width: max-content;
         min-height: 34px;
@@ -814,6 +822,8 @@ function renderFlatSettingsStyles() {
         }
 
         .dd-home-section-block {
+          width: 100%;
+          box-sizing: border-box;
           border: 1px solid var(--divider-color) !important;
           border-radius: 12px;
           background: var(--card-background-color);
@@ -836,8 +846,8 @@ function renderFlatSettingsStyles() {
         /* Keep the main action locked to the far-right edge of the row. */
         .dd-home-section-block .home-section-actions {
           position: absolute !important;
-          right: 6px !important;
-          inset-inline-end: 6px !important;
+          right: 8px !important;
+          inset-inline-end: 8px !important;
           left: auto !important;
           top: 50%;
           transform: translateY(-50%);
@@ -848,8 +858,8 @@ function renderFlatSettingsStyles() {
         }
         .home-info-card-actions {
           position: absolute !important;
-          right: 6px !important;
-          inset-inline-end: 6px !important;
+          right: 8px !important;
+          inset-inline-end: 8px !important;
           left: auto !important;
           top: 50%;
           transform: translateY(-50%);
@@ -871,9 +881,10 @@ function renderFlatSettingsStyles() {
         /* Mobile chevrons get their own slim, centered expand row. */
         .dd-mobile-expand-row {
           width: 100%;
-          height: 10px !important;
-          min-height: 10px !important;
-          line-height: 10px;
+          height: 12px !important;
+          min-height: 12px !important;
+          line-height: 12px;
+          margin: 1px 0;
           display: grid;
           place-items: center;
           padding: 0;
@@ -892,12 +903,12 @@ function renderFlatSettingsStyles() {
 
         /* Center the hierarchy line under the parent icon: 8 + 22 + 8 + 18 = 56px. */
         .dd-home-inline-detail {
-          margin-left: 56px !important;
+          margin-left: 54px !important;
           padding: 8px 0 10px 10px;
           border-left: 2px solid color-mix(in srgb, var(--divider-color) 78%, var(--primary-color));
         }
         .dd-flat-subdetail {
-          margin-left: 20px !important;
+          margin-left: 18px !important;
           padding: 8px 0 8px 10px;
           border-left: 2px solid color-mix(in srgb, var(--divider-color) 78%, var(--primary-color));
         }
@@ -931,8 +942,8 @@ function renderFlatSettingsStyles() {
         .dd-climate-area-settings .home-section-icon { width: 30px; height: 30px; }
         .dd-climate-actions {
           position: absolute !important;
-          right: 6px !important;
-          inset-inline-end: 6px !important;
+          right: 8px !important;
+          inset-inline-end: 8px !important;
           left: auto !important;
           top: 50%;
           transform: translateY(-50%);
