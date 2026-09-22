@@ -817,8 +817,17 @@ function renderFlatSettingsStyles() {
       .dd-inline-action-row .dd-inline-description { margin: 2px 0 0; }
       .dd-inline-action-only {
         display: flex;
-        justify-content: flex-end;
+        justify-content: flex-start;
         align-items: center;
+      }
+      .dd-inline-action-only .home-custom-card-add,
+      .dd-inline-action-row .home-custom-card-add {
+        width: auto !important;
+        max-width: max-content;
+        min-height: 34px;
+        padding: 7px 12px;
+        justify-content: center;
+        box-sizing: border-box;
       }
 
       .dd-flat-sublist { overflow: hidden; border-top: 1px solid var(--divider-color); }
@@ -947,9 +956,10 @@ function renderFlatSettingsStyles() {
         }
         .dd-home-section-block .home-section-item,
         .dd-home-section-block .home-section-item.has-detail {
-          grid-template-columns: 22px 36px minmax(0, 1fr) 42px;
+          position: relative;
+          grid-template-columns: 22px 36px minmax(0, 1fr);
           gap: 8px;
-          padding: 9px 8px 7px;
+          padding: 9px 58px 7px 8px;
           border: 0 !important;
           border-radius: 0 !important;
           background: transparent !important;
@@ -957,26 +967,26 @@ function renderFlatSettingsStyles() {
         }
         .dd-home-section-block .home-section-icon { width: 36px; height: 36px; }
 
-        /* Keep the main action in the same row as icon and copy. */
+        /* Keep the main action locked to the far-right edge of the row. */
         .dd-home-section-block .home-section-actions {
+          position: absolute;
+          right: 10px;
+          top: 50%;
+          transform: translateY(-50%);
           display: flex;
-          width: 42px;
-          grid-column: 4 !important;
-          grid-row: 1 !important;
-          align-self: center;
+          width: 38px;
           justify-content: flex-end;
-          justify-self: end;
-          margin-left: 0;
+          margin: 0;
         }
         .home-info-card-actions {
+          position: absolute;
+          right: 4px;
+          top: 50%;
+          transform: translateY(-50%);
           display: flex;
-          width: 42px;
-          grid-column: 3 !important;
-          grid-row: 1 !important;
-          align-self: center;
+          width: 38px;
           justify-content: flex-end;
-          justify-self: end;
-          margin-left: 0;
+          margin: 0;
         }
         .dd-detail-desktop { display: none !important; }
 
@@ -991,14 +1001,13 @@ function renderFlatSettingsStyles() {
         /* Mobile chevrons get their own slim, centered expand row. */
         .dd-mobile-expand-row {
           width: 100%;
-          height: 24px;
+          height: 20px;
           display: grid;
           place-items: center;
           padding: 0;
           border: 0;
-          border-top: 1px solid color-mix(in srgb, var(--divider-color) 70%, transparent);
           color: var(--secondary-text-color);
-          background: color-mix(in srgb, var(--secondary-background-color) 45%, transparent);
+          background: transparent;
           cursor: pointer;
         }
         .dd-mobile-expand-row[aria-expanded="true"] { color: var(--primary-color); }
@@ -1022,17 +1031,15 @@ function renderFlatSettingsStyles() {
         }
 
         .dd-flat-subitem-row {
-          grid-template-columns: 36px minmax(0, 1fr) 42px;
+          position: relative;
+          grid-template-columns: 36px minmax(0, 1fr);
           gap: 8px;
-          padding: 8px 2px 7px;
+          padding: 8px 52px 7px 2px;
           align-items: center;
         }
-        .dd-flat-subitem-row .home-info-card-actions {
-          grid-column: 3 !important;
-          grid-row: 1 !important;
-        }
         .dd-draggable-subitem {
-          grid-template-columns: 20px 36px minmax(0, 1fr) 42px;
+          grid-template-columns: 20px 36px minmax(0, 1fr);
+          padding-right: 52px;
         }
         .dd-flat-subitem-row .home-section-icon { width: 36px; height: 36px; }
         .dd-flat-subitem-row .dd-icon-action { width: 32px; height: 32px; }
@@ -1040,17 +1047,18 @@ function renderFlatSettingsStyles() {
 
         /* Climate switches are the main action and sit flush right. */
         .dd-climate-area-settings .home-info-card-item {
-          grid-template-columns: 30px minmax(0, 1fr) 48px;
+          position: relative;
+          grid-template-columns: 30px minmax(0, 1fr);
           gap: 8px;
-          padding: 4px 2px 4px 8px;
+          padding: 4px 58px 4px 8px;
         }
         .dd-climate-area-settings .home-section-icon { width: 30px; height: 30px; }
         .dd-climate-actions {
+          position: absolute;
+          right: 4px;
+          top: 50%;
+          transform: translateY(-50%);
           width: 48px;
-          grid-column: 3 !important;
-          grid-row: 1 !important;
-          align-self: center;
-          justify-self: end;
           justify-content: flex-end;
         }
 
@@ -1060,10 +1068,14 @@ function renderFlatSettingsStyles() {
           display: flex;
           width: 100%;
           gap: 8px;
+          justify-content: flex-start;
         }
         .dd-inline-action-row .home-custom-card-add,
         .dd-inline-action-only .home-custom-card-add {
-          width: 100%;
+          width: auto !important;
+          max-width: 100%;
+          min-height: 34px;
+          padding: 7px 12px;
           justify-content: center;
           box-sizing: border-box;
         }
