@@ -366,7 +366,7 @@ export const de = {
   'replacement.search': 'Replace-Card-Blueprints suchen',
   'replacement.load_failed': '{name} konnte nicht geladen werden: {error}',
   'settings.title': 'Dwains Dashboard-Einstellungen',
-  'settings.subtitle': 'Wähle einen Abschnitt aus. Änderungen werden mit „Speichern“ übernommen.',
+  'settings.subtitle': '',
   'settings.loaded_version': 'Geladene Version',
   'settings.loading': 'Laden',
   'settings.all_settings': 'Alle Einstellungen',
