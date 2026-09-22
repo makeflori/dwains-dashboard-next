@@ -18,7 +18,6 @@ function applyFlatSettingsLayout(): void {
     cleanupDesktopFloatingSettingsActions();
 
     proto._renderSettingsOverview = function () {
-      scheduleCancelButtonLabel(this);
       const groups = [
         { key: "general", title: this._t("settings.general") },
         { key: "layout", title: this._t("settings.dashboard_layout") },
@@ -50,7 +49,6 @@ function applyFlatSettingsLayout(): void {
 
     proto._renderSettingsDetailPage = function (page: string) {
       cleanupDesktopFloatingSettingsActions();
-      scheduleCancelButtonLabel(this);
       const item = this._settingsOverviewItems().find((candidate: any) => candidate.page === page);
       if (!item) return this._renderSettingsOverview();
 
@@ -447,45 +445,6 @@ function applyFlatSettingsLayout(): void {
   });
 }
 
-function scheduleCancelButtonLabel(editor: any): void {
-  const apply = () => {
-    const cancel = String(editor?._t?.("common.cancel") || "Cancel");
-    const back = String(editor?._t?.("strategy.back") || "Back");
-    let changed = false;
-
-    const visit = (root: Document | ShadowRoot | Element) => {
-      const nodes = root.querySelectorAll?.("button, ha-button, mwc-button") || [];
-      nodes.forEach((node: any) => {
-        const text = String(node.textContent || "").replace(/\s+/g, " ").trim();
-        const aria = String(node.getAttribute?.("aria-label") || "").trim();
-        const title = String(node.getAttribute?.("title") || "").trim();
-        const label = String(node.label || "").trim();
-        const isBack = [text, aria, title, label].some((value) =>
-          value === "Back" || value === "Zurück" || value === back
-        );
-        if (!isBack) return;
-
-        node.textContent = cancel;
-        if ("label" in node) node.label = cancel;
-        node.setAttribute?.("aria-label", cancel);
-        node.setAttribute?.("title", cancel);
-        changed = true;
-      });
-
-      const all = root.querySelectorAll?.("*") || [];
-      all.forEach((node: any) => {
-        if (node.shadowRoot) visit(node.shadowRoot);
-      });
-    };
-
-    visit(document);
-    return changed;
-  };
-
-  [0, 50, 150, 400].forEach((delay) => window.setTimeout(apply, delay));
-}
-
-
 function cleanupDesktopFloatingSettingsActions(): void {
   const state = (window as any).__ddDesktopSettingsActionsState;
   if (!state) return;
@@ -515,10 +474,13 @@ function renderFlatSettingsStyles() {
         font-size: 11px;
         text-align: center;
       }
+      .dd-settings-version-footer {
+        border-top: 0 !important;
+      }
       .dd-settings-version-footer::before {
         content: "";
         display: block;
-        width: 34px;
+        width: 28px;
         height: 1px;
         margin: 0 auto 10px;
         background: var(--divider-color);
@@ -712,6 +674,7 @@ function renderFlatSettingsStyles() {
         display: flex;
         justify-content: flex-end;
         align-items: center;
+        padding-right: 8px;
       }
       .dd-inline-action-only .home-custom-card-add,
       .dd-inline-action-row .home-custom-card-add {
@@ -842,6 +805,14 @@ function renderFlatSettingsStyles() {
       @media (max-width: 600px) {
         .dd-home-page-description { margin-bottom: 10px; }
 
+        .dd-home-flat-layout.home-layout-section {
+          padding-left: 0 !important;
+          padding-right: 0 !important;
+        }
+        .dd-home-flat-layout .home-section-list {
+          width: 100%;
+        }
+
         .dd-home-section-block {
           border: 1px solid var(--divider-color) !important;
           border-radius: 12px;
@@ -854,7 +825,7 @@ function renderFlatSettingsStyles() {
           box-sizing: border-box;
           grid-template-columns: 22px 36px minmax(0, 1fr);
           gap: 8px;
-          padding: 9px 44px 7px 8px;
+          padding: 9px 48px 7px 8px;
           border: 0 !important;
           border-radius: 0 !important;
           background: transparent !important;
@@ -865,8 +836,8 @@ function renderFlatSettingsStyles() {
         /* Keep the main action locked to the far-right edge of the row. */
         .dd-home-section-block .home-section-actions {
           position: absolute !important;
-          right: 0 !important;
-          inset-inline-end: 0 !important;
+          right: 6px !important;
+          inset-inline-end: 6px !important;
           left: auto !important;
           top: 50%;
           transform: translateY(-50%);
@@ -877,8 +848,8 @@ function renderFlatSettingsStyles() {
         }
         .home-info-card-actions {
           position: absolute !important;
-          right: 0 !important;
-          inset-inline-end: 0 !important;
+          right: 6px !important;
+          inset-inline-end: 6px !important;
           left: auto !important;
           top: 50%;
           transform: translateY(-50%);
@@ -900,7 +871,9 @@ function renderFlatSettingsStyles() {
         /* Mobile chevrons get their own slim, centered expand row. */
         .dd-mobile-expand-row {
           width: 100%;
-          height: 14px;
+          height: 10px !important;
+          min-height: 10px !important;
+          line-height: 10px;
           display: grid;
           place-items: center;
           padding: 0;
@@ -910,7 +883,7 @@ function renderFlatSettingsStyles() {
           cursor: pointer;
         }
         .dd-mobile-expand-row[aria-expanded="true"] { color: var(--primary-color); }
-        .dd-mobile-expand-row ha-icon { --mdc-icon-size: 16px; }
+        .dd-mobile-expand-row ha-icon { --mdc-icon-size: 14px; }
 
         .dd-home-section-block .home-section-title { font-size: 14px; }
         .dd-home-section-block .home-section-description { font-size: 11px; line-height: 1.3; }
@@ -919,14 +892,14 @@ function renderFlatSettingsStyles() {
 
         /* Center the hierarchy line under the parent icon: 8 + 22 + 8 + 18 = 56px. */
         .dd-home-inline-detail {
-          margin-left: 56px;
+          margin-left: 56px !important;
           padding: 8px 0 10px 10px;
           border-left: 2px solid color-mix(in srgb, var(--divider-color) 78%, var(--primary-color));
         }
         .dd-flat-subdetail {
-          margin-left: 10px;
+          margin-left: 20px !important;
           padding: 8px 0 8px 10px;
-          border-left: 0;
+          border-left: 2px solid color-mix(in srgb, var(--divider-color) 78%, var(--primary-color));
         }
 
         .dd-flat-subitem-row {
@@ -935,7 +908,7 @@ function renderFlatSettingsStyles() {
           box-sizing: border-box;
           grid-template-columns: 36px minmax(0, 1fr);
           gap: 8px;
-          padding: 8px 40px 7px 2px;
+          padding: 8px 48px 7px 2px;
           align-items: center;
         }
         .dd-draggable-subitem {
@@ -953,13 +926,13 @@ function renderFlatSettingsStyles() {
           box-sizing: border-box;
           grid-template-columns: 30px minmax(0, 1fr);
           gap: 8px;
-          padding: 4px 46px 4px 8px;
+          padding: 4px 54px 4px 8px;
         }
         .dd-climate-area-settings .home-section-icon { width: 30px; height: 30px; }
         .dd-climate-actions {
           position: absolute !important;
-          right: 0 !important;
-          inset-inline-end: 0 !important;
+          right: 6px !important;
+          inset-inline-end: 6px !important;
           left: auto !important;
           top: 50%;
           transform: translateY(-50%);
@@ -974,6 +947,8 @@ function renderFlatSettingsStyles() {
           width: 100%;
           gap: 8px;
           justify-content: flex-end;
+          padding-right: 10px;
+          box-sizing: border-box;
         }
         .dd-inline-action-row .home-custom-card-add,
         .dd-inline-action-only .home-custom-card-add {
