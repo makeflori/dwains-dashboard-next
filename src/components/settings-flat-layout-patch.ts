@@ -49,6 +49,7 @@ function applyFlatSettingsLayout(): void {
     };
 
     proto._renderSettingsDetailPage = function (page: string) {
+      cleanupDesktopFloatingSettingsActions();
       scheduleCancelButtonLabel(this);
       const item = this._settingsOverviewItems().find((candidate: any) => candidate.page === page);
       if (!item) return this._renderSettingsOverview();
