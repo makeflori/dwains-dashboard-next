@@ -294,7 +294,7 @@ function applyFlatSettingsLayout(): void {
           <div class="dd-inline-action-row dd-inline-action-only">
             <button class="home-custom-card-add" type="button" @click=${this._addHomeCustomCard}>
               <ha-icon icon="mdi:plus"></ha-icon>
-              ${this._t("settings.add_home_card")}
+              ${this._t("common.add")}
             </button>
           </div>
 
@@ -710,7 +710,7 @@ function renderFlatSettingsStyles() {
       .dd-inline-action-row .dd-inline-description { margin: 2px 0 0; }
       .dd-inline-action-only {
         display: flex;
-        justify-content: flex-start;
+        justify-content: flex-end;
         align-items: center;
       }
       .dd-inline-action-only .home-custom-card-add,
@@ -843,7 +843,7 @@ function renderFlatSettingsStyles() {
         .dd-home-page-description { margin-bottom: 10px; }
 
         .dd-home-section-block {
-          border: 1px solid var(--divider-color);
+          border: 1px solid var(--divider-color) !important;
           border-radius: 12px;
           background: var(--card-background-color);
         }
@@ -854,7 +854,7 @@ function renderFlatSettingsStyles() {
           box-sizing: border-box;
           grid-template-columns: 22px 36px minmax(0, 1fr);
           gap: 8px;
-          padding: 9px 50px 7px 8px;
+          padding: 9px 44px 7px 8px;
           border: 0 !important;
           border-radius: 0 !important;
           background: transparent !important;
@@ -865,8 +865,8 @@ function renderFlatSettingsStyles() {
         /* Keep the main action locked to the far-right edge of the row. */
         .dd-home-section-block .home-section-actions {
           position: absolute !important;
-          right: 4px !important;
-          inset-inline-end: 4px !important;
+          right: 0 !important;
+          inset-inline-end: 0 !important;
           left: auto !important;
           top: 50%;
           transform: translateY(-50%);
@@ -900,7 +900,7 @@ function renderFlatSettingsStyles() {
         /* Mobile chevrons get their own slim, centered expand row. */
         .dd-mobile-expand-row {
           width: 100%;
-          height: 20px;
+          height: 14px;
           display: grid;
           place-items: center;
           padding: 0;
@@ -910,7 +910,7 @@ function renderFlatSettingsStyles() {
           cursor: pointer;
         }
         .dd-mobile-expand-row[aria-expanded="true"] { color: var(--primary-color); }
-        .dd-mobile-expand-row ha-icon { --mdc-icon-size: 18px; }
+        .dd-mobile-expand-row ha-icon { --mdc-icon-size: 16px; }
 
         .dd-home-section-block .home-section-title { font-size: 14px; }
         .dd-home-section-block .home-section-description { font-size: 11px; line-height: 1.3; }
@@ -935,7 +935,7 @@ function renderFlatSettingsStyles() {
           box-sizing: border-box;
           grid-template-columns: 36px minmax(0, 1fr);
           gap: 8px;
-          padding: 8px 46px 7px 2px;
+          padding: 8px 40px 7px 2px;
           align-items: center;
         }
         .dd-draggable-subitem {
@@ -953,7 +953,7 @@ function renderFlatSettingsStyles() {
           box-sizing: border-box;
           grid-template-columns: 30px minmax(0, 1fr);
           gap: 8px;
-          padding: 4px 52px 4px 8px;
+          padding: 4px 46px 4px 8px;
         }
         .dd-climate-area-settings .home-section-icon { width: 30px; height: 30px; }
         .dd-climate-actions {
@@ -973,7 +973,7 @@ function renderFlatSettingsStyles() {
           display: flex;
           width: 100%;
           gap: 8px;
-          justify-content: flex-start;
+          justify-content: flex-end;
         }
         .dd-inline-action-row .home-custom-card-add,
         .dd-inline-action-only .home-custom-card-add {

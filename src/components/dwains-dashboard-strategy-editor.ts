@@ -126,102 +126,128 @@ const SETTINGS_ICON_PATHS: Record<string, string> = {
 
 
 function scheduleIntegratedSettingsHeader(editor: any): void {
-  const apply = () => {
+  const state = (window as any).__ddIntegratedSettingsHeaderState || ((window as any).__ddIntegratedSettingsHeaderState = {
+    header: undefined,
+    subtitle: undefined,
+    saveButton: undefined,
+    cancelButton: undefined,
+    titleNode: undefined,
+    resizeBound: false,
+    pending: false,
+    editor: undefined,
+  });
+  state.editor = editor;
+
+  if (!state.resizeBound) {
+    state.resizeBound = true;
+    window.addEventListener("resize", () => {
+      if (state.editor) scheduleIntegratedSettingsHeader(state.editor);
+    });
+  }
+
+  if (state.pending) return;
+  state.pending = true;
+
+  requestAnimationFrame(() => {
+    state.pending = false;
+
     const desktop = window.matchMedia("(min-width: 701px)").matches;
     const saveLabel = String(editor?._t?.("common.save") || "Save");
     const cancelLabel = String(editor?._t?.("common.cancel") || "Cancel");
     const titleLabel = String(editor?._t?.("settings.title") || "Dashboard settings");
     const subtitleLabel = String(editor?._t?.("settings.subtitle") || "");
-
-    const state = (window as any).__ddIntegratedSettingsHeaderState || ((window as any).__ddIntegratedSettingsHeaderState = {
-      header: undefined,
-      subtitle: undefined,
-      resizeBound: false,
-      editor: undefined,
-    });
-    state.editor = editor;
-
-    if (!state.resizeBound) {
-      state.resizeBound = true;
-      window.addEventListener("resize", () => {
-        if (state.editor) scheduleIntegratedSettingsHeader(state.editor);
-      });
-    }
-
-    const roots: Array<Document | ShadowRoot | Element> = [document];
-    const seen = new Set<any>();
-    const collect = (root: Document | ShadowRoot | Element) => {
-      if (seen.has(root)) return;
-      seen.add(root);
-      const all = root.querySelectorAll?.("*") || [];
-      all.forEach((node: any) => {
-        if (node.shadowRoot) {
-          roots.push(node.shadowRoot);
-          collect(node.shadowRoot);
-        }
-      });
-    };
-    collect(document);
-
     const textOf = (node: any) => String(node?.textContent || "").replace(/\s+/g, " ").trim();
-    const findControl = (labels: string[]) => {
+
+    const cachedValid = Boolean(
+      state.header?.isConnected &&
+      state.saveButton?.isConnected &&
+      state.cancelButton?.isConnected &&
+      state.titleNode?.isConnected
+    );
+
+    if (!cachedValid) {
+      const roots: Array<Document | ShadowRoot | Element> = [document];
+      const seen = new Set<any>();
+      const collect = (root: Document | ShadowRoot | Element) => {
+        if (seen.has(root)) return;
+        seen.add(root);
+        const all = root.querySelectorAll?.("*") || [];
+        all.forEach((node: any) => {
+          if (node.shadowRoot) {
+            roots.push(node.shadowRoot);
+            collect(node.shadowRoot);
+          }
+        });
+      };
+      collect(document);
+
+      const findControl = (labels: string[]) => {
+        for (const root of roots) {
+          const nodes = root.querySelectorAll?.("button, ha-button, mwc-button") || [];
+          for (const node of nodes as any) {
+            if (labels.includes(textOf(node))) return node;
+          }
+        }
+        return undefined;
+      };
+
+      const saveButton = findControl([saveLabel, "Speichern", "Save"]);
+      const cancelButton = findControl([cancelLabel, "Abbrechen", "Cancel", "Back", "Zurück"]);
+
+      let titleNode: any;
       for (const root of roots) {
-        const nodes = root.querySelectorAll?.("button, ha-button, mwc-button") || [];
+        const nodes = root.querySelectorAll?.("h1, h2, h3, div, span") || [];
         for (const node of nodes as any) {
           const text = textOf(node);
-          if (labels.includes(text)) return node;
+          if (text === titleLabel || text === "Dashboard-Einstellungen" || text === "Dashboard Settings") {
+            titleNode = node;
+            break;
+          }
         }
+        if (titleNode) break;
       }
-      return undefined;
-    };
 
-    const saveButton = findControl([saveLabel, "Speichern", "Save"]);
-    const cancelButton = findControl([cancelLabel, "Abbrechen", "Cancel", "Back", "Zurück"]);
+      if (!saveButton || !cancelButton || !titleNode) return;
 
-    let titleNode: any;
-    for (const root of roots) {
-      const nodes = root.querySelectorAll?.("h1, h2, h3, div, span") || [];
-      for (const node of nodes as any) {
+      let header: any = saveButton;
+      while (header && header !== document.body) {
+        if (header.contains?.(titleNode) && header.contains?.(cancelButton)) break;
+        header = header.parentElement || header.getRootNode?.()?.host;
+      }
+      if (!header || header === document.body) return;
+
+      state.header = header;
+      state.saveButton = saveButton;
+      state.cancelButton = cancelButton;
+      state.titleNode = titleNode;
+      state.subtitle = undefined;
+    }
+
+    const header = state.header as any;
+    const cancelButton = state.cancelButton as any;
+
+    if (textOf(cancelButton) !== cancelLabel) {
+      cancelButton.textContent = cancelLabel;
+      if ("label" in cancelButton) cancelButton.label = cancelLabel;
+      cancelButton.setAttribute?.("aria-label", cancelLabel);
+    }
+
+    let subtitleNode = state.subtitle as any;
+    if (!subtitleNode?.isConnected) {
+      const candidates = header.querySelectorAll?.("p, small, div, span") || [];
+      for (const node of candidates as any) {
         const text = textOf(node);
-        if (text === titleLabel || text === "Dashboard-Einstellungen" || text === "Dashboard Settings") {
-          titleNode = node;
+        if (
+          (subtitleLabel && text === subtitleLabel) ||
+          text === "Wähle einen Abschnitt aus. Änderungen werden mit „Speichern“ übernommen."
+        ) {
+          subtitleNode = node;
           break;
         }
       }
-      if (titleNode) break;
-    }
-
-    if (!saveButton || !cancelButton || !titleNode) return false;
-
-    let header: any = saveButton;
-    while (header && header !== document.body) {
-      if (header.contains?.(titleNode) && header.contains?.(cancelButton)) break;
-      header = header.parentElement || header.getRootNode?.()?.host;
-    }
-    if (!header || header === document.body) return false;
-
-    state.header = header;
-
-    // Normalize Home Assistant's temporary "Back/Zurück" action before paint.
-    if (textOf(cancelButton) !== cancelLabel) cancelButton.textContent = cancelLabel;
-
-    let subtitleNode: any;
-    const candidates = header.querySelectorAll?.("p, small, div, span") || [];
-    for (const node of candidates as any) {
-      const text = textOf(node);
-      if (subtitleLabel && text === subtitleLabel) {
-        subtitleNode = node;
-        break;
-      }
-      if (text === "Wähle einen Abschnitt aus. Änderungen werden mit „Speichern“ übernommen.") {
-        subtitleNode = node;
-        break;
-      }
-    }
-    if (subtitleNode) {
       state.subtitle = subtitleNode;
-      subtitleNode.style.display = "none";
     }
+    if (subtitleNode) subtitleNode.style.display = "none";
 
     const style = header.style as CSSStyleDeclaration;
     if (desktop) {
@@ -237,18 +263,12 @@ function scheduleIntegratedSettingsHeader(editor: any): void {
       style.background = "";
       style.boxShadow = "";
     }
-
-    return true;
-  };
-
-  if (!apply()) {
-    queueMicrotask(() => apply());
-  }
+  });
 }
 
 function cleanupIntegratedSettingsHeader(): void {
   const state = (window as any).__ddIntegratedSettingsHeaderState;
-  if (!state) return;  if (state.subtitle) state.subtitle.style.display = "";
+  if (!state) return;
   if (state.header) {
     const style = state.header.style as CSSStyleDeclaration;
     style.position = "";
@@ -258,7 +278,12 @@ function cleanupIntegratedSettingsHeader(): void {
     style.boxShadow = "";
   }
   state.header = undefined;
-  state.subtitle = undefined;  state.editor = undefined;
+  state.subtitle = undefined;
+  state.saveButton = undefined;
+  state.cancelButton = undefined;
+  state.titleNode = undefined;
+  state.pending = false;
+  state.editor = undefined;
 }
 
 type SettingsRegistryData = {
@@ -582,6 +607,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       return this._renderLoadingShell();
     }
 
+    scheduleIntegratedSettingsHeader(this);
     return this._area ? this._renderAreaEditor() : this._renderAreasEditor();
   }
 
