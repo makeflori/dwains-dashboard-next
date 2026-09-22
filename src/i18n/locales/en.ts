@@ -382,7 +382,7 @@ export const en = {
   'replacement.load_failed': 'Could not load {name}: {error}',
 
   'settings.title': 'Dwains Dashboard settings',
-  'settings.subtitle': 'Choose a section to configure. Changes are saved with the Save button below.',
+  'settings.subtitle': '',
   'settings.loaded_version': 'Loaded version',
   'settings.loading': 'Loading',
   'settings.all_settings': 'All settings',
