@@ -4159,18 +4159,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     this._showAlarmPicker = false;
   }
 
-  private _removeWeatherEntity(): void {
-    const newConfig: DwainsDashboardConfig = {
-      ...this._config!,
-      settings: {
-        ...this._config!.settings,
-        weather_entity_id: undefined
-      }
-    };
-
-    this._fireConfigChanged(newConfig);
-  }
-
   private _removeAlarmEntity(): void {
     const newConfig: DwainsDashboardConfig = {
       ...this._config!,
