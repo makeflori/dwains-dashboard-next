@@ -232,6 +232,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _dragOverHomeSectionIndex?: number;
 
   @state()
+  private _homeSectionPreviewOrder?: HomeSectionKey[];
+
+  @state()
   private _draggedHomeCamera?: string;
   private _draggedHomeCustomCard?: string;
 
@@ -539,6 +542,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
     return html`
       <div class="editor-container dd-flat-settings dd-settings-overview">
+        <div class="dd-subpage-header dd-overview-header">
+          <span class="dd-subpage-back dd-overview-header-icon" aria-hidden="true">
+            <ha-icon icon="mdi:cog-outline"></ha-icon>
+          </span>
+          <div class="dd-subpage-title">${this._t('settings.all_settings')}</div>
+        </div>
         ${groups.map((group) => {
           const groupItems = items.filter((item) => item.group === group.key);
           if (!groupItems.length) return nothing;
@@ -734,25 +743,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _resetSettingsScrollPosition(): void {
     void this.updateComplete.then(() => {
       window.requestAnimationFrame(() => {
-        let current: HTMLElement | null = this;
-
-        while (current) {
-          const directParent: HTMLElement | null = current.parentElement;
-          const root: Node = current.getRootNode();
-          const shadowHost: HTMLElement | null = root instanceof ShadowRoot ? root.host as HTMLElement : null;
-          const parent: HTMLElement | null = directParent || shadowHost;
-          if (!parent || parent === current) break;
-
-          const overflowY = window.getComputedStyle(parent).overflowY;
-          if (overflowY === "auto" || overflowY === "scroll" || overflowY === "overlay") {
-            parent.style.scrollbarGutter = "stable";
-            parent.scrollTop = 0;
-            return;
-          }
-
-          current = parent;
-        }
-
         this.scrollIntoView({ behavior: "auto", block: "start", inline: "nearest" });
       });
     });
@@ -1972,7 +1962,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   }
 
   private _renderHomeSectionOrder() {
-    const order = this._getHomeSectionsOrder();
+    const storedOrder = this._getHomeSectionsOrder();
+    const order = this._draggedHomeSection && this._homeSectionPreviewOrder
+      ? this._homeSectionPreviewOrder
+      : storedOrder;
     const hiddenSections = this._getHiddenHomeSections();
     const activeDetail = this._homeSettingsDetail;
 
@@ -3043,6 +3036,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
   private _handleHomeSectionDragStart(e: DragEvent, section: HomeSectionKey): void {
     this._draggedHomeSection = section;
+    this._homeSectionPreviewOrder = [...this._getHomeSectionsOrder()];
 
     if (e.dataTransfer) {
       e.dataTransfer.effectAllowed = "move";
@@ -3053,10 +3047,23 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _handleHomeSectionDragEnd = (): void => {
     this._draggedHomeSection = undefined;
     this._dragOverHomeSectionIndex = undefined;
+    this._homeSectionPreviewOrder = undefined;
   };
 
   private _handleHomeSectionDragOver(e: DragEvent, index: number): void {
     e.preventDefault();
+
+    const dragged = this._draggedHomeSection;
+    if (dragged) {
+      const preview = [...(this._homeSectionPreviewOrder || this._getHomeSectionsOrder())];
+      const fromIndex = preview.indexOf(dragged);
+      if (fromIndex !== -1 && fromIndex !== index) {
+        const [item] = preview.splice(fromIndex, 1);
+        preview.splice(index, 0, item!);
+        this._homeSectionPreviewOrder = preview;
+      }
+    }
+
     this._dragOverHomeSectionIndex = index;
 
     if (e.dataTransfer) {
@@ -3079,18 +3086,25 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     const dragged = this._draggedHomeSection;
     if (!dragged) return;
 
-    const order = this._getHomeSectionsOrder();
-    const draggedIndex = order.indexOf(dragged);
+    const currentOrder = this._getHomeSectionsOrder();
+    const previewOrder = this._homeSectionPreviewOrder;
 
-    if (draggedIndex === -1 || draggedIndex === dropIndex) {
-      this._handleHomeSectionDragEnd();
-      return;
+    if (
+      previewOrder &&
+      previewOrder.length === currentOrder.length &&
+      previewOrder.some((section, index) => section !== currentOrder[index])
+    ) {
+      this._setHomeSectionsOrder(previewOrder);
+    } else {
+      const draggedIndex = currentOrder.indexOf(dragged);
+      if (draggedIndex !== -1 && draggedIndex !== dropIndex) {
+        const next = [...currentOrder];
+        const [item] = next.splice(draggedIndex, 1);
+        next.splice(dropIndex, 0, item!);
+        this._setHomeSectionsOrder(next);
+      }
     }
 
-    const next = [...order];
-    const [item] = next.splice(draggedIndex, 1);
-    next.splice(dropIndex, 0, item!);
-    this._setHomeSectionsOrder(next);
     this._handleHomeSectionDragEnd();
   }
 
@@ -4950,10 +4964,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .home-section-item.drag-over {
-        border-color: var(--primary-color);
-        box-shadow:
-          inset 0 0 0 1px var(--primary-color),
-          0 8px 18px rgba(15, 23, 42, 0.08);
+        background: color-mix(in srgb, var(--primary-color) 4%, transparent);
+      }
+
+      .home-section-list.dragging .dd-home-section-block {
+        transition: transform 0.14s ease, opacity 0.14s ease;
       }
 
       .home-section-item.disabled,
@@ -6512,7 +6527,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         min-width: 0;
         box-sizing: border-box;
         scroll-padding-top: 96px;
-        scrollbar-gutter: stable;
       }
 
       .settings-detail-content,
@@ -6583,6 +6597,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         --mdc-icon-size: 20px;
       }
 
+      .dd-overview-header-icon {
+        pointer-events: none;
+        cursor: default;
+      }
+
       .dd-subpage-title {
         min-width: 0;
         overflow: hidden;
@@ -6630,9 +6649,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .dd-home-section-block > .home-section-item {
         position: relative;
         min-height: 62px;
-        grid-template-columns: 32px 42px minmax(0, 1fr) 48px;
-        gap: 8px;
-        padding: 10px 12px;
+        grid-template-columns: 22px 46px minmax(0, 1fr) 48px;
+        gap: 6px;
+        padding: 8px 12px;
         border: 0;
         border-radius: 0;
         background: transparent;
@@ -6656,6 +6675,21 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         border-radius: 0;
         background: transparent;
         box-shadow: none;
+      }
+
+      .dd-home-flat-layout .home-section-icon {
+        width: 46px;
+        height: 46px;
+      }
+
+      .dd-home-flat-layout .home-section-icon ha-icon {
+        --mdc-icon-size: 25px;
+      }
+
+      .dd-home-flat-layout .home-section-item.disabled .home-section-icon,
+      .dd-flat-sublist .home-info-card-item.disabled .home-section-icon,
+      .dd-climate-area-settings .home-info-card-item.disabled .home-section-icon {
+        background: transparent;
       }
 
       .dd-home-flat-layout .home-section-toggle,
@@ -6711,14 +6745,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         transform: translateX(-50%);
         border: 0;
         color: var(--secondary-text-color);
-        background: var(--card-background-color);
+        background: transparent;
         cursor: pointer;
       }
 
       .dd-home-section-block.open > .home-section-item .dd-integrated-chevron,
       .dd-flat-subitem.open > .dd-flat-subitem-row .dd-integrated-chevron {
         color: var(--primary-color);
-        background: color-mix(in srgb, var(--primary-color) 1.5%, var(--card-background-color));
+        background: transparent;
       }
 
       .dd-integrated-chevron ha-icon {
@@ -6735,7 +6769,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .dd-flat-subdetail {
         margin-left: 18px;
-        padding: 3px 0 6px 10px;
+        padding: 3px 0 0 10px;
         border-left: 1px solid color-mix(in srgb, var(--primary-color) 34%, transparent);
       }
 
@@ -6767,7 +6801,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .dd-flat-subitem.open > .dd-flat-subitem-row::after {
         content: "";
         position: absolute;
-        left: -10px;
+        left: 0;
         right: 0;
         bottom: 0;
         height: 1px;
@@ -6967,14 +7001,18 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
         .dd-home-section-block > .home-section-item,
         .dd-home-section-block > .home-section-item.has-detail {
-          grid-template-columns: 22px 36px minmax(0, 1fr) 40px;
-          gap: 8px;
-          padding: 9px 8px;
+          grid-template-columns: 18px 40px minmax(0, 1fr) 40px;
+          gap: 6px;
+          padding: 7px 8px;
         }
 
         .dd-home-section-block .home-section-icon {
-          width: 36px;
-          height: 36px;
+          width: 40px;
+          height: 40px;
+        }
+
+        .dd-home-section-block .home-section-icon ha-icon {
+          --mdc-icon-size: 23px;
         }
 
         .dd-home-section-block .home-section-actions {
@@ -7009,7 +7047,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
         .dd-flat-subdetail {
           margin-left: 18px;
-          padding: 2px 0 5px 10px;
+          padding: 2px 0 0 10px;
         }
 
         .dd-flat-subitem-row {
