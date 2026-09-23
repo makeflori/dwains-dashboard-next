@@ -852,7 +852,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           >
             <ha-icon icon="mdi:arrow-left"></ha-icon>
           </button>
-          <div class="dd-subpage-title">${item.title}</div>
+          <div class="dd-subpage-title">${this._settingsPageTitle(page) || item.title}</div>
         </div>
         <div class="settings-detail-content dd-flat-content">
           ${this._settingsPageDescription(page) ? html`
@@ -896,9 +896,24 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     }
   }
 
+  private _settingsPageTitle(page: SettingsPageKey): string {
+    switch (page) {
+      case "dashboard": return this._t('settings.dashboard');
+      case "home": return this._t('settings.home_page');
+      case "header": return this._t('settings.header_status');
+      case "controls": return this._t('settings.controls_confirmations');
+      case "devices": return this._t('settings.devices_page');
+      case "people": return this._t('settings.people');
+      case "areas": return this._t('settings.areas');
+      case "replacements": return this._t('settings.blueprint_replacements');
+      case "permissions": return this._t('settings.user_permissions');
+      case "support": return this._t('settings.support');
+      default: return "";
+    }
+  }
+
   private _renderSettingsPanel(icon: string, title: string, description: string, content: unknown) {
-    const pageItem = this._settingsOverviewItems().find((item) => item.page === this._settingsPage);
-    const isPageRoot = pageItem?.title === title;
+    const isPageRoot = this._settingsPageTitle(this._settingsPage) === title;
 
     return html`
       <section class="dd-settings-section ${isPageRoot ? 'page-root' : ''}">
@@ -1009,7 +1024,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         "mdi:view-dashboard",
         this._t('settings.dashboard'),
         this._t('settings.default_dashboard_locked'),
-        html`<div class="empty-settings-card">${this._t('settings.open_instance')}</div>`
+        html`
+          <div class="empty-settings-card">
+            <strong>${this._t('settings.default_dashboard_locked')}</strong>
+            <span>${this._t('settings.open_instance')}</span>
+          </div>
+        `
       );
     }
 
@@ -4613,13 +4633,13 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .settings-nav-section h3 {
-        min-height: 42px;
-        margin: 0 0 8px;
+        min-height: 30px;
+        margin: 0 0 6px;
         padding: 0 12px;
         display: flex;
         align-items: center;
         color: var(--secondary-text-color);
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 700;
         letter-spacing: 0;
       }
@@ -4844,13 +4864,25 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .empty-settings-card {
-        margin: 0 16px 16px;
-        padding: 18px;
+        margin: 0;
+        padding: 16px;
+        display: grid;
+        gap: 5px;
         border: 1px dashed var(--divider-color);
         border-radius: 10px;
         color: var(--secondary-text-color);
         background: var(--secondary-background-color);
-        text-align: center;
+        text-align: left;
+      }
+
+      .empty-settings-card strong {
+        color: var(--primary-text-color);
+        font-size: 13px;
+      }
+
+      .empty-settings-card span {
+        font-size: 12px;
+        line-height: 1.4;
       }
 
       .dashboard-settings {
@@ -6083,16 +6115,20 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         flex: 0 0 auto;
         padding: 6px 10px;
         border-radius: 999px;
-        color: var(--primary-color);
-        background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+        color: var(--secondary-text-color);
+        background: color-mix(in srgb, var(--secondary-text-color) 7%, transparent);
         font-size: 12px;
-        font-weight: 800;
+        font-weight: 700;
       }
 
       .device-types-grid {
+        overflow: hidden;
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 8px;
+        grid-template-columns: 1fr;
+        gap: 0;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: var(--card-background-color);
       }
 
       .device-type-option {
@@ -6100,15 +6136,20 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         grid-template-columns: 42px minmax(0, 1fr) auto;
         align-items: center;
         gap: 10px;
-        padding: 10px;
-        border: 1px solid var(--divider-color);
-        border-radius: 10px;
-        background: var(--card-background-color);
-        transition: opacity 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+        min-height: 60px;
+        padding: 8px 12px;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        transition: opacity 0.16s ease, background 0.16s ease;
+      }
+
+      .device-type-option + .device-type-option {
+        border-top: 1px solid var(--divider-color);
       }
 
       .device-type-option.enabled {
-        border-color: color-mix(in srgb, var(--device-type-color) 24%, var(--divider-color));
+        border-color: var(--divider-color);
       }
 
       .device-type-option.disabled {
@@ -6119,12 +6160,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .device-type-icon {
         width: 42px;
         height: 42px;
-        border-radius: 10px;
+        border-radius: 0;
         display: flex;
         align-items: center;
         justify-content: center;
         color: var(--device-type-color);
-        background: color-mix(in srgb, var(--device-type-color) 13%, transparent);
+        background: transparent;
       }
 
       .device-type-icon ha-icon {
@@ -6797,6 +6838,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .dd-settings-section-copy small,
       .dd-setting-row-copy small {
+        max-width: 720px;
         color: var(--secondary-text-color);
         font-size: 11px;
         line-height: 1.4;
