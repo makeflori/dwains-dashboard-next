@@ -69,7 +69,6 @@ interface SettingsPageItem {
   page: Exclude<SettingsPageKey, "overview">;
   group: "general" | "content" | "behavior" | "support";
   icon: string;
-  color: string;
   title: string;
   description: string;
   summary?: string;
@@ -558,18 +557,16 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
     return html`
       <div class="editor-container dd-flat-settings dd-settings-overview">
-        ${groups.map((group) => {
-          const groupItems = items.filter((item) => item.group === group.key);
-          if (!groupItems.length) return nothing;
-          return html`
-            <section class="settings-nav-section">
-              <h3>${group.title}</h3>
-              <div class="settings-nav-list">
-                ${groupItems.map((item) => this._renderSettingsNavItem(item))}
-              </div>
-            </section>
-          `;
-        })}
+        <div class="settings-nav-overview-list">
+          ${groups.map((group) => {
+            const groupItems = items.filter((item) => item.group === group.key);
+            if (!groupItems.length) return nothing;
+            return html`
+              <div class="settings-nav-category">${group.title}</div>
+              ${groupItems.map((item) => this._renderSettingsNavItem(item))}
+            `;
+          })}
+        </div>
         <div class="dd-settings-version-footer">Dwains Dashboard Next · v${DD_NEXT_VERSION}</div>
       </div>
     `;
@@ -604,7 +601,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         page: "dashboard",
         group: "general",
         icon: "mdi:view-dashboard-edit",
-        color: "var(--primary-color)",
         title: this._t('settings.dashboard'),
         description: this._t('settings.dashboard_description'),
         summary: this._dashboardTitle || this._getDashboardPanelTitle() || undefined,
@@ -613,7 +609,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         page: "home",
         group: "general",
         icon: "mdi:home-edit-outline",
-        color: "#0ea5e9",
         title: this._t('settings.home_page'),
         description: this._t('settings.home_page_description'),
         summary: this._t('settings.visible_count', { visible: visibleHomeSections, total: totalHomeSections }),
@@ -622,7 +617,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         page: "header",
         group: "general",
         icon: "mdi:card-account-details-star-outline",
-        color: "#22a06b",
         title: this._t('settings.header_status'),
         description: this._t('settings.header_status_description'),
         summary: this._tp('common.active', headerActiveCount),
@@ -631,7 +625,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         page: "controls",
         group: "behavior",
         icon: "mdi:gesture-tap-button",
-        color: "#d97706",
         title: this._t('settings.controls_confirmations'),
         description: this._t('settings.controls_confirmations_description'),
         summary: this._t('settings.controls_confirmations_summary', { count: protectedMasterActionCount }),
@@ -640,7 +633,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         page: "people",
         group: "content",
         icon: "mdi:account-group-outline",
-        color: "#8b5cf6",
         title: this._t('settings.people'),
         description: this._t('settings.people_description'),
         summary: this._tp('common.person', visiblePersonCount),
@@ -649,7 +641,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         page: "areas",
         group: "content",
         icon: "mdi:floor-plan",
-        color: "#14b8a6",
         title: this._t('settings.areas'),
         description: this._t('settings.areas_description'),
         summary: this._tp('common.area', areaCount),
@@ -658,7 +649,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         page: "devices",
         group: "content",
         icon: "mdi:format-list-bulleted-type",
-        color: "#0891b2",
         title: this._t('settings.devices_page'),
         description: this._t('settings.devices_page_description'),
         summary: this._t('settings.types_visible', { visible: deviceTypeCount - hiddenDeviceTypeCount, total: deviceTypeCount }),
@@ -667,7 +657,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         page: "replacements",
         group: "content",
         icon: "mdi:puzzle-edit-outline",
-        color: "#7c3aed",
         title: this._t('settings.blueprint_replacements'),
         description: this._t('settings.blueprint_replacements_description'),
         summary: this._tp('common.active', replacementCount),
@@ -676,7 +665,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         page: "permissions",
         group: "behavior",
         icon: "mdi:shield-account",
-        color: "#ef4444",
         title: this._t('settings.user_permissions'),
         description: this._t('settings.user_permissions_description'),
         summary: this._config?.settings?.restrict_non_admin_ha_sidebar || this._config?.settings?.restrict_non_admin_dashboard_settings
@@ -687,7 +675,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         page: "support",
         group: "support",
         icon: "mdi:heart-outline",
-        color: "#f59e0b",
         title: this._t('settings.support'),
         description: this._t('settings.support_description'),
       },
@@ -699,7 +686,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       <button
         class="settings-nav-item"
         type="button"
-        style=${`--settings-item-color: ${item.color};`}
         @click=${() => this._openSettingsPage(item.page)}
       >
         <div class="settings-nav-icon">
@@ -871,12 +857,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       case "home":
         return this._renderHomeLayoutSettingsPanel();
       case "header":
-        return html`
-          ${this._renderTimeSettingsPanel()}
-          ${this._renderNotificationSettingsPanel()}
-          ${this._renderWeatherSettingsPanel()}
-          ${this._renderAlarmSettingsPanel()}
-        `;
+        return this._renderHeaderStatusSettingsPanel();
       case "controls":
         return this._renderMasterActionConfirmationSettingsPanel();
       case "devices":
@@ -951,45 +932,34 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   }
 
   private _renderMasterActionConfirmationSettingsPanel() {
-    return this._renderSettingsPanel(
-      "mdi:gesture-tap-button",
-      this._t('settings.master_confirmations'),
-      this._t('settings.master_confirmations_description'),
-      html`
-        <div class="master-confirmation-section">
-          <div class="master-confirmation-note">
-            <ha-icon icon="mdi:information-outline"></ha-icon>
-            <span>${this._t('settings.master_confirmations_note')}</span>
-          </div>
-          <div class="master-confirmation-list">
-            ${MASTER_ACTION_CONFIRMATION_DOMAINS.map((domain) => {
-              const enabled = masterActionConfirmationEnabled(this._config?.settings, domain);
-              return html`
-                <label
-                  class="master-confirmation-row"
-                  style=${`--master-confirmation-color: ${getDomainColor(domain)};`}
-                >
-                  <span class="master-confirmation-icon">
-                    <ha-icon icon=${getDomainIcon(domain)}></ha-icon>
-                  </span>
-                  <span class="master-confirmation-copy">
-                    <strong>${getDomainName(this.hass, domain)}</strong>
-                    <small>${this._t(`settings.confirm_${domain}_description`)}</small>
-                  </span>
-                  <span class="master-confirmation-control">
-                    <span>${this._t(enabled ? 'settings.confirmation_required' : 'settings.runs_immediately')}</span>
-                    <ha-switch
-                      .checked=${enabled}
-                      @change=${(event: Event) => this._toggleMasterActionConfirmation(domain, event)}
-                    ></ha-switch>
-                  </span>
-                </label>
-              `;
-            })}
-          </div>
+    return html`
+      <div class="master-confirmation-section">
+        <div class="master-confirmation-note">
+          <ha-icon icon="mdi:information-outline"></ha-icon>
+          <span>${this._t('settings.master_confirmations_note')}</span>
         </div>
-      `
-    );
+        <div class="master-confirmation-list">
+          ${MASTER_ACTION_CONFIRMATION_DOMAINS.map((domain) => {
+            const enabled = masterActionConfirmationEnabled(this._config?.settings, domain);
+            return html`
+              <label class="master-confirmation-row">
+                <span class="master-confirmation-icon">
+                  <ha-icon icon=${getDomainIcon(domain)}></ha-icon>
+                </span>
+                <span class="master-confirmation-copy">
+                  <strong>${getDomainName(this.hass, domain)}</strong>
+                </span>
+                <ha-switch
+                  .checked=${enabled}
+                  title=${this._t(enabled ? 'settings.confirmation_required' : 'settings.runs_immediately')}
+                  @change=${(event: Event) => this._toggleMasterActionConfirmation(domain, event)}
+                ></ha-switch>
+              </label>
+            `;
+          })}
+        </div>
+      </div>
+    `;
   }
 
   private _renderSupportSection() {
@@ -1127,108 +1097,82 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     `;
   }
 
-  private _renderTimeSettingsPanel() {
-    return this._renderSettingsPanel(
-      "mdi:clock-outline",
-      this._t('settings.time_date'),
-      this._t('settings.time_date_description'),
-      html`
-        <div class="dd-settings-list">
-          ${this._renderToggleSetting(
-            "mdi:clock-outline",
-            this._t('settings.show_time'),
-            "",
-            this._config?.settings?.show_time !== false,
-            this._toggleTimeDisplay
-          )}
+  private _renderHeaderStatusSettingsPanel() {
+    const weatherEntityId = this._config?.settings?.weather_entity_id;
+    const weatherState = weatherEntityId ? this.hass?.states?.[weatherEntityId] : undefined;
+    const weatherName = weatherEntityId
+      ? String(weatherState?.attributes?.friendly_name || weatherEntityId)
+      : this._t('settings.no_weather_fallback');
+
+    const alarmEntityId = this._config?.settings?.alarm_entity_id;
+    const alarmState = alarmEntityId ? this.hass?.states?.[alarmEntityId] : undefined;
+    const alarmName = alarmEntityId
+      ? String(alarmState?.attributes?.friendly_name || alarmEntityId)
+      : this._t('settings.no_alarm');
+
+    return html`
+      <div class="dd-settings-list dd-header-status-list">
+        ${this._renderToggleSetting(
+          "mdi:clock-outline",
+          this._t('settings.time_date'),
+          "",
+          this._config?.settings?.show_time !== false,
+          this._toggleTimeDisplay
+        )}
+
+        ${this._renderToggleSetting(
+          "mdi:bell-outline",
+          this._t('home.notifications'),
+          "",
+          this._config?.settings?.show_notifications !== false,
+          this._toggleNotificationsDisplay
+        )}
+
+        <div class="dd-setting-row dd-setting-row-static">
+          <span class="dd-setting-row-icon"><ha-icon icon="mdi:weather-cloudy"></ha-icon></span>
+          <span class="dd-setting-row-copy">
+            <strong>${this._t('domain.weather')}</strong>
+            <small>${weatherName}</small>
+          </span>
+          <span class="dd-setting-row-actions">
+            <button class="dd-row-action" type="button" @click=${this._addWeatherEntity}>
+              ${this._t('settings.select_weather')}
+            </button>
+            <ha-switch
+              .checked=${this._config?.settings?.show_weather !== false}
+              @change=${this._toggleWeatherDisplay}
+            ></ha-switch>
+          </span>
         </div>
-      `
-    );
-  }
 
-  private _renderNotificationSettingsPanel() {
-    return this._renderSettingsPanel(
-      "mdi:bell-outline",
-      this._t('home.notifications'),
-      this._t('settings.notifications_description'),
-      html`
-        <div class="dd-settings-list">
-          ${this._renderToggleSetting(
-            "mdi:bell-outline",
-            this._t('settings.show_notifications'),
-            "",
-            this._config?.settings?.show_notifications !== false,
-            this._toggleNotificationsDisplay
-          )}
+        <div class="dd-setting-row dd-setting-row-static">
+          <span class="dd-setting-row-icon"><ha-icon icon="mdi:shield-home-outline"></ha-icon></span>
+          <span class="dd-setting-row-copy">
+            <strong>${this._t('domain.alarm_control_panel')}</strong>
+            <small>${alarmName}</small>
+          </span>
+          <span class="dd-setting-row-actions">
+            <button class="dd-row-action" type="button" @click=${this._addAlarmEntity}>
+              ${this._t('settings.select_alarm')}
+            </button>
+            ${alarmEntityId ? html`
+              <button
+                class="dd-row-remove"
+                type="button"
+                title=${this._t('common.remove')}
+                aria-label=${this._t('common.remove')}
+                @click=${this._removeAlarmEntity}
+              >
+                <ha-icon icon="mdi:close"></ha-icon>
+              </button>
+            ` : nothing}
+          </span>
         </div>
-      `
-    );
-  }
+      </div>
 
-  private _renderWeatherSettingsPanel() {
-    return this._renderSettingsPanel(
-      "mdi:weather-cloudy",
-      this._t('domain.weather'),
-      this._t('settings.weather_description'),
-      html`
-        <div class="weather-section">
-          <div class="dd-settings-list">
-            ${this._renderToggleSetting(
-              "mdi:weather-cloudy",
-              this._t('settings.show_weather'),
-              "",
-              this._config?.settings?.show_weather !== false,
-              this._toggleWeatherDisplay
-            )}
-          </div>
-
-          ${this._config?.settings?.show_weather !== false ? html`
-            <div class="weather-picker">
-              <div class="weather-picker-header">
-                <h4>${this._t('settings.selected_weather')}</h4>
-                <mwc-button @click=${this._addWeatherEntity} outlined>
-                  <svg viewBox="0 0 24 24" width="20" height="20" style="margin-right: 8px;">
-                    <path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
-                  </svg>
-                  ${this._t('settings.select_weather')}
-                </mwc-button>
-              </div>
-
-              ${this._renderSelectedWeatherEntity()}
-
-              ${this._showWeatherPicker ? this._renderWeatherPicker() : ''}
-            </div>
-          ` : ''}
-        </div>
-      `
-    );
-  }
-
-  private _renderAlarmSettingsPanel() {
-    return this._renderSettingsPanel(
-      "mdi:shield-home-outline",
-      this._t('domain.alarm_control_panel'),
-      this._t('settings.alarm_description'),
-      html`
-        <div class="alarm-section">
-          <div class="alarm-picker">
-            <div class="alarm-picker-header">
-              <h4>${this._t('settings.selected_alarm')}</h4>
-              <mwc-button @click=${this._addAlarmEntity} outlined>
-                <svg viewBox="0 0 24 24" width="20" height="20" style="margin-right: 8px;">
-                  <path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
-                </svg>
-                ${this._t('settings.select_alarm')}
-              </mwc-button>
-            </div>
-
-            ${this._renderSelectedAlarmEntity()}
-
-            ${this._showAlarmPicker ? this._renderAlarmPicker() : ''}
-          </div>
-        </div>
-      `
-    );
+      ${this._showWeatherPicker ? this._renderWeatherPicker() : nothing}
+      ${this._showAlarmPicker ? this._renderAlarmPicker() : nothing}
+    `;
   }
 
   private _renderEntityDisplaySettingsPanel() {
