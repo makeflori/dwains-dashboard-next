@@ -863,7 +863,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     this._resetSettingsScrollPosition();
   }
 
-  private _backToSettingsOverview = (): void => {
+  public _backToSettingsOverview = (): void => {
     this._settingsPage = "overview";
     this._expandedDeviceTypes = new Set();
     this._closeInlinePickers();
@@ -2916,10 +2916,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     return [...new Set(devices.map((device) => device.deviceId))];
   }
 
-  private _uniqueDeviceIdsFromGroups(groups: DeviceVisibilityTypeGroup[]): string[] {
-    return [...new Set(groups.flatMap((group) => group.devices.map((device) => device.deviceId)))];
-  }
-
   private _getDeviceTypeOptions(): Array<{ key: string; label: string; icon: string; color: string; count: number }> {
     if (!this.hass || !this._config) return [];
 
@@ -3878,74 +3874,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _addAlarmEntity(): void {
     this._showAlarmPicker = true;
     this._alarmSearchFilter = '';
-  }
-
-  private _renderSelectedWeatherEntity() {
-    const weatherEntityId = this._config?.settings?.weather_entity_id;
-
-    if (!weatherEntityId) {
-      return html`
-        <div class="no-weather">
-          <p>${this._t('settings.no_weather_fallback')}</p>
-        </div>
-      `;
-    }
-
-    const state = this.hass?.states[weatherEntityId];
-    const friendlyName = state?.attributes?.friendly_name || weatherEntityId;
-
-    return html`
-      <div class="selected-weather-entity" data-entity-id="${weatherEntityId}">
-        <ha-state-icon
-          .stateObj=${state}
-          class="entity-icon"
-        ></ha-state-icon>
-        <span class="entity-name">${friendlyName}</span>
-        <button
-          class="remove-button"
-          title=${this._t('common.remove')}
-          @click=${() => this._removeWeatherEntity()}
-        >
-          <svg viewBox="0 0 24 24" width="20" height="20">
-            <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
-          </svg>
-        </button>
-      </div>
-    `;
-  }
-
-  private _renderSelectedAlarmEntity() {
-    const alarmEntityId = this._config?.settings?.alarm_entity_id;
-
-    if (!alarmEntityId) {
-      return html`
-        <div class="no-alarm">
-          <p>${this._t('settings.no_alarm')}</p>
-        </div>
-      `;
-    }
-
-    const state = this.hass?.states[alarmEntityId];
-    const friendlyName = state?.attributes?.friendly_name || alarmEntityId;
-
-    return html`
-      <div class="selected-alarm-entity" data-entity-id="${alarmEntityId}">
-        <ha-state-icon
-          .stateObj=${state}
-          class="entity-icon"
-        ></ha-state-icon>
-        <span class="entity-name">${friendlyName}</span>
-        <button
-          class="remove-button"
-          title=${this._t('common.remove')}
-          @click=${() => this._removeAlarmEntity()}
-        >
-          <svg viewBox="0 0 24 24" width="20" height="20">
-            <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
-          </svg>
-        </button>
-      </div>
-    `;
   }
 
   private _renderSelectedEntities() {
