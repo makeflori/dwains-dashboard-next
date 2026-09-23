@@ -716,17 +716,46 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _openSettingsPage(page: Exclude<SettingsPageKey, "overview">): void {
     this._settingsPage = page;
     this._closeInlinePickers();
+    this._resetSettingsScrollPosition();
   }
 
   private _backToSettingsOverview = (): void => {
     this._settingsPage = "overview";
     this._closeInlinePickers();
+    this._resetSettingsScrollPosition();
   };
 
   private _closeInlinePickers(): void {
     this._showEntityPicker = false;
     this._showWeatherPicker = false;
     this._showAlarmPicker = false;
+  }
+
+  private _resetSettingsScrollPosition(): void {
+    void this.updateComplete.then(() => {
+      window.requestAnimationFrame(() => {
+        let current: HTMLElement | null = this;
+
+        while (current) {
+          const directParent = current.parentElement;
+          const root = current.getRootNode();
+          const shadowHost = root instanceof ShadowRoot ? root.host as HTMLElement : null;
+          const parent = directParent || shadowHost;
+          if (!parent || parent === current) break;
+
+          const overflowY = window.getComputedStyle(parent).overflowY;
+          if (overflowY === "auto" || overflowY === "scroll" || overflowY === "overlay") {
+            parent.style.scrollbarGutter = "stable";
+            parent.scrollTop = 0;
+            return;
+          }
+
+          current = parent;
+        }
+
+        this.scrollIntoView({ behavior: "auto", block: "start", inline: "nearest" });
+      });
+    });
   }
 
   private _renderSettingsDetailPage(page: SettingsPageKey) {
@@ -2016,28 +2045,21 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                     >
                       <ha-icon icon=${enabled ? 'mdi:eye-outline' : 'mdi:eye-off-outline'}></ha-icon>
                     </button>
-                    ${detail ? html`
-                      <button
-                        class="dd-home-detail-toggle dd-detail-desktop"
-                        type="button"
-                        aria-expanded=${open ? 'true' : 'false'}
-                        @click=${() => toggleDetail(section)}
-                      >
-                        <ha-icon icon=${open ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
-                      </button>
-                    ` : html`<span class="dd-home-detail-spacer dd-detail-desktop" aria-hidden="true"></span>`}
                   </div>
+                  ${detail ? html`
+                    <button
+                      class="dd-integrated-chevron"
+                      type="button"
+                      aria-expanded=${open ? 'true' : 'false'}
+                      @click=${(event: Event) => {
+                        event.stopPropagation();
+                        toggleDetail(section);
+                      }}
+                    >
+                      <ha-icon icon=${open ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
+                    </button>
+                  ` : nothing}
                 </div>
-                ${detail ? html`
-                  <button
-                    class="dd-mobile-expand-row"
-                    type="button"
-                    aria-expanded=${open ? 'true' : 'false'}
-                    @click=${() => toggleDetail(section)}
-                  >
-                    <ha-icon icon=${open ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
-                  </button>
-                ` : nothing}
                 ${open ? html`<div class="dd-home-inline-detail">${renderDetail(section)}</div>` : nothing}
               </div>
             `;
@@ -2262,23 +2284,21 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                     >
                       <ha-icon icon=${enabled ? 'mdi:eye-outline' : 'mdi:eye-off-outline'}></ha-icon>
                     </button>
-                    ${isClimate ? html`
-                      <button class="dd-home-detail-toggle dd-detail-desktop" type="button" aria-expanded=${climateOpen ? 'true' : 'false'} @click=${toggleClimate}>
-                        <ha-icon icon=${climateOpen ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
-                      </button>
-                    ` : html`<span class="dd-home-detail-spacer dd-detail-desktop" aria-hidden="true"></span>`}
                   </div>
+                  ${isClimate ? html`
+                    <button
+                      class="dd-integrated-chevron"
+                      type="button"
+                      aria-expanded=${climateOpen ? 'true' : 'false'}
+                      @click=${(event: Event) => {
+                        event.stopPropagation();
+                        toggleClimate();
+                      }}
+                    >
+                      <ha-icon icon=${climateOpen ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
+                    </button>
+                  ` : nothing}
                 </div>
-                ${isClimate ? html`
-                  <button
-                    class="dd-mobile-expand-row"
-                    type="button"
-                    aria-expanded=${climateOpen ? 'true' : 'false'}
-                    @click=${toggleClimate}
-                  >
-                    <ha-icon icon=${climateOpen ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
-                  </button>
-                ` : nothing}
                 ${isClimate && climateOpen ? html`<div class="dd-flat-subdetail">${this._renderHomeClimateAreaSettings()}</div>` : nothing}
               </div>
             `;
@@ -6488,8 +6508,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       /* Integrated settings UI: single authoritative layout */
       .dd-flat-settings {
+        width: 100%;
         min-width: 0;
+        box-sizing: border-box;
         scroll-padding-top: 96px;
+        scrollbar-gutter: stable;
       }
 
       .settings-detail-content,
@@ -6529,6 +6552,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .dd-subpage-header {
+        height: 42px;
         min-height: 42px;
         margin-top: 0;
         margin-bottom: 12px;
@@ -6604,8 +6628,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .dd-home-section-block > .home-section-item {
+        position: relative;
         min-height: 62px;
-        grid-template-columns: 32px 42px minmax(0, 1fr) 84px;
+        grid-template-columns: 32px 42px minmax(0, 1fr) 48px;
         gap: 8px;
         padding: 10px 12px;
         border: 0;
@@ -6614,15 +6639,22 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         box-shadow: none;
       }
 
-      .dd-home-section-block.open > .home-section-item {
-        border-bottom: 0;
+      .dd-home-section-block.open > .home-section-item::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 1px;
+        background: var(--divider-color);
+        pointer-events: none;
       }
 
       .dd-home-flat-layout .home-section-icon,
       .dd-flat-sublist .home-section-icon,
       .dd-climate-area-settings .home-section-icon {
-        border-radius: 10px;
-        background: color-mix(in srgb, var(--primary-color) 7%, transparent);
+        border-radius: 0;
+        background: transparent;
         box-shadow: none;
       }
 
@@ -6643,23 +6675,15 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .dd-home-section-block .home-section-actions,
       .home-info-card-actions {
         display: grid;
-        grid-template-columns: 48px 28px;
+        grid-template-columns: 48px;
         align-items: center;
         justify-content: end;
         justify-items: center;
         justify-self: end;
-        gap: 8px;
-        width: 84px;
+        width: 48px;
         margin: 0;
       }
 
-      .dd-home-detail-toggle,
-      .dd-home-detail-spacer {
-        width: 28px;
-        height: 40px;
-      }
-
-      .dd-home-detail-toggle,
       .dd-icon-action {
         display: inline-grid;
         place-items: center;
@@ -6669,52 +6693,38 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         cursor: pointer;
       }
 
-      .dd-home-detail-spacer {
-        display: block;
-        pointer-events: none;
-      }
-
-      .dd-home-section-block.open > .home-section-item .dd-home-detail-toggle,
-      .dd-flat-subitem.open > .dd-flat-subitem-row .dd-home-detail-toggle {
-        color: var(--primary-color);
-      }
-
-      .dd-home-detail-toggle ha-icon,
       .dd-icon-action ha-icon {
         --mdc-icon-size: 19px;
       }
 
-      .dd-detail-desktop {
-        display: none !important;
-      }
-
-      .dd-mobile-expand-row {
-        width: 100%;
-        height: 16px;
-        min-height: 16px;
+      .dd-integrated-chevron {
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        z-index: 1;
+        width: 30px;
+        height: 15px;
         display: grid;
         place-items: center;
-        margin: -2px 0 0;
+        margin: 0;
         padding: 0;
+        transform: translateX(-50%);
         border: 0;
         color: var(--secondary-text-color);
-        background: transparent;
+        background: var(--card-background-color);
         cursor: pointer;
       }
 
-      .dd-mobile-expand-row[aria-expanded="true"] {
+      .dd-home-section-block.open > .home-section-item .dd-integrated-chevron,
+      .dd-flat-subitem.open > .dd-flat-subitem-row .dd-integrated-chevron {
         color: var(--primary-color);
+        background: color-mix(in srgb, var(--primary-color) 1.5%, var(--card-background-color));
       }
 
-      .dd-mobile-expand-row ha-icon {
+      .dd-integrated-chevron ha-icon {
         width: 14px;
         height: 14px;
         --mdc-icon-size: 14px;
-      }
-
-      .dd-home-section-block.open > .dd-mobile-expand-row,
-      .dd-flat-subitem.open > .dd-mobile-expand-row {
-        border-bottom: 1px solid var(--divider-color);
       }
 
       .dd-home-inline-detail {
@@ -6724,7 +6734,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .dd-flat-subdetail {
-        margin-left: 40px;
+        margin-left: 18px;
         padding: 3px 0 6px 10px;
         border-left: 1px solid color-mix(in srgb, var(--primary-color) 34%, transparent);
       }
@@ -6741,6 +6751,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         border-top: 0;
       }
 
+      .dd-home-house-information .dd-flat-sublist {
+        overflow: visible;
+      }
+
       .dd-flat-subitem + .dd-flat-subitem,
       .dd-flat-subitem-row + .dd-flat-subitem-row {
         border-top: 1px solid var(--divider-color);
@@ -6750,10 +6764,22 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         border-bottom: 0;
       }
 
+      .dd-flat-subitem.open > .dd-flat-subitem-row::after {
+        content: "";
+        position: absolute;
+        left: -10px;
+        right: 0;
+        bottom: 0;
+        height: 1px;
+        background: var(--divider-color);
+        pointer-events: none;
+      }
+
       .dd-flat-subitem-row {
+        position: relative;
         min-height: 50px;
         display: grid;
-        grid-template-columns: 36px minmax(0, 1fr) 84px;
+        grid-template-columns: 36px minmax(0, 1fr) 48px;
         align-items: center;
         gap: 9px;
         padding: 6px 12px 6px 0;
@@ -6791,11 +6817,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .dd-climate-area-settings .home-info-card-item {
         min-height: 0;
         display: grid;
-        grid-template-columns: 32px minmax(0, 1fr) 56px;
+        grid-template-columns: 32px minmax(0, 1fr) 48px;
         align-items: center;
         gap: 10px;
         margin: 0;
-        padding: 4px 8px;
+        padding: 4px 12px 4px 8px;
         border: 0;
         border-bottom: 1px solid var(--divider-color);
         border-radius: 0;
@@ -6815,19 +6841,23 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .dd-climate-actions {
         display: flex;
         align-items: center;
-        justify-content: flex-end;
+        justify-content: center;
         justify-self: end;
-        width: 56px;
+        width: 48px;
       }
 
-      .dd-climate-actions ha-switch,
+      .dd-climate-actions ha-switch {
+        transform: scale(.9);
+        transform-origin: center;
+      }
+
       .dd-favorite-suggestions-row ha-switch {
         transform: scale(.9);
         transform-origin: right center;
       }
 
       .dd-climate-description {
-        padding: 4px 8px 6px;
+        padding: 6px 8px;
       }
 
       .dd-inline-action-row {
@@ -6896,7 +6926,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       @media (min-width: 701px) {
         .dd-flat-settings:not(.dd-settings-overview) {
-          padding-top: 16px;
+          padding-top: 8px;
+        }
+
+        .dd-flat-settings:not(.dd-settings-overview) .settings-detail-content {
+          width: 100%;
+          margin-top: 0;
         }
       }
 
@@ -6954,10 +6989,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           justify-self: end;
         }
 
-        .dd-mobile-expand-row {
+        .dd-integrated-chevron {
           height: 14px;
-          min-height: 14px;
-          margin-top: -3px;
         }
 
         .dd-home-section-block .home-section-title {
@@ -7000,8 +7033,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         }
 
         .dd-climate-area-settings .home-info-card-item {
-          grid-template-columns: 30px minmax(0, 1fr) 56px;
-          padding: 4px 8px;
+          grid-template-columns: 30px minmax(0, 1fr) 48px;
+          padding: 4px 10px 4px 8px;
         }
 
         .dd-climate-area-settings .home-section-icon {
