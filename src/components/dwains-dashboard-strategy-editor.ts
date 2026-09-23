@@ -580,9 +580,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     const visibleHomeSections = this._getHomeSectionsOrder()
       .filter((section) => !this._getHiddenHomeSections().has(section))
       .length;
-    const visibleHouseInfoCards = DEFAULT_HOME_INFORMATION_CARDS
-      .filter((card) => !this._getHiddenHomeInformationCards().has(card))
-      .length;
     const deviceTypeCount = this._getDeviceTypeOptions().length;
     const hiddenDeviceTypeCount = this._getHiddenDeviceTypes().size;
     const personCount = Object.values(this.hass?.states || {})
@@ -597,16 +594,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       this._config?.settings?.show_weather !== false,
       Boolean(this._config?.settings?.alarm_entity_id),
     ].filter(Boolean).length;
-    const favoriteCount = this._config?.favorites?.length || 0;
     const replacementCount = this._replacementCount();
-    const hiddenDeviceCount = this._getHiddenDeviceIds().size;
-    const devicesUnavailableMode = this._config?.settings?.hide_unavailable_entities_on_devices === false
-      ? this._t('settings.unavailable_shown')
-      : this._t('settings.unavailable_hidden');
-    const areasUnavailableMode = this._config?.settings?.hide_unavailable_entities === false
-      ? this._t('settings.unavailable_shown')
-      : this._t('settings.unavailable_hidden');
-    const areaSortMode = resolveAreaSortMode(this._config?.areas_display);
     const protectedMasterActionCount = MASTER_ACTION_CONFIRMATION_DOMAINS
       .filter((domain) => masterActionConfirmationEnabled(this._config?.settings, domain))
       .length;
