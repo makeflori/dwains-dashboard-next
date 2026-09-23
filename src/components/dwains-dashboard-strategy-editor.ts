@@ -163,6 +163,37 @@ function scheduleIntegratedSettingsHeader(editor: any): void {
         if (title) break;
       }
 
+      if (!title) {
+        const saveLabel = String(editor?._t?.("common.save") || "Save");
+        for (const scope of roots) {
+          const buttons = scope.querySelectorAll?.("button,ha-button,mwc-button") || [];
+          for (const candidateButton of buttons as any) {
+            const buttonText = textOf(candidateButton);
+            const buttonLabel = String(candidateButton.label || "").trim();
+            if (buttonText !== saveLabel && buttonLabel !== saveLabel) continue;
+
+            let current: HTMLElement | null = candidateButton.parentElement;
+            for (let depth = 0; current && depth < 7; depth++, current = current.parentElement) {
+              const headerButtons = current.querySelectorAll?.("button,ha-icon-button,mwc-icon-button,ha-button,mwc-button") || [];
+              if (headerButtons.length < 2) continue;
+              const candidates = current.querySelectorAll?.("h1,h2,h3,[slot='heading'],.title,.header-title,.dialog-title,strong") || [];
+              const candidateTitle = Array.from(candidates as any).find((node: any) => {
+                const value = textOf(node);
+                return Boolean(value && value !== saveLabel && value !== cancelLabel);
+              }) as HTMLElement | undefined;
+              if (candidateTitle) {
+                title = candidateTitle;
+                header = current;
+                backButton = headerButtons[0];
+                break;
+              }
+            }
+            if (title) break;
+          }
+          if (title) break;
+        }
+      }
+
       if (title) {
         let current: HTMLElement | null = title.parentElement;
         for (let depth = 0; current && depth < 6; depth++, current = current.parentElement) {
@@ -1259,7 +1290,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
             </span>
             <span class="dd-header-feature-actions">
               ${alarmId ? html`
-                <button class="dd-icon-text-button danger" type="button" title=${this._t('common.remove')} @click=${this._removeAlarmEntity}>
+                <button class="dd-icon-text-button danger" type="button" title=${this._t('common.remove')} @click=${() => this._removeAlarmEntity()}>
                   <ha-icon icon="mdi:close"></ha-icon>
                 </button>
               ` : nothing}
@@ -7386,6 +7417,459 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         .dd-settings-version-footer {
           margin-top: 18px;
           font-size: 10px;
+        }
+      }
+
+
+      /* Settings consistency pass */
+      .settings-nav-section {
+        margin-bottom: 14px;
+      }
+
+      .settings-nav-section h3 {
+        min-height: 34px;
+        margin: 0 0 6px;
+        padding: 0 4px;
+        color: var(--secondary-text-color);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .settings-nav-item {
+        min-height: 70px;
+        grid-template-columns: 36px minmax(0, 1fr) auto 24px;
+        gap: 12px;
+        padding: 10px 14px;
+      }
+
+      .settings-nav-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 0;
+        color: var(--settings-item-color);
+        background: transparent;
+      }
+
+      .settings-nav-icon ha-icon,
+      .settings-nav-icon svg,
+      .settings-nav-gradient-icon {
+        width: 25px;
+        height: 25px;
+        fill: currentColor;
+        --mdc-icon-size: 25px;
+      }
+
+      .settings-nav-icon.support-gradient {
+        color: inherit;
+      }
+
+      .settings-nav-gradient-icon {
+        overflow: visible;
+      }
+
+      .dd-header-status-list {
+        overflow: hidden;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: var(--card-background-color);
+      }
+
+      .dd-header-status-list > .dd-setting-row,
+      .dd-header-feature-row {
+        min-height: 60px;
+        display: grid;
+        grid-template-columns: 40px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        box-sizing: border-box;
+      }
+
+      .dd-header-status-list > .dd-setting-row {
+        border: 0;
+        border-radius: 0;
+      }
+
+      .dd-header-status-list > .dd-setting-row + .dd-setting-row,
+      .dd-header-feature {
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .dd-header-feature-actions {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        white-space: nowrap;
+      }
+
+      .dd-inline-text-button,
+      .dd-icon-text-button {
+        min-height: 32px;
+        padding: 0 8px;
+        border: 0;
+        border-radius: 8px;
+        color: var(--primary-color);
+        background: transparent;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .dd-inline-text-button:hover,
+      .dd-icon-text-button:hover {
+        background: color-mix(in srgb, var(--primary-color) 7%, transparent);
+      }
+
+      .dd-icon-text-button {
+        width: 32px;
+        padding: 0;
+        display: inline-grid;
+        place-items: center;
+      }
+
+      .dd-icon-text-button.danger {
+        color: var(--error-color, #f44336);
+      }
+
+      .dd-icon-text-button ha-icon {
+        --mdc-icon-size: 18px;
+      }
+
+      .master-confirmation-section.dd-simple-settings-stack {
+        gap: 8px;
+        padding: 0;
+      }
+
+      .master-confirmation-note {
+        padding: 4px 2px 8px;
+        border-radius: 0;
+        color: var(--secondary-text-color);
+        background: transparent;
+        font-size: 12px;
+      }
+
+      .master-confirmation-note ha-icon {
+        color: #0f9f8f;
+        --mdc-icon-size: 18px;
+      }
+
+      .master-confirmation-list {
+        border-radius: 12px;
+      }
+
+      .master-confirmation-row {
+        grid-template-columns: 40px minmax(0, 1fr) auto;
+        gap: 8px;
+        min-height: 60px;
+        padding: 8px 12px;
+      }
+
+      .master-confirmation-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 0;
+        color: #0f9f8f;
+        background: transparent;
+      }
+
+      .master-confirmation-control {
+        gap: 0;
+      }
+
+      .master-confirmation-control > span {
+        display: none;
+      }
+
+      .entity-display-section {
+        padding: 0;
+      }
+
+      .entity-display-section > .dd-settings-list-spaced {
+        margin-bottom: 16px;
+      }
+
+      .area-order-settings {
+        width: 100%;
+        margin: 0 0 16px;
+        padding: 14px;
+        box-sizing: border-box;
+        border-radius: 12px;
+      }
+
+      .area-settings-sortable {
+        padding: 0;
+        gap: 8px;
+      }
+
+      .area-settings-sortable .dd-area-sortable-row {
+        overflow: hidden;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: var(--card-background-color);
+        box-shadow: none;
+      }
+
+      .area-settings-sortable .dd-area-sortable-row .area-item {
+        min-height: 62px;
+        padding: 8px 12px;
+        box-sizing: border-box;
+      }
+
+      .area-settings-sortable .sortable-item.dragging {
+        opacity: 0.28;
+        transform: none;
+      }
+
+      .area-settings-sortable .sortable-item.drag-over::before {
+        display: none;
+      }
+
+      .area-settings-sortable .sortable-item.drag-over {
+        background: color-mix(in srgb, var(--primary-color) 4%, var(--card-background-color));
+      }
+
+      .area-settings-sortable .handle {
+        margin-right: 0;
+        padding: 6px 2px;
+        background: transparent;
+      }
+
+      .area-settings-sortable .area-icon {
+        width: 40px;
+        margin-right: 6px;
+        color: var(--primary-color);
+        --mdc-icon-size: 22px;
+      }
+
+      .device-visibility-section {
+        margin-top: 20px;
+        display: grid;
+        gap: 10px;
+      }
+
+      .device-admission-groups {
+        display: grid;
+        gap: 8px;
+      }
+
+      .device-type-panel {
+        overflow: hidden;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: var(--card-background-color);
+        content-visibility: auto;
+        contain-intrinsic-size: auto 70px;
+      }
+
+      .device-type-panel.open {
+        background: color-mix(in srgb, var(--primary-color) 1.5%, var(--card-background-color));
+      }
+
+      .device-type-panel.disabled {
+        opacity: 0.58;
+      }
+
+      .device-type-panel-row {
+        position: relative;
+        min-height: 62px;
+        display: grid;
+        grid-template-columns: 40px minmax(0, 1fr) 44px;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        box-sizing: border-box;
+      }
+
+      .device-type-panel-row.expandable {
+        cursor: pointer;
+      }
+
+      .device-type-panel-row .device-type-icon.small {
+        width: 40px;
+        height: 40px;
+        border-radius: 0;
+        color: var(--primary-color);
+        background: transparent;
+      }
+
+      .device-type-heading {
+        min-width: 0;
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+      }
+
+      .device-type-heading strong {
+        min-width: 0;
+        overflow: hidden;
+        color: var(--primary-text-color);
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.25;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .device-type-heading small {
+        flex: 0 0 auto;
+        color: var(--secondary-text-color);
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .dd-visibility-button {
+        width: 40px;
+        height: 40px;
+        display: inline-grid;
+        place-items: center;
+        justify-self: end;
+        padding: 0;
+        border: 1px solid color-mix(in srgb, var(--primary-color) 24%, var(--divider-color));
+        border-radius: 999px;
+        color: var(--primary-color);
+        background: transparent;
+        cursor: pointer;
+      }
+
+      .dd-visibility-button.hidden {
+        color: var(--secondary-text-color);
+        border-color: var(--divider-color);
+      }
+
+      .dd-visibility-button.partial {
+        border-style: dashed;
+      }
+
+      .dd-visibility-button ha-icon {
+        --mdc-icon-size: 20px;
+      }
+
+      .device-type-chevron {
+        left: 50%;
+        bottom: -1px;
+      }
+
+      .device-type-panel.open > .device-type-panel-row {
+        border-bottom: 1px solid var(--divider-color);
+      }
+
+      .device-admission-panel {
+        display: grid;
+        gap: 0;
+        padding: 0;
+      }
+
+      .device-admission-area {
+        display: grid;
+        gap: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+      }
+
+      .device-admission-area + .device-admission-area {
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .device-admission-area-header {
+        min-height: 52px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 44px;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px 6px 52px;
+        box-sizing: border-box;
+      }
+
+      .device-admission-device-list {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0;
+        padding: 0 12px 8px 52px;
+      }
+
+      .device-admission-device {
+        min-height: 52px;
+        display: grid;
+        grid-template-columns: 34px minmax(0, 1fr) 44px;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 0;
+        border: 0;
+        border-top: 1px solid var(--divider-color);
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .device-admission-device .device-type-icon {
+        width: 34px;
+        height: 34px;
+        color: var(--primary-color);
+      }
+
+      .device-admission-device.hidden {
+        opacity: 0.52;
+        background: transparent;
+      }
+
+      .device-admission-copy .device-type-count {
+        margin-top: 2px;
+      }
+
+      ha-expansion-panel {
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      @media (max-width: 700px) {
+        .settings-nav-item {
+          grid-template-columns: 32px minmax(0, 1fr) auto 20px;
+          gap: 8px;
+          padding-inline: 10px;
+        }
+
+        .settings-nav-icon {
+          width: 32px;
+          height: 32px;
+        }
+
+        .settings-nav-icon ha-icon,
+        .settings-nav-icon svg,
+        .settings-nav-gradient-icon {
+          width: 22px;
+          height: 22px;
+          --mdc-icon-size: 22px;
+        }
+
+        .dd-header-status-list > .dd-setting-row,
+        .dd-header-feature-row {
+          grid-template-columns: 36px minmax(0, 1fr) auto;
+          padding-inline: 8px;
+        }
+
+        .dd-header-feature-actions {
+          gap: 4px;
+        }
+
+        .device-type-heading {
+          flex-wrap: wrap;
+          gap: 2px 8px;
+        }
+
+        .device-type-heading small {
+          width: 100%;
+        }
+
+        .device-admission-area-header {
+          padding-left: 12px;
+        }
+
+        .device-admission-device-list {
+          padding-left: 12px;
         }
       }
     `;
