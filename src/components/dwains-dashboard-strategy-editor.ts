@@ -737,10 +737,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         let current: HTMLElement | null = this;
 
         while (current) {
-          const directParent = current.parentElement;
-          const root = current.getRootNode();
-          const shadowHost = root instanceof ShadowRoot ? root.host as HTMLElement : null;
-          const parent = directParent || shadowHost;
+          const directParent: HTMLElement | null = current.parentElement;
+          const root: Node = current.getRootNode();
+          const shadowHost: HTMLElement | null = root instanceof ShadowRoot ? root.host as HTMLElement : null;
+          const parent: HTMLElement | null = directParent || shadowHost;
           if (!parent || parent === current) break;
 
           const overflowY = window.getComputedStyle(parent).overflowY;
