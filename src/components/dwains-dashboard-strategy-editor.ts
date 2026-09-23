@@ -67,7 +67,7 @@ type SettingsPageKey =
 
 interface SettingsPageItem {
   page: Exclude<SettingsPageKey, "overview">;
-  group: "general" | "layout" | "advanced";
+  group: "general" | "content" | "behavior" | "support";
   icon: string;
   color: string;
   title: string;
@@ -550,24 +550,20 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _renderSettingsOverview() {
     const groups: Array<{ key: SettingsPageItem["group"]; title: string }> = [
       { key: "general", title: this._t('settings.general') },
-      { key: "layout", title: this._t('settings.dashboard_layout') },
-      { key: "advanced", title: this._t('settings.advanced') },
+      { key: "content", title: this._t('settings.content_display') },
+      { key: "behavior", title: this._t('settings.behavior_access') },
+      { key: "support", title: this._t('settings.about_support') },
     ];
     const items = this._settingsOverviewItems();
 
     return html`
       <div class="editor-container dd-flat-settings dd-settings-overview">
-        ${groups.map((group, groupIndex) => {
+        ${groups.map((group) => {
           const groupItems = items.filter((item) => item.group === group.key);
           if (!groupItems.length) return nothing;
           return html`
             <section class="settings-nav-section">
-              ${groupIndex === 0 ? html`
-                <div class="dd-subpage-header dd-overview-title-row">
-                  <span class="dd-subpage-spacer" aria-hidden="true"></span>
-                  <div class="dd-subpage-title">${group.title}</div>
-                </div>
-              ` : html`<h3>${group.title}</h3>`}
+              <h3>${group.title}</h3>
               <div class="settings-nav-list">
                 ${groupItems.map((item) => this._renderSettingsNavItem(item))}
               </div>
@@ -584,24 +580,21 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     const visibleHomeSections = this._getHomeSectionsOrder()
       .filter((section) => !this._getHiddenHomeSections().has(section))
       .length;
-    const visibleHouseInfoCards = DEFAULT_HOME_INFORMATION_CARDS
-      .filter((card) => !this._getHiddenHomeInformationCards().has(card))
-      .length;
     const deviceTypeCount = this._getDeviceTypeOptions().length;
     const hiddenDeviceTypeCount = this._getHiddenDeviceTypes().size;
     const personCount = Object.values(this.hass?.states || {})
       .filter((state: any) => state.entity_id?.startsWith("person."))
       .length;
-    const favoriteCount = this._config?.favorites?.length || 0;
+    const hiddenPersonCount = new Set(this._config?.settings?.hidden_persons || []).size;
+    const visiblePersonCount = Math.max(0, personCount - hiddenPersonCount);
+    const totalHomeSections = this._getHomeSectionsOrder().length;
+    const headerActiveCount = [
+      this._config?.settings?.show_time !== false,
+      this._config?.settings?.show_notifications !== false,
+      this._config?.settings?.show_weather !== false,
+      Boolean(this._config?.settings?.alarm_entity_id),
+    ].filter(Boolean).length;
     const replacementCount = this._replacementCount();
-    const hiddenDeviceCount = this._getHiddenDeviceIds().size;
-    const devicesUnavailableMode = this._config?.settings?.hide_unavailable_entities_on_devices === false
-      ? this._t('settings.unavailable_shown')
-      : this._t('settings.unavailable_hidden');
-    const areasUnavailableMode = this._config?.settings?.hide_unavailable_entities === false
-      ? this._t('settings.unavailable_shown')
-      : this._t('settings.unavailable_hidden');
-    const areaSortMode = resolveAreaSortMode(this._config?.areas_display);
     const protectedMasterActionCount = MASTER_ACTION_CONFIRMATION_DOMAINS
       .filter((domain) => masterActionConfirmationEnabled(this._config?.settings, domain))
       .length;
@@ -623,7 +616,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         color: "#0ea5e9",
         title: this._t('settings.home_page'),
         description: this._t('settings.home_page_description'),
-        summary: `${visibleHomeSections} · ${this._t('settings.house_cards', { visible: visibleHouseInfoCards, total: DEFAULT_HOME_INFORMATION_CARDS.length })} · ${this._tp('common.favorite', favoriteCount)}`,
+        summary: this._t('settings.visible_count', { visible: visibleHomeSections, total: totalHomeSections }),
       },
       {
         page: "header",
@@ -632,11 +625,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         color: "#22a06b",
         title: this._t('settings.header_status'),
         description: this._t('settings.header_status_description'),
-        summary: `${this._config?.settings?.show_notifications === false ? this._t('settings.notifications_hidden') : this._t('settings.notifications_shown')} · ${this._config?.settings?.alarm_entity_id ? this._t('settings.alarm_selected') : this._t('settings.no_alarm_selected')}`,
+        summary: this._tp('common.active', headerActiveCount),
       },
       {
         page: "controls",
-        group: "general",
+        group: "behavior",
         icon: "mdi:gesture-tap-button",
         color: "#d97706",
         title: this._t('settings.controls_confirmations'),
@@ -645,34 +638,34 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       },
       {
         page: "people",
-        group: "layout",
+        group: "content",
         icon: "mdi:account-group-outline",
         color: "#8b5cf6",
         title: this._t('settings.people'),
         description: this._t('settings.people_description'),
-        summary: this._tp('common.person', personCount),
+        summary: this._tp('common.person', visiblePersonCount),
       },
       {
         page: "areas",
-        group: "layout",
+        group: "content",
         icon: "mdi:floor-plan",
         color: "#14b8a6",
         title: this._t('settings.areas'),
         description: this._t('settings.areas_description'),
-        summary: `${this._tp('common.area', areaCount)} · ${this._t(`settings.area_order_${areaSortMode}`)} · ${areasUnavailableMode}`,
+        summary: this._tp('common.area', areaCount),
       },
       {
         page: "devices",
-        group: "layout",
+        group: "content",
         icon: "mdi:format-list-bulleted-type",
         color: "#0891b2",
         title: this._t('settings.devices_page'),
         description: this._t('settings.devices_page_description'),
-        summary: `${this._t('settings.types_visible', { visible: deviceTypeCount - hiddenDeviceTypeCount, total: deviceTypeCount })} · ${this._t('settings.hidden_devices_count', { count: hiddenDeviceCount })} · ${devicesUnavailableMode}`,
+        summary: this._t('settings.types_visible', { visible: deviceTypeCount - hiddenDeviceTypeCount, total: deviceTypeCount }),
       },
       {
         page: "replacements",
-        group: "layout",
+        group: "content",
         icon: "mdi:puzzle-edit-outline",
         color: "#7c3aed",
         title: this._t('settings.blueprint_replacements'),
@@ -681,7 +674,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       },
       {
         page: "permissions",
-        group: "advanced",
+        group: "behavior",
         icon: "mdi:shield-account",
         color: "#ef4444",
         title: this._t('settings.user_permissions'),
@@ -692,12 +685,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       },
       {
         page: "support",
-        group: "advanced",
+        group: "support",
         icon: "mdi:heart-outline",
         color: "#f59e0b",
         title: this._t('settings.support'),
         description: this._t('settings.support_description'),
-        summary: this._t('settings.optional'),
       },
     ];
   }
@@ -818,6 +810,33 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     });
   }
 
+  private _settingsPageDescription(page: SettingsPageKey): string {
+    switch (page) {
+      case "dashboard":
+        return this._t('settings.dashboard_description');
+      case "home":
+        return this._t('settings.home_layout_description');
+      case "header":
+        return this._t('settings.header_status_description');
+      case "controls":
+        return this._t('settings.controls_confirmations_description');
+      case "devices":
+        return this._t('settings.devices_description');
+      case "people":
+        return this._t('settings.people_page_description');
+      case "areas":
+        return this._t('settings.areas_page_description');
+      case "replacements":
+        return this._t('settings.replace_description');
+      case "permissions":
+        return this._t('settings.permissions_description');
+      case "support":
+        return this._t('settings.support_description');
+      default:
+        return "";
+    }
+  }
+
   private _renderSettingsDetailPage(page: SettingsPageKey) {
     const item = this._settingsOverviewItems().find((candidate) => candidate.page === page);
     if (!item) return this._renderSettingsOverview();
@@ -833,9 +852,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           >
             <ha-icon icon="mdi:arrow-left"></ha-icon>
           </button>
-          <div class="dd-subpage-title">${item.title}</div>
+          <div class="dd-subpage-title">${this._settingsPageTitle(page) || item.title}</div>
         </div>
         <div class="settings-detail-content dd-flat-content">
+          ${this._settingsPageDescription(page) ? html`
+            <p class="dd-settings-page-description">${this._settingsPageDescription(page)}</p>
+          ` : nothing}
           ${this._renderSettingsPageContent(page)}
         </div>
       </div>
@@ -874,16 +896,57 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     }
   }
 
+  private _settingsPageTitle(page: SettingsPageKey): string {
+    switch (page) {
+      case "dashboard": return this._t('settings.dashboard');
+      case "home": return this._t('settings.home_page');
+      case "header": return this._t('settings.header_status');
+      case "controls": return this._t('settings.controls_confirmations');
+      case "devices": return this._t('settings.devices_page');
+      case "people": return this._t('settings.people');
+      case "areas": return this._t('settings.areas');
+      case "replacements": return this._t('settings.blueprint_replacements');
+      case "permissions": return this._t('settings.user_permissions');
+      case "support": return this._t('settings.support');
+      default: return "";
+    }
+  }
+
   private _renderSettingsPanel(icon: string, title: string, description: string, content: unknown) {
+    const isPageRoot = this._settingsPageTitle(this._settingsPage) === title;
+
     return html`
-      <ha-expansion-panel expanded outlined>
-        <div slot="header">
-          <ha-icon icon=${icon}></ha-icon>
-          ${title}
-        </div>
-        <p class="description">${description}</p>
-        ${content}
-      </ha-expansion-panel>
+      <section class="dd-settings-section ${isPageRoot ? 'page-root' : ''}">
+        ${!isPageRoot ? html`
+          <div class="dd-settings-section-header">
+            <span class="dd-settings-section-icon"><ha-icon icon=${icon}></ha-icon></span>
+            <span class="dd-settings-section-copy">
+              <strong>${title}</strong>
+              ${description ? html`<small>${description}</small>` : nothing}
+            </span>
+          </div>
+        ` : nothing}
+        <div class="dd-settings-section-content">${content}</div>
+      </section>
+    `;
+  }
+
+  private _renderToggleSetting(
+    icon: string,
+    title: string,
+    description: string,
+    checked: boolean,
+    onChange: (event: Event) => void
+  ) {
+    return html`
+      <label class="dd-setting-row">
+        <span class="dd-setting-row-icon"><ha-icon icon=${icon}></ha-icon></span>
+        <span class="dd-setting-row-copy">
+          <strong>${title}</strong>
+          ${description ? html`<small>${description}</small>` : nothing}
+        </span>
+        <ha-switch .checked=${checked} @change=${onChange}></ha-switch>
+      </label>
     `;
   }
 
@@ -931,13 +994,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
   private _renderSupportSection() {
     return html`
-      <div class="sponsoring-section">
-        <div class="sponsoring-header">
-          <ha-icon icon="mdi:heart"></ha-icon>
-          <h3>${this._t('support.title')}</h3>
-        </div>
-        <p class="sponsoring-text">${this._t('support.description')}</p>
-
+      <div class="sponsoring-section dd-support-flat">
         <div class="sponsor-label">${this._t('support.donation')}</div>
         <div class="sponsor-chips">
           <a class="sponsor-chip" href="https://github.com/sponsors/dwainscheeren" target="_blank" rel="noopener noreferrer">
@@ -967,7 +1024,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         "mdi:view-dashboard",
         this._t('settings.dashboard'),
         this._t('settings.default_dashboard_locked'),
-        html`<div class="empty-settings-card">${this._t('settings.open_instance')}</div>`
+        html`
+          <div class="empty-settings-card">
+            <strong>${this._t('settings.default_dashboard_locked')}</strong>
+            <span>${this._t('settings.open_instance')}</span>
+          </div>
+        `
       );
     }
 
@@ -1009,7 +1071,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     this._homeSettingsDetail ||= "overview";
     return html`
       <section class="dd-home-layout-panel">
-        <p class="dd-home-page-description">${this._t('settings.home_layout_description')}</p>
         ${this._renderHomeSectionOrder()}
       </section>
     `;
@@ -1072,15 +1133,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       this._t('settings.time_date'),
       this._t('settings.time_date_description'),
       html`
-        <div class="time-section">
-          <div class="time-toggle">
-            <ha-formfield .label=${this._t('settings.show_time')}>
-              <ha-switch
-                .checked=${this._config?.settings?.show_time !== false}
-                @change=${this._toggleTimeDisplay}
-              ></ha-switch>
-            </ha-formfield>
-          </div>
+        <div class="dd-settings-list">
+          ${this._renderToggleSetting(
+            "mdi:clock-outline",
+            this._t('settings.show_time'),
+            "",
+            this._config?.settings?.show_time !== false,
+            this._toggleTimeDisplay
+          )}
         </div>
       `
     );
@@ -1092,15 +1152,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       this._t('home.notifications'),
       this._t('settings.notifications_description'),
       html`
-        <div class="notifications-section">
-          <div class="notifications-toggle">
-            <ha-formfield .label=${this._t('settings.show_notifications')}>
-              <ha-switch
-                .checked=${this._config?.settings?.show_notifications !== false}
-                @change=${this._toggleNotificationsDisplay}
-              ></ha-switch>
-            </ha-formfield>
-          </div>
+        <div class="dd-settings-list">
+          ${this._renderToggleSetting(
+            "mdi:bell-outline",
+            this._t('settings.show_notifications'),
+            "",
+            this._config?.settings?.show_notifications !== false,
+            this._toggleNotificationsDisplay
+          )}
         </div>
       `
     );
@@ -1113,13 +1172,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       this._t('settings.weather_description'),
       html`
         <div class="weather-section">
-          <div class="weather-toggle">
-            <ha-formfield .label=${this._t('settings.show_weather')}>
-              <ha-switch
-                .checked=${this._config?.settings?.show_weather !== false}
-                @change=${this._toggleWeatherDisplay}
-              ></ha-switch>
-            </ha-formfield>
+          <div class="dd-settings-list">
+            ${this._renderToggleSetting(
+              "mdi:weather-cloudy",
+              this._t('settings.show_weather'),
+              "",
+              this._config?.settings?.show_weather !== false,
+              this._toggleWeatherDisplay
+            )}
           </div>
 
           ${this._config?.settings?.show_weather !== false ? html`
@@ -1178,23 +1238,21 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       this._t('settings.devices_description'),
       html`
         <div class="entity-display-section">
-          <div class="hide-unavailable-toggle">
-            <ha-formfield .label=${this._t('settings.hide_unavailable_devices')}>
-              <ha-switch
-                .checked=${this._config?.settings?.hide_unavailable_entities_on_devices !== false}
-                @change=${this._toggleHideUnavailableEntities}
-              ></ha-switch>
-            </ha-formfield>
-            <p class="toggle-description">${this._t('settings.hide_unavailable_devices_description')}</p>
-          </div>
-          <div class="hide-unavailable-toggle">
-            <ha-formfield .label=${this._t('settings.show_new_devices')}>
-              <ha-switch
-                .checked=${this._config?.settings?.show_recent_devices_panel !== false}
-                @change=${this._toggleRecentDevicesPanel}
-              ></ha-switch>
-            </ha-formfield>
-            <p class="toggle-description">${this._t('settings.show_new_devices_description')}</p>
+          <div class="dd-settings-list dd-settings-list-spaced">
+            ${this._renderToggleSetting(
+              "mdi:eye-off-outline",
+              this._t('settings.hide_unavailable_devices'),
+              this._t('settings.hide_unavailable_devices_description'),
+              this._config?.settings?.hide_unavailable_entities_on_devices !== false,
+              this._toggleHideUnavailableEntities
+            )}
+            ${this._renderToggleSetting(
+              "mdi:history",
+              this._t('settings.show_new_devices'),
+              this._t('settings.show_new_devices_description'),
+              this._config?.settings?.show_recent_devices_panel !== false,
+              this._toggleRecentDevicesPanel
+            )}
           </div>
           ${this._renderDeviceTypeVisibilitySettings()}
           ${this._renderHiddenDeviceVisibility()}
@@ -1210,23 +1268,21 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       this._t('settings.permissions_description'),
       html`
         <div class="entity-display-section">
-          <div class="hide-unavailable-toggle">
-            <ha-formfield .label=${this._t('settings.restrict_ha_menu')}>
-              <ha-switch
-                .checked=${this._config?.settings?.restrict_non_admin_ha_sidebar === true}
-                @change=${this._toggleRestrictNonAdminHaSidebar}
-              ></ha-switch>
-            </ha-formfield>
-            <p class="toggle-description">${this._t('settings.restrict_ha_menu_description')}</p>
-          </div>
-          <div class="hide-unavailable-toggle">
-            <ha-formfield .label=${this._t('settings.restrict_editing')}>
-              <ha-switch
-                .checked=${this._config?.settings?.restrict_non_admin_dashboard_settings === true}
-                @change=${this._toggleRestrictNonAdminDashboardSettings}
-              ></ha-switch>
-            </ha-formfield>
-            <p class="toggle-description">${this._t('settings.restrict_editing_description')}</p>
+          <div class="dd-settings-list">
+            ${this._renderToggleSetting(
+              "mdi:menu",
+              this._t('settings.restrict_ha_menu'),
+              this._t('settings.restrict_ha_menu_description'),
+              this._config?.settings?.restrict_non_admin_ha_sidebar === true,
+              this._toggleRestrictNonAdminHaSidebar
+            )}
+            ${this._renderToggleSetting(
+              "mdi:pencil-off-outline",
+              this._t('settings.restrict_editing'),
+              this._t('settings.restrict_editing_description'),
+              this._config?.settings?.restrict_non_admin_dashboard_settings === true,
+              this._toggleRestrictNonAdminDashboardSettings
+            )}
           </div>
         </div>
       `
@@ -1253,14 +1309,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       this._t('settings.areas_page_description'),
       html`
         <div class="entity-display-section">
-          <div class="hide-unavailable-toggle">
-            <ha-formfield .label=${this._t('settings.hide_unavailable_areas')}>
-              <ha-switch
-                .checked=${this._config?.settings?.hide_unavailable_entities !== false}
-                @change=${this._toggleHideUnavailableAreaEntities}
-              ></ha-switch>
-            </ha-formfield>
-            <p class="toggle-description">${this._t('settings.hide_unavailable_areas_description')}</p>
+          <div class="dd-settings-list dd-settings-list-spaced">
+            ${this._renderToggleSetting(
+              "mdi:eye-off-outline",
+              this._t('settings.hide_unavailable_areas'),
+              this._t('settings.hide_unavailable_areas_description'),
+              this._config?.settings?.hide_unavailable_entities !== false,
+              this._toggleHideUnavailableAreaEntities
+            )}
           </div>
           ${this._renderAreasConfiguration()}
         </div>
@@ -4572,15 +4628,18 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .settings-nav-section {
-        max-width: 720px;
-        margin: 0 auto 16px;
+        max-width: 1060px;
+        margin: 0 auto 12px;
       }
 
       .settings-nav-section h3 {
-        margin: 0 0 8px;
-        padding: 0 14px;
+        min-height: 30px;
+        margin: 0 0 6px;
+        padding: 0 12px;
+        display: flex;
+        align-items: center;
         color: var(--secondary-text-color);
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 700;
         letter-spacing: 0;
       }
@@ -4656,14 +4715,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .settings-nav-summary {
         justify-self: end;
-        max-width: 180px;
+        max-width: 150px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
         padding: 6px 10px;
         border-radius: 999px;
-        color: var(--settings-item-color);
-        background: color-mix(in srgb, var(--settings-item-color) 10%, transparent);
+        color: var(--secondary-text-color);
+        background: color-mix(in srgb, var(--secondary-text-color) 7%, transparent);
         font-size: 12px;
         font-weight: 700;
       }
@@ -4800,25 +4859,37 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .settings-detail-content {
-        max-width: 940px;
+        max-width: 1060px;
         margin: 0 auto;
       }
 
       .empty-settings-card {
-        margin: 0 16px 16px;
-        padding: 18px;
+        margin: 0;
+        padding: 16px;
+        display: grid;
+        gap: 5px;
         border: 1px dashed var(--divider-color);
         border-radius: 10px;
         color: var(--secondary-text-color);
         background: var(--secondary-background-color);
-        text-align: center;
+        text-align: left;
+      }
+
+      .empty-settings-card strong {
+        color: var(--primary-text-color);
+        font-size: 13px;
+      }
+
+      .empty-settings-card span {
+        font-size: 12px;
+        line-height: 1.4;
       }
 
       .dashboard-settings {
         display: flex;
         flex-direction: column;
-        gap: 16px;
-        padding: 4px 0 8px;
+        gap: 14px;
+        padding: 0;
       }
       .dashboard-settings ha-icon-picker {
         width: 100%;
@@ -6044,16 +6115,20 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         flex: 0 0 auto;
         padding: 6px 10px;
         border-radius: 999px;
-        color: var(--primary-color);
-        background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+        color: var(--secondary-text-color);
+        background: color-mix(in srgb, var(--secondary-text-color) 7%, transparent);
         font-size: 12px;
-        font-weight: 800;
+        font-weight: 700;
       }
 
       .device-types-grid {
+        overflow: hidden;
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 8px;
+        grid-template-columns: 1fr;
+        gap: 0;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: var(--card-background-color);
       }
 
       .device-type-option {
@@ -6061,15 +6136,20 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         grid-template-columns: 42px minmax(0, 1fr) auto;
         align-items: center;
         gap: 10px;
-        padding: 10px;
-        border: 1px solid var(--divider-color);
-        border-radius: 10px;
-        background: var(--card-background-color);
-        transition: opacity 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+        min-height: 60px;
+        padding: 8px 12px;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        transition: opacity 0.16s ease, background 0.16s ease;
+      }
+
+      .device-type-option + .device-type-option {
+        border-top: 1px solid var(--divider-color);
       }
 
       .device-type-option.enabled {
-        border-color: color-mix(in srgb, var(--device-type-color) 24%, var(--divider-color));
+        border-color: var(--divider-color);
       }
 
       .device-type-option.disabled {
@@ -6080,12 +6160,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .device-type-icon {
         width: 42px;
         height: 42px;
-        border-radius: 10px;
+        border-radius: 0;
         display: flex;
         align-items: center;
         justify-content: center;
         color: var(--device-type-color);
-        background: color-mix(in srgb, var(--device-type-color) 13%, transparent);
+        background: transparent;
       }
 
       .device-type-icon ha-icon {
@@ -6537,24 +6617,33 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .persons-section {
-        padding: 0 16px 16px 16px;
+        padding: 0;
       }
 
       .persons-list {
+        overflow: hidden;
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 0;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: var(--card-background-color);
       }
 
       .person-item {
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 12px 16px;
-        background: var(--card-background-color);
-        border-radius: 8px;
-        border: 1px solid var(--divider-color);
-        transition: all 0.2s ease;
+        min-height: 60px;
+        padding: 8px 12px;
+        background: transparent;
+        border-radius: 0;
+        border: 0;
+        transition: background 0.2s ease, opacity 0.2s ease;
+      }
+
+      .person-item + .person-item {
+        border-top: 1px solid var(--divider-color);
       }
 
       .person-item:hover {
@@ -6620,23 +6709,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .dd-flat-settings .settings-detail-content,
       .dd-settings-version-footer,
       .dd-subpage-header {
-        max-width: 940px;
+        max-width: 1060px;
         margin-inline: auto;
       }
 
       .dd-settings-overview .settings-nav-section:first-of-type {
         margin-top: 0;
-      }
-
-      .dd-overview-title-row {
-        max-width: none;
-        margin-inline: 0;
-      }
-
-      .dd-subpage-spacer {
-        width: 36px;
-        height: 36px;
-        flex: 0 0 36px;
       }
 
       .dd-settings-version-footer {
@@ -6698,6 +6776,124 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         line-height: 1.2;
         text-overflow: ellipsis;
         white-space: nowrap;
+      }
+
+      .dd-settings-page-description {
+        max-width: 760px;
+        margin: 0 0 14px;
+        color: var(--secondary-text-color);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .dd-settings-section {
+        min-width: 0;
+        margin-bottom: 10px;
+      }
+
+      .dd-settings-section:not(.page-root) {
+        overflow: hidden;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: var(--card-background-color);
+      }
+
+      .dd-settings-section-header {
+        min-height: 60px;
+        display: grid;
+        grid-template-columns: 40px minmax(0, 1fr);
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        box-sizing: border-box;
+      }
+
+      .dd-settings-section-icon,
+      .dd-setting-row-icon {
+        width: 40px;
+        height: 40px;
+        display: grid;
+        place-items: center;
+        color: var(--primary-color);
+      }
+
+      .dd-settings-section-icon ha-icon {
+        --mdc-icon-size: 23px;
+      }
+
+      .dd-settings-section-copy,
+      .dd-setting-row-copy {
+        min-width: 0;
+        display: grid;
+        gap: 3px;
+      }
+
+      .dd-settings-section-copy strong,
+      .dd-setting-row-copy strong {
+        color: var(--primary-text-color);
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.25;
+      }
+
+      .dd-settings-section-copy small,
+      .dd-setting-row-copy small {
+        max-width: 720px;
+        color: var(--secondary-text-color);
+        font-size: 11px;
+        line-height: 1.4;
+        font-weight: 400;
+      }
+
+      .dd-settings-section:not(.page-root) > .dd-settings-section-content {
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .dd-settings-section.page-root > .dd-settings-section-content {
+        min-width: 0;
+      }
+
+      .dd-settings-list {
+        overflow: hidden;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: var(--card-background-color);
+      }
+
+      .dd-settings-section:not(.page-root) .dd-settings-list {
+        border: 0;
+        border-radius: 0;
+      }
+
+      .dd-settings-list-spaced {
+        margin-bottom: 18px;
+      }
+
+      .dd-setting-row {
+        min-height: 60px;
+        display: grid;
+        grid-template-columns: 40px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        box-sizing: border-box;
+        cursor: pointer;
+      }
+
+      .dd-setting-row + .dd-setting-row {
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .dd-setting-row:hover {
+        background: color-mix(in srgb, var(--primary-color) 3%, transparent);
+      }
+
+      .dd-setting-row-icon ha-icon {
+        --mdc-icon-size: 22px;
+      }
+
+      .dd-setting-row ha-switch {
+        justify-self: end;
       }
 
       .dd-home-layout-panel,
@@ -7078,6 +7274,22 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       @media (max-width: 600px) {
+        .dd-settings-page-description {
+          margin-bottom: 10px;
+        }
+
+        .dd-settings-section-header,
+        .dd-setting-row {
+          grid-template-columns: 36px minmax(0, 1fr) auto;
+          padding-inline: 8px;
+        }
+
+        .dd-settings-section-icon,
+        .dd-setting-row-icon {
+          width: 36px;
+          height: 36px;
+        }
+
         .dd-home-page-description {
           margin-bottom: 10px;
         }
