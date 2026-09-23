@@ -55,7 +55,7 @@ More desktop, mobile, light-mode and dark-mode screenshots are available in the 
 
 ## Status
 
-Fork version: `1.8.53`
+Fork version: `1.8.54`
 
 ## Community And Support
 
