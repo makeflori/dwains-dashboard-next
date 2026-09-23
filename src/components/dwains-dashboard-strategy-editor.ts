@@ -913,13 +913,13 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _settingsPageDescription(page: SettingsPageKey): string {
     switch (page) {
       case "dashboard":
-        return this._t('settings.dashboard_description');
+        return this._t('settings.dashboard_page_description');
       case "home":
         return this._t('settings.home_layout_description');
       case "header":
-        return this._t('settings.header_status_description');
+        return this._t('settings.header_page_description');
       case "controls":
-        return this._t('settings.controls_confirmations_description');
+        return this._t('settings.controls_page_description');
       case "devices":
         return this._t('settings.devices_description');
       case "people":
@@ -931,7 +931,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       case "permissions":
         return this._t('settings.permissions_description');
       case "support":
-        return this._t('settings.support_description');
+        return this._t('settings.support_page_description');
       default:
         return "";
     }
@@ -1241,7 +1241,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
             <span class="dd-header-feature-actions">
               ${weatherEnabled ? html`
                 <button class="dd-inline-text-button" type="button" @click=${this._addWeatherEntity}>
-                  ${weatherId ? this._t('common.change') : this._t('settings.select_weather')}
+                  ${weatherId ? this._t('common.edit') : this._t('settings.select_weather')}
                 </button>
               ` : nothing}
               <ha-switch .checked=${weatherEnabled} @change=${this._toggleWeatherDisplay}></ha-switch>
@@ -1264,7 +1264,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                 </button>
               ` : nothing}
               <button class="dd-inline-text-button" type="button" @click=${this._addAlarmEntity}>
-                ${alarmId ? this._t('common.change') : this._t('settings.select_alarm')}
+                ${alarmId ? this._t('common.edit') : this._t('settings.select_alarm')}
               </button>
             </span>
           </div>
