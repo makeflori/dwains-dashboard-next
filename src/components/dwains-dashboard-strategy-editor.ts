@@ -128,6 +128,10 @@ const SETTINGS_ICON_PATHS: Record<string, string> = {
 function scheduleIntegratedSettingsHeader(editor: any): void {
   const apply = () => {
     const cancelLabel = String(editor?._t?.("common.cancel") || "Cancel");
+    const settingsTitle = String(editor?._t?.("settings.title") || "Dwains Dashboard settings");
+    const pageTitle = editor?._settingsPage === "overview"
+      ? settingsTitle
+      : String(editor?._settingsPageTitle?.(editor._settingsPage) || settingsTitle);
     const roots: Array<Document | ShadowRoot | Element> = [];
     let root: any = editor?.getRootNode?.();
 
@@ -140,35 +144,109 @@ function scheduleIntegratedSettingsHeader(editor: any): void {
     if (!roots.includes(document)) roots.push(document);
 
     const textOf = (node: any) => String(node?.textContent || "").replace(/\s+/g, " ").trim();
+    let state = (window as any).__ddIntegratedSettingsHeaderState;
+
+    if (!state || state.editor !== editor || !state.title?.isConnected) {
+      let title: HTMLElement | undefined;
+      let header: HTMLElement | undefined;
+      let backButton: any;
+
+      for (const scope of roots) {
+        const candidates = scope.querySelectorAll?.("h1,h2,h3,[slot='heading'],.title,.header-title,.dialog-title,span,div") || [];
+        for (const candidate of candidates as any) {
+          if (textOf(candidate) !== settingsTitle) continue;
+          const childWithSameText = Array.from(candidate.children || []).some((child: any) => textOf(child) === settingsTitle);
+          if (childWithSameText) continue;
+          title = candidate as HTMLElement;
+          break;
+        }
+        if (title) break;
+      }
+
+      if (title) {
+        let current: HTMLElement | null = title.parentElement;
+        for (let depth = 0; current && depth < 6; depth++, current = current.parentElement) {
+          const buttons = current.querySelectorAll?.("button,ha-icon-button,mwc-icon-button,ha-button,mwc-button") || [];
+          if (buttons.length >= 2) {
+            header = current;
+            backButton = buttons[0];
+            break;
+          }
+        }
+      }
+
+      if (title && backButton) {
+        state = {
+          editor,
+          title,
+          header,
+          backButton,
+          originalTitle: textOf(title),
+          originalPath: backButton.path,
+          originalIcon: backButton.icon,
+          originalLabel: backButton.label || backButton.getAttribute?.("aria-label") || "",
+        };
+        const clickHandler = (event: Event) => {
+          if (editor?._settingsPage === "overview") return;
+          event.preventDefault();
+          event.stopPropagation();
+          (event as any).stopImmediatePropagation?.();
+          editor?._backToSettingsOverview?.();
+        };
+        state.clickHandler = clickHandler;
+        backButton.addEventListener?.("click", clickHandler, true);
+        (window as any).__ddIntegratedSettingsHeaderState = state;
+      }
+    }
+
+    if (state?.title) state.title.textContent = pageTitle;
+
+    if (state?.backButton) {
+      const onSubpage = editor?._settingsPage !== "overview";
+      const button = state.backButton;
+      if (onSubpage) {
+        if ("path" in button) button.path = mdiArrowLeft;
+        if ("icon" in button) button.icon = "mdi:arrow-left";
+        const label = String(editor?._t?.("settings.all_settings") || "All settings");
+        button.setAttribute?.("aria-label", label);
+        if ("label" in button) button.label = label;
+      } else {
+        if ("path" in button) button.path = state.originalPath;
+        if ("icon" in button) button.icon = state.originalIcon;
+        button.setAttribute?.("aria-label", state.originalLabel);
+        if ("label" in button) button.label = state.originalLabel;
+      }
+    }
 
     for (const scope of roots) {
       const buttons = scope.querySelectorAll?.("button, ha-button, mwc-button") || [];
       for (const button of buttons as any) {
+        if (button === state?.backButton) continue;
         const text = textOf(button);
         const label = String(button.label || "").trim();
         if ([text, label].some((value) => value === "Back" || value === "Zurück")) {
           button.textContent = cancelLabel;
           if ("label" in button) button.label = cancelLabel;
           button.setAttribute?.("aria-label", cancelLabel);
-          return;
+          break;
         }
       }
     }
   };
 
   window.setTimeout(apply, 0);
-  window.setTimeout(apply, 120);
+  window.setTimeout(apply, 80);
 }
 
 function cleanupIntegratedSettingsHeader(): void {
   const state = (window as any).__ddIntegratedSettingsHeaderState;
-  if (state?.header) {
-    const style = state.header.style as CSSStyleDeclaration;
-    style.position = "";
-    style.top = "";
-    style.zIndex = "";
-    style.background = "";
-    style.boxShadow = "";
+  if (state?.title) state.title.textContent = state.originalTitle || state.title.textContent;
+  if (state?.backButton) {
+    if ("path" in state.backButton) state.backButton.path = state.originalPath;
+    if ("icon" in state.backButton) state.backButton.icon = state.originalIcon;
+    if ("label" in state.backButton) state.backButton.label = state.originalLabel;
+    state.backButton.setAttribute?.("aria-label", state.originalLabel);
+    if (state.clickHandler) state.backButton.removeEventListener?.("click", state.clickHandler, true);
   }
   (window as any).__ddIntegratedSettingsHeaderState = undefined;
 }
@@ -230,6 +308,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
   @state()
   private _dragOverIndex?: number;
+
+  @state()
+  private _areaPreviewOrder?: string[];
+
+  @state()
+  private _expandedDeviceTypes = new Set<string>();
 
   @state()
   private _draggedHomeSection?: HomeSectionKey;
@@ -604,7 +688,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         page: "dashboard",
         group: "general",
         icon: "mdi:view-dashboard-edit",
-        color: "var(--primary-color)",
+        color: "#3b82f6",
         title: this._t('settings.dashboard'),
         description: this._t('settings.dashboard_description'),
         summary: this._dashboardTitle || this._getDashboardPanelTitle() || undefined,
@@ -613,7 +697,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         page: "home",
         group: "general",
         icon: "mdi:home-edit-outline",
-        color: "#0ea5e9",
+        color: "#3b82f6",
         title: this._t('settings.home_page'),
         description: this._t('settings.home_page_description'),
         summary: this._t('settings.visible_count', { visible: visibleHomeSections, total: totalHomeSections }),
@@ -622,7 +706,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         page: "header",
         group: "general",
         icon: "mdi:card-account-details-star-outline",
-        color: "#22a06b",
+        color: "#3b82f6",
         title: this._t('settings.header_status'),
         description: this._t('settings.header_status_description'),
         summary: this._tp('common.active', headerActiveCount),
@@ -631,7 +715,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         page: "controls",
         group: "behavior",
         icon: "mdi:gesture-tap-button",
-        color: "#d97706",
+        color: "#0f9f8f",
         title: this._t('settings.controls_confirmations'),
         description: this._t('settings.controls_confirmations_description'),
         summary: this._t('settings.controls_confirmations_summary', { count: protectedMasterActionCount }),
@@ -649,7 +733,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         page: "areas",
         group: "content",
         icon: "mdi:floor-plan",
-        color: "#14b8a6",
+        color: "#8b5cf6",
         title: this._t('settings.areas'),
         description: this._t('settings.areas_description'),
         summary: this._tp('common.area', areaCount),
@@ -658,7 +742,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         page: "devices",
         group: "content",
         icon: "mdi:format-list-bulleted-type",
-        color: "#0891b2",
+        color: "#8b5cf6",
         title: this._t('settings.devices_page'),
         description: this._t('settings.devices_page_description'),
         summary: this._t('settings.types_visible', { visible: deviceTypeCount - hiddenDeviceTypeCount, total: deviceTypeCount }),
@@ -667,7 +751,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         page: "replacements",
         group: "content",
         icon: "mdi:puzzle-edit-outline",
-        color: "#7c3aed",
+        color: "#8b5cf6",
         title: this._t('settings.blueprint_replacements'),
         description: this._t('settings.blueprint_replacements_description'),
         summary: this._tp('common.active', replacementCount),
@@ -676,7 +760,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         page: "permissions",
         group: "behavior",
         icon: "mdi:shield-account",
-        color: "#ef4444",
+        color: "#0f9f8f",
         title: this._t('settings.user_permissions'),
         description: this._t('settings.user_permissions_description'),
         summary: this._config?.settings?.restrict_non_admin_ha_sidebar || this._config?.settings?.restrict_non_admin_dashboard_settings
@@ -687,7 +771,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         page: "support",
         group: "support",
         icon: "mdi:heart-outline",
-        color: "#f59e0b",
+        color: "var(--primary-color)",
         title: this._t('settings.support'),
         description: this._t('settings.support_description'),
       },
@@ -702,8 +786,20 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         style=${`--settings-item-color: ${item.color};`}
         @click=${() => this._openSettingsPage(item.page)}
       >
-        <div class="settings-nav-icon">
-          ${this._renderSettingsIcon(item.icon)}
+        <div class="settings-nav-icon ${item.group === 'support' ? 'support-gradient' : ''}">
+          ${item.group === 'support'
+            ? html`
+                <svg class="settings-nav-gradient-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <defs>
+                    <linearGradient id="dd-support-icon-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" style="stop-color: var(--primary-color)"></stop>
+                      <stop offset="100%" style="stop-color: var(--accent-color, #e8a400)"></stop>
+                    </linearGradient>
+                  </defs>
+                  <path d=${SETTINGS_ICON_PATHS[item.icon] || mdiHeartOutline} fill="url(#dd-support-icon-gradient)"></path>
+                </svg>
+              `
+            : this._renderSettingsIcon(item.icon)}
         </div>
         <div class="settings-nav-copy">
           <div class="settings-nav-title">${item.title}</div>
@@ -730,13 +826,17 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
   private _openSettingsPage(page: Exclude<SettingsPageKey, "overview">): void {
     this._settingsPage = page;
+    if (page === "devices") this._expandedDeviceTypes = new Set();
     this._closeInlinePickers();
+    scheduleIntegratedSettingsHeader(this);
     this._resetSettingsScrollPosition();
   }
 
   private _backToSettingsOverview = (): void => {
     this._settingsPage = "overview";
+    this._expandedDeviceTypes = new Set();
     this._closeInlinePickers();
+    scheduleIntegratedSettingsHeader(this);
     this._resetSettingsScrollPosition();
   };
 
@@ -843,17 +943,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
     return html`
       <div class="editor-container dd-flat-settings">
-        <div class="dd-subpage-header">
-          <button
-            class="dd-subpage-back"
-            type="button"
-            aria-label=${this._t('settings.all_settings')}
-            @click=${this._backToSettingsOverview}
-          >
-            <ha-icon icon="mdi:arrow-left"></ha-icon>
-          </button>
-          <div class="dd-subpage-title">${this._settingsPageTitle(page) || item.title}</div>
-        </div>
         <div class="settings-detail-content dd-flat-content">
           ${this._settingsPageDescription(page) ? html`
             <p class="dd-settings-page-description">${this._settingsPageDescription(page)}</p>
