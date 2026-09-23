@@ -1297,8 +1297,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
               this._toggleRecentDevicesPanel
             )}
           </div>
-          ${this._renderDeviceTypeVisibilitySettings()}
-          ${this._renderHiddenDeviceVisibility()}
+          ${this._renderDeviceVisibilitySettings()}
         </div>
       `
     );
@@ -2524,208 +2523,162 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     `;
   }
 
-  private _renderDeviceTypeVisibilitySettings() {
+  private _toggleExpandedDeviceType(typeKey: string): void {
+    const next = new Set(this._expandedDeviceTypes);
+    if (next.has(typeKey)) next.delete(typeKey);
+    else next.add(typeKey);
+    this._expandedDeviceTypes = next;
+  }
+
+  private _visibilityIcon(visible: boolean, partial = false): string {
+    if (!visible) return "mdi:eye-off-outline";
+    return partial ? "mdi:eye-minus-outline" : "mdi:eye-outline";
+  }
+
+  private _renderVisibilityButton(
+    visible: boolean,
+    partial: boolean,
+    label: string,
+    onClick: () => void
+  ) {
+    return html`
+      <button
+        class="dd-visibility-button ${visible ? 'visible' : 'hidden'} ${partial ? 'partial' : ''}"
+        type="button"
+        title=${label}
+        aria-label=${label}
+        aria-pressed=${visible ? 'true' : 'false'}
+        @click=${(event: Event) => {
+          event.stopPropagation();
+          onClick();
+        }}
+      >
+        <ha-icon icon=${this._visibilityIcon(visible, partial)}></ha-icon>
+      </button>
+    `;
+  }
+
+  private _renderDeviceVisibilitySettings() {
     const options = this._getDeviceTypeOptions();
     if (!options.length) return nothing;
 
-    const hidden = this._getHiddenDeviceTypes();
-    const visibleCount = options.filter((option) => !hidden.has(option.key)).length;
+    const groupsByKey = new Map(this._getDeviceVisibilityGroups().map((group) => [group.key, group]));
+    const hiddenTypes = this._getHiddenDeviceTypes();
+    const hiddenDevices = this._getHiddenDeviceIds();
 
     return html`
-      <div class="device-types-visibility">
+      <section class="device-visibility-section">
         <div class="device-types-header">
           <div>
             <h4>${this._t('settings.devices_page_types')}</h4>
             <p>${this._t('settings.devices_page_types_description')}</p>
           </div>
-          <span>${this._t('settings.visible_count', { visible: visibleCount, total: options.length })}</span>
-        </div>
-        <div class="device-types-grid">
-          ${options.map((option) => {
-            const enabled = !hidden.has(option.key);
-            return html`
-              <div
-                class="device-type-option ${enabled ? 'enabled' : 'disabled'}"
-                style=${`--device-type-color: ${option.color};`}
-              >
-                <div class="device-type-icon">
-                  <ha-icon icon=${option.icon}></ha-icon>
-                </div>
-                <div class="device-type-copy">
-                  <div class="device-type-name">${option.label}</div>
-                  <div class="device-type-count">${this._tp('common.entity', option.count)}</div>
-                </div>
-                <ha-switch
-                  .checked=${enabled}
-                  @change=${(event: Event) => this._setDeviceTypeVisible(option.key, (event.target as any).checked)}
-                ></ha-switch>
-              </div>
-            `;
-          })}
-        </div>
-      </div>
-    `;
-  }
-
-  private _renderHiddenDeviceVisibility() {
-    const groups = this._getDeviceVisibilityGroups();
-    const hiddenDevices = this._getHiddenDeviceIds();
-    const allDeviceIds = this._uniqueDeviceIdsFromGroups(groups);
-    const hiddenKnownDeviceCount = allDeviceIds.filter((deviceId) => hiddenDevices.has(deviceId)).length;
-
-    if (groups.length === 0) {
-      return html`
-        <div class="device-admission-section">
-          <div class="device-types-header">
-            <div>
-              <h4>${this._t('settings.hidden_devices')}</h4>
-              <p>${this._t('settings.no_hidden_devices')}</p>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    return html`
-      <div class="device-admission-section">
-        <div class="device-types-header">
-          <div>
-            <h4>${this._t('settings.hidden_devices')}</h4>
-            <p>${this._t('settings.hidden_devices_description')}</p>
-          </div>
-          <span>${hiddenKnownDeviceCount}/${allDeviceIds.length} hidden</span>
-        </div>
-
-        <div class="device-admission-global-actions">
-          <button
-            type="button"
-            ?disabled=${hiddenKnownDeviceCount === 0}
-            @click=${() => this._setDevicesHidden(allDeviceIds, false)}
-          >
-            <ha-icon icon="mdi:eye-outline"></ha-icon>
-            ${this._t('settings.show_all_devices')}
-          </button>
-          <button
-            type="button"
-            ?disabled=${allDeviceIds.length === 0 || hiddenKnownDeviceCount >= allDeviceIds.length}
-            @click=${() => this._setDevicesHidden(allDeviceIds, true)}
-          >
-            <ha-icon icon="mdi:eye-off-outline"></ha-icon>
-            ${this._t('settings.hide_all_devices')}
-          </button>
         </div>
 
         <div class="device-admission-groups">
-          ${repeat(
-            groups,
-            (group) => group.key,
-            (group, index) => {
-              const groupDeviceIds = this._uniqueDeviceIds(group.devices);
-              const hiddenInGroup = groupDeviceIds.filter((deviceId) => hiddenDevices.has(deviceId)).length;
-              return html`
-                <ha-expansion-panel outlined ?expanded=${index === 0}>
-                  <div slot="header" class="device-admission-panel-header" style=${`--device-type-color: ${group.color};`}>
-                    <span class="device-type-icon small">
-                      <ha-icon icon=${group.icon}></ha-icon>
-                    </span>
-                    <span>${group.label}</span>
-                    <small>${this._t('settings.visible_count', { visible: groupDeviceIds.length - hiddenInGroup, total: groupDeviceIds.length })}</small>
-                  </div>
+          ${options.map((option) => {
+            const group = groupsByKey.get(option.key);
+            const globallyVisible = !hiddenTypes.has(option.key);
+            const devices = group?.devices || [];
+            const total = devices.length || option.count;
+            const hiddenInGroup = devices.filter((device) => hiddenDevices.has(device.deviceId)).length;
+            const visibleInGroup = globallyVisible ? Math.max(0, total - hiddenInGroup) : 0;
+            const partial = globallyVisible && hiddenInGroup > 0 && hiddenInGroup < total;
+            const expanded = Boolean(group?.areas.length) && this._expandedDeviceTypes.has(option.key);
 
+            return html`
+              <section class="device-type-panel ${expanded ? 'open' : ''} ${globallyVisible ? '' : 'disabled'}">
+                <div
+                  class="device-type-panel-row ${group?.areas.length ? 'expandable' : ''}"
+                  @click=${() => group?.areas.length && this._toggleExpandedDeviceType(option.key)}
+                >
+                  <span class="device-type-icon small"><ha-icon icon=${option.icon}></ha-icon></span>
+                  <span class="device-type-heading">
+                    <strong>${option.label}</strong>
+                    <small>${this._t('settings.visible_count', { visible: visibleInGroup, total })}</small>
+                  </span>
+                  ${this._renderVisibilityButton(
+                    globallyVisible,
+                    partial,
+                    globallyVisible ? this._t('settings.hide_type') : this._t('settings.show_type'),
+                    () => this._setDeviceTypeVisible(option.key, !globallyVisible)
+                  )}
+                  ${group?.areas.length ? html`
+                    <button
+                      class="dd-integrated-chevron device-type-chevron"
+                      type="button"
+                      aria-expanded=${expanded ? 'true' : 'false'}
+                      @click=${(event: Event) => {
+                        event.stopPropagation();
+                        this._toggleExpandedDeviceType(option.key);
+                      }}
+                    >
+                      <ha-icon icon=${expanded ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
+                    </button>
+                  ` : nothing}
+                </div>
+
+                ${expanded && group ? html`
                   <div class="device-admission-panel">
-                    <div class="device-admission-group-actions">
-                      <button
-                        type="button"
-                        ?disabled=${hiddenInGroup === 0}
-                        @click=${() => this._setDevicesHidden(groupDeviceIds, false)}
-                      >
-                        ${this._t('settings.show_type')}
-                      </button>
-                      <button
-                        type="button"
-                        ?disabled=${hiddenInGroup === groupDeviceIds.length}
-                        @click=${() => this._setDevicesHidden(groupDeviceIds, true)}
-                      >
-                        ${this._t('settings.hide_type')}
-                      </button>
-                    </div>
+                    ${group.areas.map((areaGroup) => {
+                      const areaDeviceIds = this._uniqueDeviceIds(areaGroup.devices);
+                      const hiddenInArea = areaDeviceIds.filter((deviceId) => hiddenDevices.has(deviceId)).length;
+                      const areaVisible = hiddenInArea < areaDeviceIds.length;
+                      const areaPartial = hiddenInArea > 0 && hiddenInArea < areaDeviceIds.length;
 
-                    ${repeat(
-                      group.areas,
-                      (areaGroup) => `${group.key}-${areaGroup.areaId}`,
-                      (areaGroup) => {
-                        const areaDeviceIds = this._uniqueDeviceIds(areaGroup.devices);
-                        const hiddenInArea = areaDeviceIds.filter((deviceId) => hiddenDevices.has(deviceId)).length;
-                        return html`
-                          <section class="device-admission-area">
-                            <div class="device-admission-area-header">
-                              <div>
-                                <strong>${areaGroup.areaName}</strong>
-                                <span>${this._t('settings.visible_count', { visible: areaDeviceIds.length - hiddenInArea, total: areaDeviceIds.length })}</span>
-                              </div>
-                              <div class="device-admission-area-actions">
-                                <button
-                                  type="button"
-                                  ?disabled=${hiddenInArea === 0}
-                                  @click=${() => this._setDevicesHidden(areaDeviceIds, false)}
-                                >
-                                  ${this._t('settings.show_area')}
-                                </button>
-                                <button
-                                  type="button"
-                                  ?disabled=${hiddenInArea === areaDeviceIds.length}
-                                  @click=${() => this._setDevicesHidden(areaDeviceIds, true)}
-                                >
-                                  ${this._t('settings.hide_area')}
-                                </button>
-                              </div>
-                            </div>
-                            <div class="device-admission-device-list">
-                              ${repeat(
-                                areaGroup.devices,
-                                (device) => `${group.key}-${device.deviceId}`,
-                                (device) => this._renderDeviceVisibilityRow(device, group)
-                              )}
-                            </div>
-                          </section>
-                        `;
-                      }
-                    )}
+                      return html`
+                        <section class="device-admission-area">
+                          <div class="device-admission-area-header">
+                            <span class="device-type-heading">
+                              <strong>${areaGroup.areaName}</strong>
+                              <small>${this._t('settings.visible_count', {
+                                visible: areaDeviceIds.length - hiddenInArea,
+                                total: areaDeviceIds.length,
+                              })}</small>
+                            </span>
+                            ${this._renderVisibilityButton(
+                              areaVisible,
+                              areaPartial,
+                              areaVisible ? this._t('settings.hide_area') : this._t('settings.show_area'),
+                              () => this._setDevicesHidden(areaDeviceIds, areaVisible)
+                            )}
+                          </div>
+                          <div class="device-admission-device-list">
+                            ${areaGroup.devices.map((device) => this._renderDeviceVisibilityRow(device, group))}
+                          </div>
+                        </section>
+                      `;
+                    })}
                   </div>
-                </ha-expansion-panel>
-              `;
-            }
-          )}
+                ` : nothing}
+              </section>
+            `;
+          })}
         </div>
-      </div>
+      </section>
     `;
   }
 
   private _renderDeviceVisibilityRow(device: DeviceVisibilityDevice, group: DeviceVisibilityTypeGroup) {
-    const visible = !device.hidden;
+    const visible = !this._getHiddenDeviceIds().has(device.deviceId);
     return html`
-      <div
-        class="device-admission-device ${visible ? "visible" : "hidden"}"
-        style=${`--device-type-color: ${group.color};`}
-      >
-        <div class="device-type-icon">
-          <ha-icon icon=${group.icon}></ha-icon>
-        </div>
+      <div class="device-admission-device ${visible ? "visible" : "hidden"}">
+        <div class="device-type-icon"><ha-icon icon=${group.icon}></ha-icon></div>
         <div class="device-admission-copy">
           <div class="device-type-name">${device.name}</div>
-          <div class="device-type-count">
-            ${device.entityCount === 1 ? "1 entity" : `${device.entityCount} entities`} · ${visible ? "Visible in DD" : "Hidden in DD"}
-          </div>
+          <div class="device-type-count">${this._tp('common.entity', device.entityCount)}</div>
         </div>
-        <ha-switch
-          .checked=${visible}
-          @change=${(event: Event) => this._setDeviceHidden(device.deviceId, !(event.target as any).checked)}
-        ></ha-switch>
+        ${this._renderVisibilityButton(
+          visible,
+          false,
+          visible ? this._t('common.hide') : this._t('common.show'),
+          () => this._setDeviceHidden(device.deviceId, visible)
+        )}
       </div>
     `;
   }
 
-  private _getDeviceVisibilityGroups(): DeviceVisibilityTypeGroup[] {
+  private _getDeviceVisibilityGroups(): DeviceVisibilityTypeGroup[] {  private _getDeviceVisibilityGroups(): DeviceVisibilityTypeGroup[] {
     if (!this.hass || !this._config) return [];
 
     const deviceById = this._getAllDevicesById();
