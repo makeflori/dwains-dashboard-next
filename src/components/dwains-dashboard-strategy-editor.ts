@@ -1372,11 +1372,18 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     const areas = Object.values(this.hass.areas || {});
     const hiddenAreas = new Set(this._config.areas_display?.hidden || []);
     const sortMode = resolveAreaSortMode(this._config.areas_display);
-    const sortedAreas = sortAreas(
+    const baseSortedAreas = sortAreas(
       areas,
       { ...this._config.areas_display, hidden: [] },
       ddLocale(this.hass)
     );
+    const previewIndex = new Map((this._areaPreviewOrder || []).map((id, index) => [id, index]));
+    const sortedAreas = sortMode === 'custom' && this._areaPreviewOrder
+      ? [...baseSortedAreas].sort((a, b) =>
+          (previewIndex.get(a.area_id) ?? Number.MAX_SAFE_INTEGER) -
+          (previewIndex.get(b.area_id) ?? Number.MAX_SAFE_INTEGER)
+        )
+      : baseSortedAreas;
     const sortModes: Array<{ mode: AreaSortMode; icon: string }> = [
       { mode: 'home_assistant', icon: 'mdi:home-assistant' },
       { mode: 'custom', icon: 'mdi:drag-vertical' },
@@ -1411,7 +1418,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         ` : nothing}
       </section>
 
-      <div class="sortable-container ${sortMode === 'custom' ? 'is-custom-order' : ''} ${this._draggedAreaId ? 'dragging' : ''}">
+      <div class="sortable-container area-settings-sortable ${sortMode === 'custom' ? 'is-custom-order' : ''} ${this._draggedAreaId ? 'dragging' : ''}">
         ${repeat(
           sortedAreas,
           (area) => area.area_id,
@@ -1422,26 +1429,21 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
             return html`
               <div
-                class="sortable-item ${isHidden ? "hidden" : ""} ${isDragging ? "dragging" : ""} ${isDragOver ? "drag-over" : ""}"
+                class="sortable-item dd-area-sortable-row ${isHidden ? "hidden" : ""} ${isDragging ? "dragging" : ""} ${isDragOver ? "drag-over" : ""}"
                 data-area-id="${area.area_id}"
                 data-index="${index}"
                 .draggable=${sortMode === 'custom'}
-                @dragstart=${(e: DragEvent) => sortMode === 'custom' && this._handleAreaDragStart(e, area.area_id)}
+                @dragstart=${(event: DragEvent) => sortMode === 'custom' && this._handleAreaDragStart(event, area.area_id)}
                 @dragend=${this._handleAreaDragEnd}
-                @dragover=${(e: DragEvent) => sortMode === 'custom' && this._handleAreaDragOver(e, index)}
+                @dragover=${(event: DragEvent) => sortMode === 'custom' && this._handleAreaDragOver(event, index)}
                 @dragleave=${this._handleAreaDragLeave}
-                @drop=${(e: DragEvent) => sortMode === 'custom' && this._handleAreaDrop(e, index)}
+                @drop=${(event: DragEvent) => sortMode === 'custom' && this._handleAreaDrop(event, index)}
               >
                 <div class="area-item">
                   <div class="handle ${sortMode !== 'custom' ? 'disabled' : ''}" aria-hidden="true">
                     <ha-svg-icon .path=${mdiDrag}></ha-svg-icon>
                   </div>
-                  ${area.icon ? html`
-                    <ha-icon
-                      .icon=${area.icon}
-                      class="area-icon"
-                    ></ha-icon>
-                  ` : nothing}
+                  <ha-icon .icon=${area.icon || 'mdi:floor-plan'} class="area-icon"></ha-icon>
                   <span class="area-name clickable" @click=${() => this._editArea(area.area_id)}>
                     ${area.name}
                     <ha-icon icon="mdi:chevron-right" class="chevron"></ha-icon>
