@@ -193,6 +193,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   public set hass(value: HomeAssistant | undefined) {
     const oldValue = this._hass;
     this._hass = value;
+    // Use the already available frontend panel metadata immediately so the
+    // dashboard summary does not flash a placeholder while WS data loads.
+    if (value && !this._dashboardTitle) {
+      this._dashboardTitle = this._getDashboardPanelTitle();
+    }
     // Always fetch fresh data when hass becomes available
     if (value && !oldValue) {
       void this._fetchData();
@@ -295,6 +300,13 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     const seg = window.location.pathname.split('/')[1];
     if (!seg || seg === 'lovelace') return undefined;
     return seg;
+  }
+
+  private _getDashboardPanelTitle(): string {
+    const urlPath = this._getDashboardUrlPath();
+    if (!urlPath) return '';
+    const panel = (this._hass as any)?.panels?.[urlPath];
+    return typeof panel?.title === 'string' ? panel.title : '';
   }
 
   private async _fetchDashboardInfo(): Promise<void> {
@@ -542,12 +554,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
     return html`
       <div class="editor-container dd-flat-settings dd-settings-overview">
-        <div class="dd-subpage-header dd-overview-header">
-          <span class="dd-subpage-back dd-overview-header-icon" aria-hidden="true">
-            <ha-icon icon="mdi:cog-outline"></ha-icon>
-          </span>
-          <div class="dd-subpage-title">${this._t('settings.all_settings')}</div>
-        </div>
         ${groups.map((group) => {
           const groupItems = items.filter((item) => item.group === group.key);
           if (!groupItems.length) return nothing;
@@ -600,7 +606,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         color: "var(--primary-color)",
         title: this._t('settings.dashboard'),
         description: this._t('settings.dashboard_description'),
-        summary: this._dashboardTitle || this._t('settings.current_dashboard'),
+        summary: this._dashboardTitle || this._getDashboardPanelTitle() || undefined,
       },
       {
         page: "home",
@@ -743,7 +749,27 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _resetSettingsScrollPosition(): void {
     void this.updateComplete.then(() => {
       window.requestAnimationFrame(() => {
-        this.scrollIntoView({ behavior: "auto", block: "start", inline: "nearest" });
+        const visited = new Set<Node>();
+        let node: Node | null = this;
+
+        while (node && !visited.has(node)) {
+          visited.add(node);
+
+          if (node instanceof HTMLElement) {
+            node.scrollTop = 0;
+          }
+
+          if (node.parentNode) {
+            node = node.parentNode;
+            continue;
+          }
+
+          const root = node.getRootNode();
+          node = root instanceof ShadowRoot ? root.host : null;
+        }
+
+        document.scrollingElement?.scrollTo({ top: 0, behavior: "auto" });
+        window.scrollTo({ top: 0, behavior: "auto" });
       });
     });
   }
@@ -2261,7 +2287,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
             return html`
               <div class="dd-flat-subitem ${isClimate && climateOpen ? 'open' : ''}">
-                <div class="dd-flat-subitem-row" @click=${() => isClimate && toggleClimate()}>
+                <div class="dd-flat-subitem-row ${isClimate ? 'has-detail' : ''}" @click=${() => isClimate && toggleClimate()}>
                   <div class="home-section-icon"><ha-icon icon=${meta.icon}></ha-icon></div>
                   <div class="home-section-copy">
                     <div class="home-section-title">${this._t(meta.labelKey)}</div>
@@ -6547,6 +6573,19 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         margin-top: 0;
       }
 
+      .dd-settings-overview .settings-nav-section:first-of-type > h3 {
+        height: 42px;
+        margin: 0 0 12px;
+        padding: 0 0 0 44px;
+        display: flex;
+        align-items: center;
+        box-sizing: border-box;
+        color: var(--primary-text-color);
+        font-size: 17px;
+        font-weight: 800;
+        line-height: 1.2;
+      }
+
       .dd-settings-version-footer {
         margin-top: 22px;
         padding-top: 14px;
@@ -6595,11 +6634,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .dd-subpage-back ha-icon {
         --mdc-icon-size: 20px;
-      }
-
-      .dd-overview-header-icon {
-        pointer-events: none;
-        cursor: default;
       }
 
       .dd-subpage-title {
@@ -6818,6 +6852,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         gap: 9px;
         padding: 6px 12px 6px 0;
         box-sizing: border-box;
+      }
+
+      .dd-flat-subitem-row.has-detail {
+        cursor: pointer;
       }
 
       .dd-draggable-subitem {
