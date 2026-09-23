@@ -188,6 +188,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _hass?: HomeAssistant;
   private _fetchDataPromise?: Promise<void>;
   private _registryData?: SettingsRegistryData;
+  private _scrollbarGutterTargets = new Map<HTMLElement, string>();
 
   @property({ attribute: false })
   public set hass(value: HomeAssistant | undefined) {
@@ -385,6 +386,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     scheduleIntegratedSettingsHeader(this);
+    this._stabilizeSettingsScrollbar();
     // Always fetch fresh data when component connects
     if (this.hass) {
       void this._fetchData();
@@ -393,6 +395,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
   disconnectedCallback() {
     cleanupIntegratedSettingsHeader();
+    this._restoreSettingsScrollbar();
     super.disconnectedCallback();
   }
 
@@ -554,12 +557,17 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
     return html`
       <div class="editor-container dd-flat-settings dd-settings-overview">
-        ${groups.map((group) => {
+        ${groups.map((group, groupIndex) => {
           const groupItems = items.filter((item) => item.group === group.key);
           if (!groupItems.length) return nothing;
           return html`
             <section class="settings-nav-section">
-              <h3>${group.title}</h3>
+              ${groupIndex === 0 ? html`
+                <div class="dd-subpage-header dd-overview-title-row">
+                  <span class="dd-subpage-spacer" aria-hidden="true"></span>
+                  <div class="dd-subpage-title">${group.title}</div>
+                </div>
+              ` : html`<h3>${group.title}</h3>`}
               <div class="settings-nav-list">
                 ${groupItems.map((item) => this._renderSettingsNavItem(item))}
               </div>
@@ -744,6 +752,42 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     this._showEntityPicker = false;
     this._showWeatherPicker = false;
     this._showAlarmPicker = false;
+  }
+
+  private _stabilizeSettingsScrollbar(): void {
+    const visited = new Set<Node>();
+    let node: Node | null = this;
+
+    while (node && !visited.has(node)) {
+      visited.add(node);
+
+      if (node instanceof HTMLElement && !this._scrollbarGutterTargets.has(node)) {
+        this._scrollbarGutterTargets.set(node, node.style.scrollbarGutter);
+        node.style.scrollbarGutter = "stable";
+      }
+
+      if (node.parentNode) {
+        node = node.parentNode;
+        continue;
+      }
+
+      const root = node.getRootNode();
+      node = root instanceof ShadowRoot ? root.host : null;
+    }
+
+    for (const target of [document.documentElement, document.body]) {
+      if (target && !this._scrollbarGutterTargets.has(target)) {
+        this._scrollbarGutterTargets.set(target, target.style.scrollbarGutter);
+        target.style.scrollbarGutter = "stable";
+      }
+    }
+  }
+
+  private _restoreSettingsScrollbar(): void {
+    for (const [target, previousValue] of this._scrollbarGutterTargets) {
+      target.style.scrollbarGutter = previousValue;
+    }
+    this._scrollbarGutterTargets.clear();
   }
 
   private _resetSettingsScrollPosition(): void {
@@ -3067,6 +3111,17 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     if (e.dataTransfer) {
       e.dataTransfer.effectAllowed = "move";
       e.dataTransfer.setData("text/plain", section);
+
+      const dragImage = document.createElement("div");
+      dragImage.style.position = "fixed";
+      dragImage.style.left = "-10000px";
+      dragImage.style.top = "-10000px";
+      dragImage.style.width = "1px";
+      dragImage.style.height = "1px";
+      dragImage.style.opacity = "0";
+      document.body.appendChild(dragImage);
+      e.dataTransfer.setDragImage(dragImage, 0, 0);
+      window.requestAnimationFrame(() => dragImage.remove());
     }
   }
 
@@ -4985,8 +5040,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .home-section-item.dragging {
-        opacity: 0.5;
-        transform: scale(0.99);
+        opacity: 0.28;
+        transform: none;
       }
 
       .home-section-item.drag-over {
@@ -6573,17 +6628,15 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         margin-top: 0;
       }
 
-      .dd-settings-overview .settings-nav-section:first-of-type > h3 {
-        height: 42px;
-        margin: 0 0 12px;
-        padding: 0 0 0 44px;
-        display: flex;
-        align-items: center;
-        box-sizing: border-box;
-        color: var(--primary-text-color);
-        font-size: 17px;
-        font-weight: 800;
-        line-height: 1.2;
+      .dd-overview-title-row {
+        max-width: none;
+        margin-inline: 0;
+      }
+
+      .dd-subpage-spacer {
+        width: 36px;
+        height: 36px;
+        flex: 0 0 36px;
       }
 
       .dd-settings-version-footer {
@@ -6997,7 +7050,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       @media (min-width: 701px) {
-        .dd-flat-settings:not(.dd-settings-overview) {
+        .dd-flat-settings {
           padding-top: 8px;
         }
 
