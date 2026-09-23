@@ -1096,7 +1096,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     `;
   }
 
-  private _renderSupportSection() {  private _renderSupportSection() {
+  private _renderSupportSection() {
     return html`
       <div class="sponsoring-section dd-support-flat">
         <div class="sponsor-label">${this._t('support.donation')}</div>
@@ -1305,7 +1305,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     `;
   }
 
-  private _renderEntityDisplaySettingsPanel() {  private _renderEntityDisplaySettingsPanel() {
+  private _renderEntityDisplaySettingsPanel() {
     return this._renderSettingsPanel(
       "mdi:eye-off",
       this._t('settings.devices_page'),
@@ -2717,7 +2717,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     `;
   }
 
-  private _getDeviceVisibilityGroups(): DeviceVisibilityTypeGroup[] {  private _getDeviceVisibilityGroups(): DeviceVisibilityTypeGroup[] {
+  private _getDeviceVisibilityGroups(): DeviceVisibilityTypeGroup[] {
     if (!this.hass || !this._config) return [];
 
     const deviceById = this._getAllDevicesById();
