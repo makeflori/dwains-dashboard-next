@@ -3307,33 +3307,57 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
   private _handleAreaDragStart(e: DragEvent, areaId: string): void {
     this._draggedAreaId = areaId;
+    this._areaPreviewOrder = sortAreas(
+      Object.values(this.hass?.areas || {}),
+      { ...this._config?.areas_display, hidden: [] },
+      ddLocale(this.hass)
+    ).map((area) => area.area_id);
+
     if (e.dataTransfer) {
       e.dataTransfer.effectAllowed = 'move';
       e.dataTransfer.setData('text/plain', areaId);
+      const dragImage = document.createElement("div");
+      dragImage.style.position = "fixed";
+      dragImage.style.left = "-10000px";
+      dragImage.style.top = "-10000px";
+      dragImage.style.width = "1px";
+      dragImage.style.height = "1px";
+      dragImage.style.opacity = "0";
+      document.body.appendChild(dragImage);
+      e.dataTransfer.setDragImage(dragImage, 0, 0);
+      window.requestAnimationFrame(() => dragImage.remove());
     }
   }
 
   private _handleAreaDragEnd(): void {
     this._draggedAreaId = undefined;
     this._dragOverIndex = undefined;
+    this._areaPreviewOrder = undefined;
   }
 
   private _handleAreaDragOver(e: DragEvent, index: number): void {
     e.preventDefault();
-    if (e.dataTransfer) {
-      e.dataTransfer.dropEffect = 'move';
+    const dragged = this._draggedAreaId;
+    if (dragged) {
+      const preview = [...(this._areaPreviewOrder || [])];
+      const fromIndex = preview.indexOf(dragged);
+      if (fromIndex !== -1 && fromIndex !== index) {
+        const [item] = preview.splice(fromIndex, 1);
+        preview.splice(index, 0, item!);
+        this._areaPreviewOrder = preview;
+      }
     }
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
     this._dragOverIndex = index;
   }
 
   private _handleAreaDragLeave(e: DragEvent): void {
-    const target = e.target as HTMLElement;
-    if (target.classList.contains('sortable-item')) {
-      this._dragOverIndex = undefined;
-    }
+    const currentTarget = e.currentTarget as HTMLElement | null;
+    const relatedTarget = e.relatedTarget as Node | null;
+    if (!currentTarget?.contains(relatedTarget)) this._dragOverIndex = undefined;
   }
 
-  private _handleAreaDrop(e: DragEvent, dropIndex: number): void {
+  private _handleAreaDrop(e: DragEvent, _dropIndex: number): void {
     e.preventDefault();
 
     if (
@@ -3342,43 +3366,17 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       resolveAreaSortMode(this._config.areas_display) !== 'custom'
     ) return;
 
-    const areas = Object.values(this.hass!.areas || {});
-    const sortedAreas = sortAreas(
-      areas,
-      { ...this._config.areas_display, hidden: [] },
-      ddLocale(this.hass)
-    );
-
-    // Find the dragged item's current index
-    const draggedIndex = sortedAreas.findIndex(area => area.area_id === this._draggedAreaId);
-
-    if (draggedIndex === -1 || draggedIndex === dropIndex) {
-      this._draggedAreaId = undefined;
-      this._dragOverIndex = undefined;
-      return;
+    if (this._areaPreviewOrder?.length) {
+      this._fireConfigChanged({
+        ...this._config,
+        areas_display: {
+          ...this._config.areas_display,
+          order: [...this._areaPreviewOrder],
+        },
+      });
     }
 
-    // Reorder the areas
-    const newSortedAreas = [...sortedAreas];
-    const [removed] = newSortedAreas.splice(draggedIndex, 1);
-    if (!removed) return;
-
-    newSortedAreas.splice(dropIndex, 0, removed);
-
-    // Create new order array
-    const order = newSortedAreas.map(area => area.area_id);
-
-    const newConfig: DwainsDashboardConfig = {
-      ...this._config!,
-      areas_display: {
-        ...this._config!.areas_display,
-        order
-      }
-    };
-
-    this._fireConfigChanged(newConfig);
-    this._draggedAreaId = undefined;
-    this._dragOverIndex = undefined;
+    this._handleAreaDragEnd();
   }
 
   private _moveArea(areaId: string, direction: -1 | 1): void {
