@@ -135,7 +135,12 @@ jobs:
             fi
           else
             CHANGELOG=$(echo "$SOURCE_SUBJECT" | sed -E 's/^\[[^]]+\][[:space:]]*//')
-            printf -- '- %s\n' "$CHANGELOG" >> "$NOTES_FILE"
+            SOURCE_BODY=$(git log -1 --pretty=%b "$SOURCE_COMMIT")
+            if [[ -n "${SOURCE_BODY//[[:space:]]/}" ]]; then
+              printf '**%s**\n\n%s\n' "$CHANGELOG" "$SOURCE_BODY" >> "$NOTES_FILE"
+            else
+              printf -- '- %s\n' "$CHANGELOG" >> "$NOTES_FILE"
+            fi
           fi
 
           gh release create "$TAG" \
