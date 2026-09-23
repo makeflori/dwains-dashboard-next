@@ -735,15 +735,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
     return html`
       <div class="editor-container dd-flat-settings">
-        <button
-          class="dd-desktop-floating-back"
-          type="button"
-          aria-label=${this._t('common.back')}
-          title=${this._t('common.back')}
-          @click=${this._backToSettingsOverview}
-        >
-          <ha-icon icon="mdi:chevron-left"></ha-icon>
-        </button>
         <div class="dd-subpage-header">
           <button
             class="dd-subpage-back"
@@ -973,8 +964,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           ></ha-switch>
         </div>
         <div class="entity-picker dd-favorites-picker">
-          <div class="dd-inline-action-row dd-favorites-action-row">
-            <span></span>
+          <div class="dd-inline-action-row dd-inline-action-only">
             <button class="home-custom-card-add dd-favorites-add" type="button" @click=${this._addFavoriteEntity}>
               <ha-icon icon="mdi:plus"></ha-icon>
               ${this._t('common.add')}
@@ -2028,16 +2018,26 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                     </button>
                     ${detail ? html`
                       <button
-                        class="dd-home-detail-toggle"
+                        class="dd-home-detail-toggle dd-detail-desktop"
                         type="button"
                         aria-expanded=${open ? 'true' : 'false'}
                         @click=${() => toggleDetail(section)}
                       >
                         <ha-icon icon=${open ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
                       </button>
-                    ` : html`<span class="dd-home-detail-spacer" aria-hidden="true"></span>`}
+                    ` : html`<span class="dd-home-detail-spacer dd-detail-desktop" aria-hidden="true"></span>`}
                   </div>
                 </div>
+                ${detail ? html`
+                  <button
+                    class="dd-mobile-expand-row"
+                    type="button"
+                    aria-expanded=${open ? 'true' : 'false'}
+                    @click=${() => toggleDetail(section)}
+                  >
+                    <ha-icon icon=${open ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
+                  </button>
+                ` : nothing}
                 ${open ? html`<div class="dd-home-inline-detail">${renderDetail(section)}</div>` : nothing}
               </div>
             `;
@@ -2140,8 +2140,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
     return html`
       <div class="dd-inline-section">
-        <div class="dd-inline-action-row">
-          <p class="dd-inline-description">${this._t('settings.home_custom_cards_description')}</p>
+        <div class="dd-inline-action-row dd-inline-action-only">
           <button class="home-custom-card-add" type="button" @click=${this._addHomeCustomCard}>
             <ha-icon icon="mdi:plus"></ha-icon>
             ${this._t('common.add')}
@@ -2199,14 +2198,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     const excluded = this._getExcludedHomeClimateAreas();
     const hiddenAreas = new Set(this._config.areas_display?.hidden || []);
     const areas = sortAreas(
-      this._config.areas || [],
+      Object.values(this.hass.areas || {}),
       { ...this._config.areas_display, hidden: [] },
       ddLocale(this.hass)
     ).filter((area) => !hiddenAreas.has(area.area_id));
 
     return html`
       <div class="home-info-card-section home-climate-area-settings dd-climate-area-settings">
-        <p class="dd-inline-description dd-inline-description-row">${this._t('settings.home_climate_areas_description')}</p>
+        <p class="dd-inline-description dd-climate-description">${this._t('settings.home_climate_areas_description')}</p>
         <div class="home-info-card-list">
           ${areas.map((area) => {
             const included = !excluded.has(area.area_id);
@@ -2219,7 +2218,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                     .checked=${included}
                     @change=${(event: Event) => this._toggleHomeClimateArea(area.area_id, (event.target as any).checked)}
                   ></ha-switch>
-                  <span class="dd-home-detail-spacer" aria-hidden="true"></span>
                 </div>
               </div>
             `;
@@ -2240,7 +2238,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
     return html`
       <div class="dd-inline-section">
-        <p class="dd-inline-description dd-inline-description-row">${this._t('settings.house_information_cards_description')}</p>
         <div class="dd-flat-sublist">
           ${DEFAULT_HOME_INFORMATION_CARDS.map((card) => {
             const meta = HOME_INFORMATION_CARD_META[card];
@@ -2253,7 +2250,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                   <div class="home-section-icon"><ha-icon icon=${meta.icon}></ha-icon></div>
                   <div class="home-section-copy">
                     <div class="home-section-title">${this._t(meta.labelKey)}</div>
-                    <div class="home-section-description">${this._t(meta.descriptionKey)}</div>
                   </div>
                   <div class="home-info-card-actions" @click=${(event: Event) => event.stopPropagation()}>
                     <button
@@ -2267,12 +2263,22 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                       <ha-icon icon=${enabled ? 'mdi:eye-outline' : 'mdi:eye-off-outline'}></ha-icon>
                     </button>
                     ${isClimate ? html`
-                      <button class="dd-home-detail-toggle" type="button" aria-expanded=${climateOpen ? 'true' : 'false'} @click=${toggleClimate}>
+                      <button class="dd-home-detail-toggle dd-detail-desktop" type="button" aria-expanded=${climateOpen ? 'true' : 'false'} @click=${toggleClimate}>
                         <ha-icon icon=${climateOpen ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
                       </button>
-                    ` : html`<span class="dd-home-detail-spacer" aria-hidden="true"></span>`}
+                    ` : html`<span class="dd-home-detail-spacer dd-detail-desktop" aria-hidden="true"></span>`}
                   </div>
                 </div>
+                ${isClimate ? html`
+                  <button
+                    class="dd-mobile-expand-row"
+                    type="button"
+                    aria-expanded=${climateOpen ? 'true' : 'false'}
+                    @click=${toggleClimate}
+                  >
+                    <ha-icon icon=${climateOpen ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
+                  </button>
+                ` : nothing}
                 ${isClimate && climateOpen ? html`<div class="dd-flat-subdetail">${this._renderHomeClimateAreaSettings()}</div>` : nothing}
               </div>
             `;
@@ -2288,7 +2294,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
     return html`
       <div class="dd-inline-section">
-        <p class="dd-inline-description">${this._t('settings.home_camera_cards_description')}</p>
         ${cameras.length ? html`
           <div class="dd-flat-sublist">
             ${cameras.map((camera, index) => {
@@ -2324,7 +2329,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                     >
                       <ha-icon icon=${enabled ? 'mdi:eye-outline' : 'mdi:eye-off-outline'}></ha-icon>
                     </button>
-                    <span class="dd-home-detail-spacer" aria-hidden="true"></span>
                   </div>
                 </div>
               `;
@@ -5034,41 +5038,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         cursor: pointer;
       }
 
-      @media (max-width: 600px) {
-        .home-section-item {
-          grid-template-columns: 28px 36px minmax(0, 1fr);
-        }
-
-        .home-section-item.has-detail {
-          grid-template-columns: 28px 36px minmax(0, 1fr) 20px;
-        }
-
-        .home-info-card-item {
-          grid-template-columns: 36px minmax(0, 1fr) auto;
-        }
-
-        .home-section-icon {
-          width: 36px;
-          height: 36px;
-        }
-
-        .home-section-actions {
-          grid-column: 2 / -1;
-          justify-self: start;
-        }
-
-        .home-info-card-header {
-          align-items: start;
-          flex-direction: column;
-          gap: 8px;
-        }
-
-        .home-camera-settings-section,
-        .home-custom-card-settings-section {
-          padding-inline: 10px;
-        }
-      }
-
       .dd-field {
         display: flex;
         flex-direction: column;
@@ -6517,7 +6486,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         color: var(--secondary-text-color);
       }
 
-      /* Integrated flat settings UI */
+      /* Integrated settings UI: single authoritative layout */
       .dd-flat-settings {
         min-width: 0;
         scroll-padding-top: 96px;
@@ -6531,7 +6500,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .dd-flat-settings .settings-nav-section,
       .dd-flat-settings .settings-detail-content,
-      .dd-settings-version-footer {
+      .dd-settings-version-footer,
+      .dd-subpage-header {
         max-width: 940px;
         margin-inline: auto;
       }
@@ -6549,10 +6519,18 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         text-align: center;
       }
 
+      .dd-settings-version-footer::before {
+        content: "";
+        display: block;
+        width: 28px;
+        height: 1px;
+        margin: 0 auto 10px;
+        background: var(--divider-color);
+      }
+
       .dd-subpage-header {
-        max-width: 940px;
         min-height: 52px;
-        margin: 0 auto 14px;
+        margin-bottom: 14px;
         display: flex;
         align-items: center;
         gap: 10px;
@@ -6576,8 +6554,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         cursor: pointer;
       }
 
-      .dd-desktop-floating-back {
-        display: none;
+      .dd-subpage-back ha-icon {
+        --mdc-icon-size: 20px;
       }
 
       .dd-subpage-title {
@@ -6599,31 +6577,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .dd-home-page-description,
       .dd-inline-description {
         margin: 0;
-        padding: 10px 0;
         color: var(--secondary-text-color);
         font-size: 12px;
         line-height: 1.4;
         font-weight: 400;
       }
 
-      .dd-inline-description-row {
-        margin: 0;
-        padding: 10px 12px 10px 0;
-        border-top: 1px solid var(--divider-color);
-        border-bottom: 0;
-      }
-
-      .dd-home-house-information > .dd-inline-section > .dd-inline-description-row {
-        padding-left: 0;
-      }
-
-      .dd-flat-subdetail .dd-inline-description-row {
-        padding-left: 0;
-      }
-
       .dd-home-page-description {
-        padding-top: 0;
-        margin-bottom: 4px;
+        margin-bottom: 14px;
       }
 
       .dd-home-flat-layout {
@@ -6632,41 +6593,62 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .dd-home-section-block {
         overflow: hidden;
-        border: 1px solid transparent;
+        border: 1px solid var(--divider-color);
         border-radius: 12px;
+        background: var(--card-background-color);
       }
 
       .dd-home-section-block.open {
-        border-color: var(--divider-color);
         background: color-mix(in srgb, var(--primary-color) 1.5%, var(--card-background-color));
       }
 
-      .dd-home-section-block.open > .home-section-item {
+      .dd-home-section-block > .home-section-item {
+        min-height: 62px;
+        grid-template-columns: 32px 42px minmax(0, 1fr) 84px;
+        gap: 8px;
+        padding: 10px 12px;
         border: 0;
         border-radius: 0;
+        background: transparent;
         box-shadow: none;
       }
 
-      .dd-home-section-block .home-section-item,
-      .dd-home-section-block .home-section-item.has-detail {
-        min-height: 62px;
-        grid-template-columns: 32px 42px minmax(0, 1fr) 84px;
-        padding-right: 12px;
+      .dd-home-section-block.open > .home-section-item {
+        border-bottom: 1px solid var(--divider-color);
+      }
+
+      .dd-home-flat-layout .home-section-icon,
+      .dd-flat-sublist .home-section-icon,
+      .dd-climate-area-settings .home-section-icon {
+        border-radius: 10px;
+        box-shadow: none;
+      }
+
+      .dd-home-flat-layout .home-section-toggle,
+      .dd-flat-sublist .home-section-toggle {
+        border: 1px solid color-mix(in srgb, var(--primary-color) 24%, var(--divider-color));
+        border-radius: 999px;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .dd-home-flat-layout .home-section-toggle.enabled,
+      .dd-flat-sublist .home-section-toggle.enabled {
+        color: var(--primary-color);
+        background: color-mix(in srgb, var(--primary-color) 5%, transparent);
       }
 
       .dd-home-section-block .home-section-actions,
-      .home-info-card-actions,
-      .dd-climate-actions {
+      .home-info-card-actions {
         display: grid;
         grid-template-columns: 48px 28px;
         align-items: center;
         justify-content: end;
-        justify-items: end;
+        justify-items: center;
         justify-self: end;
         gap: 8px;
         width: 84px;
-        margin-left: auto;
-        padding-right: 0;
+        margin: 0;
       }
 
       .dd-home-detail-toggle,
@@ -6675,11 +6657,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         height: 40px;
       }
 
-      .dd-home-detail-toggle {
+      .dd-home-detail-toggle,
+      .dd-icon-action {
         display: inline-grid;
         place-items: center;
         border: 0;
-        border-radius: 0;
         color: var(--secondary-text-color);
         background: transparent;
         cursor: pointer;
@@ -6695,15 +6677,24 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         color: var(--primary-color);
       }
 
+      .dd-home-detail-toggle ha-icon,
+      .dd-icon-action ha-icon {
+        --mdc-icon-size: 19px;
+      }
+
+      .dd-mobile-expand-row {
+        display: none;
+      }
+
       .dd-home-inline-detail {
         margin-left: 72px;
-        padding: 0 0 0 10px;
+        padding: 8px 0 10px 10px;
         border-left: 2px solid color-mix(in srgb, var(--divider-color) 78%, var(--primary-color));
       }
 
       .dd-flat-subdetail {
         margin-left: 40px;
-        padding: 0 0 0 10px;
+        padding: 8px 0 8px 10px;
         border-left: 2px solid color-mix(in srgb, var(--divider-color) 78%, var(--primary-color));
       }
 
@@ -6734,84 +6725,18 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         grid-template-columns: 36px minmax(0, 1fr) 84px;
         align-items: center;
         gap: 9px;
-        padding: 5px 12px 5px 0;
+        padding: 6px 12px 6px 0;
         box-sizing: border-box;
       }
 
       .dd-draggable-subitem {
-        grid-template-columns: 22px 40px minmax(0, 1fr) 84px;
+        grid-template-columns: 22px 40px minmax(0, 1fr) 48px;
         cursor: grab;
       }
 
       .dd-flat-subitem-row .home-section-icon {
         width: 36px;
         height: 36px;
-      }
-
-      .dd-flat-subdetail .dd-inline-description-row {
-        margin: 0;
-        padding-left: 0;
-      }
-
-      .dd-climate-area-settings {
-        padding: 0;
-      }
-
-      .dd-climate-area-settings .home-info-card-list {
-        margin-left: 0;
-      }
-
-      .dd-climate-area-settings .home-info-card-item {
-        padding-left: 0;
-      }
-
-      .dd-climate-area-settings .home-info-card-item {
-        min-height: 0;
-        grid-template-columns: 32px minmax(0, 1fr) 84px;
-        gap: 10px;
-        margin: 0;
-        padding: 3px 12px 3px 0;
-        border: 0;
-        border-bottom: 1px solid var(--divider-color);
-        border-radius: 0;
-        background: transparent;
-        box-shadow: none;
-      }
-
-      .dd-climate-area-settings .home-info-card-item:first-child {
-        border-top: 0;
-      }
-
-      .dd-climate-area-settings .home-info-card-item:last-child {
-        border-bottom: 0;
-      }
-
-      .dd-climate-area-settings .home-section-icon {
-        width: 32px;
-        height: 32px;
-      }
-
-      .dd-climate-area-settings .home-section-icon ha-icon {
-        --mdc-icon-size: 19px;
-      }
-
-      .dd-climate-actions ha-switch {
-        justify-self: end;
-        transform: scale(.9);
-        transform-origin: right center;
-      }
-
-      .dd-inline-action-row {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        align-items: center;
-        gap: 12px;
-        margin: 0;
-        padding: 10px 12px 12px 0;
-      }
-
-      .dd-inline-action-row .dd-inline-description {
-        padding-top: 2px;
       }
 
       .dd-inline-actions {
@@ -6823,24 +6748,79 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .dd-icon-action {
-        width: 38px;
-        height: 38px;
-        display: inline-grid;
-        place-items: center;
-        border: 0;
+        width: 32px;
+        height: 32px;
         border-radius: 999px;
-        color: var(--secondary-text-color);
+      }
+
+      .dd-climate-area-settings {
+        padding: 0;
+      }
+
+      .dd-climate-area-settings .home-info-card-item {
+        min-height: 0;
+        display: grid;
+        grid-template-columns: 32px minmax(0, 1fr) 56px;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+        padding: 4px 8px;
+        border: 0;
+        border-bottom: 1px solid var(--divider-color);
+        border-radius: 0;
         background: transparent;
-        cursor: pointer;
+        box-shadow: none;
+      }
+
+      .dd-climate-area-settings .home-info-card-item:last-child {
+        border-bottom: 0;
+      }
+
+      .dd-climate-area-settings .home-section-icon {
+        width: 32px;
+        height: 32px;
+      }
+
+      .dd-climate-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        justify-self: end;
+        width: 56px;
+      }
+
+      .dd-climate-actions ha-switch,
+      .dd-favorite-suggestions-row ha-switch {
+        transform: scale(.9);
+        transform-origin: right center;
+      }
+
+      .dd-climate-description {
+        padding: 8px 8px 10px;
+      }
+
+      .dd-inline-action-row {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        margin: 0;
+        padding: 10px 8px;
+      }
+
+      .home-custom-card-add {
+        width: auto;
+        min-height: 34px;
+        padding: 7px 12px;
       }
 
       .dd-empty-state,
       .no-favorites {
         margin: 8px 0 2px;
         padding: 14px 10px;
-        border: 0 !important;
-        border-radius: 0 !important;
-        background: transparent !important;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
         color: var(--secondary-text-color);
         text-align: center;
         font-size: 12px;
@@ -6853,17 +6833,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .dd-favorite-suggestions-row {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) 84px;
+        grid-template-columns: minmax(0, 1fr) 64px;
         align-items: center;
         gap: 12px;
-        padding: 4px 12px 10px 0;
+        padding: 6px 8px 10px;
         border-bottom: 1px solid var(--divider-color);
-      }
-
-      .dd-favorite-suggestions-row ha-switch {
-        justify-self: end;
-        transform: scale(.9);
-        transform-origin: right center;
       }
 
       .dd-favorite-suggestions-copy {
@@ -6886,50 +6860,18 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .dd-favorites-picker {
-        padding-top: 8px;
-      }
-
-      .dd-favorites-action-row {
-        margin-bottom: 4px;
+        padding-top: 4px;
       }
 
       @media (min-width: 701px) {
         .dd-subpage-header {
-          display: none;
-        }
-
-        .dd-desktop-floating-back {
-          position: fixed;
-          left: max(24px, calc((100vw - 940px) / 2 + 8px));
-          bottom: 28px;
-          z-index: 44;
-          display: inline-grid;
-          place-items: center;
-          width: 48px;
-          height: 48px;
-          padding: 0;
-          border: 1px solid color-mix(in srgb, var(--primary-color) 35%, var(--divider-color));
-          border-radius: 999px;
-          color: var(--primary-color);
-          background: color-mix(in srgb, var(--primary-color) 12%, var(--card-background-color));
-          box-shadow: 0 12px 30px rgba(15, 23, 42, .18);
-          cursor: pointer;
-        }
-
-        .dd-desktop-floating-back:hover {
-          background: color-mix(in srgb, var(--primary-color) 18%, var(--card-background-color));
-        }
-
-        .dd-desktop-floating-back ha-icon {
-          --mdc-icon-size: 24px;
+          position: sticky;
+          top: 76px;
+          z-index: 34;
         }
       }
 
       @media (max-width: 700px) {
-        .dd-desktop-floating-back {
-          display: none;
-        }
-
         .dd-flat-settings {
           padding-inline: 10px;
         }
@@ -6945,34 +6887,115 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           margin-bottom: 10px;
           border-radius: 12px;
         }
+      }
 
-        .dd-home-section-block .home-section-item,
-        .dd-home-section-block .home-section-item.has-detail {
-          min-height: 0;
+      @media (max-width: 600px) {
+        .dd-home-page-description {
+          margin-bottom: 10px;
         }
 
-        .dd-home-section-block .home-section-actions,
-        .home-info-card-actions,
-        .dd-climate-actions {
-          width: auto;
+        .dd-home-flat-layout.home-layout-section {
+          padding-inline: 0;
         }
 
-        .dd-home-inline-detail,
+        .dd-home-flat-layout .home-section-list {
+          width: 100%;
+        }
+
+        .dd-home-section-block > .home-section-item,
+        .dd-home-section-block > .home-section-item.has-detail {
+          grid-template-columns: 22px 36px minmax(0, 1fr) 40px;
+          gap: 8px;
+          padding: 9px 8px;
+        }
+
+        .dd-home-section-block .home-section-icon {
+          width: 36px;
+          height: 36px;
+        }
+
+        .dd-home-section-block .home-section-actions {
+          grid-template-columns: 40px;
+          width: 40px;
+          justify-self: end;
+        }
+
+        .home-info-card-actions {
+          grid-template-columns: 40px;
+          width: 40px;
+          justify-self: end;
+        }
+
+        .dd-detail-desktop {
+          display: none !important;
+        }
+
+        .dd-mobile-expand-row {
+          width: 100%;
+          height: 16px;
+          min-height: 16px;
+          display: grid;
+          place-items: center;
+          margin: 0;
+          padding: 0;
+          border: 0;
+          color: var(--secondary-text-color);
+          background: transparent;
+          cursor: pointer;
+        }
+
+        .dd-mobile-expand-row[aria-expanded="true"] {
+          color: var(--primary-color);
+        }
+
+        .dd-mobile-expand-row ha-icon {
+          width: 14px;
+          height: 14px;
+          --mdc-icon-size: 14px;
+        }
+
+        .dd-home-section-block .home-section-title {
+          font-size: 14px;
+        }
+
+        .dd-home-section-block .home-section-description {
+          font-size: 11px;
+          line-height: 1.3;
+        }
+
+        .dd-home-inline-detail {
+          margin-left: 52px;
+          padding: 6px 0 8px 10px;
+        }
+
         .dd-flat-subdetail {
-          padding-left: 8px;
-        }
-
-        .dd-climate-area-settings .home-info-card-list {
-          margin-left: 0;
+          margin-left: 18px;
+          padding: 6px 0 8px 10px;
         }
 
         .dd-flat-subitem-row {
-          min-height: 0;
+          grid-template-columns: 36px minmax(0, 1fr) 40px;
+          gap: 8px;
+          padding: 6px 8px 6px 0;
         }
 
-        .dd-draggable-subitem,
+        .dd-draggable-subitem {
+          grid-template-columns: 20px 36px minmax(0, 1fr) 40px;
+        }
+
+        .dd-flat-subitem-row .home-section-icon {
+          width: 36px;
+          height: 36px;
+        }
+
+        .dd-flat-subitem-row .home-section-toggle {
+          width: 36px;
+          height: 36px;
+        }
+
         .dd-climate-area-settings .home-info-card-item {
-          min-height: 0;
+          grid-template-columns: 30px minmax(0, 1fr) 56px;
+          padding: 4px 8px;
         }
 
         .dd-climate-area-settings .home-section-icon {
@@ -6981,17 +7004,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         }
 
         .dd-inline-action-row {
-          grid-template-columns: 1fr;
-          gap: 8px;
-        }
-
-        .dd-favorite-suggestions-row {
-          grid-template-columns: minmax(0, 1fr) 76px;
           padding-right: 8px;
-        }
-
-        .dd-favorites-action-row {
-          grid-template-columns: 1fr auto;
         }
 
         .dd-settings-version-footer {
