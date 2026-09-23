@@ -2430,10 +2430,16 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                 <div class="home-section-icon"><ha-icon icon=${area.icon || 'mdi:floor-plan'}></ha-icon></div>
                 <div class="home-section-copy"><div class="home-section-title">${area.name}</div></div>
                 <div class="dd-climate-actions">
-                  <ha-switch
-                    .checked=${included}
-                    @change=${(event: Event) => this._toggleHomeClimateArea(area.area_id, (event.target as any).checked)}
-                  ></ha-switch>
+                  <button
+                    class="home-section-toggle ${included ? 'enabled' : ''}"
+                    type="button"
+                    title=${included ? this._t('common.hide') : this._t('common.show')}
+                    aria-label=${included ? this._t('common.hide') : this._t('common.show')}
+                    aria-pressed=${included ? 'true' : 'false'}
+                    @click=${() => this._toggleHomeClimateArea(area.area_id, !included)}
+                  >
+                    <ha-icon icon=${included ? 'mdi:eye-outline' : 'mdi:eye-off-outline'}></ha-icon>
+                  </button>
                 </div>
               </div>
             `;
