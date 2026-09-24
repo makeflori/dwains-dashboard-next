@@ -371,7 +371,7 @@ export const nl = {
   'settings.no_alarm_short': 'Geen alarm geselecteerd',
   'settings.restrict_ha_menu_short': 'Home Assistant-menu verbergen',
   'settings.restrict_editing_short': 'Dashboard-bewerking vergrendelen',
-  'settings.subtitle': '',
+  'settings.subtitle': 'Stel de weergave, inhoud en het gedrag van het dashboard in.',
   'settings.loaded_version': 'Geladen versie',
   'settings.loading': 'Laden',
   'settings.all_settings': 'Alle instellingen',
