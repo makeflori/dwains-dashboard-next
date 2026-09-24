@@ -990,7 +990,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     });
   }
 
-  private _settingsPageDescription(page: SettingsPageKey): string {
+  public _settingsPageDescription(page: SettingsPageKey): string {
     switch (page) {
       case "dashboard":
         return this._t('settings.dashboard_page_description');
@@ -3534,36 +3534,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     this._handleAreaDragEnd();
   }
 
-  private _moveArea(areaId: string, direction: -1 | 1): void {
-    if (
-      !this._config ||
-      !this.hass ||
-      resolveAreaSortMode(this._config.areas_display) !== 'custom'
-    ) return;
-
-    const areas = sortAreas(
-      Object.values(this.hass.areas || {}),
-      { ...this._config.areas_display, hidden: [] },
-      ddLocale(this.hass)
-    );
-    const currentIndex = areas.findIndex((area) => area.area_id === areaId);
-    const targetIndex = currentIndex + direction;
-    if (currentIndex < 0 || targetIndex < 0 || targetIndex >= areas.length) return;
-
-    const reordered = [...areas];
-    const [area] = reordered.splice(currentIndex, 1);
-    if (!area) return;
-    reordered.splice(targetIndex, 0, area);
-
-    this._fireConfigChanged({
-      ...this._config,
-      areas_display: {
-        ...this._config.areas_display,
-        order: reordered.map((entry) => entry.area_id),
-      },
-    });
-  }
-
   private _handleAreaCustomCardDragStart(event: DragEvent, cardId: string): void {
     this._draggedAreaCustomCardId = cardId;
     this._dragOverAreaCustomCardTarget = undefined;
@@ -4279,18 +4249,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
     this._fireConfigChanged(newConfig);
     this._showAlarmPicker = false;
-  }
-
-  private _removeAlarmEntity(): void {
-    const newConfig: DwainsDashboardConfig = {
-      ...this._config!,
-      settings: {
-        ...this._config!.settings,
-        alarm_entity_id: undefined
-      }
-    };
-
-    this._fireConfigChanged(newConfig);
   }
 
   private _toggleTimeDisplay(e: Event): void {
