@@ -49,6 +49,8 @@ export const nl = {
   'common.active.one': '{count} actief',
   'common.active.other': '{count} actief',
   'common.just_now': 'zojuist',
+  'common.select': 'Selecteren',
+  'common.clear_selection': 'Selectie wissen',
   'sidebar.home': 'Home',
   'sidebar.add_blueprint': 'Blueprint toevoegen',
   'sidebar.dashboard_settings': 'Dashboard-instellingen',
@@ -651,5 +653,6 @@ export const nl = {
   'settings.home_climate_areas_description': "Kies de gebieden voor de gemiddelde temperatuur en luchtvochtigheid.",
   'settings.home_climate_area_included': "Included in house average",
   'settings.home_climate_area_excluded': "Excluded from house average",
+  'settings.unassigned_area': 'Niet toegewezen',
 
 } as const satisfies TranslationDictionary;

@@ -49,6 +49,8 @@ export const es = {
   'common.active.one': '{count} activo',
   'common.active.other': '{count} activos',
   'common.just_now': 'ahora mismo',
+  'common.select': 'Seleccionar',
+  'common.clear_selection': 'Quitar selección',
   'sidebar.home': 'Hogar',
   'sidebar.add_blueprint': 'Agregar plano',
   'sidebar.dashboard_settings': 'Configuración del panel',
@@ -651,5 +653,6 @@ export const es = {
   'settings.home_climate_areas_description': "Elige las áreas usadas para los promedios de temperatura y humedad.",
   'settings.home_climate_area_included': "Included in house average",
   'settings.home_climate_area_excluded': "Excluded from house average",
+  'settings.unassigned_area': 'Sin asignar',
 
 } as const satisfies TranslationDictionary;

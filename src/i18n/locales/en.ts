@@ -47,6 +47,8 @@ export const en = {
   'common.active.one': '{count} active',
   'common.active.other': '{count} active',
   'common.just_now': 'just now',
+  'common.select': 'Select',
+  'common.clear_selection': 'Clear selection',
 
   'sidebar.home': 'Home',
   'sidebar.add_blueprint': 'Add blueprint',
@@ -672,6 +674,7 @@ export const en = {
   'settings.home_climate_areas_description': "Choose the areas used for the temperature and humidity averages.",
   'settings.home_climate_area_included': "Included in house average",
   'settings.home_climate_area_excluded': "Excluded from house average",
+  'settings.unassigned_area': 'Unassigned',
 
 } as const;
 
