@@ -127,7 +127,7 @@ export class DwainsReplacementManagerDialog extends LitElement {
     `;
   }
 
-  private _renderBuilder() {  private _renderBuilder() {
+  private _renderBuilder() {
     return html`
       <section class="builder">
         <div class="section-header">
@@ -327,7 +327,7 @@ export class DwainsReplacementManagerDialog extends LitElement {
     this.closeDialog();
   };
 
-  private _setDomainAssignment(  private _setDomainAssignment(
+  private _setDomainAssignment(
     replacements: BlueprintReplacements,
     surface: BlueprintReplacementSurface,
     target: string,
@@ -342,24 +342,6 @@ export class DwainsReplacementManagerDialog extends LitElement {
       },
     };
     return replacements;
-  }
-
-  private _assignmentEntries(): Array<{ target: string; assignment: BlueprintReplacementAssignment }> {
-    const targets = new Set<string>();
-    REPLACEMENT_SURFACES.forEach((surface) => {
-      Object.keys(this._replacements[surface]?.by_domain || {}).forEach((target) => targets.add(target));
-    });
-    return Array.from(targets)
-      .sort((a, b) => getDomainName(this.hass, a).localeCompare(getDomainName(this.hass, b)))
-      .map((target) => ({ target, assignment: this._domainAssignment(target)! }))
-      .filter((entry) => !!entry.assignment);
-  }
-
-  private _domainAssignment(target: string): BlueprintReplacementAssignment | undefined {
-    return (
-      this._replacements.area_cards?.by_domain?.[target] ||
-      this._replacements.devices_cards?.by_domain?.[target]
-    );
   }
 
   private _domainOptions(): Array<{ value: string; label: string }> {
