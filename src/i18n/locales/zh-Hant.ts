@@ -49,6 +49,8 @@ export const zhHant = {
   'common.active.one': '{count} 個啟用中',
   'common.active.other': '{count} 個啟用中',
   'common.just_now': '現在',
+  'common.select': '選擇',
+  'common.clear_selection': '清除選擇',
   'sidebar.home': '首頁',
   'sidebar.add_blueprint': '新增藍圖',
   'sidebar.dashboard_settings': '儀表板設定',
@@ -649,5 +651,6 @@ export const zhHant = {
   'settings.home_climate_areas_description': "選擇用於計算平均溫度與濕度的區域。",
   'settings.home_climate_area_included': "Included in house average",
   'settings.home_climate_area_excluded': "Excluded from house average",
+  'settings.unassigned_area': '未指派',
 
 } as const satisfies TranslationDictionary;
