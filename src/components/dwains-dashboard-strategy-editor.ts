@@ -2727,7 +2727,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
             const expanded = Boolean(group?.areas.length) && this._expandedDeviceTypes.has(option.key);
 
             return html`
-              <section class="device-type-panel ${expanded ? 'open' : ''} ${globallyVisible ? '' : 'disabled'}">
+              <section
+                class="device-type-panel ${expanded ? 'open' : ''} ${globallyVisible ? '' : 'disabled'}"
+                style=${`--device-type-color: ${option.color};`}
+              >
                 <div
                   class="device-type-panel-row ${group?.areas.length ? 'expandable' : ''}"
                   @click=${() => group?.areas.length && this._toggleExpandedDeviceType(option.key)}
@@ -2861,7 +2864,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     entityRecords.forEach((record) => {
       const deviceId = record.deviceId;
       if (!deviceId || !deviceById.has(deviceId)) return;
-      if (!this._isDeviceManagedEntity(record.entityId)) return;
+      const device = deviceById.get(deviceId)!;
+      const area = this._deviceVisibilityArea(device, [record.entityId]);
+      if (!area || !this._isDeviceManagedEntity(record.entityId, area.areaId)) return;
 
       const typeKey = this._deviceTypeKeyForEntityId(record.entityId);
       if (!typeKey || typeKey === "person") return;
@@ -2948,11 +2953,31 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     return devices;
   }
 
-  private _isDeviceManagedEntity(entityId: string): boolean {
-    const registry = this.hass?.entities?.[entityId];
-    if (registry?.hidden_by || registry?.entity_category === "diagnostic" || registry?.entity_category === "config") {
+  private _isDeviceManagedEntity(entityId: string, areaId?: string): boolean {
+    const registry = this.hass?.entities?.[entityId] as any;
+    const state = this.hass?.states?.[entityId];
+
+    if (
+      !state ||
+      registry?.hidden_by ||
+      registry?.disabled_by ||
+      registry?.entity_category === "diagnostic" ||
+      registry?.entity_category === "config"
+    ) {
       return false;
     }
+
+    if (
+      this._config?.settings?.hide_unavailable_entities_on_devices !== false &&
+      (state.state === "unavailable" || state.state === "unknown")
+    ) {
+      return false;
+    }
+
+    if (areaId && this._isEntityHiddenInAreaOptions(areaId, entityId)) {
+      return false;
+    }
+
     return !!entityId.includes(".");
   }
 
@@ -3028,7 +3053,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     const addEntity = (entityId: string, areaId?: string | null, deviceId?: string | null) => {
       if (!entityId || processed.has(entityId)) return;
       const registry = this.hass?.entities?.[entityId];
-      if (registry?.hidden_by || registry?.entity_category === 'diagnostic' || registry?.entity_category === 'config') return;
+      if (
+        registry?.hidden_by ||
+        (registry as any)?.disabled_by ||
+        registry?.entity_category === 'diagnostic' ||
+        registry?.entity_category === 'config'
+      ) return;
 
       const resolvedAreaId = areaId || (deviceId ? deviceAreas.get(deviceId) : undefined) || registry?.area_id;
       if (!resolvedAreaId || hiddenAreas.has(resolvedAreaId)) return;
@@ -3041,7 +3071,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       const key = this._deviceTypeKeyForEntityId(entityId);
-      if (!key) return;
+      if (!key || key === 'person') return;
 
       processed.add(entityId);
       counts.set(key, (counts.get(key) || 0) + 1);
@@ -3051,15 +3081,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
     Object.values(this.hass.states || {}).forEach((state: any) => {
       addEntity(state.entity_id, state.attributes?.area_id, this.hass?.entities?.[state.entity_id]?.device_id);
-    });
-
-    const hiddenPersons = new Set(this._config.settings?.hidden_persons || []);
-    Object.values(this.hass.states || {}).forEach((state: any) => {
-      const entityId = state.entity_id;
-      if (!entityId?.startsWith('person.') || processed.has(entityId) || hiddenPersons.has(entityId)) return;
-      if (this.hass?.entities?.[entityId]?.hidden_by) return;
-      processed.add(entityId);
-      counts.set('person', (counts.get('person') || 0) + 1);
     });
 
     return [...counts.entries()]
