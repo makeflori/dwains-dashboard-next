@@ -371,7 +371,7 @@ export const fr = {
   'settings.no_alarm_short': 'Aucune alarme sélectionnée',
   'settings.restrict_ha_menu_short': 'Masquer le menu Home Assistant',
   'settings.restrict_editing_short': 'Verrouiller la modification du tableau de bord',
-  'settings.subtitle': '',
+  'settings.subtitle': 'Configurez l’apparence, le contenu et le comportement du tableau de bord.',
   'settings.loaded_version': 'Version chargée',
   'settings.loading': 'Chargement',
   'settings.all_settings': 'Tous les paramètres',
