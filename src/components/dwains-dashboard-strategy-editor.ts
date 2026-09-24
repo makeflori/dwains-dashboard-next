@@ -128,13 +128,19 @@ const SETTINGS_ICON_PATHS: Record<string, string> = {
 function scheduleIntegratedSettingsHeader(editor: any): void {
   const apply = () => {
     const cancelLabel = String(editor?._t?.("common.cancel") || "Cancel");
-    const settingsTitle = String(editor?._t?.("settings.title") || "Dwains Dashboard settings");
-    const pageTitle = editor?._settingsPage === "overview"
-      ? settingsTitle
-      : String(editor?._settingsPageTitle?.(editor._settingsPage) || settingsTitle);
+    const closeLabel = String(editor?._t?.("common.close") || "Close");
+    const saveLabel = String(editor?._t?.("common.save") || "Save");
+    const settingsTitle = String(editor?._t?.("settings.title") || "Dashboard settings");
+    const onSubpage = editor?._settingsPage !== "overview";
+    const pageTitle = onSubpage
+      ? String(editor?._settingsPageTitle?.(editor._settingsPage) || settingsTitle)
+      : settingsTitle;
+    const pageDescription = onSubpage
+      ? String(editor?._settingsPageDescription?.(editor._settingsPage) || "")
+      : "";
+
     const roots: Array<Document | ShadowRoot | Element> = [];
     let root: any = editor?.getRootNode?.();
-
     while (root && !roots.includes(root)) {
       roots.push(root);
       const host = root.host;
@@ -150,69 +156,73 @@ function scheduleIntegratedSettingsHeader(editor: any): void {
       let title: HTMLElement | undefined;
       let header: HTMLElement | undefined;
       let backButton: any;
+      let saveButton: any;
+      let cancelButton: any;
 
       for (const scope of roots) {
-        const candidates = scope.querySelectorAll?.("h1,h2,h3,[slot='heading'],.title,.header-title,.dialog-title,span,div") || [];
-        for (const candidate of candidates as any) {
-          if (textOf(candidate) !== settingsTitle) continue;
-          const childWithSameText = Array.from(candidate.children || []).some((child: any) => textOf(child) === settingsTitle);
-          if (childWithSameText) continue;
-          title = candidate as HTMLElement;
+        const buttons = Array.from(scope.querySelectorAll?.("button,ha-icon-button,mwc-icon-button,ha-button,mwc-button") || []) as any[];
+        saveButton = buttons.find((button: any) => {
+          const value = textOf(button);
+          const label = String(button.label || button.getAttribute?.("aria-label") || "").trim();
+          return value === saveLabel || label === saveLabel;
+        });
+        if (!saveButton) continue;
+
+        let current: HTMLElement | null = saveButton.parentElement;
+        for (let depth = 0; current && depth < 8; depth++, current = current.parentElement) {
+          const headerButtons = Array.from(current.querySelectorAll?.("button,ha-icon-button,mwc-icon-button,ha-button,mwc-button") || []) as any[];
+          if (headerButtons.length < 2) continue;
+
+          const titleCandidates = Array.from(
+            current.querySelectorAll?.("h1,h2,h3,[slot='heading'],[slot='title'],.title,.header-title,.dialog-title,strong,span") || []
+          ) as HTMLElement[];
+          title = titleCandidates.find((node) => {
+            const value = textOf(node);
+            return Boolean(
+              value &&
+              value !== saveLabel &&
+              value !== cancelLabel &&
+              value !== closeLabel &&
+              !value.includes(saveLabel)
+            );
+          });
+          if (!title) continue;
+
+          header = current;
+          const titleRect = title.getBoundingClientRect?.();
+          backButton = headerButtons.find((button: any) => {
+            if (button === saveButton) return false;
+            const rect = button.getBoundingClientRect?.();
+            return titleRect && rect && rect.left < titleRect.left;
+          }) || headerButtons[0];
+
+          cancelButton = headerButtons.find((button: any) => {
+            if (button === saveButton || button === backButton) return false;
+            const value = textOf(button);
+            const label = String(button.label || button.getAttribute?.("aria-label") || "").trim();
+            return [cancelLabel, closeLabel, "Back", "Zurück"].includes(value) ||
+              [cancelLabel, closeLabel, "Back", "Zurück"].includes(label);
+          }) || headerButtons.find((button: any) => button !== saveButton && button !== backButton);
+
           break;
         }
-        if (title) break;
+        if (title && header && backButton) break;
       }
 
-      if (!title) {
-        const saveLabel = String(editor?._t?.("common.save") || "Save");
-        for (const scope of roots) {
-          const buttons = scope.querySelectorAll?.("button,ha-button,mwc-button") || [];
-          for (const candidateButton of buttons as any) {
-            const buttonText = textOf(candidateButton);
-            const buttonLabel = String(candidateButton.label || "").trim();
-            if (buttonText !== saveLabel && buttonLabel !== saveLabel) continue;
-
-            let current: HTMLElement | null = candidateButton.parentElement;
-            for (let depth = 0; current && depth < 7; depth++, current = current.parentElement) {
-              const headerButtons = current.querySelectorAll?.("button,ha-icon-button,mwc-icon-button,ha-button,mwc-button") || [];
-              if (headerButtons.length < 2) continue;
-              const candidates = current.querySelectorAll?.("h1,h2,h3,[slot='heading'],.title,.header-title,.dialog-title,strong") || [];
-              const candidateTitle = Array.from(candidates as any).find((node: any) => {
-                const value = textOf(node);
-                return Boolean(value && value !== saveLabel && value !== cancelLabel);
-              }) as HTMLElement | undefined;
-              if (candidateTitle) {
-                title = candidateTitle;
-                header = current;
-                backButton = headerButtons[0];
-                break;
-              }
-            }
-            if (title) break;
-          }
-          if (title) break;
-        }
-      }
-
-      if (title) {
-        let current: HTMLElement | null = title.parentElement;
-        for (let depth = 0; current && depth < 6; depth++, current = current.parentElement) {
-          const buttons = current.querySelectorAll?.("button,ha-icon-button,mwc-icon-button,ha-button,mwc-button") || [];
-          if (buttons.length >= 2) {
-            header = current;
-            backButton = buttons[0];
-            break;
-          }
-        }
-      }
-
-      if (title && backButton) {
+      if (title && header && backButton) {
         state = {
           editor,
           title,
           header,
           backButton,
+          saveButton,
+          cancelButton,
           originalTitle: textOf(title),
+          originalTitleDisplay: title.style.display,
+          originalTitleGap: title.style.gap,
+          originalHeaderMaxWidth: header.style.maxWidth,
+          originalHeaderWidth: header.style.width,
+          originalHeaderMarginInline: header.style.marginInline,
           originalPath: backButton.path,
           originalIcon: backButton.icon,
           originalLabel: backButton.label || backButton.getAttribute?.("aria-label") || "",
@@ -230,48 +240,87 @@ function scheduleIntegratedSettingsHeader(editor: any): void {
       }
     }
 
-    if (state?.title) state.title.textContent = pageTitle;
+    if (!state) return;
 
-    if (state?.backButton) {
-      const onSubpage = editor?._settingsPage !== "overview";
+    state.header.style.maxWidth = "920px";
+    state.header.style.width = "min(920px, calc(100% - 24px))";
+    state.header.style.marginInline = "auto";
+
+    if (state.title) {
+      state.title.textContent = pageTitle;
+      state.title.querySelector?.(".dd-integrated-settings-description")?.remove();
+      if (pageDescription) {
+        state.title.style.display = "grid";
+        state.title.style.gap = "2px";
+        const description = document.createElement("small");
+        description.className = "dd-integrated-settings-description";
+        description.textContent = pageDescription;
+        description.style.fontSize = "12px";
+        description.style.fontWeight = "400";
+        description.style.lineHeight = "1.35";
+        description.style.color = "var(--secondary-text-color)";
+        state.title.appendChild(description);
+      } else {
+        state.title.style.display = state.originalTitleDisplay || "";
+        state.title.style.gap = state.originalTitleGap || "";
+      }
+    }
+
+    if (state.backButton) {
       const button = state.backButton;
       if (onSubpage) {
         if ("path" in button) button.path = mdiArrowLeft;
         if ("icon" in button) button.icon = "mdi:arrow-left";
+        const innerSvg = button.shadowRoot?.querySelector?.("ha-svg-icon") as any;
+        if (innerSvg && "path" in innerSvg) innerSvg.path = mdiArrowLeft;
+        const innerIcon = button.shadowRoot?.querySelector?.("ha-icon") as any;
+        if (innerIcon) innerIcon.icon = "mdi:arrow-left";
         const label = String(editor?._t?.("settings.all_settings") || "All settings");
         button.setAttribute?.("aria-label", label);
         if ("label" in button) button.label = label;
       } else {
         if ("path" in button) button.path = state.originalPath;
         if ("icon" in button) button.icon = state.originalIcon;
+        const innerSvg = button.shadowRoot?.querySelector?.("ha-svg-icon") as any;
+        if (innerSvg && "path" in innerSvg) innerSvg.path = state.originalPath;
         button.setAttribute?.("aria-label", state.originalLabel);
         if ("label" in button) button.label = state.originalLabel;
       }
     }
 
-    for (const scope of roots) {
-      const buttons = scope.querySelectorAll?.("button, ha-button, mwc-button") || [];
-      for (const button of buttons as any) {
-        if (button === state?.backButton) continue;
-        const text = textOf(button);
-        const label = String(button.label || "").trim();
-        if ([text, label].some((value) => value === "Back" || value === "Zurück")) {
-          button.textContent = cancelLabel;
-          if ("label" in button) button.label = cancelLabel;
-          button.setAttribute?.("aria-label", cancelLabel);
-          break;
-        }
-      }
+    const saveButton = state.saveButton;
+    const dirty = Boolean(
+      saveButton &&
+      !(saveButton.disabled ||
+        saveButton.hasAttribute?.("disabled") ||
+        saveButton.getAttribute?.("aria-disabled") === "true")
+    );
+    const actionLabel = dirty ? cancelLabel : closeLabel;
+    const actionButton = state.cancelButton;
+    if (actionButton) {
+      if ("label" in actionButton) actionButton.label = actionLabel;
+      actionButton.setAttribute?.("aria-label", actionLabel);
+      const labelNode = actionButton.shadowRoot?.querySelector?.(".label,span");
+      if (labelNode) labelNode.textContent = actionLabel;
+      else if (actionButton.tagName?.toLowerCase?.() === "button") actionButton.textContent = actionLabel;
     }
   };
 
-  window.setTimeout(apply, 0);
-  window.setTimeout(apply, 80);
+  [0, 80, 240, 600].forEach((delay) => window.setTimeout(apply, delay));
 }
 
 function cleanupIntegratedSettingsHeader(): void {
   const state = (window as any).__ddIntegratedSettingsHeaderState;
-  if (state?.title) state.title.textContent = state.originalTitle || state.title.textContent;
+  if (state?.title) {
+    state.title.textContent = state.originalTitle || state.title.textContent;
+    state.title.style.display = state.originalTitleDisplay || "";
+    state.title.style.gap = state.originalTitleGap || "";
+  }
+  if (state?.header) {
+    state.header.style.maxWidth = state.originalHeaderMaxWidth || "";
+    state.header.style.width = state.originalHeaderWidth || "";
+    state.header.style.marginInline = state.originalHeaderMarginInline || "";
+  }
   if (state?.backButton) {
     if ("path" in state.backButton) state.backButton.path = state.originalPath;
     if ("icon" in state.backButton) state.backButton.icon = state.originalIcon;
@@ -975,9 +1024,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     return html`
       <div class="editor-container dd-flat-settings">
         <div class="settings-detail-content dd-flat-content">
-          ${this._settingsPageDescription(page) ? html`
-            <p class="dd-settings-page-description">${this._settingsPageDescription(page)}</p>
-          ` : nothing}
           ${this._renderSettingsPageContent(page)}
         </div>
       </div>
@@ -4485,6 +4531,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       composed: true
     });
     this.dispatchEvent(event);
+    scheduleIntegratedSettingsHeader(this);
   }
 
   static get styles() {
