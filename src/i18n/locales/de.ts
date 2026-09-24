@@ -371,7 +371,7 @@ export const de = {
   'settings.no_alarm_short': 'Keine Alarmanlage ausgewählt',
   'settings.restrict_ha_menu_short': 'Home-Assistant-Menü ausblenden',
   'settings.restrict_editing_short': 'Dashboard-Bearbeitung sperren',
-  'settings.subtitle': '',
+  'settings.subtitle': 'Erscheinungsbild, Inhalte und Verhalten des Dashboards konfigurieren.',
   'settings.loaded_version': 'Geladene Version',
   'settings.loading': 'Laden',
   'settings.all_settings': 'Alle Einstellungen',
