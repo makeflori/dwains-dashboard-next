@@ -1420,7 +1420,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     `;
   }
 
-  private _renderEntityDisplaySettingsPanel() {  private _renderEntityDisplaySettingsPanel() {
+  private _renderEntityDisplaySettingsPanel() {
     return this._renderSettingsPanel(
       "mdi:eye-off",
       this._t('settings.devices_page'),
@@ -4330,6 +4330,21 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
     this._fireConfigChanged(newConfig);
   }
+
+  private _toggleAlarmDisplay = (e: Event): void => {
+    const target = e.target as any;
+    const showAlarm = Boolean(target.checked);
+
+    const newConfig: DwainsDashboardConfig = {
+      ...this._config!,
+      settings: {
+        ...this._config!.settings,
+        show_alarm: showAlarm,
+      },
+    };
+
+    this._fireConfigChanged(newConfig);
+  };
 
   private _toggleMasterActionConfirmation(
     domain: MasterActionConfirmationDomain,
