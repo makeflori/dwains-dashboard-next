@@ -198,6 +198,9 @@ export class DwainsLayoutCard extends LitElement {
   @state() private _settingsDirty = false;
   @state() private _settingsSavePending = false;
   @state() private _settingsSaveError = '';
+  @state() private _settingsPageKey = 'overview';
+  @state() private _settingsPageTitle = '';
+  @state() private _settingsPageDescription = '';
   @state() private _confirmationDialog: ConfirmationDialogState | null = null;
 
   // Performance optimizations
@@ -9751,6 +9754,63 @@ export class DwainsLayoutCard extends LitElement {
         min-width: 0 !important;
       }
     }
+
+    /* Settings shell correction */
+    .settings-page-view {
+      width: min(840px, calc(100% - 32px));
+      padding-top: 18px;
+    }
+
+    .settings-page-header,
+    .settings-page-editor {
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .settings-page-header {
+      min-height: 76px;
+      padding: 12px 16px;
+      gap: 14px;
+    }
+
+    .settings-page-title {
+      min-height: 44px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .settings-page-title h1 {
+      font-size: clamp(22px, 1.65vw, 26px);
+      line-height: 1.05;
+    }
+
+    .settings-page-title p {
+      margin: 3px 0 0;
+      min-height: 16px;
+      font-size: 12px;
+      line-height: 1.3;
+    }
+
+    .settings-page-actions,
+    .settings-page-back {
+      align-self: center;
+    }
+
+    @media (max-width: 768px) {
+      .settings-page-view {
+        width: 100%;
+      }
+
+      .settings-page-header {
+        min-height: 68px;
+      }
+
+      .settings-page-title {
+        min-height: 42px;
+      }
+    }
+
   `;
 
   connectedCallback() {
@@ -15435,6 +15495,9 @@ export class DwainsLayoutCard extends LitElement {
     this._settingsSaveError = '';
     this._settingsSavePending = false;
     this._settingsEditorInitialized = false;
+    this._settingsPageKey = 'overview';
+    this._settingsPageTitle = '';
+    this._settingsPageDescription = '';
   }
 
   private _selectView(view: DwainsSelectedView) {
@@ -15456,6 +15519,9 @@ export class DwainsLayoutCard extends LitElement {
       this._settingsDirty = false;
       this._settingsSaveError = '';
       this._settingsEditorInitialized = false;
+      this._settingsPageKey = 'overview';
+      this._settingsPageTitle = '';
+      this._settingsPageDescription = '';
     }
     this._syncBottomNavAreaContext();
     this._closeMobileNav();
@@ -15772,6 +15838,23 @@ export class DwainsLayoutCard extends LitElement {
     this._settingsSaveError = '';
   };
 
+  private _handleSettingsPageChanged = (event: Event): void => {
+    event.stopPropagation();
+    const detail = (event as CustomEvent<{ page?: string; title?: string; description?: string }>).detail || {};
+    this._settingsPageKey = detail.page || 'overview';
+    this._settingsPageTitle = detail.title || '';
+    this._settingsPageDescription = detail.description || '';
+  };
+
+  private _settingsBackToOverview = (): void => {
+    const editor = this.renderRoot?.querySelector('dwains-dashboard-next-strategy-editor') as any;
+    editor?._backToSettingsOverview?.();
+  };
+
+  private _settingsSecondaryAction = (): void => {
+    this._closeSettingsPage();
+  };
+
   private _closeSettingsPage = (): void => {
     if (!this._confirmDiscardSettings()) return;
     this._clearSettingsEditState();
@@ -15820,6 +15903,10 @@ export class DwainsLayoutCard extends LitElement {
 
   private _renderSettingsView(): TemplateResult {
     const canSave = this._settingsDirty && !this._settingsSavePending;
+    const onSubpage = this._settingsPageKey !== 'overview';
+    const title = this._settingsPageTitle || this._t('sidebar.dashboard_settings');
+    const description = this._settingsPageDescription || this._t('settings.subtitle');
+    const secondaryLabel = this._settingsDirty ? this._t('common.cancel') : this._t('common.close');
 
     return html`
       <section class="settings-page-view">
@@ -15827,19 +15914,19 @@ export class DwainsLayoutCard extends LitElement {
           <button
             class="settings-page-back"
             type="button"
-            title=${this._t('common.close')}
-            aria-label=${this._t('common.close')}
-            @click=${this._closeSettingsPage}
+            title=${onSubpage ? this._t('common.back') : this._t('common.close')}
+            aria-label=${onSubpage ? this._t('common.back') : this._t('common.close')}
+            @click=${onSubpage ? this._settingsBackToOverview : this._closeSettingsPage}
           >
-            <ha-icon icon="mdi:close"></ha-icon>
+            <ha-icon icon=${onSubpage ? 'mdi:arrow-left' : 'mdi:close'}></ha-icon>
           </button>
           <div class="settings-page-title">
-            <h1>${this._t('sidebar.dashboard_settings')}</h1>
-            <p>${this._t('settings.subtitle')}</p>
+            <h1>${title}</h1>
+            <p>${description}</p>
           </div>
           <div class="settings-page-actions">
-            <button type="button" class="settings-secondary" @click=${this._closeSettingsPage}>
-              ${this._t('common.back')}
+            <button type="button" class="settings-secondary" @click=${this._settingsSecondaryAction}>
+              ${secondaryLabel}
             </button>
             <button
               type="button"
@@ -15854,12 +15941,16 @@ export class DwainsLayoutCard extends LitElement {
         ${this._settingsSaveError
           ? html`<div class="settings-save-error">${this._settingsSaveError}</div>`
           : nothing}
-        <div class="settings-page-editor" @config-changed=${this._handleSettingsConfigChanged}>
+        <div
+          class="settings-page-editor"
+          @config-changed=${this._handleSettingsConfigChanged}
+          @dd-settings-page-changed=${this._handleSettingsPageChanged}
+        >
           <dwains-dashboard-next-strategy-editor></dwains-dashboard-next-strategy-editor>
         </div>
         <div class="settings-page-bottom-actions">
-          <button type="button" class="settings-secondary" @click=${this._closeSettingsPage}>
-            Back
+          <button type="button" class="settings-secondary" @click=${this._settingsSecondaryAction}>
+            ${secondaryLabel}
           </button>
           <button
             type="button"
@@ -15898,6 +15989,9 @@ export class DwainsLayoutCard extends LitElement {
     this._settingsDirty = false;
     this._settingsSaveError = '';
     this._settingsEditorInitialized = false;
+    this._settingsPageKey = 'overview';
+    this._settingsPageTitle = '';
+    this._settingsPageDescription = '';
     this._closeMobileNav();
     this._syncBottomNavAreaContext();
     this.updateComplete.then(() => this._scrollContentAreaToTop());
