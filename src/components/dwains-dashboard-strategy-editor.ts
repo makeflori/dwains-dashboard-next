@@ -756,7 +756,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       this._config?.settings?.show_time !== false,
       this._config?.settings?.show_notifications !== false,
       this._config?.settings?.show_weather !== false,
-      Boolean(this._config?.settings?.alarm_entity_id),
+      Boolean(this._config?.settings?.alarm_entity_id) && this._config?.settings?.show_alarm !== false,
     ].filter(Boolean).length;
     const replacementCount = this._replacementCount();
     const protectedMasterActionCount = MASTER_ACTION_CONFIRMATION_DOMAINS
@@ -1114,10 +1114,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _renderMasterActionConfirmationSettingsPanel() {
     return html`
       <div class="master-confirmation-section dd-simple-settings-stack">
-        <div class="master-confirmation-note">
-          <ha-icon icon="mdi:information-outline"></ha-icon>
-          <span>${this._t('settings.master_confirmations_note')}</span>
-        </div>
         <div class="master-confirmation-list">
           ${MASTER_ACTION_CONFIRMATION_DOMAINS.map((domain) => {
             const enabled = masterActionConfirmationEnabled(this._config?.settings, domain);
@@ -1128,12 +1124,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                 </span>
                 <span class="master-confirmation-copy">
                   <strong>${getDomainName(this.hass, domain)}</strong>
-                  <small>${this._t(`settings.confirm_${domain}_description`)}</small>
                 </span>
-                <ha-switch
-                  .checked=${enabled}
-                  @change=${(event: Event) => this._toggleMasterActionConfirmation(domain, event)}
-                ></ha-switch>
+                <span class="master-confirmation-control">
+                  <span>${this._t(enabled ? 'settings.confirmation_required' : 'settings.runs_immediately')}</span>
+                  <ha-switch
+                    .checked=${enabled}
+                    @change=${(event: Event) => this._toggleMasterActionConfirmation(domain, event)}
+                  ></ha-switch>
+                </span>
               </label>
             `;
           })}
@@ -1142,7 +1140,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     `;
   }
 
-  private _renderSupportSection() {
+  private _renderSupportSection() {  private _renderSupportSection() {
     return html`
       <div class="sponsoring-section dd-support-flat">
         <div class="sponsor-label">${this._t('support.donation')}</div>
@@ -1226,21 +1224,93 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     `;
   }
 
+  private _replacementEntries(): Array<{ target: string; assignment: any }> {
+    const replacements = this._config?.blueprint_replacements;
+    if (!replacements) return [];
+    const targets = new Set<string>();
+    for (const surface of ['area_cards', 'devices_cards'] as const) {
+      Object.keys(replacements[surface]?.by_domain || {}).forEach((target) => targets.add(target));
+    }
+    return [...targets]
+      .sort((a, b) => getDomainName(this.hass, a).localeCompare(getDomainName(this.hass, b)))
+      .map((target) => ({
+        target,
+        assignment:
+          replacements.area_cards?.by_domain?.[target] ||
+          replacements.devices_cards?.by_domain?.[target],
+      }))
+      .filter((entry) => Boolean(entry.assignment));
+  }
+
+  private _setReplacementEnabled(target: string, enabled: boolean): void {
+    if (!this._config) return;
+    const replacements = structuredClone(this._config.blueprint_replacements || {});
+    for (const surface of ['area_cards', 'devices_cards'] as const) {
+      const assignment = replacements[surface]?.by_domain?.[target];
+      if (assignment) assignment.enabled = enabled;
+    }
+    this._fireConfigChanged({ ...this._config, blueprint_replacements: replacements });
+  }
+
+  private _removeReplacement(target: string): void {
+    if (!this._config) return;
+    const replacements = structuredClone(this._config.blueprint_replacements || {});
+    for (const surface of ['area_cards', 'devices_cards'] as const) {
+      if (replacements[surface]?.by_domain) delete replacements[surface]!.by_domain![target];
+    }
+    this._fireConfigChanged({ ...this._config, blueprint_replacements: replacements });
+  }
+
   private _renderReplacementsSettingsPanel() {
+    const entries = this._replacementEntries();
+
     return this._renderSettingsPanel(
       "mdi:puzzle-edit-outline",
       this._t('settings.blueprint_replacements'),
       this._t('settings.replace_description'),
       html`
-        <div class="replacement-section">
-          <div class="replacement-summary">
-            <div>
-              <div class="replacement-count">${this._tp('common.active', this._replacementCount())}</div>
-              <div class="replacement-help">${this._t('replacement.views_description')}</div>
+        <div class="replacement-section dd-replacement-settings">
+          ${entries.length ? html`
+            <div class="dd-replacement-list">
+              ${entries.map(({ target, assignment }) => {
+                const enabled = assignment.enabled !== false;
+                return html`
+                  <div class="dd-replacement-row ${enabled ? '' : 'disabled'}">
+                    <span class="dd-replacement-domain-icon" style=${`--replacement-color: ${getDomainColor(target)};`}>
+                      <ha-icon icon=${getDomainIcon(target)}></ha-icon>
+                    </span>
+                    <span class="dd-replacement-copy">
+                      <strong>${getDomainName(this.hass, target)}</strong>
+                      <small>${assignment.name}${assignment.version ? ` · v${assignment.version}` : ''}</small>
+                    </span>
+                    <span class="dd-replacement-actions">
+                      <button class="dd-inline-text-button" type="button" @click=${() => this._openReplacementManagerForDomain(target)}>
+                        ${this._t('common.edit')}
+                      </button>
+                      ${this._renderVisibilityButton(
+                        enabled,
+                        false,
+                        enabled ? this._t('common.disable') : this._t('common.enable'),
+                        () => this._setReplacementEnabled(target, !enabled)
+                      )}
+                      <button
+                        class="dd-icon-text-button danger"
+                        type="button"
+                        title=${this._t('common.delete')}
+                        aria-label=${this._t('common.delete')}
+                        @click=${() => this._removeReplacement(target)}
+                      ><ha-icon icon="mdi:delete-outline"></ha-icon></button>
+                    </span>
+                  </div>
+                `;
+              })}
             </div>
+          ` : html`<div class="dd-replacement-empty">${this._t('replacement.empty')}</div>`}
+
+          <div class="dd-replacement-footer">
             <ha-button appearance="accent" @click=${this._openReplacementManager}>
-              <ha-icon icon="mdi:puzzle-edit-outline"></ha-icon>
-              ${this._t('common.manage')}
+              <ha-icon icon="mdi:plus"></ha-icon>
+              ${this._t('replacement.assign')}
             </ha-button>
           </div>
         </div>
@@ -1248,7 +1318,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     );
   }
 
-  private _renderFavoritesSettingsPanel() {
+  private _renderFavoritesSettingsPanel() {  private _renderFavoritesSettingsPanel() {
     const suggestedEnabled = this._config?.settings?.show_suggested_favorites !== false;
 
     return html`
@@ -1286,10 +1356,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       : this._t('settings.no_weather_fallback');
 
     const alarmId = this._config?.settings?.alarm_entity_id;
+    const alarmEnabled = Boolean(alarmId) && this._config?.settings?.show_alarm !== false;
     const alarmState = alarmId ? this.hass?.states?.[alarmId] : undefined;
     const alarmName = alarmId
       ? (alarmState?.attributes?.friendly_name || alarmId)
-      : this._t('settings.no_alarm');
+      : this._t('settings.no_alarm_short');
 
     return html`
       <div class="dd-header-status-list">
@@ -1316,11 +1387,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
               <small>${weatherName}</small>
             </span>
             <span class="dd-header-feature-actions">
-              ${weatherEnabled ? html`
-                <button class="dd-inline-text-button" type="button" @click=${this._addWeatherEntity}>
-                  ${weatherId ? this._t('common.edit') : this._t('settings.select_weather')}
-                </button>
-              ` : nothing}
+              <button class="dd-inline-text-button" type="button" @click=${this._addWeatherEntity}>
+                ${weatherId ? this._t('common.edit') : this._t('settings.select_weather')}
+              </button>
               <ha-switch .checked=${weatherEnabled} @change=${this._toggleWeatherDisplay}></ha-switch>
             </span>
           </div>
@@ -1335,14 +1404,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
               <small>${alarmName}</small>
             </span>
             <span class="dd-header-feature-actions">
-              ${alarmId ? html`
-                <button class="dd-icon-text-button danger" type="button" title=${this._t('common.remove')} @click=${() => this._removeAlarmEntity()}>
-                  <ha-icon icon="mdi:close"></ha-icon>
-                </button>
-              ` : nothing}
               <button class="dd-inline-text-button" type="button" @click=${this._addAlarmEntity}>
                 ${alarmId ? this._t('common.edit') : this._t('settings.select_alarm')}
               </button>
+              <ha-switch
+                .checked=${alarmEnabled}
+                .disabled=${!alarmId}
+                @change=${this._toggleAlarmDisplay}
+              ></ha-switch>
             </span>
           </div>
           ${this._showAlarmPicker ? this._renderAlarmPicker() : nothing}
@@ -1351,7 +1420,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     `;
   }
 
-  private _renderEntityDisplaySettingsPanel() {
+  private _renderEntityDisplaySettingsPanel() {  private _renderEntityDisplaySettingsPanel() {
     return this._renderSettingsPanel(
       "mdi:eye-off",
       this._t('settings.devices_page'),
@@ -1390,14 +1459,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           <div class="dd-settings-list">
             ${this._renderToggleSetting(
               "mdi:menu",
-              this._t('settings.restrict_ha_menu'),
+              this._t('settings.restrict_ha_menu_short'),
               this._t('settings.restrict_ha_menu_description'),
               this._config?.settings?.restrict_non_admin_ha_sidebar === true,
               this._toggleRestrictNonAdminHaSidebar
             )}
             ${this._renderToggleSetting(
               "mdi:pencil-off-outline",
-              this._t('settings.restrict_editing'),
+              this._t('settings.restrict_editing_short'),
               this._t('settings.restrict_editing_description'),
               this._config?.settings?.restrict_non_admin_dashboard_settings === true,
               this._toggleRestrictNonAdminDashboardSettings
@@ -4407,7 +4476,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       return html`<p>${this._t('settings.no_persons')}</p>`;
     }
 
-    // Get all person entities
     const personEntities = Object.keys(this.hass.states)
       .filter(entityId => entityId.startsWith('person.'))
       .map(entityId => {
@@ -4440,22 +4508,16 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           (person) => person.entity_id,
           (person) => {
             const isHidden = hiddenPersons.has(person.entity_id);
-
             return html`
               <div class="person-item ${isHidden ? 'hidden' : ''}">
-                <ha-state-icon
-                  .stateObj=${person.state}
-                  class="person-icon"
-                ></ha-state-icon>
+                <ha-state-icon .stateObj=${person.state} class="person-icon"></ha-state-icon>
                 <span class="person-name">${person.friendly_name}</span>
-                <span class="person-state ${person.state?.state === 'home' ? 'home' : 'away'}">
-                  ${person.state?.state === 'home' ? this._t('person.home') : this._t('person.away')}
-                </span>
-                <ha-icon-button
-                  .label=${isHidden ? "Show" : "Hide"}
-                  .path=${isHidden ? mdiEye : mdiEyeOff}
-                  @click=${() => this._togglePersonVisibility(person.entity_id)}
-                ></ha-icon-button>
+                ${this._renderVisibilityButton(
+                  !isHidden,
+                  false,
+                  isHidden ? this._t('common.show') : this._t('common.hide'),
+                  () => this._togglePersonVisibility(person.entity_id)
+                )}
               </div>
             `;
           }
@@ -4464,7 +4526,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     `;
   }
 
-  private _togglePersonVisibility(personId: string): void {
+  private _togglePersonVisibility(personId: string): void {  private _togglePersonVisibility(personId: string): void {
     const hiddenPersons = [...(this._config?.settings?.hidden_persons || [])];
     const index = hiddenPersons.indexOf(personId);
 
@@ -4498,6 +4560,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       this._fireConfigChanged(config);
       this.requestUpdate();
     });
+  }
+
+  private _openReplacementManagerForDomain(target: string): void {
+    if (!this.hass || !this._config) return;
+    openReplacementManager(this.hass, this._config, (config) => {
+      this._fireConfigChanged(config);
+      this.requestUpdate();
+    }, target);
   }
 
   private _replacementCount(): number {
