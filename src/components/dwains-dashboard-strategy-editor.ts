@@ -1140,7 +1140,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     `;
   }
 
-  private _renderSupportSection() {  private _renderSupportSection() {
+  private _renderSupportSection() {
     return html`
       <div class="sponsoring-section dd-support-flat">
         <div class="sponsor-label">${this._t('support.donation')}</div>
@@ -1318,7 +1318,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     );
   }
 
-  private _renderFavoritesSettingsPanel() {  private _renderFavoritesSettingsPanel() {
+  private _renderFavoritesSettingsPanel() {
     const suggestedEnabled = this._config?.settings?.show_suggested_favorites !== false;
 
     return html`
@@ -4548,7 +4548,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     `;
   }
 
-  private _togglePersonVisibility(personId: string): void {  private _togglePersonVisibility(personId: string): void {
+  private _togglePersonVisibility(personId: string): void {
     const hiddenPersons = [...(this._config?.settings?.hidden_persons || [])];
     const index = hiddenPersons.indexOf(personId);
 
