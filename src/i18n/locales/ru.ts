@@ -49,6 +49,8 @@ export const ru = {
   'common.active.one': '{count} активный',
   'common.active.other': '{count} активных',
   'common.just_now': 'только что',
+  'common.select': 'Выбрать',
+  'common.clear_selection': 'Очистить выбор',
 
   'sidebar.home': 'Главная',
   'sidebar.add_blueprint': 'Добавить шаблон',
@@ -674,5 +676,6 @@ export const ru = {
   'settings.home_climate_areas_description': "Выберите зоны для расчёта средней температуры и влажности.",
   'settings.home_climate_area_included': "Included in house average",
   'settings.home_climate_area_excluded': "Excluded from house average",
+  'settings.unassigned_area': 'Не назначено',
 
 } as const satisfies TranslationDictionary;
