@@ -49,6 +49,8 @@ export const de = {
   'common.active.one': '{count} aktiv',
   'common.active.other': '{count} aktiv',
   'common.just_now': 'soeben',
+  'common.select': 'Auswählen',
+  'common.clear_selection': 'Auswahl entfernen',
   'sidebar.home': 'Startseite',
   'sidebar.add_blueprint': 'Blueprint hinzufügen',
   'sidebar.dashboard_settings': 'Dashboard-Einstellungen',
@@ -651,5 +653,6 @@ export const de = {
   'settings.home_climate_areas_description': "Wähle die Bereiche für den Temperatur- und Luftfeuchtigkeitsdurchschnitt.",
   'settings.home_climate_area_included': "Im Hausdurchschnitt enthalten",
   'settings.home_climate_area_excluded': "Vom Hausdurchschnitt ausgeschlossen",
+  'settings.unassigned_area': 'Nicht zugeordnet',
 
 } as const satisfies TranslationDictionary;
