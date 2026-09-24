@@ -52,6 +52,7 @@ export interface DwainsDashboardSettings {
   weather_entity_id?: string;
   alarm_entity_id?: string;
   show_weather?: boolean;
+  show_alarm?: boolean;
   show_time?: boolean;
   show_notifications?: boolean;
   show_suggested_favorites?: boolean;
