@@ -49,6 +49,8 @@ export const zhHans = {
   'common.active.one': '{count} 个激活中',
   'common.active.other': '{count} 个激活中',
   'common.just_now': '现在',
+  'common.select': '选择',
+  'common.clear_selection': '清除选择',
   'sidebar.home': '首页',
   'sidebar.add_blueprint': '添加蓝图',
   'sidebar.dashboard_settings': '仪表板设置',
@@ -649,5 +651,6 @@ export const zhHans = {
   'settings.home_climate_areas_description': "选择用于计算平均温度和湿度的区域。",
   'settings.home_climate_area_included': "Included in house average",
   'settings.home_climate_area_excluded': "Excluded from house average",
+  'settings.unassigned_area': '未分配',
 
 } as const satisfies TranslationDictionary;
