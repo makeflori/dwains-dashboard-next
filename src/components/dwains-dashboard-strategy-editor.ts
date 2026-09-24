@@ -1542,27 +1542,25 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           <strong id="area-order-title">${this._t('settings.area_order_title')}</strong>
           <span>${this._t('settings.area_order_description')}</span>
         </div>
-        <div class="area-order-modes" role="radiogroup" aria-label=${this._t('settings.area_order_title')}>
+        <div class="area-sort-segmented" role="radiogroup" aria-label=${this._t('settings.area_order_title')}>
           ${sortModes.map(({ mode, icon }) => html`
             <button
               type="button"
-              class="area-order-mode ${sortMode === mode ? 'selected' : ''}"
+              class="area-sort-segment ${sortMode === mode ? 'selected' : ''}"
               role="radio"
               aria-checked=${sortMode === mode ? 'true' : 'false'}
               @click=${() => this._setAreaSortMode(mode)}
             >
               <ha-icon .icon=${icon}></ha-icon>
-              <span>
-                <strong>${this._t(`settings.area_order_${mode}`)}</strong>
-                <small>${this._t(`settings.area_order_${mode}_description`)}</small>
-              </span>
+              <span>${this._t(`settings.area_order_${mode}`)}</span>
             </button>
           `)}
         </div>
-        ${sortMode === 'custom' ? html`
-          <p class="area-order-hint">${this._t('settings.area_order_drag_hint')}</p>
-        ` : nothing}
       </section>
+
+      ${sortMode === 'custom' ? html`
+        <p class="area-order-list-hint">${this._t('settings.area_order_drag_hint')}</p>
+      ` : nothing}
 
       <div class="sortable-container area-settings-sortable ${sortMode === 'custom' ? 'is-custom-order' : ''} ${this._draggedAreaId ? 'dragging' : ''}">
         ${repeat(
@@ -1586,29 +1584,17 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                 @drop=${(event: DragEvent) => sortMode === 'custom' && this._handleAreaDrop(event, index)}
               >
                 <div class="area-item">
-                  <div class="handle ${sortMode !== 'custom' ? 'disabled' : ''}" aria-hidden="true">
-                    <ha-svg-icon .path=${mdiDrag}></ha-svg-icon>
-                  </div>
+                  ${sortMode === 'custom' ? html`
+                    <div class="handle" aria-hidden="true">
+                      <ha-svg-icon .path=${mdiDrag}></ha-svg-icon>
+                    </div>
+                  ` : nothing}
                   <ha-icon .icon=${area.icon || 'mdi:floor-plan'} class="area-icon"></ha-icon>
                   <span class="area-name clickable" @click=${() => this._editArea(area.area_id)}>
                     ${area.name}
                     <ha-icon icon="mdi:chevron-right" class="chevron"></ha-icon>
                   </span>
                   <div class="area-actions">
-                    ${sortMode === 'custom' ? html`
-                      <ha-icon-button
-                        .label=${this._t('settings.move_up')}
-                        .path=${mdiArrowUp}
-                        .disabled=${index === 0}
-                        @click=${() => this._moveArea(area.area_id, -1)}
-                      ></ha-icon-button>
-                      <ha-icon-button
-                        .label=${this._t('settings.move_down')}
-                        .path=${mdiArrowDown}
-                        .disabled=${index === sortedAreas.length - 1}
-                        @click=${() => this._moveArea(area.area_id, 1)}
-                      ></ha-icon-button>
-                    ` : nothing}
                     <ha-icon-button
                       .label=${this._t(isHidden ? 'common.show' : 'common.hide')}
                       .path=${isHidden ? mdiEye : mdiEyeOff}
