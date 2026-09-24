@@ -7933,6 +7933,311 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           padding-left: 12px;
         }
       }
+
+      /* Final settings layout pass */
+      .dd-flat-settings {
+        max-width: 920px;
+        margin-inline: auto;
+      }
+
+      .dd-flat-settings .settings-nav-section,
+      .dd-flat-settings .settings-detail-content,
+      .dd-flat-settings .dd-settings-version-footer {
+        max-width: none;
+        width: 100%;
+      }
+
+      .settings-nav-section h3 {
+        min-height: 28px;
+        margin: 0 0 7px;
+        padding: 0 2px;
+        font-size: 14px;
+        font-weight: 750;
+        color: var(--primary-text-color);
+      }
+
+      .settings-nav-section + .settings-nav-section {
+        margin-top: 18px;
+      }
+
+      .area-sort-segmented {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        overflow: hidden;
+        border: 1px solid var(--divider-color);
+        border-radius: 10px;
+        background: var(--secondary-background-color);
+      }
+
+      .area-sort-segment {
+        min-width: 0;
+        min-height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 8px 10px;
+        border: 0;
+        border-right: 1px solid var(--divider-color);
+        color: var(--secondary-text-color);
+        background: transparent;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 650;
+        cursor: pointer;
+      }
+
+      .area-sort-segment:last-child {
+        border-right: 0;
+      }
+
+      .area-sort-segment:hover {
+        color: var(--primary-text-color);
+        background: color-mix(in srgb, var(--primary-color) 4%, transparent);
+      }
+
+      .area-sort-segment.selected {
+        color: var(--primary-color);
+        background: color-mix(in srgb, var(--primary-color) 9%, var(--card-background-color));
+      }
+
+      .area-sort-segment ha-icon {
+        --mdc-icon-size: 18px;
+      }
+
+      .area-order-list-hint {
+        margin: 0 2px 8px;
+        color: var(--secondary-text-color);
+        font-size: 12px;
+        line-height: 1.4;
+      }
+
+      .dd-integrated-chevron ha-icon {
+        width: 18px;
+        height: 18px;
+        --mdc-icon-size: 18px;
+      }
+
+      .dd-integrated-chevron {
+        width: 34px;
+        height: 18px;
+      }
+
+      .persons-list .person-item {
+        display: grid;
+        grid-template-columns: 40px minmax(0, 1fr) 44px;
+        gap: 8px;
+      }
+
+      .persons-list .dd-visibility-button {
+        justify-self: end;
+      }
+
+      .master-confirmation-control {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 12px;
+      }
+
+      .master-confirmation-control > span {
+        display: block;
+        min-width: 116px;
+        color: var(--secondary-text-color);
+        font-size: 12px;
+        font-weight: 600;
+        text-align: right;
+      }
+
+      .device-type-panel {
+        --device-type-color: var(--primary-color);
+      }
+
+      .device-type-panel-row .device-type-icon.small,
+      .device-type-panel .device-admission-device .device-type-icon {
+        color: var(--device-type-color);
+      }
+
+      .device-type-panel .dd-visibility-button {
+        color: var(--device-type-color);
+        border-color: color-mix(in srgb, var(--device-type-color) 30%, var(--divider-color));
+      }
+
+      .device-type-panel .dd-visibility-button.hidden {
+        color: var(--secondary-text-color);
+        border-color: var(--divider-color);
+      }
+
+      .device-admission-device-list {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+        padding: 0 12px 12px 52px;
+      }
+
+      .device-admission-device {
+        min-width: 0;
+        min-height: 62px;
+        grid-template-columns: 32px minmax(0, 1fr) 38px;
+        gap: 7px;
+        padding: 8px;
+        border: 1px solid var(--divider-color);
+        border-radius: 10px;
+        background: var(--card-background-color);
+      }
+
+      .device-admission-device + .device-admission-device {
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .device-admission-device.hidden {
+        background: color-mix(in srgb, var(--secondary-background-color) 70%, var(--card-background-color));
+      }
+
+      .device-admission-device .dd-visibility-button {
+        width: 34px;
+        height: 34px;
+      }
+
+      .device-admission-copy {
+        min-width: 0;
+      }
+
+      .device-admission-copy .device-type-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 12px;
+        font-weight: 650;
+      }
+
+      .device-admission-copy .device-type-count {
+        font-size: 10px;
+      }
+
+      .dd-replacement-settings {
+        padding: 0;
+        display: grid;
+        gap: 12px;
+      }
+
+      .dd-replacement-list {
+        overflow: hidden;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: var(--card-background-color);
+      }
+
+      .dd-replacement-row {
+        min-height: 62px;
+        display: grid;
+        grid-template-columns: 40px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+      }
+
+      .dd-replacement-row + .dd-replacement-row {
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .dd-replacement-row.disabled {
+        opacity: 0.55;
+      }
+
+      .dd-replacement-domain-icon {
+        width: 40px;
+        height: 40px;
+        display: grid;
+        place-items: center;
+        color: var(--replacement-color, var(--primary-color));
+      }
+
+      .dd-replacement-domain-icon ha-icon {
+        --mdc-icon-size: 23px;
+      }
+
+      .dd-replacement-copy {
+        min-width: 0;
+        display: grid;
+        gap: 3px;
+      }
+
+      .dd-replacement-copy strong {
+        font-size: 14px;
+      }
+
+      .dd-replacement-copy small {
+        overflow: hidden;
+        color: var(--secondary-text-color);
+        font-size: 11px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .dd-replacement-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .dd-replacement-empty {
+        padding: 18px;
+        border: 1px dashed var(--divider-color);
+        border-radius: 12px;
+        color: var(--secondary-text-color);
+        font-size: 12px;
+        text-align: center;
+      }
+
+      .dd-replacement-footer {
+        display: flex;
+        justify-content: flex-start;
+      }
+
+      .dd-replacement-footer ha-button ha-icon {
+        --mdc-icon-size: 18px;
+        margin-right: 5px;
+      }
+
+      @media (max-width: 700px) {
+        .dd-flat-settings {
+          max-width: none;
+        }
+
+        .area-sort-segmented {
+          grid-template-columns: 1fr;
+        }
+
+        .area-sort-segment {
+          justify-content: flex-start;
+          border-right: 0;
+          border-bottom: 1px solid var(--divider-color);
+        }
+
+        .area-sort-segment:last-child {
+          border-bottom: 0;
+        }
+
+        .device-admission-device-list {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          padding-left: 12px;
+        }
+
+        .master-confirmation-control > span {
+          min-width: 0;
+          max-width: 110px;
+        }
+
+        .dd-replacement-row {
+          grid-template-columns: 36px minmax(0, 1fr);
+        }
+
+        .dd-replacement-actions {
+          grid-column: 2;
+          justify-self: start;
+        }
+      }
     `;
   }
 }
