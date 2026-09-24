@@ -10,6 +10,7 @@ import {
   mdiFloorPlan,
   mdiFormatListBulletedType,
   mdiGestureTapButton,
+  mdiHeart,
   mdiHeartOutline,
   mdiHomeEditOutline,
   mdiPackageVariantClosedCheck,
@@ -115,6 +116,7 @@ const SETTINGS_ICON_PATHS: Record<string, string> = {
   "mdi:floor-plan": mdiFloorPlan,
   "mdi:format-list-bulleted-type": mdiFormatListBulletedType,
   "mdi:gesture-tap-button": mdiGestureTapButton,
+  "mdi:heart": mdiHeart,
   "mdi:heart-outline": mdiHeartOutline,
   "mdi:home-edit-outline": mdiHomeEditOutline,
   "mdi:package-variant-closed-check": mdiPackageVariantClosedCheck,
@@ -642,7 +644,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       {
         page: "support",
         group: "support",
-        icon: "mdi:heart-outline",
+        icon: "mdi:heart",
         color: "var(--primary-color)",
         title: this._t('settings.support'),
         description: this._t('settings.support_description'),
@@ -665,10 +667,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                   <defs>
                     <linearGradient id="dd-support-icon-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" style="stop-color: var(--primary-color)"></stop>
+                      <stop offset="52%" style="stop-color: var(--accent-color, #e8a400)"></stop>
                       <stop offset="100%" style="stop-color: var(--accent-color, #e8a400)"></stop>
                     </linearGradient>
                   </defs>
-                  <path d=${SETTINGS_ICON_PATHS[item.icon] || mdiHeartOutline} fill="url(#dd-support-icon-gradient)"></path>
+                  <path d=${SETTINGS_ICON_PATHS[item.icon] || mdiHeart} fill="url(#dd-support-icon-gradient)"></path>
                 </svg>
               `
             : this._renderSettingsIcon(item.icon)}
@@ -1193,7 +1196,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
             </span>
             <span class="dd-header-feature-actions">
               <button class="dd-inline-text-button" type="button" @click=${this._addWeatherEntity}>
-                ${weatherId ? this._t('common.edit') : this._t('settings.select_weather')}
+                ${this._t('common.select')}
               </button>
               <ha-switch .checked=${weatherEnabled} @change=${this._toggleWeatherDisplay}></ha-switch>
             </span>
@@ -1210,7 +1213,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
             </span>
             <span class="dd-header-feature-actions">
               <button class="dd-inline-text-button" type="button" @click=${this._addAlarmEntity}>
-                ${alarmId ? this._t('common.edit') : this._t('settings.select_alarm')}
+                ${this._t('common.select')}
               </button>
               <ha-switch
                 .checked=${alarmEnabled}
@@ -1337,8 +1340,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       : baseSortedAreas;
     const sortModes: Array<{ mode: AreaSortMode; icon: string }> = [
       { mode: 'home_assistant', icon: 'mdi:home-assistant' },
-      { mode: 'custom', icon: 'mdi:drag-vertical' },
       { mode: 'alphabetical', icon: 'mdi:sort-alphabetical-ascending' },
+      { mode: 'custom', icon: 'mdi:drag-vertical' },
     ];
 
     return html`
@@ -1651,7 +1654,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     );
 
     return html`
-      <div class="editor-container">
+      <div class="editor-container area-detail-editor">
         <div class="toolbar">
           <ha-icon-button
             .path=${mdiArrowLeft}
@@ -2537,8 +2540,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                 style=${`--device-type-color: ${option.color};`}
               >
                 <div
-                  class="device-type-panel-row ${group?.areas.length ? 'expandable' : ''}"
-                  @click=${() => group?.areas.length && this._toggleExpandedDeviceType(option.key)}
+                  class="device-type-panel-row expandable"
+                  @click=${() => this._toggleExpandedDeviceType(option.key)}
                 >
                   <span class="device-type-icon small"><ha-icon icon=${option.icon}></ha-icon></span>
                   <span class="device-type-heading">
@@ -2551,19 +2554,17 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                     globallyVisible ? this._t('settings.hide_type') : this._t('settings.show_type'),
                     () => this._setDeviceTypeVisible(option.key, !globallyVisible)
                   )}
-                  ${group?.areas.length ? html`
-                    <button
-                      class="dd-integrated-chevron device-type-chevron"
-                      type="button"
-                      aria-expanded=${expanded ? 'true' : 'false'}
-                      @click=${(event: Event) => {
-                        event.stopPropagation();
-                        this._toggleExpandedDeviceType(option.key);
-                      }}
-                    >
-                      <ha-icon icon=${expanded ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
-                    </button>
-                  ` : nothing}
+                  <button
+                    class="dd-integrated-chevron device-type-chevron"
+                    type="button"
+                    aria-expanded=${expanded ? 'true' : 'false'}
+                    @click=${(event: Event) => {
+                      event.stopPropagation();
+                      this._toggleExpandedDeviceType(option.key);
+                    }}
+                  >
+                    <ha-icon icon=${expanded ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
+                  </button>
                 </div>
 
                 ${expanded && group ? html`
@@ -2805,7 +2806,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       if (fromEntity) return fromEntity;
     }
 
-    return undefined;
+    return {
+      areaId: '__unassigned__',
+      areaName: this._t('settings.unassigned_area'),
+    };
   }
 
   private _getHiddenDeviceIds(): Set<string> {
@@ -2848,58 +2852,18 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   }
 
   private _getDeviceTypeOptions(): Array<{ key: string; label: string; icon: string; color: string; count: number }> {
-    if (!this.hass || !this._config) return [];
-
-    const counts = new Map<string, number>();
-    const processed = new Set<string>();
-    const hiddenAreas = new Set(this._config.areas_display?.hidden || []);
-    const deviceAreas = new Map((this._config.devices || []).map((device) => [device.device_id, device.area_id]));
-
-    const addEntity = (entityId: string, areaId?: string | null, deviceId?: string | null) => {
-      if (!entityId || processed.has(entityId)) return;
-      const registry = this.hass?.entities?.[entityId];
-      if (
-        registry?.hidden_by ||
-        (registry as any)?.disabled_by ||
-        registry?.entity_category === 'diagnostic' ||
-        registry?.entity_category === 'config'
-      ) return;
-
-      const resolvedAreaId = areaId || (deviceId ? deviceAreas.get(deviceId) : undefined) || registry?.area_id;
-      if (!resolvedAreaId || hiddenAreas.has(resolvedAreaId)) return;
-      if (this._isEntityHiddenInAreaOptions(resolvedAreaId, entityId)) return;
-
-      const state = this.hass?.states?.[entityId];
-      if (this._config?.settings?.hide_unavailable_entities_on_devices !== false &&
-          (!state || state.state === 'unavailable' || state.state === 'unknown')) {
-        return;
-      }
-
-      const key = this._deviceTypeKeyForEntityId(entityId);
-      if (!key || key === 'person') return;
-
-      processed.add(entityId);
-      counts.set(key, (counts.get(key) || 0) + 1);
-    };
-
-    (this._config.entities || []).forEach((entity) => addEntity(entity.entity_id, entity.area_id, entity.device_id));
-
-    Object.values(this.hass.states || {}).forEach((state: any) => {
-      addEntity(state.entity_id, state.attributes?.area_id, this.hass?.entities?.[state.entity_id]?.device_id);
-    });
-
-    return [...counts.entries()]
-      .map(([key, count]) => ({
-        key,
-        label: this._deviceTypeName(key),
-        icon: this._deviceTypeIcon(key),
-        color: this._deviceTypeColor(key),
-        count,
+    return this._getDeviceVisibilityGroups()
+      .map((group) => ({
+        key: group.key,
+        label: group.label,
+        icon: group.icon,
+        color: group.color,
+        count: group.devices.reduce((total, device) => total + device.entityCount, 0),
       }))
-      .sort((a, b) => a.label.localeCompare(b.label));
+      .sort((a, b) => a.label.localeCompare(b.label, ddLocale(this.hass)));
   }
 
-  private _isEntityHiddenInAreaOptions(areaId: string, entityId: string): boolean {
+  private _isEntityHiddenInAreaOptions(areaId: string, entityId: string): boolean {  private _isEntityHiddenInAreaOptions(areaId: string, entityId: string): boolean {
     const areaOptions = this._config?.areas_options?.[areaId];
     if (!areaOptions?.groups_options) return false;
 
@@ -3818,136 +3782,168 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   }
 
   private _renderWeatherPicker() {
-    const allEntities = Object.keys(this.hass?.states || {});
-    const weatherEntities = allEntities.filter(entityId =>
-      entityId.startsWith('weather.') &&
-      this.hass?.states[entityId]?.state !== 'unavailable'
-    );
+    const selectedId = this._config?.settings?.weather_entity_id;
+    const query = this._weatherSearchFilter.trim().toLocaleLowerCase(ddLocale(this.hass));
+    const weatherEntities = Object.keys(this.hass?.states || {})
+      .filter((entityId) => {
+        if (!entityId.startsWith('weather.')) return false;
+        const registry = this.hass?.entities?.[entityId] as any;
+        return !registry?.hidden_by && !registry?.disabled_by;
+      })
+      .sort((left, right) => {
+        const leftName = this.hass?.states[left]?.attributes?.friendly_name || left;
+        const rightName = this.hass?.states[right]?.attributes?.friendly_name || right;
+        return leftName.localeCompare(rightName, ddLocale(this.hass));
+      });
 
-    const filteredWeatherEntities = weatherEntities.filter(entityId => {
-      if (!this._weatherSearchFilter) return true;
+    const filteredWeatherEntities = weatherEntities.filter((entityId) => {
+      if (!query) return true;
       const state = this.hass?.states[entityId];
       const friendlyName = state?.attributes?.friendly_name || entityId;
-      return friendlyName.toLowerCase().includes(this._weatherSearchFilter.toLowerCase()) ||
-             entityId.toLowerCase().includes(this._weatherSearchFilter.toLowerCase());
+      return friendlyName.toLocaleLowerCase(ddLocale(this.hass)).includes(query) ||
+        entityId.toLocaleLowerCase(ddLocale(this.hass)).includes(query);
     });
 
     return html`
-      <div class="entity-picker-modal">
+      <div class="entity-picker-modal" role="dialog" aria-modal="true">
         <div class="entity-picker-content">
           <div class="entity-picker-header">
             <h4>${this._t('settings.select_weather_title')}</h4>
-            <button
-              class="close-button"
-              title=${this._t('common.close')}
-              @click=${() => this._showWeatherPicker = false}
-            >
-              <svg viewBox="0 0 24 24" width="20" height="20">
-                <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
-              </svg>
+            <button class="close-button" type="button" title=${this._t('common.close')} @click=${() => this._showWeatherPicker = false}>
+              <ha-icon icon="mdi:close"></ha-icon>
             </button>
           </div>
 
           <div class="entity-search">
-            <ha-textfield
-              .label=${this._t('settings.search_weather')}
+            <input
+              class="entity-search-input"
+              type="search"
+              aria-label=${this._t('settings.search_weather')}
+              placeholder=${this._t('settings.search_weather')}
               .value=${this._weatherSearchFilter}
               @input=${(e: Event) => this._weatherSearchFilter = (e.target as HTMLInputElement).value}
-            ></ha-textfield>
+            />
           </div>
 
           <div class="entity-list">
-            ${repeat(
-              filteredWeatherEntities.slice(0, 20), // Limit to 20 results for weather
-              (entityId) => entityId,
-              (entityId) => {
-                const state = this.hass?.states[entityId];
-                const friendlyName = state?.attributes?.friendly_name || entityId;
-
-                return html`
-                  <div class="entity-option" @click=${() => this._selectWeatherEntity(entityId)}>
-                    <ha-state-icon
-                      .stateObj=${state}
-                      class="entity-icon"
-                    ></ha-state-icon>
+            ${filteredWeatherEntities.map((entityId) => {
+              const state = this.hass?.states[entityId];
+              const friendlyName = state?.attributes?.friendly_name || entityId;
+              const selected = entityId === selectedId;
+              return html`
+                <button
+                  class="entity-option ${selected ? 'selected' : ''}"
+                  type="button"
+                  @click=${() => this._selectWeatherEntity(entityId)}
+                >
+                  <ha-state-icon .stateObj=${state} class="entity-icon"></ha-state-icon>
+                  <span class="entity-option-copy">
                     <span class="entity-name">${friendlyName}</span>
                     <span class="entity-id">${entityId}</span>
-                  </div>
-                `;
-              }
-            )}
+                  </span>
+                  ${selected ? html`<ha-icon class="entity-selected-icon" icon="mdi:check-circle"></ha-icon>` : nothing}
+                </button>
+              `;
+            })}
+            ${filteredWeatherEntities.length === 0 ? html`
+              <div class="entity-picker-hint empty">${this._t('settings.no_entities_found')}</div>
+            ` : nothing}
           </div>
+
+          ${selectedId ? html`
+            <div class="entity-picker-footer">
+              <button class="dd-inline-text-button" type="button" @click=${this._clearWeatherEntity}>
+                ${this._t('common.clear_selection')}
+              </button>
+            </div>
+          ` : nothing}
         </div>
       </div>
     `;
   }
 
   private _renderAlarmPicker() {
-    const allEntities = Object.keys(this.hass?.states || {});
-    const alarmEntities = allEntities.filter(entityId =>
-      entityId.startsWith('alarm_control_panel.') &&
-      !this.hass?.entities?.[entityId]?.hidden_by
-    );
+    const selectedId = this._config?.settings?.alarm_entity_id;
+    const query = this._alarmSearchFilter.trim().toLocaleLowerCase(ddLocale(this.hass));
+    const alarmEntities = Object.keys(this.hass?.states || {})
+      .filter((entityId) => {
+        if (!entityId.startsWith('alarm_control_panel.')) return false;
+        const registry = this.hass?.entities?.[entityId] as any;
+        return !registry?.hidden_by && !registry?.disabled_by;
+      })
+      .sort((left, right) => {
+        const leftName = this.hass?.states[left]?.attributes?.friendly_name || left;
+        const rightName = this.hass?.states[right]?.attributes?.friendly_name || right;
+        return leftName.localeCompare(rightName, ddLocale(this.hass));
+      });
 
-    const filteredAlarmEntities = alarmEntities.filter(entityId => {
-      if (!this._alarmSearchFilter) return true;
+    const filteredAlarmEntities = alarmEntities.filter((entityId) => {
+      if (!query) return true;
       const state = this.hass?.states[entityId];
       const friendlyName = state?.attributes?.friendly_name || entityId;
-      return friendlyName.toLowerCase().includes(this._alarmSearchFilter.toLowerCase()) ||
-             entityId.toLowerCase().includes(this._alarmSearchFilter.toLowerCase());
+      return friendlyName.toLocaleLowerCase(ddLocale(this.hass)).includes(query) ||
+        entityId.toLocaleLowerCase(ddLocale(this.hass)).includes(query);
     });
 
     return html`
-      <div class="entity-picker-modal">
+      <div class="entity-picker-modal" role="dialog" aria-modal="true">
         <div class="entity-picker-content">
           <div class="entity-picker-header">
             <h4>${this._t('settings.select_alarm_title')}</h4>
-            <button
-              class="close-button"
-              title=${this._t('common.close')}
-              @click=${() => this._showAlarmPicker = false}
-            >
-              <svg viewBox="0 0 24 24" width="20" height="20">
-                <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
-              </svg>
+            <button class="close-button" type="button" title=${this._t('common.close')} @click=${() => this._showAlarmPicker = false}>
+              <ha-icon icon="mdi:close"></ha-icon>
             </button>
           </div>
 
           <div class="entity-search">
-            <ha-textfield
-              .label=${this._t('settings.search_alarm')}
+            <input
+              class="entity-search-input"
+              type="search"
+              aria-label=${this._t('settings.search_alarm')}
+              placeholder=${this._t('settings.search_alarm')}
               .value=${this._alarmSearchFilter}
               @input=${(e: Event) => this._alarmSearchFilter = (e.target as HTMLInputElement).value}
-            ></ha-textfield>
+            />
           </div>
 
           <div class="entity-list">
-            ${repeat(
-              filteredAlarmEntities.slice(0, 20),
-              (entityId) => entityId,
-              (entityId) => {
-                const state = this.hass?.states[entityId];
-                const friendlyName = state?.attributes?.friendly_name || entityId;
-
-                return html`
-                  <div class="entity-option" @click=${() => this._selectAlarmEntity(entityId)}>
-                    <ha-state-icon
-                      .stateObj=${state}
-                      class="entity-icon"
-                    ></ha-state-icon>
+            ${filteredAlarmEntities.map((entityId) => {
+              const state = this.hass?.states[entityId];
+              const friendlyName = state?.attributes?.friendly_name || entityId;
+              const selected = entityId === selectedId;
+              return html`
+                <button
+                  class="entity-option ${selected ? 'selected' : ''}"
+                  type="button"
+                  @click=${() => this._selectAlarmEntity(entityId)}
+                >
+                  <ha-state-icon .stateObj=${state} class="entity-icon"></ha-state-icon>
+                  <span class="entity-option-copy">
                     <span class="entity-name">${friendlyName}</span>
                     <span class="entity-id">${entityId}</span>
-                  </div>
-                `;
-              }
-            )}
+                  </span>
+                  ${selected ? html`<ha-icon class="entity-selected-icon" icon="mdi:check-circle"></ha-icon>` : nothing}
+                </button>
+              `;
+            })}
+            ${filteredAlarmEntities.length === 0 ? html`
+              <div class="entity-picker-hint empty">${this._t('settings.no_entities_found')}</div>
+            ` : nothing}
           </div>
+
+          ${selectedId ? html`
+            <div class="entity-picker-footer">
+              <button class="dd-inline-text-button" type="button" @click=${this._clearAlarmEntity}>
+                ${this._t('common.clear_selection')}
+              </button>
+            </div>
+          ` : nothing}
         </div>
       </div>
     `;
   }
 
-  private _renderEntityPicker() {
+  private _renderEntityPicker() {  private _renderEntityPicker() {
     const allEntities = Object.keys(this.hass?.states || {});
     const query = this._entitySearchFilter.trim().toLocaleLowerCase(ddLocale(this.hass));
     const filteredEntities = allEntities.filter(entityId => {
@@ -4055,6 +4051,23 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     this._fireConfigChanged(newConfig);
     this._showAlarmPicker = false;
   }
+
+  private _clearWeatherEntity = (): void => {
+    if (!this._config) return;
+    const settings = { ...this._config.settings } as Record<string, any>;
+    delete settings.weather_entity_id;
+    this._fireConfigChanged({ ...this._config, settings });
+    this._showWeatherPicker = false;
+  };
+
+  private _clearAlarmEntity = (): void => {
+    if (!this._config) return;
+    const settings = { ...this._config.settings } as Record<string, any>;
+    delete settings.alarm_entity_id;
+    settings.show_alarm = false;
+    this._fireConfigChanged({ ...this._config, settings });
+    this._showAlarmPicker = false;
+  };
 
   private _toggleTimeDisplay(e: Event): void {
     const target = e.target as any;
@@ -4268,7 +4281,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         return {
           entity_id: entityId,
           state,
-          friendly_name: state?.attributes?.friendly_name || entityId
+          friendly_name: state?.attributes?.friendly_name || entityId,
+          picture: state?.attributes?.entity_picture as string | undefined,
         };
       })
       .sort((a, b) => a.friendly_name.localeCompare(b.friendly_name));
@@ -4295,7 +4309,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
             const isHidden = hiddenPersons.has(person.entity_id);
             return html`
               <div class="person-item ${isHidden ? 'hidden' : ''}">
-                <ha-state-icon .stateObj=${person.state} class="person-icon"></ha-state-icon>
+                <span class="person-avatar">
+                  ${person.picture
+                    ? html`<img src=${person.picture} alt="" loading="lazy" />`
+                    : html`<ha-state-icon .stateObj=${person.state} class="person-icon"></ha-state-icon>`}
+                </span>
                 <span class="person-name">${person.friendly_name}</span>
                 ${this._renderVisibilityButton(
                   !isHidden,
@@ -4311,7 +4329,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     `;
   }
 
-  private _togglePersonVisibility(personId: string): void {
+  private _togglePersonVisibility(personId: string): void {  private _togglePersonVisibility(personId: string): void {
     const hiddenPersons = [...(this._config?.settings?.hidden_persons || [])];
     const index = hiddenPersons.indexOf(personId);
 
@@ -8100,6 +8118,322 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           width: 100%;
         }
       }
+
+      /* Settings entity picker, people, areas and device hierarchy */
+      .entity-picker-content {
+        box-sizing: border-box;
+      }
+
+      .entity-option {
+        width: 100%;
+        border: 1px solid transparent;
+        color: inherit;
+        font: inherit;
+        text-align: left;
+      }
+
+      .entity-option.selected {
+        border-color: color-mix(in srgb, var(--primary-color) 42%, var(--divider-color));
+        background: color-mix(in srgb, var(--primary-color) 8%, var(--card-background-color));
+      }
+
+      .entity-option-copy {
+        min-width: 0;
+        flex: 1;
+        display: grid;
+        gap: 2px;
+      }
+
+      .entity-option-copy .entity-name,
+      .entity-option-copy .entity-id {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .entity-selected-icon {
+        flex: 0 0 auto;
+        color: var(--primary-color);
+        --mdc-icon-size: 20px;
+      }
+
+      .entity-picker-footer {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 12px;
+        padding-top: 10px;
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .persons-list {
+        overflow: visible;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+      }
+
+      .persons-list .person-item {
+        min-width: 0;
+        min-height: 72px;
+        display: grid;
+        grid-template-columns: 48px minmax(0, 1fr) 38px;
+        align-items: center;
+        gap: 9px;
+        padding: 8px 10px;
+        border: 1px solid var(--divider-color);
+        border-radius: 10px;
+        background: var(--card-background-color);
+      }
+
+      .persons-list .person-item + .person-item {
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .person-avatar {
+        width: 48px;
+        height: 48px;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+        border-radius: 999px;
+        background: var(--secondary-background-color);
+      }
+
+      .person-avatar img {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+      }
+
+      .person-avatar .person-icon {
+        margin: 0;
+        --mdc-icon-size: 28px;
+      }
+
+      .persons-list .person-name {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 13px;
+        font-weight: 650;
+      }
+
+      .persons-list .dd-visibility-button {
+        width: 34px;
+        height: 34px;
+      }
+
+      .area-sort-segment {
+        align-items: center;
+        line-height: 1.2;
+      }
+
+      .area-sort-segment > span,
+      .area-sort-segment ha-icon {
+        align-self: center;
+      }
+
+      .area-settings-sortable .dd-area-sortable-row .area-item {
+        display: grid;
+        grid-template-columns: 46px minmax(0, 1fr) 48px;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .area-settings-sortable.is-custom-order .dd-area-sortable-row .area-item {
+        grid-template-columns: 22px 46px minmax(0, 1fr) 48px;
+      }
+
+      .area-settings-sortable .handle {
+        width: 22px;
+        height: 40px;
+        display: grid;
+        place-items: center;
+        margin: 0;
+        padding: 0;
+      }
+
+      .area-settings-sortable .area-icon {
+        width: 46px;
+        height: 46px;
+        display: grid;
+        place-items: center;
+        margin: 0;
+        --mdc-icon-size: 25px;
+      }
+
+      .area-settings-sortable .area-name {
+        min-width: 0;
+        margin: 0;
+      }
+
+      .area-settings-sortable .area-actions {
+        width: 48px;
+        justify-content: flex-end;
+      }
+
+      .device-area-heading {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+      }
+
+      .device-area-heading small {
+        width: auto;
+        flex: 0 0 auto;
+      }
+
+      .device-admission-device {
+        min-height: 44px;
+        padding: 4px 7px;
+        grid-template-columns: 30px minmax(0, 1fr) 34px;
+        gap: 6px;
+      }
+
+      .device-admission-device .device-type-icon {
+        width: 30px;
+        height: 30px;
+      }
+
+      .device-admission-device .device-type-icon ha-icon {
+        --mdc-icon-size: 18px;
+      }
+
+      .device-admission-device .dd-visibility-button {
+        width: 32px;
+        height: 32px;
+      }
+
+      .device-admission-copy .device-type-name {
+        font-size: 11.5px;
+        line-height: 1.15;
+      }
+
+      .device-admission-copy .device-type-count {
+        margin-top: 1px;
+        font-size: 9.5px;
+      }
+
+      .area-detail-editor {
+        padding: 20px 16px 16px;
+      }
+
+      .area-detail-editor > .toolbar {
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: -4px 0 12px;
+        padding: 0 2px 10px;
+        border-bottom: 1px solid var(--divider-color);
+      }
+
+      .area-detail-editor > .toolbar h2 {
+        margin: 0;
+        font-size: 17px;
+        font-weight: 800;
+      }
+
+      .area-detail-editor .area-help {
+        margin: 0 0 14px;
+        padding: 10px 12px;
+        border: 1px solid color-mix(in srgb, var(--primary-color) 18%, var(--divider-color));
+        border-radius: 10px;
+        background: color-mix(in srgb, var(--primary-color) 5%, var(--card-background-color));
+      }
+
+      .area-detail-editor .area-help-text p {
+        margin: 0;
+      }
+
+      .area-detail-editor .area-help-text p + p {
+        margin-top: 5px;
+      }
+
+      .area-detail-editor .area-entity-layout-settings {
+        margin-bottom: 14px;
+        border-radius: 12px;
+      }
+
+      .area-detail-editor .area-entity-section {
+        margin: 0 0 8px;
+      }
+
+      .area-detail-editor .area-entity-section ha-expansion-panel,
+      .area-detail-editor > ha-expansion-panel {
+        overflow: hidden;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: var(--card-background-color);
+      }
+
+      .area-detail-editor .area-entity-section-header {
+        min-height: 52px;
+        display: grid;
+        grid-template-columns: 40px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .area-detail-editor .area-entity-section-header > ha-icon {
+        justify-self: center;
+        color: var(--primary-color);
+        --mdc-icon-size: 22px;
+      }
+
+      .area-detail-editor .area-entity-section .sortable-container {
+        padding: 0 10px 8px;
+      }
+
+      .area-detail-editor .area-entity-section .sortable-item {
+        border-radius: 9px;
+      }
+
+      .area-detail-editor .area-entity-section .entity-item {
+        min-height: 46px;
+        padding: 4px 6px;
+      }
+
+      @media (max-width: 700px) {
+        .persons-list {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .area-settings-sortable .dd-area-sortable-row .area-item {
+          grid-template-columns: 40px minmax(0, 1fr) 40px;
+        }
+
+        .area-settings-sortable.is-custom-order .dd-area-sortable-row .area-item {
+          grid-template-columns: 18px 40px minmax(0, 1fr) 40px;
+        }
+
+        .area-settings-sortable .area-icon {
+          width: 40px;
+          height: 40px;
+          --mdc-icon-size: 23px;
+        }
+
+        .area-settings-sortable .handle {
+          width: 18px;
+        }
+
+        .area-settings-sortable .area-actions {
+          width: 40px;
+        }
+      }
+
+      @media (max-width: 430px) {
+        .persons-list {
+          grid-template-columns: 1fr;
+        }
+      }
+
     `;
   }
 }
