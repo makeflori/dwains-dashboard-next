@@ -125,219 +125,6 @@ const SETTINGS_ICON_PATHS: Record<string, string> = {
 };
 
 
-function scheduleIntegratedSettingsHeader(editor: any): void {
-  const apply = () => {
-    const cancelLabel = String(editor?._t?.("common.cancel") || "Cancel");
-    const closeLabel = String(editor?._t?.("common.close") || "Close");
-    const saveLabel = String(editor?._t?.("common.save") || "Save");
-    const settingsTitle = String(editor?._t?.("settings.title") || "Dashboard settings");
-    const onSubpage = editor?._settingsPage !== "overview";
-    const pageTitle = onSubpage
-      ? String(editor?._settingsPageTitle?.(editor._settingsPage) || settingsTitle)
-      : settingsTitle;
-    const pageDescription = onSubpage
-      ? String(editor?._settingsPageDescription?.(editor._settingsPage) || "")
-      : "";
-
-    const roots: Array<Document | ShadowRoot | Element> = [];
-    let root: any = editor?.getRootNode?.();
-    while (root && !roots.includes(root)) {
-      roots.push(root);
-      const host = root.host;
-      if (!host) break;
-      root = host.getRootNode?.();
-    }
-    if (!roots.includes(document)) roots.push(document);
-
-    const textOf = (node: any) => String(node?.textContent || "").replace(/\s+/g, " ").trim();
-    let state = (window as any).__ddIntegratedSettingsHeaderState;
-
-    if (!state || state.editor !== editor || !state.title?.isConnected) {
-      let title: HTMLElement | undefined;
-      let header: HTMLElement | undefined;
-      let backButton: any;
-      let saveButton: any;
-      let cancelButton: any;
-
-      for (const scope of roots) {
-        const buttons = Array.from(scope.querySelectorAll?.("button,ha-icon-button,mwc-icon-button,ha-button,mwc-button") || []) as any[];
-        saveButton = buttons.find((button: any) => {
-          const value = textOf(button);
-          const label = String(button.label || button.getAttribute?.("aria-label") || "").trim();
-          return value === saveLabel || label === saveLabel;
-        });
-        if (!saveButton) continue;
-
-        let current: HTMLElement | null = saveButton.parentElement;
-        for (let depth = 0; current && depth < 8; depth++, current = current.parentElement) {
-          const headerButtons = Array.from(current.querySelectorAll?.("button,ha-icon-button,mwc-icon-button,ha-button,mwc-button") || []) as any[];
-          if (headerButtons.length < 2) continue;
-
-          const titleCandidates = Array.from(
-            current.querySelectorAll?.("h1,h2,h3,[slot='heading'],[slot='title'],.title,.header-title,.dialog-title,strong,span") || []
-          ) as HTMLElement[];
-          title = titleCandidates.find((node) => {
-            const value = textOf(node);
-            return Boolean(
-              value &&
-              value !== saveLabel &&
-              value !== cancelLabel &&
-              value !== closeLabel &&
-              !value.includes(saveLabel)
-            );
-          });
-          if (!title) continue;
-
-          header = current;
-          const titleRect = title.getBoundingClientRect?.();
-          backButton = headerButtons.find((button: any) => {
-            if (button === saveButton) return false;
-            const rect = button.getBoundingClientRect?.();
-            return titleRect && rect && rect.left < titleRect.left;
-          }) || headerButtons[0];
-
-          cancelButton = headerButtons.find((button: any) => {
-            if (button === saveButton || button === backButton) return false;
-            const value = textOf(button);
-            const label = String(button.label || button.getAttribute?.("aria-label") || "").trim();
-            return [cancelLabel, closeLabel, "Back", "Zurück"].includes(value) ||
-              [cancelLabel, closeLabel, "Back", "Zurück"].includes(label);
-          }) || headerButtons.find((button: any) => button !== saveButton && button !== backButton);
-
-          break;
-        }
-        if (title && header && backButton) break;
-      }
-
-      if (title && header && backButton) {
-        state = {
-          editor,
-          title,
-          header,
-          backButton,
-          saveButton,
-          cancelButton,
-          originalTitle: textOf(title),
-          originalTitleDisplay: title.style.display,
-          originalTitleGap: title.style.gap,
-          originalHeaderMaxWidth: header.style.maxWidth,
-          originalHeaderWidth: header.style.width,
-          originalHeaderMarginInline: header.style.marginInline,
-          originalPath: backButton.path,
-          originalIcon: backButton.icon,
-          originalLabel: backButton.label || backButton.getAttribute?.("aria-label") || "",
-        };
-        const clickHandler = (event: Event) => {
-          if (editor?._settingsPage === "overview") return;
-          event.preventDefault();
-          event.stopPropagation();
-          (event as any).stopImmediatePropagation?.();
-          editor?._backToSettingsOverview?.();
-        };
-        state.clickHandler = clickHandler;
-        backButton.addEventListener?.("click", clickHandler, true);
-        (window as any).__ddIntegratedSettingsHeaderState = state;
-      }
-    }
-
-    if (!state) return;
-
-    state.header.style.maxWidth = "920px";
-    state.header.style.width = "min(920px, calc(100% - 24px))";
-    state.header.style.marginInline = "auto";
-
-    if (state.title) {
-      state.title.textContent = pageTitle;
-      state.title.querySelector?.(".dd-integrated-settings-description")?.remove();
-      if (pageDescription) {
-        state.title.style.display = "grid";
-        state.title.style.gap = "2px";
-        const description = document.createElement("small");
-        description.className = "dd-integrated-settings-description";
-        description.textContent = pageDescription;
-        description.style.fontSize = "12px";
-        description.style.fontWeight = "400";
-        description.style.lineHeight = "1.35";
-        description.style.color = "var(--secondary-text-color)";
-        state.title.appendChild(description);
-      } else {
-        state.title.style.display = state.originalTitleDisplay || "";
-        state.title.style.gap = state.originalTitleGap || "";
-      }
-    }
-
-    if (state.backButton) {
-      const button = state.backButton;
-      if (onSubpage) {
-        if ("path" in button) button.path = mdiArrowLeft;
-        if ("icon" in button) button.icon = "mdi:arrow-left";
-        const innerSvg = button.shadowRoot?.querySelector?.("ha-svg-icon") as any;
-        if (innerSvg && "path" in innerSvg) innerSvg.path = mdiArrowLeft;
-        const innerIcon = button.shadowRoot?.querySelector?.("ha-icon") as any;
-        if (innerIcon) innerIcon.icon = "mdi:arrow-left";
-        const label = String(editor?._t?.("settings.all_settings") || "All settings");
-        button.setAttribute?.("aria-label", label);
-        if ("label" in button) button.label = label;
-      } else {
-        if ("path" in button) button.path = state.originalPath;
-        if ("icon" in button) button.icon = state.originalIcon;
-        const innerSvg = button.shadowRoot?.querySelector?.("ha-svg-icon") as any;
-        if (innerSvg && "path" in innerSvg) innerSvg.path = state.originalPath;
-        button.setAttribute?.("aria-label", state.originalLabel);
-        if ("label" in button) button.label = state.originalLabel;
-      }
-    }
-
-    const saveButton = state.saveButton;
-    const dirty = Boolean(
-      saveButton &&
-      !(saveButton.disabled ||
-        saveButton.hasAttribute?.("disabled") ||
-        saveButton.getAttribute?.("aria-disabled") === "true")
-    );
-    const actionLabel = dirty ? cancelLabel : closeLabel;
-    const actionButton = state.cancelButton;
-    if (actionButton) {
-      if ("label" in actionButton) actionButton.label = actionLabel;
-      actionButton.setAttribute?.("aria-label", actionLabel);
-      const labelNode = actionButton.shadowRoot?.querySelector?.(".label,span");
-      if (labelNode) labelNode.textContent = actionLabel;
-      const tag = actionButton.tagName?.toLowerCase?.();
-      if (tag === "button" || tag === "ha-button" || tag === "mwc-button") {
-        const lightTextNode = (Array.from(actionButton.childNodes || []) as Node[])
-          .find((node) => node.nodeType === Node.TEXT_NODE);
-        if (lightTextNode) lightTextNode.textContent = actionLabel;
-        else if (!actionButton.children?.length) actionButton.textContent = actionLabel;
-      }
-    }
-  };
-
-  [0, 80, 240, 600].forEach((delay) => window.setTimeout(apply, delay));
-}
-
-function cleanupIntegratedSettingsHeader(): void {
-  const state = (window as any).__ddIntegratedSettingsHeaderState;
-  if (state?.title) {
-    state.title.textContent = state.originalTitle || state.title.textContent;
-    state.title.style.display = state.originalTitleDisplay || "";
-    state.title.style.gap = state.originalTitleGap || "";
-  }
-  if (state?.header) {
-    state.header.style.maxWidth = state.originalHeaderMaxWidth || "";
-    state.header.style.width = state.originalHeaderWidth || "";
-    state.header.style.marginInline = state.originalHeaderMarginInline || "";
-  }
-  if (state?.backButton) {
-    if ("path" in state.backButton) state.backButton.path = state.originalPath;
-    if ("icon" in state.backButton) state.backButton.icon = state.originalIcon;
-    if ("label" in state.backButton) state.backButton.label = state.originalLabel;
-    state.backButton.setAttribute?.("aria-label", state.originalLabel);
-    if (state.clickHandler) state.backButton.removeEventListener?.("click", state.clickHandler, true);
-  }
-  (window as any).__ddIntegratedSettingsHeaderState = undefined;
-}
-
-
 type SettingsRegistryData = {
   areas: Array<{ area_id: string; name: string; picture: string | null; icon: string | null }>;
   devices: Array<{ id: string; name: string; name_by_user: string | null; area_id: string | null; created_at?: string | null }>;
@@ -555,8 +342,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    scheduleIntegratedSettingsHeader(this);
     this._stabilizeSettingsScrollbar();
+    queueMicrotask(() => this._emitSettingsPageContext());
     // Always fetch fresh data when component connects
     if (this.hass) {
       void this._fetchData();
@@ -564,7 +351,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   }
 
   disconnectedCallback() {
-    cleanupIntegratedSettingsHeader();
     this._restoreSettingsScrollbar();
     super.disconnectedCallback();
   }
@@ -914,7 +700,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     this._settingsPage = page;
     if (page === "devices") this._expandedDeviceTypes = new Set();
     this._closeInlinePickers();
-    scheduleIntegratedSettingsHeader(this);
+    this._emitSettingsPageContext();
     this._resetSettingsScrollPosition();
   }
 
@@ -922,9 +708,22 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     this._settingsPage = "overview";
     this._expandedDeviceTypes = new Set();
     this._closeInlinePickers();
-    scheduleIntegratedSettingsHeader(this);
+    this._emitSettingsPageContext();
     this._resetSettingsScrollPosition();
   };
+
+  private _emitSettingsPageContext(): void {
+    const overview = this._settingsPage === "overview";
+    this.dispatchEvent(new CustomEvent("dd-settings-page-changed", {
+      detail: {
+        page: this._settingsPage,
+        title: overview ? this._t('sidebar.dashboard_settings') : this._settingsPageTitle(this._settingsPage),
+        description: overview ? this._t('settings.subtitle') : this._settingsPageDescription(this._settingsPage),
+      },
+      bubbles: true,
+      composed: true,
+    }));
+  }
 
   private _closeInlinePickers(): void {
     this._showEntityPicker = false;
@@ -2778,7 +2577,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                       return html`
                         <section class="device-admission-area">
                           <div class="device-admission-area-header">
-                            <span class="device-type-heading">
+                            <span class="device-type-heading device-area-heading">
                               <strong>${areaGroup.areaName}</strong>
                               <small>${this._t('settings.visible_count', {
                                 visible: areaDeviceIds.length - hiddenInArea,
@@ -4587,7 +4386,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       composed: true
     });
     this.dispatchEvent(event);
-    scheduleIntegratedSettingsHeader(this);
   }
 
   static get styles() {
@@ -8200,6 +7998,106 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         .dd-replacement-actions {
           grid-column: 2;
           justify-self: start;
+        }
+      }
+
+      /* Settings correction pass */
+      .dd-flat-settings {
+        width: 100%;
+        max-width: none;
+        margin-inline: 0;
+        padding: 24px 20px 20px;
+        box-sizing: border-box;
+      }
+
+      @media (min-width: 701px) {
+        .dd-flat-settings {
+          padding-top: 24px;
+        }
+
+        .dd-flat-settings:not(.dd-settings-overview) .settings-detail-content {
+          margin-top: 0;
+        }
+      }
+
+      .device-type-panel-row > .device-type-icon.small {
+        color: var(--device-type-color);
+      }
+
+      .device-type-panel .device-admission-device .device-type-icon {
+        color: var(--secondary-text-color);
+      }
+
+      .device-type-panel .dd-visibility-button,
+      .device-type-panel .dd-visibility-button.hidden {
+        color: var(--primary-color);
+        border-color: color-mix(in srgb, var(--primary-color) 24%, var(--divider-color));
+      }
+
+      .device-type-panel .dd-visibility-button.hidden {
+        color: var(--secondary-text-color);
+        border-color: var(--divider-color);
+      }
+
+      .device-type-panel-row .device-type-heading {
+        flex-wrap: nowrap;
+        gap: 8px;
+      }
+
+      .device-type-panel-row .device-type-heading small {
+        width: auto;
+      }
+
+      .device-area-heading {
+        display: grid;
+        gap: 2px;
+        align-items: center;
+      }
+
+      .device-area-heading small {
+        width: 100%;
+      }
+
+      .device-admission-device {
+        min-height: 56px;
+        padding: 6px 8px;
+      }
+
+      .device-admission-copy .device-type-name {
+        display: -webkit-box;
+        overflow: hidden;
+        white-space: normal;
+        text-overflow: clip;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        line-height: 1.2;
+        overflow-wrap: anywhere;
+      }
+
+      .dd-replacement-footer {
+        justify-content: flex-end;
+      }
+
+      @media (max-width: 700px) {
+        .dd-flat-settings {
+          padding: 18px 10px 16px;
+        }
+
+        .device-type-panel-row .device-type-heading {
+          flex-wrap: nowrap;
+        }
+
+        .device-type-panel-row .device-type-heading small {
+          width: auto;
+        }
+
+        .device-area-heading {
+          display: grid;
+        }
+
+        .device-area-heading small {
+          width: 100%;
         }
       }
     `;
