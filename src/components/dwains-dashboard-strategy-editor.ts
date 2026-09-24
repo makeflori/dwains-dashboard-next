@@ -302,7 +302,13 @@ function scheduleIntegratedSettingsHeader(editor: any): void {
       actionButton.setAttribute?.("aria-label", actionLabel);
       const labelNode = actionButton.shadowRoot?.querySelector?.(".label,span");
       if (labelNode) labelNode.textContent = actionLabel;
-      else if (actionButton.tagName?.toLowerCase?.() === "button") actionButton.textContent = actionLabel;
+      const tag = actionButton.tagName?.toLowerCase?.();
+      if (tag === "button" || tag === "ha-button" || tag === "mwc-button") {
+        const lightTextNode = Array.from(actionButton.childNodes || [])
+          .find((node: any) => node.nodeType === Node.TEXT_NODE);
+        if (lightTextNode) lightTextNode.textContent = actionLabel;
+        else if (!actionButton.children?.length) actionButton.textContent = actionLabel;
+      }
     }
   };
 
