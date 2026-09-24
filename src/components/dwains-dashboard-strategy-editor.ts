@@ -2863,7 +2863,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .sort((a, b) => a.label.localeCompare(b.label, ddLocale(this.hass)));
   }
 
-  private _isEntityHiddenInAreaOptions(areaId: string, entityId: string): boolean {  private _isEntityHiddenInAreaOptions(areaId: string, entityId: string): boolean {
+  private _isEntityHiddenInAreaOptions(areaId: string, entityId: string): boolean {
     const areaOptions = this._config?.areas_options?.[areaId];
     if (!areaOptions?.groups_options) return false;
 
@@ -3943,7 +3943,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     `;
   }
 
-  private _renderEntityPicker() {  private _renderEntityPicker() {
+  private _renderEntityPicker() {
     const allEntities = Object.keys(this.hass?.states || {});
     const query = this._entitySearchFilter.trim().toLocaleLowerCase(ddLocale(this.hass));
     const filteredEntities = allEntities.filter(entityId => {
@@ -4329,7 +4329,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     `;
   }
 
-  private _togglePersonVisibility(personId: string): void {  private _togglePersonVisibility(personId: string): void {
+  private _togglePersonVisibility(personId: string): void {
     const hiddenPersons = [...(this._config?.settings?.hidden_persons || [])];
     const index = hiddenPersons.indexOf(personId);
 
