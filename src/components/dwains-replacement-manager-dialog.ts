@@ -327,6 +327,13 @@ export class DwainsReplacementManagerDialog extends LitElement {
     this.closeDialog();
   };
 
+  private _commit(replacements: BlueprintReplacements): void {
+    this._replacements = replacements;
+    const nextConfig = { ...this._config!, blueprint_replacements: replacements };
+    this._config = nextConfig;
+    this._params?.onSave(nextConfig);
+  }
+
   private _setDomainAssignment(
     replacements: BlueprintReplacements,
     surface: BlueprintReplacementSurface,
