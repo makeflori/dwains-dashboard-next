@@ -389,7 +389,7 @@ export const ru = {
   'settings.no_alarm_short': 'Сигнализация не выбрана',
   'settings.restrict_ha_menu_short': 'Скрыть меню Home Assistant',
   'settings.restrict_editing_short': 'Заблокировать редактирование панели',
-  'settings.subtitle': '',
+  'settings.subtitle': 'Настройте внешний вид, содержимое и поведение панели.',
   'settings.loaded_version': 'Загруженная версия',
   'settings.loading': 'Загрузка',
   'settings.all_settings': 'Все настройки',

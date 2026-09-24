@@ -371,7 +371,7 @@ export const zhHans = {
   'settings.no_alarm_short': '未选择警报',
   'settings.restrict_ha_menu_short': '隐藏 Home Assistant 菜单',
   'settings.restrict_editing_short': '锁定仪表板编辑',
-  'settings.subtitle': '',
+  'settings.subtitle': '配置仪表板的外观、内容和行为。',
   'settings.loaded_version': '已加载版本',
   'settings.loading': '加载中',
   'settings.all_settings': '所有设置',

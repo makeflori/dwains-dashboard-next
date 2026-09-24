@@ -387,7 +387,7 @@ export const en = {
   'settings.no_alarm_short': 'No alarm selected',
   'settings.restrict_ha_menu_short': 'Hide Home Assistant menu',
   'settings.restrict_editing_short': 'Lock dashboard editing',
-  'settings.subtitle': '',
+  'settings.subtitle': 'Configure the dashboard appearance, content, and behavior.',
   'settings.loaded_version': 'Loaded version',
   'settings.loading': 'Loading',
   'settings.all_settings': 'All settings',

@@ -371,7 +371,7 @@ export const zhHant = {
   'settings.no_alarm_short': '未選擇警報',
   'settings.restrict_ha_menu_short': '隱藏 Home Assistant 選單',
   'settings.restrict_editing_short': '鎖定儀表板編輯',
-  'settings.subtitle': '',
+  'settings.subtitle': '設定儀表板的外觀、內容與行為。',
   'settings.loaded_version': '已載入版本',
   'settings.loading': '載入中',
   'settings.all_settings': '所有設定',

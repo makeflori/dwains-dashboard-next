@@ -371,7 +371,7 @@ export const es = {
   'settings.no_alarm_short': 'No hay alarma seleccionada',
   'settings.restrict_ha_menu_short': 'Ocultar el menú de Home Assistant',
   'settings.restrict_editing_short': 'Bloquear la edición del panel',
-  'settings.subtitle': '',
+  'settings.subtitle': 'Configura la apariencia, el contenido y el comportamiento del panel.',
   'settings.loaded_version': 'Versión cargada',
   'settings.loading': 'Cargando',
   'settings.all_settings': 'Todas las configuraciones',
