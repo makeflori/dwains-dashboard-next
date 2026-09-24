@@ -15017,6 +15017,10 @@ export class DwainsLayoutCard extends LitElement {
   }
 
   private _getAlarmEntity() {
+    if (this.config?.settings?.show_alarm === false) {
+      return undefined;
+    }
+
     const configuredAlarmId = this.config?.settings?.alarm_entity_id;
     if (!configuredAlarmId) {
       return undefined;

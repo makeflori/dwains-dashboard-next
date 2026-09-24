@@ -128,13 +128,19 @@ const SETTINGS_ICON_PATHS: Record<string, string> = {
 function scheduleIntegratedSettingsHeader(editor: any): void {
   const apply = () => {
     const cancelLabel = String(editor?._t?.("common.cancel") || "Cancel");
-    const settingsTitle = String(editor?._t?.("settings.title") || "Dwains Dashboard settings");
-    const pageTitle = editor?._settingsPage === "overview"
-      ? settingsTitle
-      : String(editor?._settingsPageTitle?.(editor._settingsPage) || settingsTitle);
+    const closeLabel = String(editor?._t?.("common.close") || "Close");
+    const saveLabel = String(editor?._t?.("common.save") || "Save");
+    const settingsTitle = String(editor?._t?.("settings.title") || "Dashboard settings");
+    const onSubpage = editor?._settingsPage !== "overview";
+    const pageTitle = onSubpage
+      ? String(editor?._settingsPageTitle?.(editor._settingsPage) || settingsTitle)
+      : settingsTitle;
+    const pageDescription = onSubpage
+      ? String(editor?._settingsPageDescription?.(editor._settingsPage) || "")
+      : "";
+
     const roots: Array<Document | ShadowRoot | Element> = [];
     let root: any = editor?.getRootNode?.();
-
     while (root && !roots.includes(root)) {
       roots.push(root);
       const host = root.host;
@@ -150,69 +156,73 @@ function scheduleIntegratedSettingsHeader(editor: any): void {
       let title: HTMLElement | undefined;
       let header: HTMLElement | undefined;
       let backButton: any;
+      let saveButton: any;
+      let cancelButton: any;
 
       for (const scope of roots) {
-        const candidates = scope.querySelectorAll?.("h1,h2,h3,[slot='heading'],.title,.header-title,.dialog-title,span,div") || [];
-        for (const candidate of candidates as any) {
-          if (textOf(candidate) !== settingsTitle) continue;
-          const childWithSameText = Array.from(candidate.children || []).some((child: any) => textOf(child) === settingsTitle);
-          if (childWithSameText) continue;
-          title = candidate as HTMLElement;
+        const buttons = Array.from(scope.querySelectorAll?.("button,ha-icon-button,mwc-icon-button,ha-button,mwc-button") || []) as any[];
+        saveButton = buttons.find((button: any) => {
+          const value = textOf(button);
+          const label = String(button.label || button.getAttribute?.("aria-label") || "").trim();
+          return value === saveLabel || label === saveLabel;
+        });
+        if (!saveButton) continue;
+
+        let current: HTMLElement | null = saveButton.parentElement;
+        for (let depth = 0; current && depth < 8; depth++, current = current.parentElement) {
+          const headerButtons = Array.from(current.querySelectorAll?.("button,ha-icon-button,mwc-icon-button,ha-button,mwc-button") || []) as any[];
+          if (headerButtons.length < 2) continue;
+
+          const titleCandidates = Array.from(
+            current.querySelectorAll?.("h1,h2,h3,[slot='heading'],[slot='title'],.title,.header-title,.dialog-title,strong,span") || []
+          ) as HTMLElement[];
+          title = titleCandidates.find((node) => {
+            const value = textOf(node);
+            return Boolean(
+              value &&
+              value !== saveLabel &&
+              value !== cancelLabel &&
+              value !== closeLabel &&
+              !value.includes(saveLabel)
+            );
+          });
+          if (!title) continue;
+
+          header = current;
+          const titleRect = title.getBoundingClientRect?.();
+          backButton = headerButtons.find((button: any) => {
+            if (button === saveButton) return false;
+            const rect = button.getBoundingClientRect?.();
+            return titleRect && rect && rect.left < titleRect.left;
+          }) || headerButtons[0];
+
+          cancelButton = headerButtons.find((button: any) => {
+            if (button === saveButton || button === backButton) return false;
+            const value = textOf(button);
+            const label = String(button.label || button.getAttribute?.("aria-label") || "").trim();
+            return [cancelLabel, closeLabel, "Back", "Zurück"].includes(value) ||
+              [cancelLabel, closeLabel, "Back", "Zurück"].includes(label);
+          }) || headerButtons.find((button: any) => button !== saveButton && button !== backButton);
+
           break;
         }
-        if (title) break;
+        if (title && header && backButton) break;
       }
 
-      if (!title) {
-        const saveLabel = String(editor?._t?.("common.save") || "Save");
-        for (const scope of roots) {
-          const buttons = scope.querySelectorAll?.("button,ha-button,mwc-button") || [];
-          for (const candidateButton of buttons as any) {
-            const buttonText = textOf(candidateButton);
-            const buttonLabel = String(candidateButton.label || "").trim();
-            if (buttonText !== saveLabel && buttonLabel !== saveLabel) continue;
-
-            let current: HTMLElement | null = candidateButton.parentElement;
-            for (let depth = 0; current && depth < 7; depth++, current = current.parentElement) {
-              const headerButtons = current.querySelectorAll?.("button,ha-icon-button,mwc-icon-button,ha-button,mwc-button") || [];
-              if (headerButtons.length < 2) continue;
-              const candidates = current.querySelectorAll?.("h1,h2,h3,[slot='heading'],.title,.header-title,.dialog-title,strong") || [];
-              const candidateTitle = Array.from(candidates as any).find((node: any) => {
-                const value = textOf(node);
-                return Boolean(value && value !== saveLabel && value !== cancelLabel);
-              }) as HTMLElement | undefined;
-              if (candidateTitle) {
-                title = candidateTitle;
-                header = current;
-                backButton = headerButtons[0];
-                break;
-              }
-            }
-            if (title) break;
-          }
-          if (title) break;
-        }
-      }
-
-      if (title) {
-        let current: HTMLElement | null = title.parentElement;
-        for (let depth = 0; current && depth < 6; depth++, current = current.parentElement) {
-          const buttons = current.querySelectorAll?.("button,ha-icon-button,mwc-icon-button,ha-button,mwc-button") || [];
-          if (buttons.length >= 2) {
-            header = current;
-            backButton = buttons[0];
-            break;
-          }
-        }
-      }
-
-      if (title && backButton) {
+      if (title && header && backButton) {
         state = {
           editor,
           title,
           header,
           backButton,
+          saveButton,
+          cancelButton,
           originalTitle: textOf(title),
+          originalTitleDisplay: title.style.display,
+          originalTitleGap: title.style.gap,
+          originalHeaderMaxWidth: header.style.maxWidth,
+          originalHeaderWidth: header.style.width,
+          originalHeaderMarginInline: header.style.marginInline,
           originalPath: backButton.path,
           originalIcon: backButton.icon,
           originalLabel: backButton.label || backButton.getAttribute?.("aria-label") || "",
@@ -230,48 +240,93 @@ function scheduleIntegratedSettingsHeader(editor: any): void {
       }
     }
 
-    if (state?.title) state.title.textContent = pageTitle;
+    if (!state) return;
 
-    if (state?.backButton) {
-      const onSubpage = editor?._settingsPage !== "overview";
+    state.header.style.maxWidth = "920px";
+    state.header.style.width = "min(920px, calc(100% - 24px))";
+    state.header.style.marginInline = "auto";
+
+    if (state.title) {
+      state.title.textContent = pageTitle;
+      state.title.querySelector?.(".dd-integrated-settings-description")?.remove();
+      if (pageDescription) {
+        state.title.style.display = "grid";
+        state.title.style.gap = "2px";
+        const description = document.createElement("small");
+        description.className = "dd-integrated-settings-description";
+        description.textContent = pageDescription;
+        description.style.fontSize = "12px";
+        description.style.fontWeight = "400";
+        description.style.lineHeight = "1.35";
+        description.style.color = "var(--secondary-text-color)";
+        state.title.appendChild(description);
+      } else {
+        state.title.style.display = state.originalTitleDisplay || "";
+        state.title.style.gap = state.originalTitleGap || "";
+      }
+    }
+
+    if (state.backButton) {
       const button = state.backButton;
       if (onSubpage) {
         if ("path" in button) button.path = mdiArrowLeft;
         if ("icon" in button) button.icon = "mdi:arrow-left";
+        const innerSvg = button.shadowRoot?.querySelector?.("ha-svg-icon") as any;
+        if (innerSvg && "path" in innerSvg) innerSvg.path = mdiArrowLeft;
+        const innerIcon = button.shadowRoot?.querySelector?.("ha-icon") as any;
+        if (innerIcon) innerIcon.icon = "mdi:arrow-left";
         const label = String(editor?._t?.("settings.all_settings") || "All settings");
         button.setAttribute?.("aria-label", label);
         if ("label" in button) button.label = label;
       } else {
         if ("path" in button) button.path = state.originalPath;
         if ("icon" in button) button.icon = state.originalIcon;
+        const innerSvg = button.shadowRoot?.querySelector?.("ha-svg-icon") as any;
+        if (innerSvg && "path" in innerSvg) innerSvg.path = state.originalPath;
         button.setAttribute?.("aria-label", state.originalLabel);
         if ("label" in button) button.label = state.originalLabel;
       }
     }
 
-    for (const scope of roots) {
-      const buttons = scope.querySelectorAll?.("button, ha-button, mwc-button") || [];
-      for (const button of buttons as any) {
-        if (button === state?.backButton) continue;
-        const text = textOf(button);
-        const label = String(button.label || "").trim();
-        if ([text, label].some((value) => value === "Back" || value === "Zurück")) {
-          button.textContent = cancelLabel;
-          if ("label" in button) button.label = cancelLabel;
-          button.setAttribute?.("aria-label", cancelLabel);
-          break;
-        }
+    const saveButton = state.saveButton;
+    const dirty = Boolean(
+      saveButton &&
+      !(saveButton.disabled ||
+        saveButton.hasAttribute?.("disabled") ||
+        saveButton.getAttribute?.("aria-disabled") === "true")
+    );
+    const actionLabel = dirty ? cancelLabel : closeLabel;
+    const actionButton = state.cancelButton;
+    if (actionButton) {
+      if ("label" in actionButton) actionButton.label = actionLabel;
+      actionButton.setAttribute?.("aria-label", actionLabel);
+      const labelNode = actionButton.shadowRoot?.querySelector?.(".label,span");
+      if (labelNode) labelNode.textContent = actionLabel;
+      const tag = actionButton.tagName?.toLowerCase?.();
+      if (tag === "button" || tag === "ha-button" || tag === "mwc-button") {
+        const lightTextNode = (Array.from(actionButton.childNodes || []) as Node[])
+          .find((node) => node.nodeType === Node.TEXT_NODE);
+        if (lightTextNode) lightTextNode.textContent = actionLabel;
+        else if (!actionButton.children?.length) actionButton.textContent = actionLabel;
       }
     }
   };
 
-  window.setTimeout(apply, 0);
-  window.setTimeout(apply, 80);
+  [0, 80, 240, 600].forEach((delay) => window.setTimeout(apply, delay));
 }
 
 function cleanupIntegratedSettingsHeader(): void {
   const state = (window as any).__ddIntegratedSettingsHeaderState;
-  if (state?.title) state.title.textContent = state.originalTitle || state.title.textContent;
+  if (state?.title) {
+    state.title.textContent = state.originalTitle || state.title.textContent;
+    state.title.style.display = state.originalTitleDisplay || "";
+    state.title.style.gap = state.originalTitleGap || "";
+  }
+  if (state?.header) {
+    state.header.style.maxWidth = state.originalHeaderMaxWidth || "";
+    state.header.style.width = state.originalHeaderWidth || "";
+    state.header.style.marginInline = state.originalHeaderMarginInline || "";
+  }
   if (state?.backButton) {
     if ("path" in state.backButton) state.backButton.path = state.originalPath;
     if ("icon" in state.backButton) state.backButton.icon = state.originalIcon;
@@ -707,7 +762,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       this._config?.settings?.show_time !== false,
       this._config?.settings?.show_notifications !== false,
       this._config?.settings?.show_weather !== false,
-      Boolean(this._config?.settings?.alarm_entity_id),
+      Boolean(this._config?.settings?.alarm_entity_id) && this._config?.settings?.show_alarm !== false,
     ].filter(Boolean).length;
     const replacementCount = this._replacementCount();
     const protectedMasterActionCount = MASTER_ACTION_CONFIRMATION_DOMAINS
@@ -941,7 +996,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     });
   }
 
-  private _settingsPageDescription(page: SettingsPageKey): string {
+  public _settingsPageDescription(page: SettingsPageKey): string {
     switch (page) {
       case "dashboard":
         return this._t('settings.dashboard_page_description');
@@ -975,9 +1030,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     return html`
       <div class="editor-container dd-flat-settings">
         <div class="settings-detail-content dd-flat-content">
-          ${this._settingsPageDescription(page) ? html`
-            <p class="dd-settings-page-description">${this._settingsPageDescription(page)}</p>
-          ` : nothing}
           ${this._renderSettingsPageContent(page)}
         </div>
       </div>
@@ -1068,10 +1120,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _renderMasterActionConfirmationSettingsPanel() {
     return html`
       <div class="master-confirmation-section dd-simple-settings-stack">
-        <div class="master-confirmation-note">
-          <ha-icon icon="mdi:information-outline"></ha-icon>
-          <span>${this._t('settings.master_confirmations_note')}</span>
-        </div>
         <div class="master-confirmation-list">
           ${MASTER_ACTION_CONFIRMATION_DOMAINS.map((domain) => {
             const enabled = masterActionConfirmationEnabled(this._config?.settings, domain);
@@ -1082,12 +1130,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                 </span>
                 <span class="master-confirmation-copy">
                   <strong>${getDomainName(this.hass, domain)}</strong>
-                  <small>${this._t(`settings.confirm_${domain}_description`)}</small>
                 </span>
-                <ha-switch
-                  .checked=${enabled}
-                  @change=${(event: Event) => this._toggleMasterActionConfirmation(domain, event)}
-                ></ha-switch>
+                <span class="master-confirmation-control">
+                  <span>${this._t(enabled ? 'settings.confirmation_required' : 'settings.runs_immediately')}</span>
+                  <ha-switch
+                    .checked=${enabled}
+                    @change=${(event: Event) => this._toggleMasterActionConfirmation(domain, event)}
+                  ></ha-switch>
+                </span>
               </label>
             `;
           })}
@@ -1180,21 +1230,93 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     `;
   }
 
+  private _replacementEntries(): Array<{ target: string; assignment: any }> {
+    const replacements = this._config?.blueprint_replacements;
+    if (!replacements) return [];
+    const targets = new Set<string>();
+    for (const surface of ['area_cards', 'devices_cards'] as const) {
+      Object.keys(replacements[surface]?.by_domain || {}).forEach((target) => targets.add(target));
+    }
+    return [...targets]
+      .sort((a, b) => getDomainName(this.hass, a).localeCompare(getDomainName(this.hass, b)))
+      .map((target) => ({
+        target,
+        assignment:
+          replacements.area_cards?.by_domain?.[target] ||
+          replacements.devices_cards?.by_domain?.[target],
+      }))
+      .filter((entry) => Boolean(entry.assignment));
+  }
+
+  private _setReplacementEnabled(target: string, enabled: boolean): void {
+    if (!this._config) return;
+    const replacements = structuredClone(this._config.blueprint_replacements || {});
+    for (const surface of ['area_cards', 'devices_cards'] as const) {
+      const assignment = replacements[surface]?.by_domain?.[target];
+      if (assignment) assignment.enabled = enabled;
+    }
+    this._fireConfigChanged({ ...this._config, blueprint_replacements: replacements });
+  }
+
+  private _removeReplacement(target: string): void {
+    if (!this._config) return;
+    const replacements = structuredClone(this._config.blueprint_replacements || {});
+    for (const surface of ['area_cards', 'devices_cards'] as const) {
+      if (replacements[surface]?.by_domain) delete replacements[surface]!.by_domain![target];
+    }
+    this._fireConfigChanged({ ...this._config, blueprint_replacements: replacements });
+  }
+
   private _renderReplacementsSettingsPanel() {
+    const entries = this._replacementEntries();
+
     return this._renderSettingsPanel(
       "mdi:puzzle-edit-outline",
       this._t('settings.blueprint_replacements'),
       this._t('settings.replace_description'),
       html`
-        <div class="replacement-section">
-          <div class="replacement-summary">
-            <div>
-              <div class="replacement-count">${this._tp('common.active', this._replacementCount())}</div>
-              <div class="replacement-help">${this._t('replacement.views_description')}</div>
+        <div class="replacement-section dd-replacement-settings">
+          ${entries.length ? html`
+            <div class="dd-replacement-list">
+              ${entries.map(({ target, assignment }) => {
+                const enabled = assignment.enabled !== false;
+                return html`
+                  <div class="dd-replacement-row ${enabled ? '' : 'disabled'}">
+                    <span class="dd-replacement-domain-icon" style=${`--replacement-color: ${getDomainColor(target)};`}>
+                      <ha-icon icon=${getDomainIcon(target)}></ha-icon>
+                    </span>
+                    <span class="dd-replacement-copy">
+                      <strong>${getDomainName(this.hass, target)}</strong>
+                      <small>${assignment.name}${assignment.version ? ` · v${assignment.version}` : ''}</small>
+                    </span>
+                    <span class="dd-replacement-actions">
+                      <button class="dd-inline-text-button" type="button" @click=${() => this._openReplacementManagerForDomain(target)}>
+                        ${this._t('common.edit')}
+                      </button>
+                      ${this._renderVisibilityButton(
+                        enabled,
+                        false,
+                        enabled ? this._t('common.disable') : this._t('common.enable'),
+                        () => this._setReplacementEnabled(target, !enabled)
+                      )}
+                      <button
+                        class="dd-icon-text-button danger"
+                        type="button"
+                        title=${this._t('common.delete')}
+                        aria-label=${this._t('common.delete')}
+                        @click=${() => this._removeReplacement(target)}
+                      ><ha-icon icon="mdi:delete-outline"></ha-icon></button>
+                    </span>
+                  </div>
+                `;
+              })}
             </div>
+          ` : html`<div class="dd-replacement-empty">${this._t('replacement.empty')}</div>`}
+
+          <div class="dd-replacement-footer">
             <ha-button appearance="accent" @click=${this._openReplacementManager}>
-              <ha-icon icon="mdi:puzzle-edit-outline"></ha-icon>
-              ${this._t('common.manage')}
+              <ha-icon icon="mdi:plus"></ha-icon>
+              ${this._t('replacement.assign')}
             </ha-button>
           </div>
         </div>
@@ -1240,10 +1362,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       : this._t('settings.no_weather_fallback');
 
     const alarmId = this._config?.settings?.alarm_entity_id;
+    const alarmEnabled = Boolean(alarmId) && this._config?.settings?.show_alarm !== false;
     const alarmState = alarmId ? this.hass?.states?.[alarmId] : undefined;
     const alarmName = alarmId
       ? (alarmState?.attributes?.friendly_name || alarmId)
-      : this._t('settings.no_alarm');
+      : this._t('settings.no_alarm_short');
 
     return html`
       <div class="dd-header-status-list">
@@ -1270,11 +1393,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
               <small>${weatherName}</small>
             </span>
             <span class="dd-header-feature-actions">
-              ${weatherEnabled ? html`
-                <button class="dd-inline-text-button" type="button" @click=${this._addWeatherEntity}>
-                  ${weatherId ? this._t('common.edit') : this._t('settings.select_weather')}
-                </button>
-              ` : nothing}
+              <button class="dd-inline-text-button" type="button" @click=${this._addWeatherEntity}>
+                ${weatherId ? this._t('common.edit') : this._t('settings.select_weather')}
+              </button>
               <ha-switch .checked=${weatherEnabled} @change=${this._toggleWeatherDisplay}></ha-switch>
             </span>
           </div>
@@ -1289,14 +1410,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
               <small>${alarmName}</small>
             </span>
             <span class="dd-header-feature-actions">
-              ${alarmId ? html`
-                <button class="dd-icon-text-button danger" type="button" title=${this._t('common.remove')} @click=${() => this._removeAlarmEntity()}>
-                  <ha-icon icon="mdi:close"></ha-icon>
-                </button>
-              ` : nothing}
               <button class="dd-inline-text-button" type="button" @click=${this._addAlarmEntity}>
                 ${alarmId ? this._t('common.edit') : this._t('settings.select_alarm')}
               </button>
+              <ha-switch
+                .checked=${alarmEnabled}
+                .disabled=${!alarmId}
+                @change=${this._toggleAlarmDisplay}
+              ></ha-switch>
             </span>
           </div>
           ${this._showAlarmPicker ? this._renderAlarmPicker() : nothing}
@@ -1344,14 +1465,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           <div class="dd-settings-list">
             ${this._renderToggleSetting(
               "mdi:menu",
-              this._t('settings.restrict_ha_menu'),
+              this._t('settings.restrict_ha_menu_short'),
               this._t('settings.restrict_ha_menu_description'),
               this._config?.settings?.restrict_non_admin_ha_sidebar === true,
               this._toggleRestrictNonAdminHaSidebar
             )}
             ${this._renderToggleSetting(
               "mdi:pencil-off-outline",
-              this._t('settings.restrict_editing'),
+              this._t('settings.restrict_editing_short'),
               this._t('settings.restrict_editing_description'),
               this._config?.settings?.restrict_non_admin_dashboard_settings === true,
               this._toggleRestrictNonAdminDashboardSettings
@@ -1427,27 +1548,25 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           <strong id="area-order-title">${this._t('settings.area_order_title')}</strong>
           <span>${this._t('settings.area_order_description')}</span>
         </div>
-        <div class="area-order-modes" role="radiogroup" aria-label=${this._t('settings.area_order_title')}>
+        <div class="area-sort-segmented" role="radiogroup" aria-label=${this._t('settings.area_order_title')}>
           ${sortModes.map(({ mode, icon }) => html`
             <button
               type="button"
-              class="area-order-mode ${sortMode === mode ? 'selected' : ''}"
+              class="area-sort-segment ${sortMode === mode ? 'selected' : ''}"
               role="radio"
               aria-checked=${sortMode === mode ? 'true' : 'false'}
               @click=${() => this._setAreaSortMode(mode)}
             >
               <ha-icon .icon=${icon}></ha-icon>
-              <span>
-                <strong>${this._t(`settings.area_order_${mode}`)}</strong>
-                <small>${this._t(`settings.area_order_${mode}_description`)}</small>
-              </span>
+              <span>${this._t(`settings.area_order_${mode}`)}</span>
             </button>
           `)}
         </div>
-        ${sortMode === 'custom' ? html`
-          <p class="area-order-hint">${this._t('settings.area_order_drag_hint')}</p>
-        ` : nothing}
       </section>
+
+      ${sortMode === 'custom' ? html`
+        <p class="area-order-list-hint">${this._t('settings.area_order_drag_hint')}</p>
+      ` : nothing}
 
       <div class="sortable-container area-settings-sortable ${sortMode === 'custom' ? 'is-custom-order' : ''} ${this._draggedAreaId ? 'dragging' : ''}">
         ${repeat(
@@ -1471,29 +1590,17 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                 @drop=${(event: DragEvent) => sortMode === 'custom' && this._handleAreaDrop(event, index)}
               >
                 <div class="area-item">
-                  <div class="handle ${sortMode !== 'custom' ? 'disabled' : ''}" aria-hidden="true">
-                    <ha-svg-icon .path=${mdiDrag}></ha-svg-icon>
-                  </div>
+                  ${sortMode === 'custom' ? html`
+                    <div class="handle" aria-hidden="true">
+                      <ha-svg-icon .path=${mdiDrag}></ha-svg-icon>
+                    </div>
+                  ` : nothing}
                   <ha-icon .icon=${area.icon || 'mdi:floor-plan'} class="area-icon"></ha-icon>
                   <span class="area-name clickable" @click=${() => this._editArea(area.area_id)}>
                     ${area.name}
                     <ha-icon icon="mdi:chevron-right" class="chevron"></ha-icon>
                   </span>
                   <div class="area-actions">
-                    ${sortMode === 'custom' ? html`
-                      <ha-icon-button
-                        .label=${this._t('settings.move_up')}
-                        .path=${mdiArrowUp}
-                        .disabled=${index === 0}
-                        @click=${() => this._moveArea(area.area_id, -1)}
-                      ></ha-icon-button>
-                      <ha-icon-button
-                        .label=${this._t('settings.move_down')}
-                        .path=${mdiArrowDown}
-                        .disabled=${index === sortedAreas.length - 1}
-                        @click=${() => this._moveArea(area.area_id, 1)}
-                      ></ha-icon-button>
-                    ` : nothing}
                     <ha-icon-button
                       .label=${this._t(isHidden ? 'common.show' : 'common.hide')}
                       .path=${isHidden ? mdiEye : mdiEyeOff}
@@ -2626,7 +2733,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
             const expanded = Boolean(group?.areas.length) && this._expandedDeviceTypes.has(option.key);
 
             return html`
-              <section class="device-type-panel ${expanded ? 'open' : ''} ${globallyVisible ? '' : 'disabled'}">
+              <section
+                class="device-type-panel ${expanded ? 'open' : ''} ${globallyVisible ? '' : 'disabled'}"
+                style=${`--device-type-color: ${option.color};`}
+              >
                 <div
                   class="device-type-panel-row ${group?.areas.length ? 'expandable' : ''}"
                   @click=${() => group?.areas.length && this._toggleExpandedDeviceType(option.key)}
@@ -2760,7 +2870,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     entityRecords.forEach((record) => {
       const deviceId = record.deviceId;
       if (!deviceId || !deviceById.has(deviceId)) return;
-      if (!this._isDeviceManagedEntity(record.entityId)) return;
+      const device = deviceById.get(deviceId)!;
+      const area = this._deviceVisibilityArea(device, [record.entityId]);
+      if (!area || !this._isDeviceManagedEntity(record.entityId, area.areaId)) return;
 
       const typeKey = this._deviceTypeKeyForEntityId(record.entityId);
       if (!typeKey || typeKey === "person") return;
@@ -2847,11 +2959,31 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     return devices;
   }
 
-  private _isDeviceManagedEntity(entityId: string): boolean {
-    const registry = this.hass?.entities?.[entityId];
-    if (registry?.hidden_by || registry?.entity_category === "diagnostic" || registry?.entity_category === "config") {
+  private _isDeviceManagedEntity(entityId: string, areaId?: string): boolean {
+    const registry = this.hass?.entities?.[entityId] as any;
+    const state = this.hass?.states?.[entityId];
+
+    if (
+      !state ||
+      registry?.hidden_by ||
+      registry?.disabled_by ||
+      registry?.entity_category === "diagnostic" ||
+      registry?.entity_category === "config"
+    ) {
       return false;
     }
+
+    if (
+      this._config?.settings?.hide_unavailable_entities_on_devices !== false &&
+      (state.state === "unavailable" || state.state === "unknown")
+    ) {
+      return false;
+    }
+
+    if (areaId && this._isEntityHiddenInAreaOptions(areaId, entityId)) {
+      return false;
+    }
+
     return !!entityId.includes(".");
   }
 
@@ -2927,7 +3059,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     const addEntity = (entityId: string, areaId?: string | null, deviceId?: string | null) => {
       if (!entityId || processed.has(entityId)) return;
       const registry = this.hass?.entities?.[entityId];
-      if (registry?.hidden_by || registry?.entity_category === 'diagnostic' || registry?.entity_category === 'config') return;
+      if (
+        registry?.hidden_by ||
+        (registry as any)?.disabled_by ||
+        registry?.entity_category === 'diagnostic' ||
+        registry?.entity_category === 'config'
+      ) return;
 
       const resolvedAreaId = areaId || (deviceId ? deviceAreas.get(deviceId) : undefined) || registry?.area_id;
       if (!resolvedAreaId || hiddenAreas.has(resolvedAreaId)) return;
@@ -2940,7 +3077,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       const key = this._deviceTypeKeyForEntityId(entityId);
-      if (!key) return;
+      if (!key || key === 'person') return;
 
       processed.add(entityId);
       counts.set(key, (counts.get(key) || 0) + 1);
@@ -2950,15 +3087,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
     Object.values(this.hass.states || {}).forEach((state: any) => {
       addEntity(state.entity_id, state.attributes?.area_id, this.hass?.entities?.[state.entity_id]?.device_id);
-    });
-
-    const hiddenPersons = new Set(this._config.settings?.hidden_persons || []);
-    Object.values(this.hass.states || {}).forEach((state: any) => {
-      const entityId = state.entity_id;
-      if (!entityId?.startsWith('person.') || processed.has(entityId) || hiddenPersons.has(entityId)) return;
-      if (this.hass?.entities?.[entityId]?.hidden_by) return;
-      processed.add(entityId);
-      counts.set('person', (counts.get('person') || 0) + 1);
     });
 
     return [...counts.entries()]
@@ -3410,36 +3538,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     }
 
     this._handleAreaDragEnd();
-  }
-
-  private _moveArea(areaId: string, direction: -1 | 1): void {
-    if (
-      !this._config ||
-      !this.hass ||
-      resolveAreaSortMode(this._config.areas_display) !== 'custom'
-    ) return;
-
-    const areas = sortAreas(
-      Object.values(this.hass.areas || {}),
-      { ...this._config.areas_display, hidden: [] },
-      ddLocale(this.hass)
-    );
-    const currentIndex = areas.findIndex((area) => area.area_id === areaId);
-    const targetIndex = currentIndex + direction;
-    if (currentIndex < 0 || targetIndex < 0 || targetIndex >= areas.length) return;
-
-    const reordered = [...areas];
-    const [area] = reordered.splice(currentIndex, 1);
-    if (!area) return;
-    reordered.splice(targetIndex, 0, area);
-
-    this._fireConfigChanged({
-      ...this._config,
-      areas_display: {
-        ...this._config.areas_display,
-        order: reordered.map((entry) => entry.area_id),
-      },
-    });
   }
 
   private _handleAreaCustomCardDragStart(event: DragEvent, cardId: string): void {
@@ -4159,18 +4257,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     this._showAlarmPicker = false;
   }
 
-  private _removeAlarmEntity(): void {
-    const newConfig: DwainsDashboardConfig = {
-      ...this._config!,
-      settings: {
-        ...this._config!.settings,
-        alarm_entity_id: undefined
-      }
-    };
-
-    this._fireConfigChanged(newConfig);
-  }
-
   private _toggleTimeDisplay(e: Event): void {
     const target = e.target as any;
     const showTime = target.checked;
@@ -4215,6 +4301,21 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
     this._fireConfigChanged(newConfig);
   }
+
+  private _toggleAlarmDisplay = (e: Event): void => {
+    const target = e.target as any;
+    const showAlarm = Boolean(target.checked);
+
+    const newConfig: DwainsDashboardConfig = {
+      ...this._config!,
+      settings: {
+        ...this._config!.settings,
+        show_alarm: showAlarm,
+      },
+    };
+
+    this._fireConfigChanged(newConfig);
+  };
 
   private _toggleMasterActionConfirmation(
     domain: MasterActionConfirmationDomain,
@@ -4361,7 +4462,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       return html`<p>${this._t('settings.no_persons')}</p>`;
     }
 
-    // Get all person entities
     const personEntities = Object.keys(this.hass.states)
       .filter(entityId => entityId.startsWith('person.'))
       .map(entityId => {
@@ -4394,22 +4494,16 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           (person) => person.entity_id,
           (person) => {
             const isHidden = hiddenPersons.has(person.entity_id);
-
             return html`
               <div class="person-item ${isHidden ? 'hidden' : ''}">
-                <ha-state-icon
-                  .stateObj=${person.state}
-                  class="person-icon"
-                ></ha-state-icon>
+                <ha-state-icon .stateObj=${person.state} class="person-icon"></ha-state-icon>
                 <span class="person-name">${person.friendly_name}</span>
-                <span class="person-state ${person.state?.state === 'home' ? 'home' : 'away'}">
-                  ${person.state?.state === 'home' ? this._t('person.home') : this._t('person.away')}
-                </span>
-                <ha-icon-button
-                  .label=${isHidden ? "Show" : "Hide"}
-                  .path=${isHidden ? mdiEye : mdiEyeOff}
-                  @click=${() => this._togglePersonVisibility(person.entity_id)}
-                ></ha-icon-button>
+                ${this._renderVisibilityButton(
+                  !isHidden,
+                  false,
+                  isHidden ? this._t('common.show') : this._t('common.hide'),
+                  () => this._togglePersonVisibility(person.entity_id)
+                )}
               </div>
             `;
           }
@@ -4454,6 +4548,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     });
   }
 
+  private _openReplacementManagerForDomain(target: string): void {
+    if (!this.hass || !this._config) return;
+    openReplacementManager(this.hass, this._config, (config) => {
+      this._fireConfigChanged(config);
+      this.requestUpdate();
+    }, target);
+  }
+
   private _replacementCount(): number {
     return countReplacementRules(this._config?.blueprint_replacements);
   }
@@ -4485,6 +4587,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       composed: true
     });
     this.dispatchEvent(event);
+    scheduleIntegratedSettingsHeader(this);
   }
 
   static get styles() {
@@ -7792,6 +7895,311 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
         .device-admission-device-list {
           padding-left: 12px;
+        }
+      }
+
+      /* Final settings layout pass */
+      .dd-flat-settings {
+        max-width: 920px;
+        margin-inline: auto;
+      }
+
+      .dd-flat-settings .settings-nav-section,
+      .dd-flat-settings .settings-detail-content,
+      .dd-flat-settings .dd-settings-version-footer {
+        max-width: none;
+        width: 100%;
+      }
+
+      .settings-nav-section h3 {
+        min-height: 28px;
+        margin: 0 0 7px;
+        padding: 0 2px;
+        font-size: 14px;
+        font-weight: 750;
+        color: var(--primary-text-color);
+      }
+
+      .settings-nav-section + .settings-nav-section {
+        margin-top: 18px;
+      }
+
+      .area-sort-segmented {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        overflow: hidden;
+        border: 1px solid var(--divider-color);
+        border-radius: 10px;
+        background: var(--secondary-background-color);
+      }
+
+      .area-sort-segment {
+        min-width: 0;
+        min-height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 8px 10px;
+        border: 0;
+        border-right: 1px solid var(--divider-color);
+        color: var(--secondary-text-color);
+        background: transparent;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 650;
+        cursor: pointer;
+      }
+
+      .area-sort-segment:last-child {
+        border-right: 0;
+      }
+
+      .area-sort-segment:hover {
+        color: var(--primary-text-color);
+        background: color-mix(in srgb, var(--primary-color) 4%, transparent);
+      }
+
+      .area-sort-segment.selected {
+        color: var(--primary-color);
+        background: color-mix(in srgb, var(--primary-color) 9%, var(--card-background-color));
+      }
+
+      .area-sort-segment ha-icon {
+        --mdc-icon-size: 18px;
+      }
+
+      .area-order-list-hint {
+        margin: 0 2px 8px;
+        color: var(--secondary-text-color);
+        font-size: 12px;
+        line-height: 1.4;
+      }
+
+      .dd-integrated-chevron ha-icon {
+        width: 18px;
+        height: 18px;
+        --mdc-icon-size: 18px;
+      }
+
+      .dd-integrated-chevron {
+        width: 34px;
+        height: 18px;
+      }
+
+      .persons-list .person-item {
+        display: grid;
+        grid-template-columns: 40px minmax(0, 1fr) 44px;
+        gap: 8px;
+      }
+
+      .persons-list .dd-visibility-button {
+        justify-self: end;
+      }
+
+      .master-confirmation-control {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 12px;
+      }
+
+      .master-confirmation-control > span {
+        display: block;
+        min-width: 116px;
+        color: var(--secondary-text-color);
+        font-size: 12px;
+        font-weight: 600;
+        text-align: right;
+      }
+
+      .device-type-panel {
+        --device-type-color: var(--primary-color);
+      }
+
+      .device-type-panel-row .device-type-icon.small,
+      .device-type-panel .device-admission-device .device-type-icon {
+        color: var(--device-type-color);
+      }
+
+      .device-type-panel .dd-visibility-button {
+        color: var(--device-type-color);
+        border-color: color-mix(in srgb, var(--device-type-color) 30%, var(--divider-color));
+      }
+
+      .device-type-panel .dd-visibility-button.hidden {
+        color: var(--secondary-text-color);
+        border-color: var(--divider-color);
+      }
+
+      .device-admission-device-list {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+        padding: 0 12px 12px 52px;
+      }
+
+      .device-admission-device {
+        min-width: 0;
+        min-height: 62px;
+        grid-template-columns: 32px minmax(0, 1fr) 38px;
+        gap: 7px;
+        padding: 8px;
+        border: 1px solid var(--divider-color);
+        border-radius: 10px;
+        background: var(--card-background-color);
+      }
+
+      .device-admission-device + .device-admission-device {
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .device-admission-device.hidden {
+        background: color-mix(in srgb, var(--secondary-background-color) 70%, var(--card-background-color));
+      }
+
+      .device-admission-device .dd-visibility-button {
+        width: 34px;
+        height: 34px;
+      }
+
+      .device-admission-copy {
+        min-width: 0;
+      }
+
+      .device-admission-copy .device-type-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 12px;
+        font-weight: 650;
+      }
+
+      .device-admission-copy .device-type-count {
+        font-size: 10px;
+      }
+
+      .dd-replacement-settings {
+        padding: 0;
+        display: grid;
+        gap: 12px;
+      }
+
+      .dd-replacement-list {
+        overflow: hidden;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: var(--card-background-color);
+      }
+
+      .dd-replacement-row {
+        min-height: 62px;
+        display: grid;
+        grid-template-columns: 40px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+      }
+
+      .dd-replacement-row + .dd-replacement-row {
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .dd-replacement-row.disabled {
+        opacity: 0.55;
+      }
+
+      .dd-replacement-domain-icon {
+        width: 40px;
+        height: 40px;
+        display: grid;
+        place-items: center;
+        color: var(--replacement-color, var(--primary-color));
+      }
+
+      .dd-replacement-domain-icon ha-icon {
+        --mdc-icon-size: 23px;
+      }
+
+      .dd-replacement-copy {
+        min-width: 0;
+        display: grid;
+        gap: 3px;
+      }
+
+      .dd-replacement-copy strong {
+        font-size: 14px;
+      }
+
+      .dd-replacement-copy small {
+        overflow: hidden;
+        color: var(--secondary-text-color);
+        font-size: 11px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .dd-replacement-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .dd-replacement-empty {
+        padding: 18px;
+        border: 1px dashed var(--divider-color);
+        border-radius: 12px;
+        color: var(--secondary-text-color);
+        font-size: 12px;
+        text-align: center;
+      }
+
+      .dd-replacement-footer {
+        display: flex;
+        justify-content: flex-start;
+      }
+
+      .dd-replacement-footer ha-button ha-icon {
+        --mdc-icon-size: 18px;
+        margin-right: 5px;
+      }
+
+      @media (max-width: 700px) {
+        .dd-flat-settings {
+          max-width: none;
+        }
+
+        .area-sort-segmented {
+          grid-template-columns: 1fr;
+        }
+
+        .area-sort-segment {
+          justify-content: flex-start;
+          border-right: 0;
+          border-bottom: 1px solid var(--divider-color);
+        }
+
+        .area-sort-segment:last-child {
+          border-bottom: 0;
+        }
+
+        .device-admission-device-list {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          padding-left: 12px;
+        }
+
+        .master-confirmation-control > span {
+          min-width: 0;
+          max-width: 110px;
+        }
+
+        .dd-replacement-row {
+          grid-template-columns: 36px minmax(0, 1fr);
+        }
+
+        .dd-replacement-actions {
+          grid-column: 2;
+          justify-self: start;
         }
       }
     `;
