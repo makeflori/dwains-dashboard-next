@@ -1421,11 +1421,18 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                     <ha-icon icon="mdi:chevron-right" class="chevron"></ha-icon>
                   </span>
                   <div class="area-actions">
-                    <ha-icon-button
-                      .label=${this._t(isHidden ? 'common.show' : 'common.hide')}
-                      .path=${isHidden ? mdiEye : mdiEyeOff}
-                      @click=${() => this._toggleAreaVisibility(area.area_id)}
-                    ></ha-icon-button>
+                    <button
+                      class="dd-visibility-button ${isHidden ? 'hidden' : ''}"
+                      type="button"
+                      title=${this._t(isHidden ? 'common.show' : 'common.hide')}
+                      aria-label=${this._t(isHidden ? 'common.show' : 'common.hide')}
+                      @click=${(event: Event) => {
+                        event.stopPropagation();
+                        this._toggleAreaVisibility(area.area_id);
+                      }}
+                    >
+                      <ha-icon icon=${isHidden ? 'mdi:eye' : 'mdi:eye-off'}></ha-icon>
+                    </button>
                   </div>
                 </div>
               </div>
