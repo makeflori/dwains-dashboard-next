@@ -411,28 +411,110 @@ export class DwainsReplacementManagerDialog extends LitElement {
       padding: 0 18px 20px;
       color: var(--primary-text-color);
     }
-    .builder-footer {
+    .dialog-title {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+    }
+    .dialog-title > span {
+      font-size: 20px;
+      font-weight: 650;
+      line-height: 1.2;
+    }
+    .dialog-title > small,
+    .choice-desc,
+    .hint,
+    .input-field small {
+      color: var(--secondary-text-color);
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 1.35;
+    }
+    .dialog-title > small {
+      white-space: normal;
+    }
+    .builder {
       margin-top: 14px;
-      padding-top: 12px;
-      border-top: 1px solid var(--divider-color);
+    }
+    .builder-grid {
+      display: grid;
+      grid-template-columns: minmax(220px, 360px);
+      gap: 12px;
+    }
+    .control-block {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
+    }
+    label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--secondary-text-color);
+    }
+    select,
+    .search,
+    .input-field input {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid var(--divider-color);
+      border-radius: 8px;
+      padding: 10px 11px;
+      background: var(--card-background-color);
+      color: var(--primary-text-color);
+      font-size: 14px;
+    }
+    .gallery-toolbar {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 16px;
+      gap: 10px;
+      margin: 14px 0 8px;
     }
-    .builder-footer .hint {
-      margin: 0;
-      line-height: 1.4;
+    .gallery {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      max-height: 280px;
+      overflow: auto;
+      padding-right: 2px;
+      margin-top: 12px;
     }
-    .builder-footer ha-button {
-      flex: 0 0 auto;
+    .gallery-toolbar + .gallery {
+      margin-top: 0;
     }
-    .builder-footer ha-icon {
-      --mdc-icon-size: 18px;
-      margin-right: 5px;
+    .blueprint-choice {
+      text-align: left;
+      border: 1px solid var(--divider-color);
+      border-radius: 8px;
+      background: var(--card-background-color);
+      color: var(--primary-text-color);
+      padding: 10px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
-    .footer-loading {
-      margin-top: 8px;
+    .blueprint-choice:hover,
+    .blueprint-choice.selected {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 1px var(--primary-color) inset;
+    }
+    .choice-name {
+      font-weight: 600;
+    }
+    .choice-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 4px;
+    }
+    .choice-tags span {
+      border-radius: 999px;
+      padding: 2px 8px;
+      background: var(--secondary-background-color);
+      color: var(--secondary-text-color);
+      font-size: 12px;
+      white-space: nowrap;
     }
     .input-grid {
       display: grid;
@@ -445,6 +527,28 @@ export class DwainsReplacementManagerDialog extends LitElement {
       flex-direction: column;
       gap: 4px;
     }
+    .builder-footer {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid var(--divider-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .builder-footer .hint {
+      margin: 0;
+    }
+    .builder-footer ha-button {
+      flex: 0 0 auto;
+    }
+    .builder-footer ha-icon {
+      --mdc-icon-size: 18px;
+      margin-right: 5px;
+    }
+    .footer-loading {
+      margin-top: 8px;
+    }
     .error {
       padding: 10px 12px;
       border-radius: 8px;
@@ -452,28 +556,18 @@ export class DwainsReplacementManagerDialog extends LitElement {
       color: var(--error-color);
       margin-bottom: 10px;
     }
-    .empty {
-      border: 1px dashed var(--divider-color);
-      border-radius: 8px;
-      padding: 12px;
-    }
     @media (max-width: 760px) {
       :host {
         --mdc-dialog-min-width: 96vw;
       }
-      .overview,
       .builder-grid,
       .gallery,
       .input-grid {
         grid-template-columns: 1fr;
       }
-      .assignment,
       .builder-footer {
         align-items: stretch;
         flex-direction: column;
-      }
-      .assignment-actions {
-        justify-content: flex-end;
       }
     }
   `;
