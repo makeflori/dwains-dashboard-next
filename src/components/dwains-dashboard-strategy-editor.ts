@@ -1,6 +1,4 @@
 import {
-  mdiArrowDown,
-  mdiArrowUp,
   mdiCardAccountDetailsStarOutline,
   mdiChevronRight,
   mdiDrag,
@@ -220,6 +218,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
   @state()
   private _dragOverEntitySection?: AreaStrategyGroup;
+
+  @state()
+  private _collapsedAreaEntityGroups = new Set<AreaStrategyGroup>();
 
   @state()
   private _draggedAreaCustomCardId?: string;
@@ -1694,7 +1695,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         <section class="area-entity-layout-settings">
           <div class="area-entity-layout-copy">
             <strong>${this._t('settings.area_entity_layout_title')}</strong>
-            <span>${this._t('settings.area_entity_layout_description')}</span>
           </div>
           <div class="area-order-modes">
             <button
@@ -1705,7 +1705,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
               <ha-icon icon="mdi:format-list-group"></ha-icon>
               <span>
                 <strong>${this._t('settings.area_entity_layout_grouped')}</strong>
-                <small>${this._t('settings.area_entity_layout_grouped_description')}</small>
               </span>
             </button>
             <button
@@ -1716,7 +1715,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
               <ha-icon icon="mdi:sort-variant"></ha-icon>
               <span>
                 <strong>${this._t('settings.area_entity_layout_ungrouped')}</strong>
-                <small>${this._t('settings.area_entity_layout_ungrouped_description')}</small>
               </span>
             </button>
           </div>
@@ -1761,25 +1759,18 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                           ${state?.attributes?.friendly_name || entityId}
                           <small>${this._getGroupTitle(entityGroup)}</small>
                         </span>
-                        <div class="entity-order-buttons">
-                          <ha-icon-button
-                            .label=${this._t('settings.move_up')}
-                            .path=${mdiArrowUp}
-                            .disabled=${index === 0}
-                            @click=${() => this._moveUngroupedEntity(sortedUngroupedEntities, index, -1)}
-                          ></ha-icon-button>
-                          <ha-icon-button
-                            .label=${this._t('settings.move_down')}
-                            .path=${mdiArrowDown}
-                            .disabled=${index === sortedUngroupedEntities.length - 1}
-                            @click=${() => this._moveUngroupedEntity(sortedUngroupedEntities, index, 1)}
-                          ></ha-icon-button>
-                        </div>
-                        <ha-icon-button
-                          .label=${isHidden ? this._t('common.show') : this._t('common.hide')}
-                          .path=${isHidden ? mdiEye : mdiEyeOff}
-                          @click=${() => this._toggleEntityVisibility(entityId, entityGroup)}
-                        ></ha-icon-button>
+                        <button
+                          class="dd-visibility-button ${isHidden ? 'hidden' : ''}"
+                          type="button"
+                          title=${isHidden ? this._t('common.show') : this._t('common.hide')}
+                          aria-label=${isHidden ? this._t('common.show') : this._t('common.hide')}
+                          @click=${(event: Event) => {
+                            event.stopPropagation();
+                            this._toggleEntityVisibility(entityId, entityGroup);
+                          }}
+                        >
+                          <ha-icon icon=${isHidden ? 'mdi:eye' : 'mdi:eye-off'}></ha-icon>
+                        </button>
                       </div>
                     </div>
                     ${this._getAreaEditorFreeCardsForSlot(customCards, index + 1, sortedUngroupedEntities, entityGroupById)
@@ -1808,46 +1799,56 @@ export class DwainsDashboardStrategyEditor extends LitElement {
             const nameA = this.hass!.states[a]?.attributes?.friendly_name || a;
             const nameB = this.hass!.states[b]?.attributes?.friendly_name || b;
             return nameA.localeCompare(nameB);
-          });
+          });          const groupHiddenCount = allGroupEntities.filter((entityId) => hiddenEntities.has(entityId)).length;
+          const groupVisible = groupHiddenCount < allGroupEntities.length;
+          const groupPartial = groupHiddenCount > 0 && groupHiddenCount < allGroupEntities.length;
+          const groupOpen = !this._collapsedAreaEntityGroups.has(group);
 
           return html`
             <div
-              class="area-entity-section ${this._draggedEntitySection === group ? 'dragging' : ''} ${this._dragOverEntitySection === group ? 'drag-over' : ''}"
+              class="area-entity-section ${groupOpen ? 'open' : ''} ${this._draggedEntitySection === group ? 'dragging' : ''} ${this._dragOverEntitySection === group ? 'drag-over' : ''}"
               @dragover=${(event: DragEvent) => this._handleEntitySectionDragOver(event, group)}
               @drop=${(event: DragEvent) => this._handleEntitySectionDrop(event, group, groupedSections)}
             >
-              <ha-expansion-panel expanded outlined>
-                <div slot="header" class="area-entity-section-header">
-                  <ha-icon icon=${AREA_STRATEGY_GROUP_ICONS[group]}></ha-icon>
-                  <span>${this._getGroupTitle(group)}</span>
-                  <span class="area-entity-section-actions">
-                    <ha-icon-button
-                      .label=${this._t('settings.move_up')}
-                      .path=${mdiArrowUp}
-                      .disabled=${groupIndex === 0}
-                      @click=${(event: Event) => this._moveEntitySection(event, groupedSections, groupIndex, -1)}
-                    ></ha-icon-button>
-                    <ha-icon-button
-                      .label=${this._t('settings.move_down')}
-                      .path=${mdiArrowDown}
-                      .disabled=${groupIndex === groupedSections.length - 1}
-                      @click=${(event: Event) => this._moveEntitySection(event, groupedSections, groupIndex, 1)}
-                    ></ha-icon-button>
-                    <button
-                      class="area-entity-section-handle"
-                      type="button"
-                      draggable="true"
-                      title=${this._t('layout.drag_group')}
-                      aria-label=${this._t('layout.drag_group')}
-                      @click=${(event: Event) => event.stopPropagation()}
-                      @dragstart=${(event: DragEvent) => this._handleEntitySectionDragStart(event, group)}
-                      @dragend=${this._handleEntitySectionDragEnd}
-                    >
-                      <ha-svg-icon .path=${mdiDrag}></ha-svg-icon>
-                    </button>
-                  </span>
+              <div
+                class="area-entity-section-card"
+                @click=${() => this._toggleAreaEntityGroup(group)}
+              >
+                <div class="area-entity-section-header">
+                  <button
+                    class="area-entity-section-handle"
+                    type="button"
+                    draggable="true"
+                    title=${this._t('layout.drag_group')}
+                    aria-label=${this._t('layout.drag_group')}
+                    @click=${(event: Event) => event.stopPropagation()}
+                    @dragstart=${(event: DragEvent) => this._handleEntitySectionDragStart(event, group)}
+                    @dragend=${this._handleEntitySectionDragEnd}
+                  >
+                    <ha-svg-icon .path=${mdiDrag}></ha-svg-icon>
+                  </button>
+                  <ha-icon class="area-entity-section-icon" icon=${AREA_STRATEGY_GROUP_ICONS[group]}></ha-icon>
+                  <span class="area-entity-section-title">${this._getGroupTitle(group)}</span>
+                  ${this._renderVisibilityButton(
+                    groupVisible,
+                    groupPartial,
+                    groupVisible ? this._t('settings.hide_section') : this._t('settings.show_section'),
+                    () => this._setAreaEntityGroupHidden(group, allGroupEntities, groupVisible)
+                  )}
+                  <button
+                    class="dd-integrated-chevron area-entity-section-chevron"
+                    type="button"
+                    aria-expanded=${groupOpen ? 'true' : 'false'}
+                    @click=${(event: Event) => {
+                      event.stopPropagation();
+                      this._toggleAreaEntityGroup(group);
+                    }}
+                  >
+                    <ha-icon icon=${groupOpen ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
+                  </button>
                 </div>
-                <div class="sortable-container ${this._draggedEntityGroup === group ? 'dragging' : ''}">
+                ${groupOpen ? html`
+                  <div class="sortable-container ${this._draggedEntityGroup === group ? 'dragging' : ''}">
                 ${this._getAreaEditorDomainCardsForSlot(customCards, group, 0, sortedEntities.length)
                   .map((entry) => this._renderAreaCustomCardEditorRow(entry))}
                 ${repeat(
@@ -1885,11 +1886,18 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                           <span class="entity-name">
                             ${state?.attributes?.friendly_name || entityId}
                           </span>
-                          <ha-icon-button
-                            .label=${isHidden ? "Show" : "Hide"}
-                            .path=${isHidden ? mdiEye : mdiEyeOff}
-                            @click=${() => this._toggleEntityVisibility(entityId, group)}
-                          ></ha-icon-button>
+                          <button
+                            class="dd-visibility-button ${isHidden ? 'hidden' : ''}"
+                            type="button"
+                            title=${isHidden ? this._t('common.show') : this._t('common.hide')}
+                            aria-label=${isHidden ? this._t('common.show') : this._t('common.hide')}
+                            @click=${(event: Event) => {
+                              event.stopPropagation();
+                              this._toggleEntityVisibility(entityId, group);
+                            }}
+                          >
+                            <ha-icon icon=${isHidden ? 'mdi:eye' : 'mdi:eye-off'}></ha-icon>
+                          </button>
                         </div>
                       </div>
                       ${this._getAreaEditorDomainCardsForSlot(customCards, group, index + 1, sortedEntities.length)
@@ -1898,8 +1906,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                   }
                 )}
                   ${this._renderAreaCustomCardDropZone(`domain:${group}:${sortedEntities.length}`)}
-                </div>
-              </ha-expansion-panel>
+                  </div>
+                ` : nothing}
+              </div>
             </div>
           `;
         })}
@@ -3047,16 +3056,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     });
   }
 
-  private _moveUngroupedEntity(order: string[], index: number, direction: -1 | 1): void {
-    const targetIndex = index + direction;
-    if (targetIndex < 0 || targetIndex >= order.length) return;
-    const nextOrder = [...order];
-    const [entityId] = nextOrder.splice(index, 1);
-    if (!entityId) return;
-    nextOrder.splice(targetIndex, 0, entityId);
-    this._saveUngroupedEntityOrder(nextOrder);
-  }
-
   private _getAreaGroupedEntitiesWithoutFiltering(
     areaEntities: { entity_id: string }[],
     hass: HomeAssistant
@@ -3479,6 +3478,45 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     });
   }
 
+  private _toggleAreaEntityGroup(group: AreaStrategyGroup): void {
+    const next = new Set(this._collapsedAreaEntityGroups);
+    if (next.has(group)) next.delete(group);
+    else next.add(group);
+    this._collapsedAreaEntityGroups = next;
+  }
+
+  private _setAreaEntityGroupHidden(
+    group: AreaStrategyGroup,
+    entityIds: string[],
+    hidden: boolean
+  ): void {
+    if (!this._config || !this._area) return;
+
+    const current = this._config.areas_options?.[this._area]?.groups_options?.[group];
+    const nextHidden = new Set(current?.hidden || []);
+    entityIds.forEach((entityId) => {
+      if (hidden) nextHidden.add(entityId);
+      else nextHidden.delete(entityId);
+    });
+
+    this._fireConfigChanged({
+      ...this._config,
+      areas_options: {
+        ...this._config.areas_options,
+        [this._area]: {
+          ...this._config.areas_options?.[this._area],
+          groups_options: {
+            ...this._config.areas_options?.[this._area]?.groups_options,
+            [group]: {
+              ...current,
+              hidden: [...nextHidden],
+            },
+          },
+        },
+      },
+    });
+  }
+
   private _handleEntitySectionDragStart(event: DragEvent, group: AreaStrategyGroup): void {
     event.stopPropagation();
     this._handleEntityDragEnd();
@@ -3516,23 +3554,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       this._saveEntitySectionOrder(reordered);
     }
     this._handleEntitySectionDragEnd();
-  }
-
-  private _moveEntitySection(
-    event: Event,
-    orderedGroups: AreaStrategyGroup[],
-    index: number,
-    direction: -1 | 1
-  ): void {
-    event.preventDefault();
-    event.stopPropagation();
-    const targetIndex = index + direction;
-    if (targetIndex < 0 || targetIndex >= orderedGroups.length) return;
-    const reordered = [...orderedGroups];
-    const [moved] = reordered.splice(index, 1);
-    if (!moved) return;
-    reordered.splice(targetIndex, 0, moved);
-    this._saveEntitySectionOrder(reordered);
   }
 
   private _handleEntitySectionDragEnd = (): void => {
@@ -3754,6 +3775,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
   private _editArea(area: string): void {
     this._area = area;
+    this._collapsedAreaEntityGroups = new Set();
     this._emitSettingsPageContext();
     this._resetSettingsScrollPosition();
   }
@@ -5326,27 +5348,46 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         background: color-mix(in srgb, var(--primary-color) 5%, transparent);
       }
 
+      .area-entity-section-card {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid var(--divider-color);
+        border-radius: 10px;
+        background: var(--card-background-color);
+      }
+
       .area-entity-section-header {
+        position: relative;
         width: 100%;
         min-width: 0;
-      }
-
-      .area-entity-section-header > span:not(.area-entity-section-actions) {
-        min-width: 0;
-        flex: 1;
-      }
-
-      .area-entity-section-actions {
-        margin-left: auto;
-        display: inline-flex;
+        min-height: 58px;
+        display: grid;
+        grid-template-columns: 36px 34px minmax(0, 1fr) 44px;
         align-items: center;
-        gap: 2px;
-        flex: 0 0 auto;
+        gap: 8px;
+        padding: 6px 12px 8px;
+        box-sizing: border-box;
+        cursor: pointer;
       }
 
-      .area-entity-section-actions ha-icon-button {
-        width: 36px;
-        height: 36px;
+      .area-entity-section-card .sortable-container {
+        padding-top: 8px;
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .area-entity-section-icon {
+        color: var(--settings-page-color, var(--primary-color));
+        --mdc-icon-size: 22px;
+      }
+
+      .area-entity-section-title {
+        min-width: 0;
+        overflow: hidden;
+        color: var(--primary-text-color);
+        font-size: 14px;
+        font-weight: 700;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       .area-entity-section-handle {
@@ -5370,6 +5411,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .area-entity-section-handle ha-svg-icon {
         width: 20px;
         height: 20px;
+      }
+
+      .area-entity-section-chevron {
+        bottom: 0;
       }
 
       .description {
@@ -5713,8 +5758,22 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         display: flex;
         align-items: center;
         width: 100%;
-        padding: 12px 16px;
-        min-height: 48px;
+        padding: 10px 12px;
+        min-height: 52px;
+        box-sizing: border-box;
+      }
+
+      .area-detail-editor .sortable-item {
+        border: 1px solid var(--divider-color);
+        border-radius: 8px;
+        background: var(--card-background-color);
+      }
+
+      .area-detail-editor .entity-item .dd-visibility-button {
+        width: 34px;
+        height: 34px;
+        margin-left: auto;
+        flex: 0 0 auto;
       }
 
       .sortable-item:hover {
@@ -8090,6 +8149,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .dd-flat-settings .dd-setting-row-icon,
       .dd-flat-settings .dd-settings-section-icon {
         color: var(--settings-page-color, var(--primary-color));
+      }
+
+      .dd-flat-settings ha-switch {
+        --switch-checked-color: var(--settings-page-color, var(--primary-color));
+        --md-switch-selected-track-color: var(--settings-page-color, var(--primary-color));
+        --md-switch-selected-focus-track-color: var(--settings-page-color, var(--primary-color));
+        --md-switch-selected-hover-track-color: var(--settings-page-color, var(--primary-color));
+        --md-switch-selected-pressed-track-color: var(--settings-page-color, var(--primary-color));
       }
 
       .dd-flat-settings .dd-visibility-button:not(.hidden) {
