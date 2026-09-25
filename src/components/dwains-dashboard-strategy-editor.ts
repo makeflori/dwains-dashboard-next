@@ -5376,7 +5376,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .area-entity-section-icon {
-        color: var(--settings-page-color, var(--primary-color));
+        color: var(--primary-color);
         --mdc-icon-size: 22px;
       }
 
@@ -8152,23 +8152,23 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .dd-flat-settings ha-switch {
-        --switch-checked-color: var(--settings-page-color, var(--primary-color));
-        --md-switch-selected-track-color: var(--settings-page-color, var(--primary-color));
-        --md-switch-selected-focus-track-color: var(--settings-page-color, var(--primary-color));
-        --md-switch-selected-hover-track-color: var(--settings-page-color, var(--primary-color));
-        --md-switch-selected-pressed-track-color: var(--settings-page-color, var(--primary-color));
+        --switch-checked-color: var(--primary-color);
+        --md-switch-selected-track-color: var(--primary-color);
+        --md-switch-selected-focus-track-color: var(--primary-color);
+        --md-switch-selected-hover-track-color: var(--primary-color);
+        --md-switch-selected-pressed-track-color: var(--primary-color);
       }
 
       .dd-flat-settings .dd-visibility-button:not(.hidden) {
-        color: var(--settings-page-color, var(--primary-color));
-        border-color: color-mix(in srgb, var(--settings-page-color, var(--primary-color)) 28%, var(--divider-color));
+        color: var(--primary-color);
+        border-color: color-mix(in srgb, var(--primary-color) 24%, var(--divider-color));
       }
 
       .dd-flat-settings .area-sort-segment.selected,
       .dd-flat-settings .area-order-mode.selected {
-        color: var(--settings-page-color, var(--primary-color));
-        border-color: color-mix(in srgb, var(--settings-page-color, var(--primary-color)) 36%, var(--divider-color));
-        background: color-mix(in srgb, var(--settings-page-color, var(--primary-color)) 8%, var(--card-background-color));
+        color: var(--primary-color);
+        border-color: color-mix(in srgb, var(--primary-color) 32%, var(--divider-color));
+        background: color-mix(in srgb, var(--primary-color) 7%, var(--card-background-color));
       }
 
       .device-type-panel-row > .device-type-icon.small {
