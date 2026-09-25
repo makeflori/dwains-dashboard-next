@@ -1781,7 +1781,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
               ${this._renderAreaCustomCardDropZone(`ungrouped:${sortedUngroupedEntities.length}`)}
             </div>
           </ha-expansion-panel>
-        ` : groupedSections.map((group, groupIndex) => {
+        ` : groupedSections.map((group) => {
           // Get ALL entities for this group (don't filter hidden ones)
           const allGroupEntities = groups[group] || [];
           const groupOptions = this._config!.areas_options?.[this._area!]?.groups_options?.[group];
