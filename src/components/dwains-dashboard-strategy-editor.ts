@@ -1364,7 +1364,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       <section class="area-order-settings" aria-labelledby="area-order-title">
         <div class="area-order-heading">
           <strong id="area-order-title">${this._t('settings.area_order_title')}</strong>
-          <span>${this._t('settings.area_order_description')}</span>
         </div>
         <div class="area-sort-segmented" role="radiogroup" aria-label=${this._t('settings.area_order_title')}>
           ${sortModes.map(({ mode, icon }) => html`
@@ -8610,6 +8609,103 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .area-detail-editor .area-entity-section .entity-item {
         min-height: 46px;
         padding: 4px 6px;
+      }
+
+      /* Area room editor final consistency */
+      .master-confirmation-note ha-icon,
+      .master-confirmation-icon {
+        color: var(--primary-color);
+      }
+
+      .area-detail-editor .area-entity-layout-settings {
+        padding: 10px 12px 12px;
+        gap: 8px;
+      }
+
+      .area-detail-editor .area-entity-layout-settings .area-order-modes {
+        gap: 0;
+        overflow: hidden;
+        border: 1px solid var(--divider-color);
+        border-radius: 10px;
+        background: var(--secondary-background-color);
+      }
+
+      .area-detail-editor .area-entity-layout-settings .area-order-mode {
+        min-height: 42px;
+        justify-content: center;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 10px;
+        border: 0;
+        border-right: 1px solid var(--divider-color);
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .area-detail-editor .area-entity-layout-settings .area-order-mode:last-child {
+        border-right: 0;
+      }
+
+      .area-detail-editor .area-entity-layout-settings .area-order-mode.selected {
+        color: var(--primary-color);
+        background: color-mix(in srgb, var(--primary-color) 9%, var(--card-background-color));
+        box-shadow: none;
+      }
+
+      .area-detail-editor .area-entity-layout-settings .area-order-mode ha-icon {
+        --mdc-icon-size: 18px;
+      }
+
+      .area-detail-editor .area-entity-layout-settings .area-order-mode strong {
+        font-size: 12px;
+      }
+
+      .area-detail-editor .area-entity-section-header {
+        min-height: 52px;
+        grid-template-columns: 28px 32px minmax(0, 1fr) 40px;
+        gap: 8px;
+        padding: 6px 12px 8px;
+      }
+
+      .area-detail-editor .area-entity-section-handle {
+        width: 28px;
+        height: 36px;
+      }
+
+      .area-detail-editor .area-entity-section-header > ha-icon {
+        justify-self: center;
+        --mdc-icon-size: 21px;
+      }
+
+      .area-detail-editor .area-entity-section-title {
+        justify-self: start;
+        text-align: left;
+      }
+
+      .area-detail-editor .area-entity-section .sortable-container {
+        gap: 0;
+        padding: 0;
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .area-detail-editor .area-entity-section .sortable-item {
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+      }
+
+      .area-detail-editor .area-entity-section .sortable-item + .sortable-item {
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .area-detail-editor .area-entity-section .entity-item {
+        min-height: 48px;
+        padding: 5px 10px;
+      }
+
+      .area-detail-editor .area-entity-section .sortable-item:hover {
+        background: color-mix(in srgb, var(--primary-color) 3%, transparent);
       }
 
       @media (max-width: 700px) {
