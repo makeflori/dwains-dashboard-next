@@ -1,6 +1,5 @@
 import {
   mdiArrowDown,
-  mdiArrowLeft,
   mdiArrowUp,
   mdiCardAccountDetailsStarOutline,
   mdiChevronRight,
@@ -2517,7 +2516,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     const groupsByKey = new Map(this._getDeviceVisibilityGroups().map((group) => [group.key, group]));
     const hiddenTypes = this._getHiddenDeviceTypes();
     const hiddenEntities = this._getHiddenDeviceEntityIds();
-    const hiddenDevices = this._getHiddenDeviceIds();
 
     return html`
       <section class="device-visibility-section">
@@ -2885,38 +2883,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       (this._config?.device_admission?.hidden_devices || [])
         .filter((deviceId): deviceId is string => typeof deviceId === "string" && deviceId.length > 0)
     );
-  }
-
-  private _setDeviceHidden(deviceId: string, hidden: boolean): void {
-    this._setDevicesHidden([deviceId], hidden);
-  }
-
-  private _setDevicesHidden(deviceIds: string[], hidden: boolean): void {
-    if (!this._config) return;
-
-    const nextHidden = this._getHiddenDeviceIds();
-    deviceIds.forEach((deviceId) => {
-      if (!deviceId) return;
-      if (hidden) {
-        nextHidden.add(deviceId);
-      } else {
-        nextHidden.delete(deviceId);
-      }
-    });
-
-    const newConfig: DwainsDashboardConfig = {
-      ...this._config,
-      device_admission: {
-        ...this._config.device_admission,
-        hidden_devices: [...nextHidden].sort(),
-      },
-    };
-
-    this._fireConfigChanged(newConfig);
-  }
-
-  private _uniqueDeviceIds(devices: DeviceVisibilityDevice[]): string[] {
-    return [...new Set(devices.map((device) => device.deviceId))];
   }
 
   private _getDeviceTypeOptions(): Array<{ key: string; label: string; icon: string; color: string; count: number }> {
