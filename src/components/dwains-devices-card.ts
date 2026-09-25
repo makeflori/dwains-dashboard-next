@@ -327,6 +327,11 @@ export class DwainsDevicesCard extends LitElement {
 
     filteredEntities = filterHiddenDeviceEntities(this._hass, this.config, filteredEntities);
 
+    const hiddenDeviceEntities = new Set(this.config?.device_admission?.hidden_entities || []);
+    if (hiddenDeviceEntities.size) {
+      filteredEntities = filteredEntities.filter((entity) => !hiddenDeviceEntities.has(entity.entity_id));
+    }
+
     return filteredEntities;
   }
 
