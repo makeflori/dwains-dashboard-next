@@ -665,8 +665,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
             ? html`
                 <svg class="settings-nav-gradient-icon" viewBox="0 0 24 24" aria-hidden="true">
                   <defs>
-                    <linearGradient id="dd-support-icon-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <linearGradient id="dd-support-icon-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
                       <stop offset="0%" style="stop-color: var(--primary-color)"></stop>
+                      <stop offset="45%" style="stop-color: var(--primary-color)"></stop>
+                      <stop offset="55%" style="stop-color: var(--accent-color, #e8a400)"></stop>
                       <stop offset="100%" style="stop-color: var(--accent-color, #e8a400)"></stop>
                     </linearGradient>
                   </defs>
@@ -2768,13 +2770,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       registry?.disabled_by ||
       registry?.entity_category === "diagnostic" ||
       registry?.entity_category === "config"
-    ) {
-      return false;
-    }
-
-    if (
-      this._config?.settings?.hide_unavailable_entities_on_devices !== false &&
-      (state.state === "unavailable" || state.state === "unknown")
     ) {
       return false;
     }
@@ -8301,9 +8296,24 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         gap: 8px;
       }
 
+      .device-area-heading {
+        display: inline-flex !important;
+        flex-wrap: nowrap !important;
+        align-items: baseline;
+        gap: 8px;
+        min-width: 0;
+        white-space: nowrap;
+      }
+
+      .device-area-heading strong {
+        flex: 0 1 auto;
+        min-width: 0;
+      }
+
       .device-area-heading small {
-        width: auto;
+        width: auto !important;
         flex: 0 0 auto;
+        white-space: nowrap;
       }
 
       .device-admission-device {
