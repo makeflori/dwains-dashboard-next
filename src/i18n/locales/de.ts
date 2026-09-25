@@ -525,9 +525,9 @@ export const de = {
   'settings.no_person_entities': 'Keine Personen in Home Assistant gefunden.',
   'settings.hidden_unavailable_count': '{count} ausgeblendete nicht verfügbare/unbekannte Entitäten anzeigen',
   'settings.edit_room': 'Raum bearbeiten',
-  'settings.area_sensor_help_before': 'Um Temperatur- und Luftfeuchtigkeitssensoren in der Übersicht anzuzeigen, ordne dem Raum in Home Assistant über ',
-  'settings.area_sensor_help_after': ' einen Sensor zu.',
-  'settings.area_power_help': 'Die Leistungsanzeige summiert automatisch alle Leistungssensoren (Einheit „W“) in diesem Raum, die in der Oberfläche sichtbar (nicht ausgeblendet) sind.',
+  'settings.area_sensor_help_before': 'Temperatur und Luftfeuchtigkeit kommen aus den Sensoren, die diesem Raum in Home Assistant zugeordnet sind. '
+  'settings.area_sensor_help_after': '.'
+  'settings.area_power_help': 'Leistung: Addiert automatisch alle sichtbaren Leistungssensoren (W) in diesem Raum.'
   'settings.show_all_devices': 'Alle Geräte anzeigen',
   'settings.hide_all_devices': 'Alle Geräte ausblenden',
   'settings.show_type': 'Typ anzeigen',
