@@ -26,7 +26,6 @@ import { repeat } from "lit/directives/repeat.js";
 import type { HomeAssistant } from "../types/home-assistant";
 import type { AreaCustomCard, AreaEntityLayout, AreaSortMode, DeviceConfig, DwainsDashboardConfig, HomeCustomCard, HomeInformationCardKey, HomeSectionKey, LovelaceCardConfig, MasterActionConfirmationDomain } from "../types/strategy";
 import { openReplacementManager } from "./dwains-replacement-manager-dialog";
-import { showDeviceInfoDialog } from "./utils/show-device-info-dialog";
 import {
   AREA_STRATEGY_GROUPS,
   AREA_STRATEGY_GROUP_ICONS,
@@ -710,6 +709,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   }
 
   public _backToSettingsOverview = (): void => {
+    if (this._area) {
+      this._area = undefined;
+      this._emitSettingsPageContext();
+      this._resetSettingsScrollPosition();
+      return;
+    }
     this._settingsPage = "overview";
     this._expandedDeviceTypes = new Set();
     this._closeInlinePickers();
@@ -719,10 +724,16 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
   private _emitSettingsPageContext(): void {
     const overview = this._settingsPage === "overview";
+    const areaName = this._area ? this.hass?.areas?.[this._area]?.name : undefined;
+    const pageTitle = overview
+      ? this._t('sidebar.dashboard_settings')
+      : areaName
+        ? `${this._settingsPageTitle("areas")} › ${areaName}`
+        : this._settingsPageTitle(this._settingsPage);
     this.dispatchEvent(new CustomEvent("dd-settings-page-changed", {
       detail: {
         page: this._settingsPage,
-        title: overview ? this._t('sidebar.dashboard_settings') : this._settingsPageTitle(this._settingsPage),
+        title: pageTitle,
         description: overview ? this._t('settings.subtitle') : this._settingsPageDescription(this._settingsPage),
       },
       bubbles: true,
@@ -832,7 +843,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     if (!item) return this._renderSettingsOverview();
 
     return html`
-      <div class="editor-container dd-flat-settings">
+      <div class="editor-container dd-flat-settings" style=${`--settings-page-color: ${item.color};`}>
         <div class="settings-detail-content dd-flat-content">
           ${this._renderSettingsPageContent(page)}
         </div>
@@ -1657,15 +1668,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
     return html`
       <div class="editor-container area-detail-editor">
-        <div class="toolbar">
-          <ha-icon-button
-            .path=${mdiArrowLeft}
-            .label=${this._t('strategy.back')}
-            @click=${() => { this._area = undefined; }}
-          ></ha-icon-button>
-          <h2>${area.name}</h2>
-        </div>
-
         <div class="area-help">
           <ha-svg-icon .path=${mdiThermometerWater} class="area-help-icon"></ha-svg-icon>
           <div class="area-help-text">
@@ -2514,6 +2516,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
     const groupsByKey = new Map(this._getDeviceVisibilityGroups().map((group) => [group.key, group]));
     const hiddenTypes = this._getHiddenDeviceTypes();
+    const hiddenEntities = this._getHiddenDeviceEntityIds();
     const hiddenDevices = this._getHiddenDeviceIds();
 
     return html`
@@ -2530,8 +2533,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
             const group = groupsByKey.get(option.key);
             const globallyVisible = !hiddenTypes.has(option.key);
             const devices = group?.devices || [];
-            const total = devices.length || option.count;
-            const hiddenInGroup = devices.filter((device) => hiddenDevices.has(device.deviceId)).length;
+            const entityIds = [...new Set(devices.flatMap((device) => device.entityIds))];
+            const total = entityIds.length || option.count;
+            const hiddenInGroup = entityIds.filter((entityId) => hiddenEntities.has(entityId)).length;
             const visibleInGroup = globallyVisible ? Math.max(0, total - hiddenInGroup) : 0;
             const partial = globallyVisible && hiddenInGroup > 0 && hiddenInGroup < total;
             const expanded = Boolean(group?.areas.length) && this._expandedDeviceTypes.has(option.key);
@@ -2572,10 +2576,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                 ${expanded && group ? html`
                   <div class="device-admission-panel">
                     ${group.areas.map((areaGroup) => {
-                      const areaDeviceIds = this._uniqueDeviceIds(areaGroup.devices);
-                      const hiddenInArea = areaDeviceIds.filter((deviceId) => hiddenDevices.has(deviceId)).length;
-                      const areaVisible = hiddenInArea < areaDeviceIds.length;
-                      const areaPartial = hiddenInArea > 0 && hiddenInArea < areaDeviceIds.length;
+                      const areaEntityIds = [...new Set(areaGroup.devices.flatMap((device) => device.entityIds))];
+                      const hiddenInArea = areaEntityIds.filter((entityId) => hiddenEntities.has(entityId)).length;
+                      const areaVisible = hiddenInArea < areaEntityIds.length;
+                      const areaPartial = hiddenInArea > 0 && hiddenInArea < areaEntityIds.length;
 
                       return html`
                         <section class="device-admission-area">
@@ -2583,19 +2587,21 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                             <span class="device-type-heading device-area-heading">
                               <strong>${areaGroup.areaName}</strong>
                               <small>${this._t('settings.visible_count', {
-                                visible: areaDeviceIds.length - hiddenInArea,
-                                total: areaDeviceIds.length,
+                                visible: areaEntityIds.length - hiddenInArea,
+                                total: areaEntityIds.length,
                               })}</small>
                             </span>
                             ${this._renderVisibilityButton(
                               areaVisible,
                               areaPartial,
                               areaVisible ? this._t('settings.hide_area') : this._t('settings.show_area'),
-                              () => this._setDevicesHidden(areaDeviceIds, areaVisible)
+                              () => this._setEntitiesHidden(areaEntityIds, areaVisible)
                             )}
                           </div>
                           <div class="device-admission-device-list">
-                            ${areaGroup.devices.map((device) => this._renderDeviceVisibilityRow(device, group))}
+                            ${areaGroup.devices.flatMap((device) =>
+                              device.entityIds.map((entityId) => this._renderDeviceEntityVisibilityRow(entityId, device, group))
+                            )}
                           </div>
                         </section>
                       `;
@@ -2622,50 +2628,42 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     }));
   }
 
-  private _openDeviceVisibilityInfo(device: DeviceVisibilityDevice): void {
-    const entityIds = device.entityIds.filter((entityId) => Boolean(this.hass?.states?.[entityId]));
-    if (!entityIds.length) return;
-
-    if (entityIds.length === 1) {
-      const [entityId] = entityIds;
-      if (entityId) this._showEntityInfo(entityId);
-      return;
-    }
-
-    showDeviceInfoDialog(this, {
-      deviceId: device.deviceId,
-      deviceName: device.name,
-      entityIds,
-    });
+  private _entityVisibilityName(entityId: string): string {
+    const state = this.hass?.states?.[entityId];
+    return state?.attributes?.friendly_name
+      || (this.hass?.entities?.[entityId] as any)?.name
+      || entityId;
   }
 
-  private _renderDeviceVisibilityRow(device: DeviceVisibilityDevice, group: DeviceVisibilityTypeGroup) {
-    const visible = !this._getHiddenDeviceIds().has(device.deviceId);
-    const entityIds = device.entityIds.filter((entityId) => Boolean(this.hass?.states?.[entityId]));
-    const interactive = entityIds.length > 0;
+  private _renderDeviceEntityVisibilityRow(
+    entityId: string,
+    device: DeviceVisibilityDevice,
+    group: DeviceVisibilityTypeGroup
+  ) {
+    const visible = !this._getHiddenDeviceEntityIds().has(entityId) && !this._getHiddenDeviceIds().has(device.deviceId);
+    const interactive = Boolean(this.hass?.states?.[entityId]);
 
     return html`
       <div
         class="device-admission-device ${visible ? "visible" : "hidden"} ${interactive ? "interactive" : ""}"
         role=${interactive ? "button" : "group"}
         tabindex=${interactive ? "0" : "-1"}
-        @click=${() => interactive && this._openDeviceVisibilityInfo(device)}
+        @click=${() => interactive && this._showEntityInfo(entityId)}
         @keydown=${(event: KeyboardEvent) => {
           if (!interactive || (event.key !== "Enter" && event.key !== " ")) return;
           event.preventDefault();
-          this._openDeviceVisibilityInfo(device);
+          this._showEntityInfo(entityId);
         }}
       >
         <div class="device-type-icon"><ha-icon icon=${group.icon}></ha-icon></div>
         <div class="device-admission-copy">
-          <div class="device-type-name">${device.name}</div>
-          <div class="device-type-count">${this._tp('common.entity', device.entityCount)}</div>
+          <div class="device-type-name">${this._entityVisibilityName(entityId)}</div>
         </div>
         ${this._renderVisibilityButton(
           visible,
           false,
           visible ? this._t('common.hide') : this._t('common.show'),
-          () => this._setDeviceHidden(device.deviceId, visible)
+          () => this._setEntityHidden(entityId, visible)
         )}
       </div>
     `;
@@ -2854,6 +2852,34 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     };
   }
 
+  private _getHiddenDeviceEntityIds(): Set<string> {
+    return new Set(
+      (this._config?.device_admission?.hidden_entities || [])
+        .filter((entityId): entityId is string => typeof entityId === "string" && entityId.length > 0)
+    );
+  }
+
+  private _setEntityHidden(entityId: string, hidden: boolean): void {
+    this._setEntitiesHidden([entityId], hidden);
+  }
+
+  private _setEntitiesHidden(entityIds: string[], hidden: boolean): void {
+    if (!this._config) return;
+    const nextHidden = this._getHiddenDeviceEntityIds();
+    entityIds.forEach((entityId) => {
+      if (!entityId) return;
+      if (hidden) nextHidden.add(entityId);
+      else nextHidden.delete(entityId);
+    });
+    this._fireConfigChanged({
+      ...this._config,
+      device_admission: {
+        ...this._config.device_admission,
+        hidden_entities: [...nextHidden].sort(),
+      },
+    });
+  }
+
   private _getHiddenDeviceIds(): Set<string> {
     return new Set(
       (this._config?.device_admission?.hidden_devices || [])
@@ -2982,7 +3008,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       covers: "Covers",
       security: "Security",
       motion: "Motion",
-      actions: "Actions",
+      actions: ddLocale(this.hass).toLowerCase().startsWith("de") ? "Aktionen" : "Actions",
       others: "Sensors"
     };
     return titles[group] || group;
@@ -3762,6 +3788,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
   private _editArea(area: string): void {
     this._area = area;
+    this._emitSettingsPageContext();
+    this._resetSettingsScrollPosition();
   }
 
   private _addFavoriteEntity(): void {
@@ -5430,7 +5458,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .area-order-modes {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 8px;
       }
 
@@ -7791,7 +7819,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .area-sort-segmented {
         width: 100%;
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         overflow: hidden;
         border: 1px solid var(--divider-color);
         border-radius: 10px;
@@ -8093,6 +8121,23 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         }
       }
 
+      .dd-flat-settings .dd-setting-row-icon,
+      .dd-flat-settings .dd-settings-section-icon {
+        color: var(--settings-page-color, var(--primary-color));
+      }
+
+      .dd-flat-settings .dd-visibility-button:not(.hidden) {
+        color: var(--settings-page-color, var(--primary-color));
+        border-color: color-mix(in srgb, var(--settings-page-color, var(--primary-color)) 28%, var(--divider-color));
+      }
+
+      .dd-flat-settings .area-sort-segment.selected,
+      .dd-flat-settings .area-order-mode.selected {
+        color: var(--settings-page-color, var(--primary-color));
+        border-color: color-mix(in srgb, var(--settings-page-color, var(--primary-color)) 36%, var(--divider-color));
+        background: color-mix(in srgb, var(--settings-page-color, var(--primary-color)) 8%, var(--card-background-color));
+      }
+
       .device-type-panel-row > .device-type-icon.small {
         color: var(--device-type-color);
       }
@@ -8103,8 +8148,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .device-type-panel .dd-visibility-button,
       .device-type-panel .dd-visibility-button.hidden {
-        color: var(--primary-color);
-        border-color: color-mix(in srgb, var(--primary-color) 24%, var(--divider-color));
+        color: var(--device-type-color);
+        border-color: color-mix(in srgb, var(--device-type-color) 30%, var(--divider-color));
       }
 
       .device-type-panel .dd-visibility-button.hidden {
@@ -8225,7 +8270,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .persons-list {
         overflow: visible;
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 8px;
         border: 0;
         border-radius: 0;
@@ -8382,7 +8427,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .device-admission-device-list {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
       }
 
       .device-admission-device {
