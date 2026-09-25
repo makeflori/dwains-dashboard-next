@@ -157,6 +157,9 @@ export interface BlueprintReplacements {
 }
 
 export interface DeviceAdmission {
+  /** Entity visibility overrides used only on the Devices page. */
+  hidden_entities?: string[];
+  /** Legacy whole-device visibility overrides kept for backwards compatibility. */
   hidden_devices?: string[];
   first_seen_devices?: Record<string, number>;
 }
