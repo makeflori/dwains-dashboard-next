@@ -192,9 +192,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _expandedDeviceTypes = new Set<string>();
 
   @state()
-  private _expandedDeviceEntities = new Set<string>();
-
-  @state()
   private _draggedHomeSection?: HomeSectionKey;
 
   @state()
@@ -671,7 +668,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                   <defs>
                     <linearGradient id="dd-support-icon-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
                       <stop offset="0%" style="stop-color: var(--primary-color)"></stop>
-                      <stop offset="42%" style="stop-color: color-mix(in srgb, var(--primary-color) 50%, var(--accent-color, #e8a400))"></stop>
+                      <stop offset="50%" style="stop-color: color-mix(in srgb, var(--primary-color) 45%, var(--accent-color, #e8a400))"></stop>
                       <stop offset="100%" style="stop-color: var(--accent-color, #e8a400)"></stop>
                     </linearGradient>
                   </defs>
@@ -2612,45 +2609,39 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     `;
   }
 
-  private _toggleDeviceEntities(deviceId: string): void {
-    const next = new Set(this._expandedDeviceEntities);
-    if (next.has(deviceId)) next.delete(deviceId);
-    else next.add(deviceId);
-    this._expandedDeviceEntities = next;
-  }
-
   private _showEntityInfo(entityId: string): void {
-    if (!this.hass?.states?.[entityId]) return;
-    this.dispatchEvent(new CustomEvent("hass-more-info", {
+    if (!entityId || !this.hass?.states?.[entityId]) return;
+
+    const homeAssistant = document.querySelector("home-assistant");
+    const target = homeAssistant || this;
+    target.dispatchEvent(new CustomEvent("hass-more-info", {
       detail: { entityId },
       bubbles: true,
       composed: true,
     }));
   }
 
-  private _entityDisplayName(entityId: string): string {
-    return this.hass?.states?.[entityId]?.attributes?.friendly_name
-      || (this.hass?.entities?.[entityId] as any)?.name
-      || entityId;
-  }
-
   private _renderDeviceVisibilityRow(device: DeviceVisibilityDevice, group: DeviceVisibilityTypeGroup) {
     const visible = !this._getHiddenDeviceIds().has(device.deviceId);
-    const expanded = this._expandedDeviceEntities.has(device.deviceId);
+    const entityId = device.entityIds.find((id) => Boolean(this.hass?.states?.[id]));
+
     return html`
-      <div class="device-admission-device ${visible ? "visible" : "hidden"} ${expanded ? "entities-open" : ""}">
+      <div class="device-admission-device ${visible ? "visible" : "hidden"}">
         <div class="device-type-icon"><ha-icon icon=${group.icon}></ha-icon></div>
         <div class="device-admission-copy">
           <div class="device-type-name">${device.name}</div>
-          <button
-            class="device-type-count device-entity-toggle"
-            type="button"
-            aria-expanded=${expanded ? "true" : "false"}
-            @click=${() => this._toggleDeviceEntities(device.deviceId)}
-          >
-            <span>${this._tp('common.entity', device.entityCount)}</span>
-            <ha-icon icon=${expanded ? "mdi:chevron-up" : "mdi:chevron-down"}></ha-icon>
-          </button>
+          ${entityId ? html`
+            <button
+              class="device-type-count device-entity-more-info"
+              type="button"
+              title=${this._t('action.more_info')}
+              @click=${() => this._showEntityInfo(entityId)}
+            >
+              ${this._tp('common.entity', device.entityCount)}
+            </button>
+          ` : html`
+            <div class="device-type-count">${this._tp('common.entity', device.entityCount)}</div>
+          `}
         </div>
         ${this._renderVisibilityButton(
           visible,
@@ -2658,24 +2649,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           visible ? this._t('common.hide') : this._t('common.show'),
           () => this._setDeviceHidden(device.deviceId, visible)
         )}
-        ${expanded ? html`
-          <div class="device-entity-list">
-            ${device.entityIds.map((entityId) => {
-              const hasState = Boolean(this.hass?.states?.[entityId]);
-              return html`
-                <button
-                  class="device-entity-row"
-                  type="button"
-                  ?disabled=${!hasState}
-                  @click=${() => this._showEntityInfo(entityId)}
-                >
-                  <span class="device-entity-name">${this._entityDisplayName(entityId)}</span>
-                  <span class="device-entity-id">${entityId}</span>
-                </button>
-              `;
-            })}
-          </div>
-        ` : nothing}
       </div>
     `;
   }
@@ -2820,6 +2793,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     if (
       !state ||
       registry?.hidden_by ||
+      registry?.disabled_by ||
       registry?.entity_category === "diagnostic" ||
       registry?.entity_category === "config"
     ) {
@@ -8406,7 +8380,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         font-size: 9.5px;
       }
 
-      .device-entity-toggle {
+      .device-entity-more-info {
         width: fit-content;
         max-width: 100%;
         padding: 0;
@@ -8414,69 +8388,16 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         background: transparent;
         color: var(--secondary-text-color);
         font: inherit;
-        display: inline-flex;
-        align-items: center;
-        gap: 2px;
-        cursor: pointer;
-      }
-
-      .device-entity-toggle ha-icon {
-        --mdc-icon-size: 13px;
-      }
-
-      .device-admission-device.entities-open {
-        align-self: start;
-      }
-
-      .device-entity-list {
-        grid-column: 1 / -1;
-        min-width: 0;
-        display: grid;
-        gap: 3px;
-        margin-top: 3px;
-        padding-top: 6px;
-        border-top: 1px solid var(--divider-color);
-      }
-
-      .device-entity-row {
-        min-width: 0;
-        display: grid;
-        gap: 1px;
-        padding: 5px 6px;
-        border: 0;
-        border-radius: 6px;
-        background: transparent;
-        color: var(--primary-text-color);
         text-align: left;
         cursor: pointer;
       }
 
-      .device-entity-row:not(:disabled):hover {
-        background: var(--secondary-background-color);
+      .device-entity-more-info:hover {
+        color: var(--primary-color);
+        text-decoration: underline;
+        text-underline-offset: 2px;
       }
 
-      .device-entity-row:disabled {
-        opacity: 0.55;
-        cursor: default;
-      }
-
-      .device-entity-name,
-      .device-entity-id {
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-
-      .device-entity-name {
-        font-size: 10.5px;
-        font-weight: 600;
-      }
-
-      .device-entity-id {
-        color: var(--secondary-text-color);
-        font-size: 9px;
-      }
 
       .area-detail-editor {
         padding: 16px;
