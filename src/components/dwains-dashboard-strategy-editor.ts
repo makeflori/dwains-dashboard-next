@@ -667,7 +667,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                   <defs>
                     <linearGradient id="dd-support-icon-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" style="stop-color: var(--primary-color)"></stop>
-                      <stop offset="52%" style="stop-color: var(--accent-color, #e8a400)"></stop>
                       <stop offset="100%" style="stop-color: var(--accent-color, #e8a400)"></stop>
                     </linearGradient>
                   </defs>
@@ -2804,6 +2803,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       const configEntity = this._config?.entities?.find((entity) => entity.entity_id === entityId);
       const fromEntity = resolveArea(configEntity?.area_id || this.hass?.entities?.[entityId]?.area_id);
       if (fromEntity) return fromEntity;
+    }
+
+    if (this._config?.settings?.hide_unavailable_entities_on_devices !== false) {
+      return undefined;
     }
 
     return {
@@ -7372,6 +7375,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .dd-icon-text-button.danger {
         color: var(--error-color, #f44336);
+        border: 1px solid color-mix(in srgb, var(--error-color, #f44336) 28%, var(--divider-color));
+        background: color-mix(in srgb, var(--error-color, #f44336) 6%, var(--card-background-color));
+      }
+
+      .dd-icon-text-button.danger:hover {
+        background: color-mix(in srgb, var(--error-color, #f44336) 11%, var(--card-background-color));
       }
 
       .dd-icon-text-button ha-icon {
@@ -7884,11 +7893,18 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .device-admission-copy .device-type-name {
+        display: -webkit-box;
         overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        white-space: normal;
+        text-overflow: clip;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        overflow-wrap: break-word;
+        word-break: normal;
         font-size: 12px;
         font-weight: 650;
+        line-height: 1.2;
       }
 
       .device-admission-copy .device-type-count {
@@ -8090,7 +8106,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         -webkit-line-clamp: 2;
         line-clamp: 2;
         line-height: 1.2;
-        overflow-wrap: anywhere;
+        overflow-wrap: break-word;
+        word-break: normal;
       }
 
       .dd-replacement-footer {
@@ -8321,17 +8338,25 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .area-detail-editor {
-        padding: 20px 16px 16px;
+        padding: 16px;
       }
 
       .area-detail-editor > .toolbar {
-        min-height: 48px;
+        min-height: 42px;
         display: flex;
         align-items: center;
-        gap: 8px;
-        margin: -4px 0 12px;
-        padding: 0 2px 10px;
-        border-bottom: 1px solid var(--divider-color);
+        gap: 6px;
+        margin: 0 0 10px;
+        padding: 0;
+        background: transparent;
+        border: 0;
+      }
+
+      .area-detail-editor > .toolbar ha-icon-button {
+        width: 38px;
+        height: 38px;
+        --mdc-icon-button-size: 38px;
+        --mdc-icon-size: 22px;
       }
 
       .area-detail-editor > .toolbar h2 {
@@ -8341,11 +8366,15 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .area-detail-editor .area-help {
-        margin: 0 0 14px;
+        margin: 0 0 12px;
         padding: 10px 12px;
-        border: 1px solid color-mix(in srgb, var(--primary-color) 18%, var(--divider-color));
+        border: 1px solid var(--divider-color);
         border-radius: 10px;
-        background: color-mix(in srgb, var(--primary-color) 5%, var(--card-background-color));
+        background: color-mix(in srgb, var(--secondary-background-color) 72%, var(--card-background-color));
+      }
+
+      .area-detail-editor .area-help-icon {
+        color: var(--secondary-text-color);
       }
 
       .area-detail-editor .area-help-text p {
@@ -8357,7 +8386,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .area-detail-editor .area-entity-layout-settings {
-        margin-bottom: 14px;
+        margin: 0 0 12px;
+        padding: 14px;
         border-radius: 12px;
       }
 

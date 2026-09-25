@@ -38,6 +38,8 @@ import {
 type DomainCount = StatusDomainCount;
 type DwainsSelectedView = 'home' | 'area' | 'settings';
 type PictureTextTone = 'light' | 'dark';
+
+const SETTINGS_HISTORY_STATE_KEY = 'dwainsDashboardNextSettingsOpen';
 type PictureContrastCacheValue = PictureTextTone | 'pending';
 const SIDEBAR_WIDTH_STORAGE_KEY = 'dd-next-area-sidebar-width';
 const SIDEBAR_COLLAPSED_STORAGE_KEY = 'dd-next-area-sidebar-collapsed';
@@ -241,10 +243,14 @@ export class DwainsLayoutCard extends LitElement {
     }
     this.config = config;
 
-    // Set initial view — herstel evt. de area uit de URL (?dd_area=...)
+    // Restore the settings view after a Lovelace config save recreates the card.
     if (!this._selectedView) {
+      const settingsOpen = Boolean(window.history.state?.[SETTINGS_HISTORY_STATE_KEY]);
       const urlArea = this._getUrlArea();
-      if (urlArea && config.areas?.some(a => a.area_id === urlArea)) {
+      if (settingsOpen) {
+        this._selectedArea = null;
+        this._selectedView = 'settings';
+      } else if (urlArea && config.areas?.some(a => a.area_id === urlArea)) {
         this._selectedArea = urlArea;
         this._selectedView = 'area';
       } else {
@@ -270,6 +276,20 @@ export class DwainsLayoutCard extends LitElement {
       window.history.replaceState(window.history.state, '', url.toString());
     } catch {
       /* negeer */
+    }
+  }
+
+  private _setSettingsHistoryState(open: boolean): void {
+    try {
+      const current = window.history.state && typeof window.history.state === 'object'
+        ? window.history.state
+        : {};
+      const next = { ...current };
+      if (open) next[SETTINGS_HISTORY_STATE_KEY] = true;
+      else delete next[SETTINGS_HISTORY_STATE_KEY];
+      window.history.replaceState(next, '', window.location.href);
+    } catch {
+      /* history state can be unavailable in restricted contexts */
     }
   }
 
@@ -15502,6 +15522,7 @@ export class DwainsLayoutCard extends LitElement {
 
   private _selectView(view: DwainsSelectedView) {
     if (view !== 'settings' && !this._confirmDiscardSettings()) return;
+    this._setSettingsHistoryState(view === 'settings');
     this._resetAreaHeaderScrollState(view === 'area');
     this._selectedView = view;
     if (view === 'home') {
@@ -15979,6 +16000,7 @@ export class DwainsLayoutCard extends LitElement {
 
   private _openDashboardSettings = () => {
     if (!this._canManageDashboard()) return;
+    this._setSettingsHistoryState(true);
     this._resetAreaHeaderScrollState(true);
     this._selectedArea = null;
     this._selectedView = 'settings';

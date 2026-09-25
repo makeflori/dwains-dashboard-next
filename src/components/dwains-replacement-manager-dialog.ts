@@ -68,7 +68,7 @@ export class DwainsReplacementManagerDialog extends LitElement {
   @state() private _config?: DwainsDashboardConfig;
   @state() private _replacements: BlueprintReplacements = {};
 
-  @state() private _domain = 'light';
+  @state() private _domain = '';
 
   @state() private _gallery: GalleryItem[] = [];
   @state() private _galleryLoading = false;
@@ -91,7 +91,7 @@ export class DwainsReplacementManagerDialog extends LitElement {
     const options = this._domainOptions();
     this._domain = params.initialDomain && options.some((option) => option.value === params.initialDomain)
       ? params.initialDomain
-      : options[0]?.value || 'light';
+      : '';
     this._selected = undefined;
     this._parsed = undefined;
     this._inputs = {};
@@ -109,7 +109,7 @@ export class DwainsReplacementManagerDialog extends LitElement {
   protected render() {
     if (!this._open || !this._config) return nothing;
     return html`
-      <ha-dialog open @closed=${this.closeDialog} .heading=${this._t('settings.blueprint_replacements')} hideActions>
+      <ha-dialog open @closed=${this.closeDialog} .heading=${this._t('replacement.assign')} hideActions>
         <ha-dialog-header slot="header">
           <ha-icon-button
             slot="navigationIcon"
@@ -117,7 +117,10 @@ export class DwainsReplacementManagerDialog extends LitElement {
             .label=${this._t('common.close')}
             @click=${this.closeDialog}
           ></ha-icon-button>
-          <span slot="title">${this._t('settings.blueprint_replacements')}</span>
+          <div slot="title" class="dialog-title">
+            <span>${this._t('replacement.assign')}</span>
+            <small>${this._t('replacement.builder_description')}</small>
+          </div>
         </ha-dialog-header>
 
         <div class="content">
@@ -128,32 +131,34 @@ export class DwainsReplacementManagerDialog extends LitElement {
   }
 
   private _renderBuilder() {
+    const domainGallery = this._galleryForDomain();
+    const showSearch = domainGallery.length > 8;
+    const inputKeys = this._editableInputKeys();
+
     return html`
       <section class="builder">
-        <div class="section-header">
-          <ha-icon icon="mdi:puzzle-edit-outline"></ha-icon>
-          <h3>${this._t('replacement.assign')}</h3>
-        </div>
-        <p class="builder-intro">${this._t('replacement.builder_description')}</p>
         ${this._error ? html`<div class="error">${this._error}</div>` : nothing}
         <div class="builder-grid">
           <div class="control-block domain-control">
             <label>${this._t('replacement.domain')}</label>
             ${this._renderDomainControl()}
-            <div class="hint">${this._t('replacement.applies_hint')}</div>
           </div>
         </div>
 
-        <div class="gallery-toolbar">
-          <input
-            class="search"
-            type="search"
-            placeholder=${this._t('replacement.search')}
-            .value=${this._search}
-            @input=${(e: Event) => (this._search = (e.target as HTMLInputElement).value)}
-          />
-          ${this._galleryLoading ? html`<span class="loading">${this._t('common.loading')}</span>` : nothing}
-        </div>
+        ${showSearch || this._galleryLoading ? html`
+          <div class="gallery-toolbar">
+            ${showSearch ? html`
+              <input
+                class="search"
+                type="search"
+                placeholder=${this._t('replacement.search')}
+                .value=${this._search}
+                @input=${(e: Event) => (this._search = (e.target as HTMLInputElement).value)}
+              />
+            ` : nothing}
+            ${this._galleryLoading ? html`<span class="loading">${this._t('common.loading')}</span>` : nothing}
+          </div>
+        ` : nothing}
         ${this._galleryError ? html`<div class="error">${this._galleryError}</div>` : nothing}
 
         <div class="gallery">
@@ -176,7 +181,24 @@ export class DwainsReplacementManagerDialog extends LitElement {
           )}
         </div>
 
-        ${this._selected ? this._renderSelectedBlueprint() : nothing}
+        ${this._selected && inputKeys.length ? html`
+          <div class="input-grid">
+            ${inputKeys.map((key) => this._renderInputField(key))}
+          </div>
+        ` : nothing}
+
+        <div class="builder-footer">
+          <span class="hint">${this._t('replacement.views_description')}</span>
+          <ha-button
+            appearance="accent"
+            ?disabled=${this._loadingBlueprint || !this._canApply()}
+            @click=${this._applyAssignment}
+          >
+            <ha-icon icon="mdi:check"></ha-icon>
+            ${this._t('common.save')}
+          </ha-button>
+        </div>
+        ${this._loadingBlueprint ? html`<div class="loading footer-loading">${this._t('replacement.loading_blueprint')}</div>` : nothing}
       </section>
     `;
   }
@@ -192,42 +214,11 @@ export class DwainsReplacementManagerDialog extends LitElement {
           this._parsed = undefined;
           this._inputs = {};
           this._error = '';
+          this._search = '';
         }}
       >
         ${options.map((option) => html`<option value=${option.value}>${option.label}</option>`)}
       </select>
-    `;
-  }
-
-  private _renderSelectedBlueprint() {
-    const inputKeys = this._editableInputKeys();
-    return html`
-      <div class="selected-blueprint">
-        <div class="selected-header">
-          <div>
-            <div class="selected-name">${this._selected!.name}</div>
-            ${this._parsed?.meta.version ? html`<div class="selected-version">v${this._parsed.meta.version}</div>` : nothing}
-          </div>
-          <ha-button
-            appearance="accent"
-            ?disabled=${this._loadingBlueprint || !this._canApply()}
-            @click=${this._applyAssignment}
-          >
-            <ha-icon icon="mdi:check"></ha-icon>
-            ${this._t('common.save')}
-          </ha-button>
-        </div>
-
-        ${this._loadingBlueprint ? html`<div class="loading">${this._t('replacement.loading_blueprint')}</div>` : nothing}
-        <div class="hint">${this._t('replacement.applies_to', { domain: getDomainName(this.hass, this._domain) })}</div>
-        ${inputKeys.length
-          ? html`
-              <div class="input-grid">
-                ${inputKeys.map((key) => this._renderInputField(key))}
-              </div>
-            `
-          : html`<div class="hint">${this._t('replacement.entity_hint')}</div>`}
-      </div>
     `;
   }
 
@@ -287,7 +278,9 @@ export class DwainsReplacementManagerDialog extends LitElement {
       this._parsed = parsed;
       this._inputs = defaultValues(parsed.meta);
       const inferredDomain = inferBlueprintDomain(item, parsed);
-      if (inferredDomain && inferredDomain !== this._domain) {
+      if (!this._domain && inferredDomain) {
+        this._domain = inferredDomain;
+      } else if (inferredDomain && inferredDomain !== this._domain) {
         this._error = this._t('replacement.domain_mismatch', {
           domain: getDomainName(this.hass, this._domain),
         });
@@ -357,27 +350,33 @@ export class DwainsReplacementManagerDialog extends LitElement {
     ['light', 'switch', 'climate', 'cover', 'fan', 'media_player', 'person', 'sensor', 'binary_sensor'].forEach(
       (domain) => domains.add(domain)
     );
-    return Array.from(domains)
-      .filter(Boolean)
-      .sort()
-      .map((domain) => ({ value: domain, label: getDomainName(this.hass, domain) }));
+    return [
+      { value: '', label: this._t('replacement.all_domains') },
+      ...Array.from(domains)
+        .filter(Boolean)
+        .sort()
+        .map((domain) => ({ value: domain, label: getDomainName(this.hass, domain) })),
+    ];
   }
 
   private _canApply(): boolean {
     return !!this._parsed && !!this._selected && !!this._domain;
   }
 
-  private _filteredGallery(): GalleryItem[] {
-    const q = this._search.trim().toLowerCase();
+  private _galleryForDomain(): GalleryItem[] {
     const target = this._domain.toLowerCase();
     return this._gallery
-      .filter((item) => inferBlueprintDomain(item) === target)
-      .filter((item) => {
-        if (!q) return true;
-        const haystack = `${item.name} ${item.description || ''} ${(item.custom_cards || []).join(' ')}`.toLowerCase();
-        return haystack.includes(q);
-      })
+      .filter((item) => !target || inferBlueprintDomain(item) === target)
       .sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  private _filteredGallery(): GalleryItem[] {
+    const q = this._search.trim().toLowerCase();
+    return this._galleryForDomain().filter((item) => {
+      if (!q) return true;
+      const haystack = `${item.name} ${item.description || ''} ${(item.custom_cards || []).join(' ')}`.toLowerCase();
+      return haystack.includes(q);
+    });
   }
 
   private _editableInputKeys(): string[] {
@@ -412,185 +411,28 @@ export class DwainsReplacementManagerDialog extends LitElement {
       padding: 0 18px 20px;
       color: var(--primary-text-color);
     }
-    .selected-blueprint {
-      border: 1px solid var(--divider-color);
-      border-radius: 8px;
-      background: var(--card-background-color);
-    }
-    .selected-name {
-      font-weight: 600;
-    }
-    .surface-desc,
-    .choice-desc,
-    .selected-version,
-    .hint,
-    .empty,
-    small {
-      color: var(--secondary-text-color);
-      font-size: 12px;
-    }
-    .choice-tags span {
-      border-radius: 999px;
-      padding: 2px 8px;
-      background: var(--secondary-background-color);
-      color: var(--secondary-text-color);
-      font-size: 12px;
-      white-space: nowrap;
-    }
-    .count {
-      color: var(--primary-color);
-      background: rgba(var(--rgb-primary-color, 3, 169, 244), 0.12);
-      font-weight: 700;
-    }
-    .assignment-section,
-    .builder {
-      margin-top: 18px;
-    }
-    .section-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-    .section-header h3 {
-      margin: 0;
-      font-size: 15px;
-    }
-    .section-header ha-icon {
-      --mdc-icon-size: 20px;
-      color: var(--primary-color);
-    }
-    .assignment-list {
-      display: grid;
-      gap: 8px;
-    }
-    .assignment {
+    .builder-footer {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid var(--divider-color);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      padding: 10px;
+      gap: 16px;
     }
-    .assignment.disabled {
-      opacity: 0.58;
-    }
-    .assignment-main {
-      min-width: 0;
-    }
-    .assignment-meta,
-    .choice-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
-      margin-top: 6px;
-    }
-    .assignment-actions {
-      display: flex;
-      gap: 6px;
-    }
-    .icon-button {
-      width: 34px;
-      height: 34px;
-      border: 0;
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: var(--primary-text-color);
-      background: var(--secondary-background-color);
-    }
-    .icon-button:hover {
-      color: var(--primary-color);
-    }
-    .icon-button.danger:hover {
-      color: var(--error-color);
-    }
-    .builder {
-      border-top: 1px solid var(--divider-color);
-      padding-top: 16px;
-    }
-    .builder-grid {
-      display: grid;
-      grid-template-columns: minmax(220px, 360px);
-      gap: 12px;
-    }
-    .control-block {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      min-width: 0;
-    }
-    label {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--secondary-text-color);
-    }
-    select,
-    .search,
-    .input-field input {
-      width: 100%;
-      box-sizing: border-box;
-      border: 1px solid var(--divider-color);
-      border-radius: 8px;
-      padding: 10px 11px;
-      background: var(--card-background-color);
-      color: var(--primary-text-color);
-      font-size: 14px;
-    }
-    .builder-intro {
-      margin: -2px 0 12px;
-      color: var(--secondary-text-color);
-      font-size: 12px;
+    .builder-footer .hint {
+      margin: 0;
       line-height: 1.4;
     }
-        .gallery-toolbar {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin: 14px 0 8px;
+    .builder-footer ha-button {
+      flex: 0 0 auto;
     }
-    .gallery {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 8px;
-      max-height: 280px;
-      overflow: auto;
-      padding-right: 2px;
-    }
-    .blueprint-choice {
-      text-align: left;
-      border: 1px solid var(--divider-color);
-      border-radius: 8px;
-      background: var(--card-background-color);
-      color: var(--primary-text-color);
-      padding: 10px;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .blueprint-choice:hover,
-    .blueprint-choice.selected {
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 1px var(--primary-color) inset;
-    }
-    .choice-name {
-      font-weight: 600;
-    }
-    .selected-blueprint {
-      margin-top: 12px;
-      padding: 12px;
-    }
-    .selected-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-    .selected-header ha-icon {
+    .builder-footer ha-icon {
       --mdc-icon-size: 18px;
       margin-right: 5px;
+    }
+    .footer-loading {
+      margin-top: 8px;
     }
     .input-grid {
       display: grid;
@@ -626,7 +468,7 @@ export class DwainsReplacementManagerDialog extends LitElement {
         grid-template-columns: 1fr;
       }
       .assignment,
-      .selected-header {
+      .builder-footer {
         align-items: stretch;
         flex-direction: column;
       }
