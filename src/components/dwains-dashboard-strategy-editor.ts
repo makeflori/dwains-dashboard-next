@@ -26,6 +26,7 @@ import { repeat } from "lit/directives/repeat.js";
 import type { HomeAssistant } from "../types/home-assistant";
 import type { AreaCustomCard, AreaEntityLayout, AreaSortMode, DeviceConfig, DwainsDashboardConfig, HomeCustomCard, HomeInformationCardKey, HomeSectionKey, LovelaceCardConfig, MasterActionConfirmationDomain } from "../types/strategy";
 import { openReplacementManager } from "./dwains-replacement-manager-dialog";
+import { showDeviceInfoDialog } from "./utils/show-device-info-dialog";
 import {
   AREA_STRATEGY_GROUPS,
   AREA_STRATEGY_GROUP_ICONS,
@@ -2621,27 +2622,43 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     }));
   }
 
+  private _openDeviceVisibilityInfo(device: DeviceVisibilityDevice): void {
+    const entityIds = device.entityIds.filter((entityId) => Boolean(this.hass?.states?.[entityId]));
+    if (!entityIds.length) return;
+
+    if (entityIds.length === 1) {
+      this._showEntityInfo(entityIds[0]);
+      return;
+    }
+
+    showDeviceInfoDialog(this, {
+      deviceId: device.deviceId,
+      deviceName: device.name,
+      entityIds,
+    });
+  }
+
   private _renderDeviceVisibilityRow(device: DeviceVisibilityDevice, group: DeviceVisibilityTypeGroup) {
     const visible = !this._getHiddenDeviceIds().has(device.deviceId);
-    const entityId = device.entityIds.find((id) => Boolean(this.hass?.states?.[id]));
+    const entityIds = device.entityIds.filter((entityId) => Boolean(this.hass?.states?.[entityId]));
+    const interactive = entityIds.length > 0;
 
     return html`
-      <div class="device-admission-device ${visible ? "visible" : "hidden"}">
+      <div
+        class="device-admission-device ${visible ? "visible" : "hidden"} ${interactive ? "interactive" : ""}"
+        role=${interactive ? "button" : "group"}
+        tabindex=${interactive ? "0" : "-1"}
+        @click=${() => interactive && this._openDeviceVisibilityInfo(device)}
+        @keydown=${(event: KeyboardEvent) => {
+          if (!interactive || (event.key !== "Enter" && event.key !== " ")) return;
+          event.preventDefault();
+          this._openDeviceVisibilityInfo(device);
+        }}
+      >
         <div class="device-type-icon"><ha-icon icon=${group.icon}></ha-icon></div>
         <div class="device-admission-copy">
           <div class="device-type-name">${device.name}</div>
-          ${entityId ? html`
-            <button
-              class="device-type-count device-entity-more-info"
-              type="button"
-              title=${this._t('action.more_info')}
-              @click=${() => this._showEntityInfo(entityId)}
-            >
-              ${this._tp('common.entity', device.entityCount)}
-            </button>
-          ` : html`
-            <div class="device-type-count">${this._tp('common.entity', device.entityCount)}</div>
-          `}
+          <div class="device-type-count">${this._tp('common.entity', device.entityCount)}</div>
         </div>
         ${this._renderVisibilityButton(
           visible,
@@ -8364,38 +8381,55 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .device-admission-device-list {
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .device-admission-device {
+        min-height: 58px;
+        align-items: center;
+        cursor: default;
+      }
+
+      .device-admission-device.interactive {
+        cursor: pointer;
+      }
+
+      .device-admission-device.interactive:hover {
+        background: color-mix(in srgb, var(--primary-color) 4%, var(--card-background-color));
+        border-color: color-mix(in srgb, var(--primary-color) 24%, var(--divider-color));
+      }
+
+      .device-admission-copy {
+        align-self: center;
+        display: flex;
+        min-width: 0;
+        flex-direction: column;
+        justify-content: center;
       }
 
       .device-admission-copy .device-type-name {
         font-size: 11.5px;
-        line-height: 1.15;
+        line-height: 1.18;
         overflow-wrap: normal;
         word-break: normal;
         hyphens: none;
       }
 
       .device-admission-copy .device-type-count {
-        margin-top: 1px;
+        margin-top: 2px;
         font-size: 9.5px;
       }
 
-      .device-entity-more-info {
-        width: fit-content;
-        max-width: 100%;
-        padding: 0;
-        border: 0;
-        background: transparent;
-        color: var(--secondary-text-color);
-        font: inherit;
-        text-align: left;
-        cursor: pointer;
+      @media (max-width: 820px) {
+        .device-admission-device-list {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
       }
 
-      .device-entity-more-info:hover {
-        color: var(--primary-color);
-        text-decoration: underline;
-        text-underline-offset: 2px;
+      @media (max-width: 520px) {
+        .device-admission-device-list {
+          grid-template-columns: 1fr;
+        }
       }
 
 
