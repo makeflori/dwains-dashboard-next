@@ -728,13 +728,18 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     const pageTitle = overview
       ? this._t('sidebar.dashboard_settings')
       : areaName
-        ? `${this._settingsPageTitle("areas")} › ${areaName}`
+        ? areaName
         : this._settingsPageTitle(this._settingsPage);
+    const pageDescription = overview
+      ? this._t('settings.subtitle')
+      : areaName
+        ? this._t('settings.area_detail_header_description')
+        : this._settingsPageDescription(this._settingsPage);
     this.dispatchEvent(new CustomEvent("dd-settings-page-changed", {
       detail: {
         page: this._settingsPage,
         title: pageTitle,
-        description: overview ? this._t('settings.subtitle') : this._settingsPageDescription(this._settingsPage),
+        description: pageDescription,
       },
       bubbles: true,
       composed: true,
@@ -843,7 +848,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     if (!item) return this._renderSettingsOverview();
 
     return html`
-      <div class="editor-container dd-flat-settings" style=${`--settings-page-color: ${item.color};`}>
+      <div class="editor-container dd-flat-settings">
         <div class="settings-detail-content dd-flat-content">
           ${this._renderSettingsPageContent(page)}
         </div>
@@ -1672,11 +1677,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           <ha-svg-icon .path=${mdiThermometerWater} class="area-help-icon"></ha-svg-icon>
           <div class="area-help-text">
             <p>
-              ${this._t('settings.area_sensor_help_before')}
-              <button class="link" @click=${this._editAreaRegistry}>${this._t('settings.edit_room')}</button>${this._t('settings.area_sensor_help_after')}
-            </p>
-            <p>
-              ${this._t('settings.area_power_help')}
+              ${this._t('settings.area_climate_power_help')}
+              <button class="link" @click=${this._editAreaRegistry}>${this._t('settings.edit_room')}</button>
             </p>
           </div>
         </div>
@@ -8148,7 +8150,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .dd-flat-settings .dd-setting-row-icon,
       .dd-flat-settings .dd-settings-section-icon {
-        color: var(--settings-page-color, var(--primary-color));
+        color: var(--primary-color);
       }
 
       .dd-flat-settings ha-switch {
