@@ -1,6 +1,6 @@
 {
   "name": "dwains-dashboard-next",
-  "version": "1.8.61",
+  "version": "1.8.62",
   "description": "Dwains Dashboard Next for Home Assistant",
   "main": "dist/dwains-dashboard-next.js",
   "type": "module",
