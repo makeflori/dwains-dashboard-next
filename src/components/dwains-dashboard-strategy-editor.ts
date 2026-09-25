@@ -5424,7 +5424,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .area-order-modes {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 8px;
       }
 
@@ -7785,7 +7785,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .area-sort-segmented {
         width: 100%;
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         overflow: hidden;
         border: 1px solid var(--divider-color);
         border-radius: 10px;
@@ -8236,7 +8236,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .persons-list {
         overflow: visible;
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 8px;
         border: 0;
         border-radius: 0;
