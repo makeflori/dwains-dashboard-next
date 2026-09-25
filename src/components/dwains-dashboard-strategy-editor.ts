@@ -2627,7 +2627,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     if (!entityIds.length) return;
 
     if (entityIds.length === 1) {
-      this._showEntityInfo(entityIds[0]);
+      const [entityId] = entityIds;
+      if (entityId) this._showEntityInfo(entityId);
       return;
     }
 
