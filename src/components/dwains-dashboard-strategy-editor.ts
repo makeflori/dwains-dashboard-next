@@ -2,8 +2,6 @@ import {
   mdiCardAccountDetailsStarOutline,
   mdiChevronRight,
   mdiDrag,
-  mdiEye,
-  mdiEyeOff,
   mdiFloorPlan,
   mdiFormatListBulletedType,
   mdiGestureTapButton,
