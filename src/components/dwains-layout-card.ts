@@ -202,6 +202,7 @@ export class DwainsLayoutCard extends LitElement {
   @state() private _settingsSaveError = '';
   @state() private _settingsPageKey = 'overview';
   @state() private _settingsPageTitle = '';
+  @state() private _settingsPageParentTitle = '';
   @state() private _settingsPageDescription = '';
   @state() private _confirmationDialog: ConfirmationDialogState | null = null;
 
@@ -1294,11 +1295,24 @@ export class DwainsLayoutCard extends LitElement {
 
     .settings-page-title h1 {
       margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
       font-size: clamp(22px, 2vw, 30px);
       line-height: 1.08;
       font-weight: 850;
       color: var(--primary-text-color);
       letter-spacing: 0;
+    }
+    .settings-breadcrumb-parent {
+      color: var(--secondary-text-color);
+      font-weight: 700;
+    }
+    .settings-breadcrumb-separator {
+      flex: 0 0 auto;
+      color: var(--secondary-text-color);
+      --mdc-icon-size: 20px;
     }
 
     .settings-page-title p {
@@ -15517,6 +15531,7 @@ export class DwainsLayoutCard extends LitElement {
     this._settingsEditorInitialized = false;
     this._settingsPageKey = 'overview';
     this._settingsPageTitle = '';
+    this._settingsPageParentTitle = '';
     this._settingsPageDescription = '';
   }
 
@@ -15542,6 +15557,7 @@ export class DwainsLayoutCard extends LitElement {
       this._settingsEditorInitialized = false;
       this._settingsPageKey = 'overview';
       this._settingsPageTitle = '';
+      this._settingsPageParentTitle = '';
       this._settingsPageDescription = '';
     }
     this._syncBottomNavAreaContext();
@@ -15861,9 +15877,10 @@ export class DwainsLayoutCard extends LitElement {
 
   private _handleSettingsPageChanged = (event: Event): void => {
     event.stopPropagation();
-    const detail = (event as CustomEvent<{ page?: string; title?: string; description?: string }>).detail || {};
+    const detail = (event as CustomEvent<{ page?: string; title?: string; parentTitle?: string; description?: string }>).detail || {};
     this._settingsPageKey = detail.page || 'overview';
     this._settingsPageTitle = detail.title || '';
+    this._settingsPageParentTitle = detail.parentTitle || '';
     this._settingsPageDescription = detail.description || '';
   };
 
@@ -15942,7 +15959,13 @@ export class DwainsLayoutCard extends LitElement {
             <ha-icon icon=${onSubpage ? 'mdi:arrow-left' : 'mdi:close'}></ha-icon>
           </button>
           <div class="settings-page-title">
-            <h1>${title}</h1>
+            <h1>
+              ${this._settingsPageParentTitle
+                ? html`<span class="settings-breadcrumb-parent">${this._settingsPageParentTitle}</span>
+                    <ha-icon class="settings-breadcrumb-separator" icon="mdi:chevron-right"></ha-icon>
+                    <span>${title}</span>`
+                : title}
+            </h1>
             <p>${description}</p>
           </div>
           <div class="settings-page-actions">
@@ -16013,6 +16036,7 @@ export class DwainsLayoutCard extends LitElement {
     this._settingsEditorInitialized = false;
     this._settingsPageKey = 'overview';
     this._settingsPageTitle = '';
+    this._settingsPageParentTitle = '';
     this._settingsPageDescription = '';
     this._closeMobileNav();
     this._syncBottomNavAreaContext();
