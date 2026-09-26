@@ -737,6 +737,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       detail: {
         page: this._settingsPage,
         title: pageTitle,
+        parentTitle: areaName ? this._settingsPageTitle("areas") : undefined,
         description: pageDescription,
       },
       bubbles: true,
@@ -1681,10 +1682,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         <div class="area-help">
           <ha-svg-icon .path=${mdiThermometerWater} class="area-help-icon"></ha-svg-icon>
           <div class="area-help-text">
-            <p>
-              ${this._t('settings.area_climate_power_help')}
-              <button class="link" @click=${this._editAreaRegistry}>${this._t('settings.edit_room')}</button>
-            </p>
+            <p>${this._t('settings.area_climate_power_help')}</p>
           </div>
         </div>
 
@@ -1700,8 +1698,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
 
         <section class="area-entity-layout-settings">
-          <div class="area-entity-layout-copy">
+          <div class="area-entity-layout-heading">
             <strong>${this._t('settings.area_entity_layout_title')}</strong>
+            <button class="dd-inline-text-button area-reset-button" type="button" @click=${this._resetAreaEntitySettings}>
+              <ha-icon icon="mdi:restore"></ha-icon>
+              ${this._t('settings.reset_layout')}
+            </button>
           </div>
           <div class="area-order-modes">
             <button
@@ -1728,12 +1730,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         </section>
 
         ${entityLayout === 'ungrouped' ? html`
-          <ha-expansion-panel expanded outlined>
-            <div slot="header">
+          <section class="area-free-order-section">
+            <div class="area-free-order-header">
               <ha-icon icon="mdi:sort-variant"></ha-icon>
-              ${this._t('settings.area_entity_order')}
+              <strong>${this._t('settings.area_entity_order')}</strong>
             </div>
-            <p class="area-order-hint secondary">${this._t('settings.area_entity_order_hint')}</p>
             <div class="sortable-container dragging-enabled ${this._draggedEntityGroup === UNGROUPED_ENTITY_DRAG_GROUP ? 'dragging' : ''}">
               ${this._getAreaEditorFreeCardsForSlot(customCards, 0, sortedUngroupedEntities, entityGroupById)
                 .map((entry) => this._renderAreaCustomCardEditorRow(entry))}
@@ -1787,7 +1788,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
               )}
               ${this._renderAreaCustomCardDropZone(`ungrouped:${sortedUngroupedEntities.length}`)}
             </div>
-          </ha-expansion-panel>
+          </section>
         ` : groupedSections.map((group) => {
           // Get ALL entities for this group (don't filter hidden ones)
           const allGroupEntities = groups[group] || [];
@@ -1834,7 +1835,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                   >
                     <ha-svg-icon .path=${mdiDrag}></ha-svg-icon>
                   </button>
-                  <ha-icon class="area-entity-section-icon" icon=${AREA_STRATEGY_GROUP_ICONS[group]}></ha-icon>
+                  <ha-icon
+                    class="area-entity-section-icon"
+                    icon=${AREA_STRATEGY_GROUP_ICONS[group]}
+                    style=${`--area-group-color: ${this._getAreaStrategyGroupColor(group)};`}
+                  ></ha-icon>
                   <span class="area-entity-section-title">${this._getGroupTitle(group)}</span>
                   ${this._renderVisibilityButton(
                     groupVisible,
@@ -3010,12 +3015,58 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     });
   }
 
+  private _getAreaStrategyGroupColor(group: AreaStrategyGroup): string {
+    switch (group) {
+      case 'lights': return getDomainColor('light');
+      case 'climate': return getDomainColor('climate');
+      case 'covers': return getDomainColor('cover');
+      case 'media_players': return getDomainColor('media_player');
+      case 'security': return getDomainColor('lock');
+      case 'motion': return getDomainColor('binary_sensor', 'motion');
+      case 'actions': return getDomainColor('scene');
+      case 'others':
+      default:
+        return getDomainColor('switch');
+    }
+  }
+
+  private _resetAreaEntitySettings = (): void => {
+    if (!this._config || !this._area) return;
+
+    const current = this._config.areas_options?.[this._area] || {};
+    const nextAreaOptions = { ...current };
+    delete nextAreaOptions.entity_layout;
+    delete nextAreaOptions.group_order;
+    delete nextAreaOptions.entity_order;
+    delete nextAreaOptions.groups_options;
+
+    if (Array.isArray(nextAreaOptions.custom_cards)) {
+      nextAreaOptions.custom_cards = nextAreaOptions.custom_cards.map((entry) =>
+        entry.placement.startsWith('ungrouped:')
+          ? { ...entry, placement: 'bottom' }
+          : entry
+      );
+    }
+
+    this._collapsedAreaEntityGroups = new Set(AREA_STRATEGY_GROUPS);
+    this._fireConfigChanged({
+      ...this._config,
+      areas_options: {
+        ...this._config.areas_options,
+        [this._area]: nextAreaOptions,
+      },
+    });
+  };
+
   private _setAreaEntityLayout(
     layout: AreaEntityLayout,
     entities: string[] = [],
     entityGroupById: Map<string, AreaStrategyGroup> = new Map()
   ): void {
     if (!this._config || !this._area) return;
+    if (layout === 'grouped') {
+      this._collapsedAreaEntityGroups = new Set(AREA_STRATEGY_GROUPS);
+    }
     const areaOptions = this._config.areas_options?.[this._area];
     const customCards = (areaOptions?.custom_cards || []).map((entry) => {
       if (layout !== 'grouped' || !entry.placement.startsWith('ungrouped:')) return entry;
@@ -3782,7 +3833,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
   private _editArea(area: string): void {
     this._area = area;
-    this._collapsedAreaEntityGroups = new Set();
+    this._collapsedAreaEntityGroups = new Set(AREA_STRATEGY_GROUPS);
     this._emitSettingsPageContext();
     this._resetSettingsScrollPosition();
   }
@@ -4413,13 +4464,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     };
 
     this._fireConfigChanged(newConfig);
-  }
-
-  private _editAreaRegistry(ev: Event): void {
-    ev.stopPropagation();
-    // This would open the area registry dialog in Home Assistant
-    // For now, we'll just show an alert
-          alert(this._t('strategy.edit_area_alert'));
   }
 
   private _openReplacementManager(): void {
@@ -8610,6 +8654,114 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .area-detail-editor .area-entity-section .entity-item {
         min-height: 46px;
         padding: 4px 6px;
+      }
+
+      /* Area room editor behavior + hierarchy */
+      .area-entity-layout-heading {
+        min-height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .area-entity-layout-heading > strong {
+        font-size: 14px;
+      }
+
+      .area-reset-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        white-space: nowrap;
+      }
+
+      .area-reset-button ha-icon {
+        --mdc-icon-size: 17px;
+      }
+
+      .area-free-order-section {
+        overflow: hidden;
+        margin: 0 0 8px;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: var(--card-background-color);
+      }
+
+      .area-free-order-header {
+        min-height: 52px;
+        display: grid;
+        grid-template-columns: 40px minmax(0, 1fr);
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        box-sizing: border-box;
+      }
+
+      .area-free-order-header ha-icon {
+        justify-self: center;
+        color: var(--primary-color);
+        --mdc-icon-size: 21px;
+      }
+
+      .area-free-order-header strong {
+        font-size: 14px;
+      }
+
+      .area-free-order-section .sortable-container {
+        gap: 0;
+        padding: 0;
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .area-free-order-section .sortable-item {
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+      }
+
+      .area-free-order-section .sortable-item + .sortable-item {
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .area-free-order-section .entity-item {
+        min-height: 48px;
+        padding: 5px 10px 5px 18px;
+      }
+
+      .area-detail-editor .area-entity-section-header {
+        grid-template-columns: 18px 40px minmax(0, 1fr) 40px;
+        gap: 6px;
+        padding: 7px 8px 9px;
+      }
+
+      .area-detail-editor .area-entity-section-handle {
+        width: 18px;
+        height: 40px;
+      }
+
+      .area-detail-editor .area-entity-section-header > ha-icon {
+        width: 40px;
+        justify-self: center;
+        color: var(--area-group-color, var(--primary-color));
+        --mdc-icon-size: 23px;
+      }
+
+      .area-detail-editor .area-entity-section-title {
+        font-size: 14px;
+      }
+
+      .area-detail-editor .area-entity-section .entity-item {
+        padding-left: 18px;
+        background: color-mix(in srgb, var(--secondary-background-color) 44%, transparent);
+      }
+
+      .area-detail-editor .area-entity-section .entity-icon {
+        color: var(--secondary-text-color);
+      }
+
+      .area-detail-editor .area-entity-section .sortable-item:hover .entity-item {
+        background: color-mix(in srgb, var(--secondary-background-color) 72%, transparent);
       }
 
       @media (max-width: 700px) {
