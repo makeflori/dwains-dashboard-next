@@ -54,7 +54,7 @@ export const getDomainColor = (domain: string, deviceClass?: string): string => 
       window: '#1494aa',
       door: '#1494aa',
       opening: '#1494aa',
-      moisture: '#34a6d8',
+      moisture: '#df5b63',
       smoke: '#df5b63',
       gas: '#df5b63',
       problem: '#df5b63',
