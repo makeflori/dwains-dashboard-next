@@ -11202,11 +11202,37 @@ export class DwainsLayoutCard extends LitElement {
   }
 
   private _domainStatusStyle(domain: string, deviceClass?: string): string {
-    return `--status-color: ${getDomainColor(domain, deviceClass)};`;
+    const color = domain === 'binary_sensor'
+      ? this._binarySensorBadgeColor(deviceClass)
+      : getDomainColor(domain, deviceClass);
+    return `--status-color: ${color};`;
+  }
+
+  private _isAlarmActive(): boolean {
+    const alarm = this._getAlarmEntity();
+    if (!alarm) return false;
+    return [
+      'armed_away',
+      'armed_home',
+      'armed_night',
+      'armed_vacation',
+      'arming',
+      'pending',
+      'triggered',
+    ].includes(String(alarm.state || '').toLowerCase());
+  }
+
+  private _binarySensorBadgeColor(deviceClass?: string): string {
+    if (deviceClass === 'window' && this._isAlarmActive()) {
+      return getDomainColor('alarm_control_panel');
+    }
+    return getDomainColor('binary_sensor', deviceClass);
   }
 
   private _domainBadgeStyle(domain: string, deviceClass?: string): string {
-    const color = getDomainColor(domain, deviceClass);
+    const color = domain === 'binary_sensor'
+      ? this._binarySensorBadgeColor(deviceClass)
+      : getDomainColor(domain, deviceClass);
     return `--badge-color: ${color}; --area-badge-color: ${color};`;
   }
 
@@ -11271,7 +11297,7 @@ export class DwainsLayoutCard extends LitElement {
           deviceClass,
           icon: getAlertIcon(deviceClass),
           count,
-          color: getDomainColor('binary_sensor', deviceClass),
+          color: this._binarySensorBadgeColor(deviceClass),
         });
       });
 
@@ -12382,7 +12408,7 @@ export class DwainsLayoutCard extends LitElement {
             <ha-icon icon=${getAreaIcon(area)}></ha-icon>
           </div>
           <div class="mobile-area-badges">
-            ${badges.slice(0, 3).map(badge => html`
+            ${badges.slice(0, 4).map(badge => html`
               <span
                 class="mobile-area-badge ${badge.className}"
                 style=${`--area-badge-color: ${badge.color};`}
