@@ -2,7 +2,7 @@ import type { HomeAssistant } from '../types/home-assistant';
 import { getDeviceClassName, getDomainName, prettifyDomain } from './domain-names';
 import { ddLocalize } from './localize';
 import { isEntityFromHiddenDevice } from './device-admission';
-import { getDeviceClassIcon, getDomainIcon } from './icons';
+import { getAlertIcon, getDeviceClassIcon, getDomainIcon } from './icons';
 import { buildHousePowerUsage } from './power-usage';
 
 export interface DomainCount {
@@ -39,12 +39,12 @@ const DOMAIN_CONFIG: Record<string, { icon: string }> = {
 
 // Binary sensor device classes configuration
 const BINARY_SENSOR_CONFIG: Record<string, { icon: string }> = {
-  window: { icon: getDeviceClassIcon('binary_sensor', 'window') },
-  door: { icon: getDeviceClassIcon('binary_sensor', 'door') },
+  window: { icon: getAlertIcon('window') },
+  door: { icon: getAlertIcon('door') },
   motion: { icon: getDeviceClassIcon('binary_sensor', 'motion') },
-  smoke: { icon: getDeviceClassIcon('binary_sensor', 'smoke') },
+  smoke: { icon: getAlertIcon('smoke') },
   gas: { icon: getDeviceClassIcon('binary_sensor', 'gas') },
-  moisture: { icon: getDeviceClassIcon('binary_sensor', 'moisture') },
+  moisture: { icon: getAlertIcon('moisture') },
   occupancy: { icon: getDeviceClassIcon('binary_sensor', 'occupancy') },
   opening: { icon: getDeviceClassIcon('binary_sensor', 'opening') },
   presence: { icon: getDeviceClassIcon('binary_sensor', 'presence') },
