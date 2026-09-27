@@ -1438,9 +1438,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           }
         )}
       </div>
-      <button class="home-layout-reset area-list-reset" type="button" @click=${this._resetAreasConfiguration}>
-        ${this._t('settings.reset_layout')}
-      </button>
     `;
   }
 
@@ -1702,6 +1699,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         <section class="area-entity-layout-settings">
           <div class="area-entity-layout-heading">
             <strong>${this._t('settings.area_entity_layout_title')}</strong>
+            <button class="dd-inline-text-button area-reset-button" type="button" @click=${this._resetAreaEntitySettings}>
+              <ha-icon icon="mdi:restore"></ha-icon>
+              ${this._t('settings.reset_layout')}
+            </button>
           </div>
           <div class="area-order-modes">
             <button
@@ -1925,9 +1926,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         ${customCards.length || this._draggedAreaCustomCardId
           ? this._renderAreaCustomCardPlacement(customCards, 'bottom', this._t('layout.custom_cards_bottom'))
           : nothing}
-        <button class="home-layout-reset area-list-reset" type="button" @click=${this._resetAreaEntitySettings}>
-          ${this._t('settings.reset_layout')}
-        </button>
       </div>
     `;
   }
@@ -2632,6 +2630,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
             `;
           })}
         </div>
+        <button class="home-layout-reset area-list-reset" type="button" @click=${this._resetDeviceVisibility}>
+          ${this._t('settings.reset_layout')}
+        </button>
       </section>
     `;
   }
@@ -2899,6 +2900,23 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       },
     });
   }
+
+  private _resetDeviceVisibility = (): void => {
+    if (!this._config) return;
+    this._expandedDeviceTypes = new Set();
+    this._fireConfigChanged({
+      ...this._config,
+      settings: {
+        ...this._config.settings,
+        hidden_device_types: [],
+      },
+      device_admission: {
+        ...this._config.device_admission,
+        hidden_entities: [],
+        hidden_devices: [],
+      },
+    });
+  };
 
   private _getHiddenDeviceIds(): Set<string> {
     return new Set(
@@ -3295,15 +3313,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     this._setHomeCameraOrder(order);
     this._handleHomeCameraDragEnd();
   }
-
-  private _resetAreasConfiguration = (): void => {
-    if (!this._config) return;
-    this._areaPreviewOrder = undefined;
-    this._fireConfigChanged({
-      ...this._config,
-      areas_display: undefined,
-    });
-  };
 
   private _setAreaSortMode(sortMode: AreaSortMode): void {
     if (!this._config || !this.hass) return;
@@ -7906,7 +7915,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         background: var(--secondary-background-color);
       }
 
-      .area-sort-segment {
+      .area-sort-segment,
+      .area-detail-editor .area-entity-layout-settings .area-order-mode {
         min-width: 0;
         min-height: 42px;
         display: inline-flex;
@@ -7922,24 +7932,35 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         font-size: 12px;
         font-weight: 650;
         cursor: pointer;
+        box-shadow: none;
       }
 
       .area-sort-segment:last-child {
         border-right: 0;
       }
 
-      .area-sort-segment:hover {
+      .area-sort-segment:hover,
+      .area-detail-editor .area-entity-layout-settings .area-order-mode:hover {
         color: var(--primary-text-color);
         background: color-mix(in srgb, var(--primary-color) 4%, transparent);
       }
 
-      .area-sort-segment.selected {
+      .area-sort-segment.selected,
+      .area-detail-editor .area-entity-layout-settings .area-order-mode.selected {
         color: var(--primary-color);
         background: color-mix(in srgb, var(--primary-color) 9%, var(--card-background-color));
       }
 
-      .area-sort-segment ha-icon {
+      .area-sort-segment ha-icon,
+      .area-detail-editor .area-entity-layout-settings .area-order-mode ha-icon {
+        color: currentColor;
         --mdc-icon-size: 18px;
+      }
+
+      .area-detail-editor .area-entity-layout-settings .area-order-mode strong {
+        color: inherit;
+        font-size: 12px;
+        font-weight: 650;
       }
 
       .area-order-list-hint {
@@ -8153,8 +8174,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         }
 
         .area-sort-segment {
-          justify-content: center;
-          text-align: center;
+          justify-content: flex-start;
           border-right: 0;
           border-bottom: 1px solid var(--divider-color);
         }
@@ -8680,35 +8700,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         background: var(--secondary-background-color);
       }
 
-      .area-detail-editor .area-entity-layout-settings .area-order-mode {
-        min-height: 42px;
-        justify-content: center;
-        align-items: center;
-        gap: 7px;
-        padding: 8px 10px;
-        border: 0;
-        border-right: 1px solid var(--divider-color);
-        border-radius: 0;
-        background: transparent;
-        box-shadow: none;
-      }
-
       .area-detail-editor .area-entity-layout-settings .area-order-mode:last-child {
         border-right: 0;
-      }
-
-      .area-detail-editor .area-entity-layout-settings .area-order-mode.selected {
-        color: var(--primary-color);
-        background: color-mix(in srgb, var(--primary-color) 9%, var(--card-background-color));
-        box-shadow: none;
-      }
-
-      .area-detail-editor .area-entity-layout-settings .area-order-mode ha-icon {
-        --mdc-icon-size: 18px;
-      }
-
-      .area-detail-editor .area-entity-layout-settings .area-order-mode strong {
-        font-size: 12px;
       }
 
       .area-detail-editor .area-entity-section-header {
@@ -8767,9 +8760,13 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         gap: 12px;
       }
       .area-entity-layout-heading > strong { font-size: 14px; }
-      .area-list-reset {
-        margin-top: 10px;
+      .area-reset-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        white-space: nowrap;
       }
+      .area-reset-button ha-icon { --mdc-icon-size: 17px; }
 
       .area-free-order-section {
         overflow: hidden;
