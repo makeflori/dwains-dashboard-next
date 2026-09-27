@@ -9152,6 +9152,126 @@ export class DwainsLayoutCard extends LitElement {
         display: none;
       }
 
+      /*
+       * Mobile HA already lays the dashboard out below the iOS/top safe area.
+       * Adding env(safe-area-inset-top) inside DD Next a second time creates the
+       * large empty strip visible above the home greeting and room controls.
+       */
+      .home-welcome {
+        padding-top: 16px;
+      }
+
+      .area-content-area .area-header:not(.is-stuck),
+      .area-content-area .area-header:not(.is-stuck).has-metrics,
+      .area-content-area .area-header:not(.is-stuck).has-quick-controls,
+      .area-content-area .area-header:not(.is-stuck).has-metrics.has-quick-controls {
+        min-height: 174px;
+      }
+
+      .area-content-area .area-header:not(.is-stuck).has-picture,
+      .area-content-area .area-header:not(.is-stuck).has-picture.has-metrics,
+      .area-content-area .area-header:not(.is-stuck).has-picture.has-quick-controls {
+        min-height: 194px;
+      }
+
+      .area-content-area .area-mobile-home,
+      .area-content-area .area-mobile-actions {
+        top: 14px;
+      }
+
+      .area-content-area .area-header-content,
+      .area-content-area .area-header.has-metrics .area-header-content {
+        top: 58px;
+      }
+
+      .area-content-area .area-header-metrics {
+        top: 63px;
+      }
+
+      /*
+       * Quick controls are compact controls, not a full-width second toolbar.
+       * Keeping them content-sized prevents the switch thumb from ending up
+       * visually detached at the far right edge of the header.
+       */
+      .area-content-area .area-mobile-quick-controls,
+      .area-content-area .area-header.has-metrics .area-mobile-quick-controls,
+      .area-content-area .area-header.has-quick-controls .area-mobile-quick-controls {
+        top: auto;
+        right: auto;
+        bottom: 10px;
+        left: 20px;
+        width: max-content;
+        max-width: calc(100% - 40px);
+        display: flex;
+        grid-template-columns: none;
+        justify-content: flex-start;
+        overflow-x: auto;
+      }
+
+      .area-content-area .area-header.has-metrics .area-mobile-quick-controls {
+        max-width: calc(100% - 154px);
+      }
+
+      .area-content-area .area-mobile-quick-controls > .area-quick-control,
+      .area-content-area .area-mobile-quick-controls.count-1 > .area-quick-control,
+      .area-content-area .area-mobile-quick-controls.count-2 > .area-quick-control,
+      .area-content-area .area-mobile-quick-controls.count-3 > .area-quick-control,
+      .area-content-area .area-mobile-quick-controls.count-4 > .area-quick-control,
+      .area-content-area .area-mobile-quick-controls.count-5 > .area-quick-control {
+        width: auto;
+        min-width: 88px;
+        flex: 0 0 auto;
+      }
+
+      .area-content-area .area-header.is-stuck,
+      .area-content-area .area-header.is-stuck.has-metrics,
+      .area-content-area .area-header.is-stuck.has-quick-controls,
+      .area-content-area .area-header.is-stuck.has-metrics.has-quick-controls {
+        min-height: 62px;
+        padding-top: 8px;
+      }
+
+      .area-content-area .area-header.is-stuck .area-mobile-home,
+      .area-content-area .area-header.is-stuck .area-mobile-actions {
+        top: 9px;
+      }
+
+      .area-content-area .area-header.is-stuck .area-header-content {
+        top: 10px;
+      }
+
+      .area-content-area .area-header.is-stuck.is-revealed,
+      .area-content-area .area-header.is-stuck.is-revealed.has-metrics,
+      .area-content-area .area-header.is-stuck.is-revealed.has-quick-controls,
+      .area-content-area .area-header.is-stuck.is-revealed.has-metrics.has-quick-controls {
+        min-height: 174px;
+      }
+
+      .area-content-area .area-header.is-stuck.is-revealed .area-header-content,
+      .area-content-area .area-header.is-stuck.is-revealed.has-metrics .area-header-content {
+        top: 58px;
+      }
+
+      .area-content-area .area-header.is-stuck.is-revealed .area-header-metrics {
+        top: 63px;
+      }
+
+      .area-content-area .area-header.is-stuck.is-revealed .area-mobile-quick-controls,
+      .area-content-area .area-header.is-stuck.is-revealed.has-metrics .area-mobile-quick-controls,
+      .area-content-area .area-header.is-stuck.is-revealed.has-quick-controls .area-mobile-quick-controls {
+        top: auto;
+        bottom: 10px;
+        left: 20px;
+        right: auto;
+        width: max-content;
+        max-width: calc(100% - 40px);
+        display: flex;
+      }
+
+      .area-content-area .area-header.is-stuck.is-revealed.has-metrics .area-mobile-quick-controls {
+        max-width: calc(100% - 154px);
+      }
+
       /* Keep the expanded room header geometrically honest: earlier variants used a
          short physical header plus absolutely-positioned content, which could overlap
          the subtitle and the first controls row on iPhone-sized viewports. */
