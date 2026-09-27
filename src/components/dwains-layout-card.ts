@@ -2786,12 +2786,13 @@ export class DwainsLayoutCard extends LitElement {
       align-items: center;
       gap: 4px;
       padding: 4px 8px;
-      background: var(--secondary-background-color);
+      background: color-mix(in srgb, var(--badge-color, var(--primary-color)) 10%, var(--card-background-color));
+      color: var(--badge-color, var(--primary-text-color));
       border-radius: 12px;
       font-size: 12px;
       flex-shrink: 0;
       backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid color-mix(in srgb, var(--badge-color, var(--divider-color)) 18%, transparent);
     }
 
     .info-badge ha-icon {
@@ -5120,11 +5121,10 @@ export class DwainsLayoutCard extends LitElement {
       font-size: 14px;
       font-weight: 500;
       transition: all 0.2s ease;
-      border: none;
       cursor: default;
-      background: var(--card-background-color);
-      color: var(--primary-text-color);
-      border: 1px solid var(--divider-color);
+      background: color-mix(in srgb, var(--area-badge-color, var(--primary-color)) 10%, var(--card-background-color));
+      color: var(--area-badge-color, var(--primary-text-color));
+      border: 1px solid color-mix(in srgb, var(--area-badge-color, var(--divider-color)) 20%, transparent);
     }
 
     .area-badge ha-icon {
