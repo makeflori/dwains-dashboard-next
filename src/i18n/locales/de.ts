@@ -450,7 +450,7 @@ export const de = {
   'settings.area_climate_power_help': 'Für Temperatur, Luftfeuchtigkeit und Leistung werden die sichtbaren Sensoren des Raums verwendet. Die Zuordnung änderst du in Home Assistant unter Einstellungen > Bereiche & Zonen.',
   'settings.area_detail_header_description': 'Sichtbarkeit, Reihenfolge und Darstellung der Entitäten verwalten.',
   'settings.area_order_title': 'Reihenfolge der Bereiche',
-  'settings.area_entity_layout_title': 'Entitätenlayout',
+  'settings.area_entity_layout_title': 'Anordnung',
   'settings.area_entity_layout_description': 'Lege fest, ob automatisch erzeugte Entitätskarten nach Typ gruppiert oder in einer frei sortierbaren Liste angezeigt werden.',
   'settings.area_entity_layout_grouped': 'Nach Typ gruppiert',
   'settings.area_entity_layout_grouped_description': 'Behält getrennte Abschnitte für Lichter, Beschattung & Tore, Sensoren und weitere Typen bei.',
