@@ -1438,6 +1438,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           }
         )}
       </div>
+      <button class="home-layout-reset area-list-reset" type="button" @click=${this._resetAreasConfiguration}>
+        ${this._t('settings.reset_layout')}
+      </button>
     `;
   }
 
@@ -1699,10 +1702,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         <section class="area-entity-layout-settings">
           <div class="area-entity-layout-heading">
             <strong>${this._t('settings.area_entity_layout_title')}</strong>
-            <button class="dd-inline-text-button area-reset-button" type="button" @click=${this._resetAreaEntitySettings}>
-              <ha-icon icon="mdi:restore"></ha-icon>
-              ${this._t('settings.reset_layout')}
-            </button>
           </div>
           <div class="area-order-modes">
             <button
@@ -1926,6 +1925,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         ${customCards.length || this._draggedAreaCustomCardId
           ? this._renderAreaCustomCardPlacement(customCards, 'bottom', this._t('layout.custom_cards_bottom'))
           : nothing}
+        <button class="home-layout-reset area-list-reset" type="button" @click=${this._resetAreaEntitySettings}>
+          ${this._t('settings.reset_layout')}
+        </button>
       </div>
     `;
   }
@@ -3293,6 +3295,15 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     this._setHomeCameraOrder(order);
     this._handleHomeCameraDragEnd();
   }
+
+  private _resetAreasConfiguration = (): void => {
+    if (!this._config) return;
+    this._areaPreviewOrder = undefined;
+    this._fireConfigChanged({
+      ...this._config,
+      areas_display: undefined,
+    });
+  };
 
   private _setAreaSortMode(sortMode: AreaSortMode): void {
     if (!this._config || !this.hass) return;
@@ -8142,7 +8153,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         }
 
         .area-sort-segment {
-          justify-content: flex-start;
+          justify-content: center;
+          text-align: center;
           border-right: 0;
           border-bottom: 1px solid var(--divider-color);
         }
@@ -8755,13 +8767,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         gap: 12px;
       }
       .area-entity-layout-heading > strong { font-size: 14px; }
-      .area-reset-button {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        white-space: nowrap;
+      .area-list-reset {
+        margin-top: 10px;
       }
-      .area-reset-button ha-icon { --mdc-icon-size: 17px; }
 
       .area-free-order-section {
         overflow: hidden;
