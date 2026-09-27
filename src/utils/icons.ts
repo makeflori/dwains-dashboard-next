@@ -49,8 +49,23 @@ export const getDomainIcon = (domain: string): string => {
 };
 
 export const getDomainColor = (domain: string, deviceClass?: string): string => {
-  if (domain === 'binary_sensor' && ['motion', 'occupancy', 'presence'].includes(deviceClass || '')) {
-    return '#df5b63';
+  if (domain === 'binary_sensor') {
+    const deviceClassColors: Record<string, string> = {
+      window: '#1494aa',
+      door: '#1494aa',
+      opening: '#1494aa',
+      moisture: '#34a6d8',
+      smoke: '#df5b63',
+      gas: '#df5b63',
+      problem: '#df5b63',
+      safety: '#df5b63',
+      motion: '#df5b63',
+      occupancy: '#df5b63',
+      presence: '#df5b63',
+    };
+    if (deviceClass && deviceClassColors[deviceClass]) {
+      return deviceClassColors[deviceClass]!;
+    }
   }
 
   const colors: Record<string, string> = {
