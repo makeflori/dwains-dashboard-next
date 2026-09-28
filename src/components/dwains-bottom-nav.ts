@@ -333,7 +333,7 @@ export class DwainsBottomNav extends LitElement {
       ${this._renderPagesSheet()}
       ${this._renderRestrictedMenuSheet()}
       ${this._renderStandaloneMenuButton()}
-      <nav class="bar">
+      <nav class="bar ${this._areaContext.view === 'area' && this._areaContext.areaId ? 'with-back' : ''}">
         ${this._items.map(
           (it) => {
             const display = this._displayItem(it);
@@ -591,6 +591,14 @@ export class DwainsBottomNav extends LitElement {
         transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
         background-color 0.28s cubic-bezier(0.22, 1, 0.36, 1),
         box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .bar.with-back {
+      left: calc(max(14px, env(safe-area-inset-left, 0px)) + 62px);
+      right: max(14px, env(safe-area-inset-right, 0px));
+      width: auto;
+      max-width: none;
+      transform: none;
     }
 
     .standalone-menu {
@@ -973,6 +981,12 @@ export class DwainsBottomNav extends LitElement {
         gap: 6px;
         max-width: calc(100vw - 16px);
         padding: 6px;
+      }
+      .bar.with-back {
+        left: calc(max(10px, env(safe-area-inset-left, 0px)) + 58px);
+        right: max(10px, env(safe-area-inset-right, 0px));
+        width: auto;
+        max-width: none;
       }
       .item {
         min-width: 42px;
