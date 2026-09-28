@@ -357,25 +357,16 @@ export class DwainsBottomNav extends LitElement {
   }
 
   private _renderStandaloneMenuButton() {
-    const isArea = this._areaContext.view === 'area' && Boolean(this._areaContext.areaId);
-    const label = isArea
-      ? ddLocalize(this._hass, 'navigation.back_home')
-      : ddLocalize(this._hass, 'navigation.open_menu');
+    const label = ddLocalize(this._hass, 'navigation.open_menu');
     return html`
       <button
-        class="standalone-menu ${isArea ? 'is-back' : ''}"
+        class="standalone-menu"
         type="button"
         title=${label}
         aria-label=${label}
-        @click=${() => {
-          if (isArea) {
-            this._goHomeFromArea();
-          } else {
-            this._toggleHaMenu();
-          }
-        }}
+        @click=${() => this._toggleHaMenu()}
       >
-        ${this._renderIcon(isArea ? 'mdi:arrow-left' : 'mdi:menu')}
+        ${this._renderIcon('mdi:menu')}
       </button>
     `;
   }
