@@ -206,6 +206,7 @@ export class DwainsLayoutCard extends LitElement {
   @state() private _optimisticEntityStates: Record<string, OptimisticEntityState> = {};
   @state() private _renderAllMobileHomeAreas = false;
   @state() private _renderAllMobileAreaEntities = false;
+  @state() private _collapsedAreaGroups: Record<string, boolean> = {};
   @state() private _settingsDirty = false;
   @state() private _settingsSavePending = false;
   @state() private _settingsSaveError = '';
@@ -10546,6 +10547,163 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
+
+    /* Approved room-layout alignment */
+    @media (min-width: 769px) {
+      .global-header { padding: 10px 18px 0; border-bottom: 0; }
+      .global-header .header-content,
+      .global-header .area-favorites-toggle,
+      .global-header .header-expanded-content {
+        width: min(100%, 1400px);
+        max-width: 1400px;
+        margin-left: auto;
+        margin-right: auto;
+        box-sizing: border-box;
+      }
+      .global-header .header-content { min-height: 58px; padding-bottom: 8px; }
+      .header-status-scroll { gap: 8px; align-items: stretch; }
+      .status-card-compact {
+        min-width: 150px; height: 52px; padding: 7px 11px; box-sizing: border-box;
+        display: grid; grid-template-columns: 36px minmax(0,auto); grid-template-rows: 1fr 1fr;
+        align-items: center; column-gap: 9px; row-gap: 0;
+        border: 1px solid color-mix(in srgb,var(--primary-text-color) 7%,transparent);
+        border-radius: 8px; background: var(--card-background-color);
+        box-shadow: 0 5px 14px color-mix(in srgb,var(--primary-text-color) 4%,transparent);
+      }
+      .status-card-icon-compact {
+        grid-column: 1; grid-row: 1 / span 2; width: 34px; height: 34px; border-radius: 8px;
+        color: var(--status-color); background: color-mix(in srgb,var(--status-color) 12%,var(--card-background-color));
+      }
+      .status-card-icon-compact ha-icon { --mdc-icon-size: 19px; }
+      .status-card-title-compact {
+        grid-column:2; grid-row:1; align-self:end; margin:0; color:var(--primary-text-color);
+        font-size:12px; font-weight:850; line-height:1.05; white-space:nowrap;
+      }
+      .status-card-subtitle-compact {
+        grid-column:2; grid-row:2; align-self:start; margin:2px 0 0; color:var(--secondary-text-color);
+        font-size:10px; font-weight:650; line-height:1.05; white-space:nowrap;
+      }
+      .status-card-badge-compact { top:-8px; right:-8px; }
+      .header-time-weather { min-width:106px; gap:3px; }
+      .header-time { font-size:20px; } .header-date { font-size:12px; }
+      .weather-compact { padding:3px 9px; }
+      .area-favorites-toggle {
+        width:min(100%,1400px); min-height:40px; margin-top:0; margin-bottom:12px;
+        padding:0 12px; border-radius:8px;
+      }
+      .area-content-area { padding-top:0; }
+
+      .area-header.area-header-desktop-compact {
+        min-height:96px; margin-bottom:10px; padding:10px 12px;
+        grid-template-columns:142px minmax(240px,1fr) auto auto; gap:16px; border-radius:8px;
+      }
+      .area-desktop-room-media { width:142px; height:76px; border-radius:8px; }
+      .area-desktop-room-icon ha-icon { --mdc-icon-size:38px; }
+      .area-desktop-room-copy { gap:3px; }
+      .area-header-desktop-compact .area-title { font-size:clamp(25px,2vw,34px); }
+      .area-desktop-room-meta { font-size:11px; font-weight:750; }
+      .area-desktop-room-summary { margin-top:4px; display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+      .room-summary-item {
+        display:inline-flex; align-items:center; gap:4px; min-height:20px;
+        color:var(--secondary-text-color); font-size:11px; font-weight:750; line-height:1;
+      }
+      .room-summary-item ha-icon { --mdc-icon-size:15px; }
+      .room-summary-item.temperature ha-icon { color:#7567d8; }
+      .room-summary-item.humidity ha-icon { color:#35a9dc; }
+      .room-summary-item.power ha-icon { color:#d99600; }
+      .room-summary-item.status {
+        padding:2px 7px; border-radius:999px; color:var(--room-summary-color);
+        background:color-mix(in srgb,var(--room-summary-color) 10%,var(--card-background-color));
+      }
+      .area-header-desktop-compact .area-header-metric { min-width:128px; min-height:42px; padding:6px 10px; }
+
+      .sidebar .room-area-button {
+        grid-template-columns:82px minmax(0,1fr); min-height:86px; height:86px; gap:9px; padding:7px;
+      }
+      .sidebar .room-area-button .area-media { width:82px; height:72px; }
+      .sidebar .room-area-button .area-media-icon ha-icon { --mdc-icon-size:31px; }
+      .sidebar .room-area-button .area-info-badges { width:auto; max-width:100%; justify-content:flex-start; }
+
+      .mobile-entities-section { display:flex; flex-direction:column; gap:9px; }
+      .mobile-domain-group {
+        margin:0; padding:9px 10px 10px;
+        border:1px solid color-mix(in srgb,var(--primary-text-color) 7%,transparent);
+        border-radius:8px; background:color-mix(in srgb,var(--card-background-color) 98%,var(--primary-background-color));
+        box-shadow:0 5px 14px color-mix(in srgb,var(--primary-text-color) 4%,transparent);
+      }
+      .mobile-domain-header { min-height:34px; margin:0 0 7px; padding:0 2px; }
+      .mobile-domain-group.is-collapsed .mobile-domain-header { margin-bottom:0; }
+      .mobile-domain-title-label { font-size:15px; font-weight:850; }
+      .mobile-domain-count { font-size:11px; }
+      .mobile-domain-header-actions { gap:6px; }
+      .mobile-domain-collapse-button {
+        width:28px; height:28px; padding:0; display:inline-flex; align-items:center; justify-content:center;
+        border:0; border-radius:999px; background:transparent; color:var(--secondary-text-color); cursor:pointer;
+      }
+      .mobile-domain-collapse-button:hover { background:color-mix(in srgb,var(--primary-color) 8%,transparent); color:var(--primary-text-color); }
+      .mobile-domain-collapse-button ha-icon { --mdc-icon-size:18px; }
+      .mobile-entity-rail { gap:8px; }
+      .mobile-entity-card { min-height:68px; padding:10px 11px; border-radius:8px; }
+      .mobile-entity-main {
+        width:100%; min-width:0; display:grid; grid-template-columns:38px minmax(0,1fr) auto; align-items:center; gap:10px;
+      }
+      .mobile-entity-card .mobile-entity-icon { width:38px; height:38px; border-radius:8px; }
+      .mobile-entity-card .mobile-entity-icon ha-icon { --mdc-icon-size:21px; }
+      .mobile-entity-content { min-width:0; display:block; }
+      .mobile-entity-name { font-size:13px; font-weight:850; line-height:1.15; }
+      .mobile-entity-right { min-width:0; display:inline-flex; align-items:center; justify-content:flex-end; gap:7px; }
+      .mobile-entity-status-pill {
+        max-width:145px; padding:4px 8px; overflow:hidden; border-radius:999px;
+        color:var(--secondary-text-color); background:color-mix(in srgb,var(--primary-text-color) 6%,var(--card-background-color));
+        font-size:10px; font-weight:750; line-height:1; text-overflow:ellipsis; white-space:nowrap;
+      }
+      .mobile-entity-card.mobile-entity-binary_sensor .mobile-entity-status-pill.active,
+      .mobile-entity-card.action-toggle .mobile-entity-status-pill.active {
+        color:var(--entity-color); background:color-mix(in srgb,var(--entity-color) 11%,var(--card-background-color));
+      }
+      .mobile-entity-brightness { width:calc(100% - 48px); margin:7px 0 0 48px; }
+      .mobile-entity-brightness input[type="range"] {
+        appearance:none; width:100%; height:4px; margin:0; border-radius:999px; outline:none;
+        background:linear-gradient(90deg,var(--entity-color) 0%,var(--entity-color) var(--brightness),
+          color-mix(in srgb,var(--primary-text-color) 13%,transparent) var(--brightness),
+          color-mix(in srgb,var(--primary-text-color) 13%,transparent) 100%);
+      }
+      .mobile-entity-brightness input[type="range"]::-webkit-slider-thumb {
+        appearance:none; width:16px; height:16px; border-radius:50%; border:2px solid var(--entity-color);
+        background:var(--card-background-color); cursor:pointer;
+      }
+      .mobile-entity-brightness input[type="range"]::-moz-range-thumb {
+        width:14px; height:14px; border-radius:50%; border:2px solid var(--entity-color);
+        background:var(--card-background-color); cursor:pointer;
+      }
+      .mobile-entity-more { display:none!important; }
+    }
+
+    @media (max-width:768px) {
+      .mobile-domain-group {
+        margin-bottom:8px; padding:8px; border:1px solid color-mix(in srgb,var(--primary-text-color) 7%,transparent);
+        border-radius:10px; background:var(--card-background-color);
+      }
+      .mobile-domain-header { min-height:36px; margin-bottom:6px; }
+      .mobile-domain-collapse-button {
+        width:30px; height:30px; padding:0; display:inline-flex; align-items:center; justify-content:center;
+        border:0; border-radius:999px; background:transparent; color:var(--secondary-text-color);
+      }
+      .mobile-entity-main {
+        width:100%; min-width:0; display:grid; grid-template-columns:38px minmax(0,1fr) auto; align-items:center; gap:9px;
+      }
+      .mobile-entity-right { min-width:0; display:inline-flex; align-items:center; justify-content:flex-end; gap:6px; }
+      .mobile-entity-status-pill {
+        max-width:104px; padding:4px 7px; overflow:hidden; border-radius:999px;
+        color:var(--secondary-text-color); background:color-mix(in srgb,var(--primary-text-color) 6%,var(--card-background-color));
+        font-size:10px; font-weight:750; line-height:1; text-overflow:ellipsis; white-space:nowrap;
+      }
+      .mobile-entity-card.mobile-entity-binary_sensor .mobile-entity-status-pill.active {
+        color:var(--entity-color); background:color-mix(in srgb,var(--entity-color) 12%,var(--card-background-color));
+      }
+      .mobile-entity-brightness { width:calc(100% - 47px); margin:7px 0 0 47px; }
+    }
+
   `;
 
   connectedCallback() {
@@ -11849,7 +12007,7 @@ export class DwainsLayoutCard extends LitElement {
                   ` : nothing}
                 </div>
                 <div class="status-card-title-compact">${domain.value || this._statusCardTitle(domain)}</div>
-                ${domain.value ? html`<div class="status-card-subtitle-compact">${domain.name}</div>` : nothing}
+                ${domain.value ? html`<div class="status-card-subtitle-compact">${domain.domain === 'wattage' ? this._t('entity.power_usage') : domain.name}</div>` : nothing}
               </div>
             `
           )}
@@ -12337,7 +12495,6 @@ export class DwainsLayoutCard extends LitElement {
                   <span class="welcome-name">${userName}</span>
                   <span class="welcome-title">${greeting}, ${userName}</span>
                 </div>
-                <div class="welcome-return">${this._getHomeSnapshotText(weatherEntity)}</div>
               </div>
             </div>
             <div class="welcome-actions">
@@ -13423,10 +13580,6 @@ export class DwainsLayoutCard extends LitElement {
       areaData.humidity,
     ].filter(Boolean).join(' · ');
     const areaSubtitle = this._areaHeaderStuck && !this._areaHeaderRevealed && stickyMetrics ? stickyMetrics : deviceLabel;
-    const desktopMeta = [
-      deviceLabel,
-      areaData.wattage,
-    ].filter(Boolean).join(' · ');
 
     return html`
       <div class="area-view">
@@ -13499,7 +13652,23 @@ export class DwainsLayoutCard extends LitElement {
 
             <div class="area-desktop-room-copy">
               <h1 class="area-title">${area.name}</h1>
-              <div class="area-desktop-room-meta">${desktopMeta}</div>
+              <div class="area-desktop-room-meta">${deviceLabel}</div>
+              <div class="area-desktop-room-summary">
+                ${areaData.temperature ? html`
+                  <span class="room-summary-item temperature"><ha-icon icon="mdi:thermometer"></ha-icon><span>${areaData.temperature}</span></span>
+                ` : nothing}
+                ${areaData.humidity ? html`
+                  <span class="room-summary-item humidity"><ha-icon icon="mdi:water-percent"></ha-icon><span>${areaData.humidity}</span></span>
+                ` : nothing}
+                ${areaData.wattage ? html`
+                  <span class="room-summary-item power"><ha-icon icon="mdi:flash"></ha-icon><span>${areaData.wattage}</span></span>
+                ` : nothing}
+                ${this._getAreaStatusBadges(areaData).slice(0, 4).map(badge => html`
+                  <span class="room-summary-item status" style=${`--room-summary-color: ${badge.color};`}>
+                    <ha-icon icon=${badge.icon}></ha-icon><span>${badge.count}</span>
+                  </span>
+                `)}
+              </div>
             </div>
 
             ${this._renderAreaHeaderMetrics(areaData)}
@@ -14470,6 +14639,8 @@ export class DwainsLayoutCard extends LitElement {
         ${renderedGroups.map((group, groupIndex) => {
           const hasActions = this._mobileControllableEntities(group.entities).length > 0;
           const gridMode = this._mobileEntityLayout === 'grid';
+          const collapseKey = `${area.area_id}:${group.key}`;
+          const groupCollapsed = Boolean(this._collapsedAreaGroups[collapseKey]);
           const renderedEntities = this._isMobile && !this._editMode && !this._renderAllMobileAreaEntities && group.entities.length > MOBILE_INITIAL_ENTITY_CARDS
             ? group.entities.slice(0, MOBILE_INITIAL_ENTITY_CARDS)
             : group.entities;
@@ -14484,6 +14655,7 @@ export class DwainsLayoutCard extends LitElement {
                   this._generatedGroupDrag.groupKey === group.key,
                 'group-drag-over': this._generatedGroupDragOver?.areaId === area.area_id &&
                   this._generatedGroupDragOver.groupKey === group.key,
+                'is-collapsed': groupCollapsed,
               })}
               @dragover=${(event: DragEvent) => this._handleGeneratedGroupDragOver(event, area.area_id, group.key)}
               @drop=${(event: DragEvent) => this._handleGeneratedGroupDrop(
@@ -14567,9 +14739,24 @@ export class DwainsLayoutCard extends LitElement {
                     </button>
                   ` : nothing}
                   ${hasActions ? this._renderMobileDomainMaster(group) : nothing}
+                  <button
+                    class="mobile-domain-collapse-button"
+                    type="button"
+                    title=${groupCollapsed ? this._t('common.expand') : this._t('common.collapse')}
+                    aria-label=${groupCollapsed ? this._t('common.expand') : this._t('common.collapse')}
+                    aria-expanded=${groupCollapsed ? 'false' : 'true'}
+                    @click=${() => {
+                      this._collapsedAreaGroups = {
+                        ...this._collapsedAreaGroups,
+                        [collapseKey]: !groupCollapsed,
+                      };
+                    }}
+                  >
+                    <ha-icon icon=${groupCollapsed ? 'mdi:chevron-down' : 'mdi:chevron-up'}></ha-icon>
+                  </button>
                 </div>
 	              </div>
-	              <div class="mobile-entity-rail">
+	              <div class="mobile-entity-rail" style=${groupCollapsed ? 'display:none' : ''}>
 	                ${this._renderDomainCustomCardSlot(area.area_id, group.key, 0, renderedEntities.length)}
 	                ${repeat(
 	                  renderedEntities,
@@ -15243,9 +15430,7 @@ export class DwainsLayoutCard extends LitElement {
 
     const deviceClass = state.attributes?.device_class;
     const replacementConfig = this._areaReplacementCardConfig(entity.entity_id);
-    if (replacementConfig) {
-      return this._renderAreaReplacementCard(entity.entity_id, replacementConfig);
-    }
+    if (replacementConfig) return this._renderAreaReplacementCard(entity.entity_id, replacementConfig);
 
     const icon = this.hass.entities?.[entity.entity_id]?.icon || state.attributes?.icon || getDeviceClassIcon(domain, deviceClass) || getDomainIcon(domain);
     const name = state.attributes?.friendly_name || this.hass.entities?.[entity.entity_id]?.name || entity.entity_id;
@@ -15254,6 +15439,9 @@ export class DwainsLayoutCard extends LitElement {
     const unavailable = ['unavailable', 'unknown'].includes(String(state.state).toLowerCase());
     const unknownIsNormal = domain === 'scene' || domain === 'event';
     const hasInlineSelect = this._mobileEntityHasInlineSelect(domain, state);
+    const statusText = this._mobileEntityStatusText(state, domain);
+    const hasBrightness = domain === 'light' && state.state === 'on' && typeof state.attributes?.brightness === 'number';
+    const brightness = hasBrightness ? Math.round((Number(state.attributes.brightness) / 255) * 100) : 0;
     const classes = [
       'mobile-entity-card',
       `mobile-entity-${domain}`,
@@ -15261,36 +15449,52 @@ export class DwainsLayoutCard extends LitElement {
       `action-${actionKind}`,
       active ? 'is-active' : 'is-off',
       hasInlineSelect ? 'has-inline-select' : '',
+      hasBrightness ? 'has-brightness' : '',
       unavailable && !unknownIsNormal ? 'is-unavailable' : '',
     ].join(' ');
 
     return html`
       <article
         class=${classes}
-        style=${`--entity-color: ${this._mobileEntityColor(domain, deviceClass)};`}
+        style=${`--entity-color: ${this._mobileEntityColor(domain, deviceClass)}; --brightness: ${brightness}%;`}
         role="button"
         tabindex="0"
         aria-label=${name}
         @click=${() => this._showMoreInfo(entity.entity_id)}
         @keydown=${(event: KeyboardEvent) => this._handleMobileEntityKeydown(event, entity.entity_id)}
       >
-        <div class="mobile-entity-top">
-          <div class="mobile-entity-icon">
-            <ha-icon icon=${icon}></ha-icon>
-          </div>
-          ${actionKind === 'toggle' ? nothing : this._renderMobileEntityActions(state, domain, active)}
-        </div>
-        <div class="mobile-entity-content">
-          <div class="mobile-entity-meta">${area.name}</div>
-          <div class="mobile-entity-name">${name}</div>
-          <div class="mobile-entity-status-row">
-            <div class="mobile-entity-status">${this._mobileEntityStatusText(state, domain)}</div>
-            ${actionKind === 'toggle' ? this._renderMobileEntityActions(state, domain, active) : nothing}
+        <div class="mobile-entity-main">
+          <div class="mobile-entity-icon"><ha-icon icon=${icon}></ha-icon></div>
+          <div class="mobile-entity-content"><div class="mobile-entity-name">${name}</div></div>
+          <div class="mobile-entity-right">
+            ${statusText ? html`<span class="mobile-entity-status-pill ${active ? 'active' : ''}">${statusText}</span>` : nothing}
+            ${actionKind === 'more' ? nothing : this._renderMobileEntityActions(state, domain, active)}
           </div>
         </div>
+        ${hasBrightness ? html`
+          <div class="mobile-entity-brightness" @click=${(event: Event) => event.stopPropagation()} @keydown=${(event: KeyboardEvent) => event.stopPropagation()}>
+            <input type="range" min="1" max="100" .value=${String(brightness)}
+              aria-label=${this._t('entity.brightness', { value: brightness })}
+              @change=${(event: Event) => this._handleMobileLightBrightness(event, state)} />
+          </div>
+        ` : nothing}
         ${hasInlineSelect ? this._renderMobileEntitySelect(state, domain) : nothing}
       </article>
     `;
+  }
+
+  private async _handleMobileLightBrightness(event: Event, state: any): Promise<void> {
+    event.stopPropagation();
+    const target = event.currentTarget as HTMLInputElement | null;
+    const entityId = state?.entity_id;
+    if (!target || !entityId) return;
+    const brightnessPct = Math.max(1, Math.min(100, Number(target.value) || 1));
+    try {
+      await this.hass.callService('light', 'turn_on', { entity_id: entityId, brightness_pct: brightnessPct });
+    } catch (err) {
+      console.warn(`Failed to set light brightness for ${entityId}:`, err);
+      this._showToast(this._t('entity.update_failed'));
+    }
   }
 
   private _renderTodoListCard(entity: EntityConfig) {
@@ -15407,17 +15611,7 @@ export class DwainsLayoutCard extends LitElement {
       `;
     }
 
-    return html`
-      <button
-        class="mobile-entity-action mobile-entity-more"
-        type="button"
-        title=${this._t('action.more_info')}
-        aria-label=${this._t('action.more_info')}
-        @click=${(event: Event) => this._handleMobileMoreInfo(event, entityId)}
-      >
-        <ha-icon icon="mdi:chevron-right"></ha-icon>
-      </button>
-    `;
+    return nothing;
   }
 
   private _renderMobileCoverActions(state: any) {
