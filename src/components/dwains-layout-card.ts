@@ -11620,20 +11620,6 @@ export class DwainsLayoutCard extends LitElement {
     `;
   }
 
-  private _renderHeaderExpandButton() {
-    const extraCount = this._getHiddenStatusCount();
-
-    return html`
-      <button
-        class="header-expand-button"
-        @click=${this._toggleHeader}
-        data-extra-count=${ifDefined(extraCount || undefined)}
-      >
-        <ha-icon icon=${this._headerExpanded ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
-      </button>
-    `;
-  }
-
   private _domainStatusStyle(domain: string, deviceClass?: string): string {
     const color = domain === 'binary_sensor'
       ? this._binarySensorBadgeColor(deviceClass)
