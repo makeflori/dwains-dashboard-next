@@ -10683,29 +10683,20 @@ export class DwainsLayoutCard extends LitElement {
     .room-ui-v2 .room-header {
       position: relative;
       width: 100%;
-      height: 96px !important;
-      min-height: 96px !important;
-      max-height: 96px !important;
+      min-height: 96px;
       margin: 0;
       padding: 10px 12px;
       box-sizing: border-box;
-      display: grid !important;
-      grid-template-columns: 142px minmax(220px, 1fr) auto auto !important;
-      grid-template-rows: 1fr !important;
+      display: grid;
+      grid-template-columns: 142px minmax(220px, 1fr) auto auto;
       align-items: center;
-      align-content: center;
       gap: 16px;
-      overflow: visible;
+      overflow: hidden;
       border: 1px solid color-mix(in srgb, var(--primary-text-color) 7%, transparent);
       border-radius: 8px;
       background: var(--card-background-color);
       color: var(--primary-text-color);
       box-shadow: 0 4px 14px rgba(15, 23, 42, 0.045);
-    }
-
-    .room-ui-v2 .room-header::before,
-    .room-ui-v2 .room-header::after {
-      display: none !important;
     }
 
     .room-header-media {
@@ -10853,17 +10844,28 @@ export class DwainsLayoutCard extends LitElement {
       margin: 0;
     }
 
-    .room-favorites-toggle {
-      width: 100% !important;
-      min-height: 38px;
-      margin: 0 !important;
-      padding: 0 12px;
-      box-sizing: border-box;
-      border-radius: 8px;
+    .room-favorites-header {
+      margin-bottom: 0 !important;
+    }
+
+    .room-favorites-block:not(.is-collapsed) .room-favorites-header {
+      margin-bottom: 6px !important;
+    }
+
+    .room-favorites-icon {
+      color: var(--primary-color);
     }
 
     .room-favorites-content {
-      margin-top: 8px;
+      margin: 0;
+    }
+
+    .room-favorites-content .favorites-header {
+      display: none;
+    }
+
+    .room-favorites-content .favorites-section {
+      margin: 0;
     }
 
     .sidebar .room-area-button {
@@ -11171,7 +11173,7 @@ export class DwainsLayoutCard extends LitElement {
 
     @media (max-width: 1180px) and (min-width: 769px) {
       .room-ui-v2 .room-header {
-        grid-template-columns: 112px minmax(170px, 1fr) auto auto !important;
+        grid-template-columns: 112px minmax(170px, 1fr) auto auto;
       }
 
       .room-header-media {
@@ -11197,12 +11199,10 @@ export class DwainsLayoutCard extends LitElement {
       .room-ui-v2 { gap: 7px; }
 
       .room-ui-v2 .room-header {
-        height: auto !important;
-        min-height: 0 !important;
-        max-height: none !important;
-        padding: 9px !important;
-        grid-template-columns: 40px 54px minmax(0, 1fr) auto !important;
-        grid-template-rows: auto auto !important;
+        min-height: 0;
+        padding: 9px;
+        grid-template-columns: 40px 54px minmax(0, 1fr) auto;
+        grid-template-rows: auto auto;
         gap: 7px;
         border-radius: 10px;
       }
@@ -11312,6 +11312,34 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
+
+    .room-ui-v2 .room-header .unavailable-entities-icon,
+    .room-ui-v2 .room-header .dd-edit-toggle,
+    .room-ui-v2 .room-header .area-mobile-camera {
+      margin: 0 !important;
+      position: relative;
+      inset: auto;
+      transform: none;
+    }
+
+    .room-ui-v2 .room-header .unavailable-entities-icon {
+      background: color-mix(in srgb, var(--warning-color) 14%, var(--card-background-color));
+      color: var(--warning-color);
+    }
+
+    .room-ui-v2 .room-header .unavailable-entities-icon ha-icon {
+      color: currentColor;
+    }
+
+    .room-ui-v2 .room-header .dd-edit-toggle {
+      background: color-mix(in srgb, var(--primary-text-color) 6%, var(--card-background-color));
+      color: var(--primary-text-color);
+    }
+
+    .room-ui-v2 .room-header .dd-edit-toggle.active {
+      background: var(--primary-color);
+      color: var(--text-primary-color);
+    }
 
   `;
 
@@ -14135,7 +14163,9 @@ export class DwainsLayoutCard extends LitElement {
 
     return html`
       <div class="area-view room-ui-v2">
-        <div class="area-header room-header">
+        ${this._renderRoomFavoritesBlock()}
+
+        <div class="room-header">
           ${this._isMobile ? html`
             <button
               class="room-header-back"
@@ -14209,8 +14239,6 @@ export class DwainsLayoutCard extends LitElement {
           </div>
         </div>
 
-        ${this._renderRoomFavoritesBlock()}
-
         ${this._renderCustomCardSlot(area.area_id, 'top', this._t('layout.custom_cards_top'))}
         ${this._renderMobileEntitiesSection(area, areaEntities)}
         ${this._renderCustomCardSlot(area.area_id, 'bottom', this._t('layout.custom_cards_bottom'))}
@@ -14223,24 +14251,32 @@ export class DwainsLayoutCard extends LitElement {
     if (!favoriteCount) return nothing;
 
     return html`
-      <div class="room-favorites-block">
-        <button
-          class="area-favorites-toggle room-favorites-toggle"
-          type="button"
-          aria-expanded=${this._headerExpanded ? 'true' : 'false'}
-          @click=${this._toggleHeader}
-        >
-          <span class="area-favorites-toggle-main">
-            <ha-icon icon="mdi:star"></ha-icon>
-            <span>${this._t('favorites.title')}</span>
-            <span class="area-favorites-count">(${favoriteCount})</span>
-          </span>
-          <ha-icon icon=${this._headerExpanded ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
-        </button>
+      <section class="room-favorites-block mobile-domain-group ${this._headerExpanded ? '' : 'is-collapsed'}">
+        <div class="mobile-domain-header room-favorites-header">
+          <button
+            class="mobile-domain-title room-favorites-title"
+            type="button"
+            aria-expanded=${this._headerExpanded ? 'true' : 'false'}
+            @click=${this._toggleHeader}
+          >
+            <span class="room-domain-icon room-favorites-icon" aria-hidden="true">
+              <ha-icon icon="mdi:star"></ha-icon>
+            </span>
+            <span class="mobile-domain-title-copy">
+              <span class="mobile-domain-title-label">${this._t('favorites.title')}</span>
+              <span class="mobile-domain-count">(${favoriteCount})</span>
+            </span>
+            <ha-icon
+              class="mobile-domain-title-chevron"
+              icon=${this._headerExpanded ? 'mdi:chevron-up' : 'mdi:chevron-down'}
+            ></ha-icon>
+          </button>
+        </div>
+
         <div class="room-favorites-content" style=${this._headerExpanded ? '' : 'display:none'}>
           ${this._renderFavoritesSection()}
         </div>
-      </div>
+      </section>
     `;
   }
 
