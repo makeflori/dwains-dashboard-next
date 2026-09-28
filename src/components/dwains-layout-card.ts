@@ -12671,13 +12671,6 @@ export class DwainsLayoutCard extends LitElement {
     return getDomainColor('binary_sensor', deviceClass);
   }
 
-  private _domainBadgeStyle(domain: string, deviceClass?: string): string {
-    const color = domain === 'binary_sensor'
-      ? this._binarySensorBadgeColor(deviceClass)
-      : getDomainColor(domain, deviceClass);
-    return `--badge-color: ${color}; --area-badge-color: ${color};`;
-  }
-
   private _getAreaStatusBadges(areaData: AreaData): AreaStatusBadge[] {
     const badges: AreaStatusBadge[] = [];
     const addDomain = (domain: string, className = domain) => {
@@ -17528,22 +17521,6 @@ export class DwainsLayoutCard extends LitElement {
     });
   }
 
-  private _openAreaClimateControls(areaId: string, climates: EntityConfig[]): void {
-    if (climates.length === 0) return;
-    if (climates.length === 1) {
-      this._showMoreInfo(climates[0]!.entity_id);
-      return;
-    }
-
-    showDomainEntitiesDialog(this, {
-      domain: 'climate',
-      areaId,
-      config: this.config,
-      customTitle: getDomainName(this.hass, 'climate'),
-      customEntities: climates.map(entity => entity.entity_id),
-    });
-  }
-
   private async _toggleAreaLights(areaId: string) {
     const entities = this._getFilteredAreaEntities(areaId);
     const lights = entities.filter(e => e.entity_id.startsWith('light.'));
@@ -17568,82 +17545,6 @@ export class DwainsLayoutCard extends LitElement {
       this._clearOptimisticEntityStates(entityIds);
       console.warn(`Failed to toggle lights in area ${areaId}:`, err);
       this._showToast(this._t('entity.lights_failed'));
-    }
-  }
-
-  private async _toggleAreaSwitches(areaId: string) {
-    const entities = this._getFilteredAreaEntities(areaId);
-    const switches = entities.filter(e => e.entity_id.startsWith('switch.'));
-    if (switches.length === 0) return;
-
-    const allOff = this._areAllEntitiesOff(switches, 'switch');
-    const confirmed = await this._confirmMasterActionIfNeeded('switch', allOff, switches.length, areaId);
-    if (!confirmed) return;
-
-    const service = allOff ? 'turn_on' : 'turn_off';
-    const entityIds = switches.map(e => e.entity_id);
-
-    this._setOptimisticEntityStates(entityIds, allOff ? 'on' : 'off');
-
-    try {
-      await this.hass.callService('switch', service, {
-        entity_id: entityIds
-      });
-
-      this._showToast(this._t(allOff ? 'action.all_switches_on' : 'action.all_switches_off'));
-    } catch (err) {
-      this._clearOptimisticEntityStates(entityIds);
-      console.warn(`Failed to toggle switches in area ${areaId}:`, err);
-      this._showToast(this._t('entity.switches_failed'));
-    }
-  }
-
-  private async _toggleAreaFans(areaId: string) {
-    const entities = this._getFilteredAreaEntities(areaId);
-    const fans = entities.filter(entity => entity.entity_id.startsWith('fan.'));
-    if (fans.length === 0) return;
-
-    const allOff = this._areAllEntitiesOff(fans, 'fan');
-    const confirmed = await this._confirmMasterActionIfNeeded('fan', allOff, fans.length, areaId);
-    if (!confirmed) return;
-    const service = allOff ? 'turn_on' : 'turn_off';
-    const entityIds = fans.map(entity => entity.entity_id);
-
-    this._setOptimisticEntityStates(entityIds, allOff ? 'on' : 'off');
-
-    try {
-      await this.hass.callService('fan', service, { entity_id: entityIds });
-      this._showToast(this._t(allOff ? 'action.all_fans_on' : 'action.all_fans_off'));
-    } catch (err) {
-      this._clearOptimisticEntityStates(entityIds);
-      console.warn(`Failed to toggle fans in area ${areaId}:`, err);
-      this._showToast(this._t('entity.fans_failed'));
-    }
-  }
-
-  private async _setAreaCoverState(areaId: string, open: boolean) {
-    const entities = this._getFilteredAreaEntities(areaId);
-    const covers = entities.filter(e => e.entity_id.startsWith('cover.'));
-    if (covers.length === 0) return;
-
-    const confirmed = await this._confirmMasterActionIfNeeded('cover', open, covers.length, areaId);
-    if (!confirmed) return;
-
-    const service = open ? 'open_cover' : 'close_cover';
-    const entityIds = covers.map(e => e.entity_id);
-
-    this._setOptimisticEntityStates(entityIds, open ? 'open' : 'closed');
-
-    try {
-      await this.hass.callService('cover', service, {
-        entity_id: entityIds
-      });
-
-      this._showToast(this._t(open ? 'action.open_all' : 'action.close_all'));
-    } catch (err) {
-      this._clearOptimisticEntityStates(entityIds);
-      console.warn(`Failed to ${open ? 'open' : 'close'} covers in area ${areaId}:`, err);
-      this._showToast(this._t('entity.covers_failed'));
     }
   }
 
