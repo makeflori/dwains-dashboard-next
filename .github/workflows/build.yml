@@ -139,7 +139,15 @@ jobs:
             if [[ -n "${SOURCE_BODY//[[:space:]]/}" ]]; then
               printf '**%s**\n\n%s\n' "$CHANGELOG" "$SOURCE_BODY" >> "$NOTES_FILE"
             else
-              printf -- '- %s\n' "$CHANGELOG" >> "$NOTES_FILE"
+              PREVIOUS_TAG=$(git tag --sort=-version:refname | grep -vx "$TAG" | head -n 1 || true)
+              printf '**%s**\n' "$CHANGELOG" >> "$NOTES_FILE"
+              if [[ -n "$PREVIOUS_TAG" ]]; then
+                COMMITS=$(git log --reverse --pretty='- %s' "$PREVIOUS_TAG..$SOURCE_COMMIT" \
+                  | grep -vE '^- Build (dev )?release v' || true)
+                if [[ -n "${COMMITS//[[:space:]]/}" ]]; then
+                  printf '\n%s\n' "$COMMITS" >> "$NOTES_FILE"
+                fi
+              fi
             fi
           fi
 
