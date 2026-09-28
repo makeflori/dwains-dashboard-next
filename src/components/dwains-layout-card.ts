@@ -10293,6 +10293,13 @@ export class DwainsLayoutCard extends LitElement {
       max-width: 100%;
       padding: 3px 8px;
       border-radius: 999px;
+      color: var(--secondary-text-color);
+      background: color-mix(in srgb, var(--primary-text-color) 7%, var(--card-background-color));
+    }
+
+    .mobile-entity-card.mobile-entity-binary_sensor.device-window.is-active .mobile-entity-status,
+    .mobile-entity-card.mobile-entity-binary_sensor.device-door.is-active .mobile-entity-status,
+    .mobile-entity-card.mobile-entity-binary_sensor.device-opening.is-active .mobile-entity-status {
       color: var(--entity-color);
       background: color-mix(in srgb, var(--entity-color) 11%, var(--card-background-color));
     }
