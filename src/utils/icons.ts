@@ -51,9 +51,9 @@ export const getDomainIcon = (domain: string): string => {
 export const getDomainColor = (domain: string, deviceClass?: string): string => {
   if (domain === 'binary_sensor') {
     const deviceClassColors: Record<string, string> = {
-      window: '#1494aa',
-      door: '#1494aa',
-      opening: '#1494aa',
+      window: '#B86A2B',
+      door: '#B86A2B',
+      opening: '#B86A2B',
       moisture: '#df5b63',
       smoke: '#df5b63',
       gas: '#df5b63',
