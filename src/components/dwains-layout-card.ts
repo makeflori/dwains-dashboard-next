@@ -12996,45 +12996,6 @@ export class DwainsLayoutCard extends LitElement {
       .replace(/\b\w/g, letter => letter.toUpperCase());
   }
 
-  private _getHomeSnapshotText(weatherEntity?: any): string {
-    const parts: string[] = [];
-    const personEntities = this._getVisiblePersonEntities();
-
-    if (personEntities.length) {
-      const homeCount = personEntities.filter(person => person.state === 'home').length;
-      parts.push(`${homeCount}/${personEntities.length} ${this._t('person.home')}`);
-    }
-
-    if (this._showNotificationsUi() && this._persistentNotifications.length) {
-      const count = this._persistentNotifications.length;
-      const notificationLabel = this._t(count === 1 ? 'home.notification' : 'home.notifications');
-      const localizedNotification = notificationLabel
-        ? notificationLabel.charAt(0).toLocaleLowerCase() + notificationLabel.slice(1)
-        : notificationLabel;
-      parts.push(`${count} ${localizedNotification}`);
-    }
-
-    const attentionCount = this._getHomeSummaryCards()
-      .reduce((total, summary) => total + summary.count, 0);
-    if (attentionCount) {
-      parts.push(this._tp('home.attention', attentionCount));
-    }
-
-    const weatherText = this._formatWeatherSnapshot(weatherEntity);
-    if (weatherText && parts.length < 3) {
-      parts.push(weatherText);
-    }
-
-    return parts.slice(0, 3).join(' · ') || this._t('home.everything_calm');
-  }
-
-  private _formatWeatherSnapshot(weatherEntity?: any): string {
-    const temperature = this._formatWeatherTemperature(weatherEntity);
-    if (!temperature) return '';
-
-    return `${temperature} ${this._t('home.outside').toLocaleLowerCase(ddLocale(this.hass))}`;
-  }
-
   private _weatherDisplayEnabled(): boolean {
     return this.config?.settings?.show_weather !== false &&
       this.config?.global_options?.show_weather !== false;
@@ -15420,7 +15381,7 @@ export class DwainsLayoutCard extends LitElement {
     `;
   }
 
-  private _renderMobileEntityCard(area: AreaConfig, entity: EntityConfig) {
+  private _renderMobileEntityCard(_area: AreaConfig, entity: EntityConfig) {
     const rawState = this.hass.states[entity.entity_id];
     if (!rawState) return nothing;
 
@@ -15560,7 +15521,6 @@ export class DwainsLayoutCard extends LitElement {
   }
 
   private _renderMobileEntityActions(state: any, domain: string, active: boolean) {
-    const entityId = state?.entity_id;
     const actionKind = this._mobileEntityActionKind(domain);
     const unavailable = ['unavailable', 'unknown'].includes(String(state?.state || '').toLowerCase());
 
@@ -15752,11 +15712,6 @@ export class DwainsLayoutCard extends LitElement {
       console.warn(`Failed to activate scene ${entityId}:`, err);
       this._showMoreInfo(entityId);
     }
-  }
-
-  private _handleMobileMoreInfo(event: Event, entityId?: string): void {
-    event.stopPropagation();
-    if (entityId) this._showMoreInfo(entityId);
   }
 
   private _mobileControllableEntities(entities: EntityConfig[]): EntityConfig[] {
