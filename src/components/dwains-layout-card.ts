@@ -10011,6 +10011,292 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
+    /* Room navigation: fixed media slot for either a photo or the HA pictogram. */
+    .area-media {
+      position: relative;
+      flex: 0 0 auto;
+      overflow: hidden;
+      border-radius: 10px;
+      background: color-mix(in srgb, var(--primary-color) 9%, var(--secondary-background-color));
+    }
+
+    .area-media-picture {
+      position: absolute;
+      inset: 0;
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+    }
+
+    .area-media-icon {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: color-mix(in srgb, var(--primary-color) 82%, var(--primary-text-color));
+      background:
+        linear-gradient(145deg,
+          color-mix(in srgb, var(--primary-color) 14%, var(--card-background-color)),
+          color-mix(in srgb, var(--primary-color) 6%, var(--secondary-background-color)));
+    }
+
+    .area-media-icon ha-icon {
+      --mdc-icon-size: 34px;
+    }
+
+    @media (min-width: 769px) {
+      .sidebar .room-area-button {
+        display: grid;
+        grid-template-columns: 74px minmax(0, 1fr);
+        align-items: stretch;
+        gap: 10px;
+        min-height: 92px;
+        height: 92px;
+        padding: 8px;
+        border-radius: 12px;
+        border: 1px solid color-mix(in srgb, var(--primary-text-color) 7%, transparent);
+        background: color-mix(in srgb, var(--card-background-color) 96%, var(--primary-background-color));
+        color: var(--primary-text-color);
+        box-shadow: 0 8px 18px color-mix(in srgb, var(--primary-text-color) 6%, transparent);
+      }
+
+      .sidebar .room-area-button.has-picture {
+        color: var(--primary-text-color);
+        background: color-mix(in srgb, var(--card-background-color) 96%, var(--primary-background-color));
+        border-color: color-mix(in srgb, var(--primary-text-color) 7%, transparent);
+      }
+
+      .sidebar .room-area-button.has-picture::after {
+        display: none;
+      }
+
+      .sidebar .room-area-button.selected,
+      .sidebar .room-area-button.has-picture.selected {
+        color: var(--primary-text-color);
+        border-color: color-mix(in srgb, var(--primary-color) 58%, transparent);
+        background: color-mix(in srgb, var(--primary-color) 8%, var(--card-background-color));
+        box-shadow:
+          0 10px 22px color-mix(in srgb, var(--primary-color) 12%, transparent),
+          inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 14%, transparent);
+      }
+
+      .sidebar .room-area-button .area-media {
+        width: 74px;
+        height: 74px;
+        align-self: center;
+        grid-column: 1;
+      }
+
+      .sidebar .room-area-button .area-content {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: stretch;
+        gap: 7px;
+        min-width: 0;
+        height: auto;
+        grid-column: 2;
+      }
+
+      .sidebar .room-area-button .area-top-section {
+        min-width: 0;
+        margin: 0;
+      }
+
+      .sidebar .room-area-button .area-name,
+      .sidebar .room-area-button.has-picture .area-name {
+        color: var(--primary-text-color);
+        text-shadow: none;
+        font-size: 14px;
+        font-weight: 850;
+      }
+
+      .sidebar .room-area-button .area-sensors,
+      .sidebar .room-area-button.has-picture .area-sensors {
+        margin-top: 3px;
+        color: var(--secondary-text-color);
+        text-shadow: none;
+        font-size: 11px;
+        font-weight: 650;
+      }
+
+      .sidebar .room-area-button .area-info-badges {
+        position: static;
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 4px;
+        width: 100%;
+        max-width: none;
+        overflow: hidden;
+      }
+
+      .sidebar .room-area-button .info-badge,
+      .sidebar .room-area-button.has-picture .info-badge {
+        min-width: 27px;
+        height: 21px;
+        padding: 0 5px;
+        flex: 0 0 auto;
+        color: var(--badge-color, var(--primary-color));
+        background: color-mix(in srgb, var(--badge-color, var(--primary-color)) 11%, var(--card-background-color));
+        border: 1px solid color-mix(in srgb, var(--badge-color, var(--primary-color)) 20%, transparent);
+        box-shadow: none;
+        backdrop-filter: none;
+      }
+
+      .sidebar .room-area-button .info-badge ha-icon {
+        --mdc-icon-size: 12px;
+      }
+
+      .sidebar .room-area-button .badge-count {
+        font-size: 10px;
+      }
+
+      .sidebar .room-area-button .area-menu-chevron,
+      .sidebar .room-area-button .area-main-icon {
+        display: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar .room-area-button {
+        display: grid;
+        grid-template-columns: 64px minmax(0, 1fr);
+        gap: 10px;
+        min-height: 80px;
+        padding: 8px;
+      }
+
+      .sidebar .room-area-button .area-media {
+        width: 64px;
+        height: 64px;
+      }
+
+      .sidebar .room-area-button .area-content {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-width: 0;
+        gap: 6px;
+      }
+
+      .sidebar .room-area-button .area-info-badges {
+        position: static;
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        gap: 4px;
+        max-width: none;
+        overflow: hidden;
+      }
+
+      .sidebar .room-area-button .info-badge {
+        min-width: 26px;
+        height: 21px;
+        padding: 0 5px;
+      }
+
+      .sidebar .room-area-button .area-menu-chevron {
+        display: none;
+      }
+    }
+
+    /* Favorites are a dedicated layer between house information and room content. */
+    .area-favorites-toggle {
+      width: calc(100% - 32px);
+      min-height: 40px;
+      margin: 0 16px 10px;
+      padding: 0 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border: 1px solid color-mix(in srgb, var(--divider-color) 82%, transparent);
+      border-radius: 10px;
+      background: color-mix(in srgb, var(--card-background-color) 96%, var(--primary-background-color));
+      color: var(--primary-text-color);
+      cursor: pointer;
+    }
+
+    .area-favorites-toggle-main {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      font-size: 14px;
+      font-weight: 850;
+    }
+
+    .area-favorites-toggle-main > ha-icon {
+      --mdc-icon-size: 18px;
+      color: var(--primary-color);
+    }
+
+    .area-favorites-count {
+      color: var(--secondary-text-color);
+      font-weight: 700;
+    }
+
+    .global-header .header-expanded-content {
+      padding-top: 0;
+    }
+
+    /* Keep status text and the toggle in one visual cluster. */
+    .mobile-entity-status-row {
+      margin-top: 5px;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .mobile-entity-status-row .mobile-entity-status {
+      margin-top: 0;
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+
+    .mobile-entity-status-row .mobile-entity-toggle {
+      flex: 0 0 auto;
+    }
+
+    .mobile-domain-master {
+      min-width: 76px;
+    }
+
+    .mobile-domain-master-count {
+      min-width: 25px;
+      color: currentColor;
+      font-size: 11px;
+      font-weight: 850;
+      line-height: 1;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    /* Window/door/opening state is expressed by its icon/status badge, not a tinted whole card. */
+    .mobile-entity-card.mobile-entity-binary_sensor.device-window.is-active,
+    .mobile-entity-card.mobile-entity-binary_sensor.device-door.is-active,
+    .mobile-entity-card.mobile-entity-binary_sensor.device-opening.is-active {
+      background: color-mix(in srgb, var(--card-background-color) 96%, var(--primary-background-color));
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.07);
+    }
+
+    .mobile-entity-card.mobile-entity-binary_sensor.device-window .mobile-entity-status,
+    .mobile-entity-card.mobile-entity-binary_sensor.device-door .mobile-entity-status,
+    .mobile-entity-card.mobile-entity-binary_sensor.device-opening .mobile-entity-status {
+      width: fit-content;
+      max-width: 100%;
+      padding: 3px 8px;
+      border-radius: 999px;
+      color: var(--entity-color);
+      background: color-mix(in srgb, var(--entity-color) 11%, var(--card-background-color));
+    }
+
   `;
 
   connectedCallback() {
@@ -11141,73 +11427,75 @@ export class DwainsLayoutCard extends LitElement {
     });
   }
 
+  private _sidebarAreaBadgeLimit(): number {
+    const extraColumns = Math.max(
+      0,
+      Math.floor((this._areaSidebarWidth - SIDEBAR_DEFAULT_WIDTH) / 72)
+    );
+    return Math.min(8, 4 + extraColumns);
+  }
+
   private _renderAreaButton(area: any) {
-        const areaData = this._getCachedAreaData(area);
-        const isSelected = this._selectedArea === area.area_id;
-    const hasPicture = area.picture ? true : false;
-    const pictureContrastClass = hasPicture ? this._getPictureContrastClass(area.picture) : '';
+    const areaData = this._getCachedAreaData(area);
+    const isSelected = this._selectedArea === area.area_id;
+    const hasPicture = Boolean(area.picture);
+    const badges = this._getAreaStatusBadges(areaData).slice(0, this._sidebarAreaBadgeLimit());
+    const sensorSummary = [
+      areaData.temperature,
+      areaData.humidity,
+      areaData.wattage,
+    ].filter(Boolean).join(' • ');
 
-        return html`
-          <button
-            class="area-button ${isSelected ? 'selected' : ''} ${hasPicture ? 'has-picture' : ''} ${pictureContrastClass}"
-            @click=${() => this._selectArea(area.area_id)}
-          >
-            ${hasPicture ? html`
-              <div class="area-background" style="background-image: url('${area.picture}');"></div>
-            ` : nothing}
-
-            <div class="area-content">
-              <!-- Top section: Name and sensors -->
-              <div class="area-top-section">
-              <div class="area-name">${area.name}</div>
-              ${areaData.temperature || areaData.humidity || areaData.wattage ? html`
-                <div class="area-sensors">
-                  ${[
-                    areaData.temperature,
-                    areaData.humidity,
-                    areaData.wattage
-                  ].filter(Boolean).join(' • ')}
-                </div>
-              ` : nothing}
-            </div>
-
-              <!-- Bottom section: Icon and badges -->
-              <div class="area-bottom-section">
-                <!-- Left: Main area icon -->
-                <div class="area-main-icon">
+    return html`
+      <button
+        class="area-button room-area-button ${isSelected ? 'selected' : ''} ${hasPicture ? 'has-picture' : 'has-icon'}"
+        @click=${() => this._selectArea(area.area_id)}
+      >
+        <div class="area-media" aria-hidden="true">
+          ${hasPicture
+            ? html`<div class="area-media-picture" style=${`background-image: url('${area.picture}');`}></div>`
+            : html`
+                <div class="area-media-icon">
                   <ha-icon icon=${getAreaIcon(area)}></ha-icon>
                 </div>
+              `}
+        </div>
 
-                <!-- Right: Info badges -->
-                <div class="area-info-badges">
-                  ${this._getAreaStatusBadges(areaData).map((badge) =>
-                    badge.domain === 'light'
-                      ? html`
-                          <span
-                            class="info-badge ${badge.className} clickable"
-                            style=${`--badge-color: ${badge.color}; --area-badge-color: ${badge.color};`}
-                            @click=${(e: Event) => this._handleLightToggle(e, area.area_id)}
-                          >
-                            <ha-icon icon=${badge.icon}></ha-icon>
-                            <span class="badge-count">${badge.count}</span>
-                          </span>
-                        `
-                      : html`
-                          <span
-                            class="info-badge ${badge.className}"
-                            style=${`--badge-color: ${badge.color}; --area-badge-color: ${badge.color};`}
-                          >
-                            <ha-icon icon=${badge.icon}></ha-icon>
-                            <span class="badge-count">${badge.count}</span>
-                          </span>
-                        `
-                  )}
-                </div>
-              </div>
-            </div>
-            <ha-icon class="area-menu-chevron" icon="mdi:chevron-right"></ha-icon>
-          </button>
-        `;
+        <div class="area-content">
+          <div class="area-top-section">
+            <div class="area-name">${area.name}</div>
+            ${sensorSummary ? html`
+              <div class="area-sensors">${sensorSummary}</div>
+            ` : nothing}
+          </div>
+
+          <div class="area-info-badges">
+            ${badges.map((badge) =>
+              badge.domain === 'light'
+                ? html`
+                    <span
+                      class="info-badge ${badge.className} clickable"
+                      style=${`--badge-color: ${badge.color}; --area-badge-color: ${badge.color};`}
+                      @click=${(event: Event) => this._handleLightToggle(event, area.area_id)}
+                    >
+                      <ha-icon icon=${badge.icon}></ha-icon>
+                      <span class="badge-count">${badge.count}</span>
+                    </span>
+                  `
+                : html`
+                    <span
+                      class="info-badge ${badge.className}"
+                      style=${`--badge-color: ${badge.color}; --area-badge-color: ${badge.color};`}
+                    >
+                      <ha-icon icon=${badge.icon}></ha-icon>
+                      <span class="badge-count">${badge.count}</span>
+                    </span>
+                  `
+            )}
+          </div>
+        </div>
+      </button>
+    `;
   }
 
   private _renderGlobalHeader() {
@@ -11217,6 +11505,7 @@ export class DwainsLayoutCard extends LitElement {
       'expanded': this._headerExpanded,
       'mobile': this._isMobile
     };
+    const favoriteCount = this._getEffectiveFavoriteEntities().length;
 
     return html`
       <header class=${classMap(classes)}>
@@ -11227,23 +11516,36 @@ export class DwainsLayoutCard extends LitElement {
             <div class="header-time-weather">
               ${this.config?.settings?.show_time !== false ? html`
                 <div class="header-time-section">
-              <div class="header-time">${this._currentTime}</div>
-              <div class="header-date">${this._currentDate}</div>
-            </div>
-          ` : nothing}
-          ${this._renderWeatherDisplay()}
+                  <div class="header-time">${this._currentTime}</div>
+                  <div class="header-date">${this._currentDate}</div>
+                </div>
+              ` : nothing}
+              ${this._renderWeatherDisplay()}
             </div>
           ` : nothing}
         </div>
 
-        <!-- Expanded content section (always in DOM to avoid Lit marker invalidation) -->
+        ${favoriteCount ? html`
+          <button
+            class="area-favorites-toggle"
+            type="button"
+            aria-expanded=${this._headerExpanded ? 'true' : 'false'}
+            @click=${this._toggleHeader}
+          >
+            <span class="area-favorites-toggle-main">
+              <ha-icon icon="mdi:star"></ha-icon>
+              <span>${this._t('favorites.title')}</span>
+              <span class="area-favorites-count">(${favoriteCount})</span>
+            </span>
+            <ha-icon icon=${this._headerExpanded ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
+          </button>
+        ` : nothing}
+
         <div class="header-expanded-content" style=${this._headerExpanded ? '' : 'display:none'}>
           <div class="header-favorites">
             ${this._renderFavoritesSection()}
           </div>
         </div>
-
-        ${this._selectedView !== 'home' ? this._renderHeaderExpandButton() : nothing}
       </header>
     `;
   }
@@ -12918,17 +13220,6 @@ export class DwainsLayoutCard extends LitElement {
             </div>
           </div>
           <div class="area-header-content">
-            ${this._isDesktopAreaSidebarCollapsed() ? html`
-              <button
-                class="area-desktop-back"
-                type="button"
-                title=${this._t('navigation.back_home')}
-                aria-label=${this._t('navigation.back_home')}
-                @click=${() => this._selectView('home')}
-              >
-                ${this._renderStaticIcon(ICON_ARROW_LEFT)}
-              </button>
-            ` : nothing}
             <div class="area-title-group">
               <div class="area-header-icon">
                 <ha-icon icon=${getAreaIcon(area)}></ha-icon>
@@ -14135,6 +14426,7 @@ export class DwainsLayoutCard extends LitElement {
         }}
       >
         <ha-icon icon=${icon}></ha-icon>
+        <span class="mobile-domain-master-count">${activeCount}/${entities.length}</span>
         <span class="mobile-domain-master-track" aria-hidden="true"></span>
       </button>
     `;
@@ -14691,6 +14983,7 @@ export class DwainsLayoutCard extends LitElement {
     const classes = [
       'mobile-entity-card',
       `mobile-entity-${domain}`,
+      deviceClass ? `device-${deviceClass}` : '',
       `action-${actionKind}`,
       active ? 'is-active' : 'is-off',
       hasInlineSelect ? 'has-inline-select' : '',
@@ -14711,12 +15004,15 @@ export class DwainsLayoutCard extends LitElement {
           <div class="mobile-entity-icon">
             <ha-icon icon=${icon}></ha-icon>
           </div>
-          ${this._renderMobileEntityActions(state, domain, active)}
+          ${actionKind === 'toggle' ? nothing : this._renderMobileEntityActions(state, domain, active)}
         </div>
         <div class="mobile-entity-content">
           <div class="mobile-entity-meta">${area.name}</div>
           <div class="mobile-entity-name">${name}</div>
-          <div class="mobile-entity-status">${this._mobileEntityStatusText(state, domain)}</div>
+          <div class="mobile-entity-status-row">
+            <div class="mobile-entity-status">${this._mobileEntityStatusText(state, domain)}</div>
+            ${actionKind === 'toggle' ? this._renderMobileEntityActions(state, domain, active) : nothing}
+          </div>
         </div>
         ${hasInlineSelect ? this._renderMobileEntitySelect(state, domain) : nothing}
       </article>
