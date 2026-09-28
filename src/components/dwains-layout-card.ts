@@ -10244,6 +10244,10 @@ export class DwainsLayoutCard extends LitElement {
       padding-top: 0;
     }
 
+    .global-header .header-favorites .favorites-header {
+      display: none;
+    }
+
     /* Keep status text and the toggle in one visual cluster. */
     .mobile-entity-status-row {
       margin-top: 5px;
