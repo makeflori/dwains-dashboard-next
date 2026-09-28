@@ -10307,6 +10307,245 @@ export class DwainsLayoutCard extends LitElement {
       background: color-mix(in srgb, var(--entity-color) 11%, var(--card-background-color));
     }
 
+
+    /* Final desktop room redesign: compact sidebar cards + compact room header. */
+    @media (min-width: 769px) {
+      .sidebar .room-area-button {
+        grid-template-columns: 58px minmax(0, 1fr);
+        gap: 8px;
+        min-height: 76px;
+        height: 76px;
+        padding: 8px;
+        margin-bottom: 7px;
+        border-radius: 11px;
+        box-shadow: 0 5px 14px color-mix(in srgb, var(--primary-text-color) 4%, transparent);
+      }
+
+      .sidebar .room-area-button .area-media {
+        width: 58px;
+        height: 58px;
+        border-radius: 9px;
+      }
+
+      .sidebar .room-area-button .area-media-icon {
+        color: color-mix(in srgb, var(--primary-color) 84%, var(--primary-text-color));
+        background: color-mix(in srgb, var(--primary-color) 9%, var(--card-background-color));
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 8%, transparent);
+      }
+
+      .sidebar .room-area-button .area-media-icon ha-icon {
+        --mdc-icon-size: 27px;
+      }
+
+      .sidebar .room-area-button .area-content {
+        gap: 4px;
+        justify-content: center;
+      }
+
+      .sidebar .room-area-button .area-name,
+      .sidebar .room-area-button.has-picture .area-name {
+        font-size: 13px;
+        font-weight: 850;
+        line-height: 1.15;
+      }
+
+      .sidebar .room-area-button .area-sensors,
+      .sidebar .room-area-button.has-picture .area-sensors {
+        margin-top: 2px;
+        font-size: 10px;
+        line-height: 1.15;
+      }
+
+      .sidebar .room-area-button .area-info-badges {
+        gap: 3px;
+        min-height: 19px;
+      }
+
+      .sidebar .room-area-button .info-badge,
+      .sidebar .room-area-button.has-picture .info-badge {
+        min-width: 24px;
+        height: 19px;
+        padding: 0 4px;
+        border-radius: 999px;
+      }
+
+      .sidebar .room-area-button .info-badge ha-icon {
+        --mdc-icon-size: 11px;
+      }
+
+      .sidebar .room-area-button .badge-count {
+        font-size: 9px;
+      }
+
+      .sidebar .room-area-button.selected,
+      .sidebar .room-area-button.has-picture.selected {
+        border-color: color-mix(in srgb, var(--primary-color) 54%, transparent);
+        background: color-mix(in srgb, var(--primary-color) 8%, var(--card-background-color));
+        box-shadow:
+          0 7px 18px color-mix(in srgb, var(--primary-color) 10%, transparent),
+          inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 10%, transparent);
+      }
+
+      .area-header.area-header-desktop-compact {
+        position: relative;
+        min-height: 0;
+        margin: 0 0 18px;
+        padding: 14px 16px;
+        display: grid;
+        grid-template-columns: 68px minmax(190px, 1fr) auto auto;
+        align-items: center;
+        gap: 16px;
+        overflow: visible;
+        border-radius: 12px;
+        border: 1px solid color-mix(in srgb, var(--primary-text-color) 7%, transparent);
+        background: color-mix(in srgb, var(--card-background-color) 98%, var(--primary-background-color));
+        color: var(--primary-text-color);
+        box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
+      }
+
+      .area-header.area-header-desktop-compact::before {
+        display: none;
+      }
+
+      .area-desktop-room-media {
+        position: relative;
+        width: 68px;
+        height: 68px;
+        overflow: hidden;
+        border-radius: 10px;
+        background: color-mix(in srgb, var(--primary-color) 8%, var(--secondary-background-color));
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 8%, transparent);
+      }
+
+      .area-desktop-room-picture {
+        position: absolute;
+        inset: 0;
+        background-position: center;
+        background-size: cover;
+        background-repeat: no-repeat;
+      }
+
+      .area-desktop-room-icon {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: color-mix(in srgb, var(--primary-color) 86%, var(--primary-text-color));
+        background: color-mix(in srgb, var(--primary-color) 9%, var(--card-background-color));
+      }
+
+      .area-desktop-room-icon ha-icon {
+        --mdc-icon-size: 31px;
+      }
+
+      .area-desktop-room-copy {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 6px;
+      }
+
+      .area-header-desktop-compact .area-title {
+        margin: 0;
+        font-size: clamp(26px, 2.15vw, 36px);
+        line-height: 1;
+        color: var(--primary-text-color);
+      }
+
+      .area-desktop-room-meta {
+        color: var(--secondary-text-color);
+        font-size: 12px;
+        font-weight: 750;
+        line-height: 1.2;
+        white-space: nowrap;
+      }
+
+      .area-header-desktop-compact .area-header-metrics {
+        position: static;
+        z-index: auto;
+        min-width: 0;
+        max-width: none;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: nowrap;
+        gap: 8px;
+      }
+
+      .area-header-desktop-compact .area-header-metric {
+        min-width: 132px;
+        min-height: 44px;
+        padding: 7px 11px;
+        gap: 8px;
+        border-radius: 999px;
+      }
+
+      .area-header-desktop-compact .area-header-metric .metric-ring {
+        width: 30px;
+        height: 30px;
+      }
+
+      .area-header-desktop-compact .area-header-metric .metric-label {
+        font-size: 9px;
+      }
+
+      .area-header-desktop-compact .area-header-metric .metric-reading {
+        font-size: 13px;
+      }
+
+      .area-header-desktop-compact .area-header-actions {
+        position: static;
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        min-width: max-content;
+      }
+
+      .area-header-desktop-compact .area-header-actions .unavailable-entities-icon,
+      .area-header-desktop-compact .area-header-actions .area-mobile-camera,
+      .area-header-desktop-compact .area-header-actions .dd-edit-toggle {
+        width: 42px;
+        height: 42px;
+        margin: 0;
+        border-radius: 999px;
+      }
+
+      .area-header-desktop-compact .area-mobile-toolbar,
+      .area-header-desktop-compact .area-mobile-home,
+      .area-header-desktop-compact .area-mobile-quick-controls,
+      .area-header-desktop-compact .area-badges,
+      .area-header-desktop-compact .area-header-content {
+        display: none;
+      }
+    }
+
+    @media (min-width: 769px) and (max-width: 1120px) {
+      .area-header.area-header-desktop-compact {
+        grid-template-columns: 58px minmax(150px, 1fr) auto;
+        gap: 12px;
+      }
+
+      .area-desktop-room-media {
+        width: 58px;
+        height: 58px;
+      }
+
+      .area-header-desktop-compact .area-header-metrics {
+        grid-column: 2;
+        justify-content: flex-start;
+        margin-top: 4px;
+      }
+
+      .area-header-desktop-compact .area-header-actions {
+        grid-column: 3;
+        grid-row: 1 / span 2;
+      }
+    }
+
   `;
 
   connectedCallback() {
@@ -13167,7 +13406,7 @@ export class DwainsLayoutCard extends LitElement {
       ? this._getEditableAreaEntities(this._selectedArea)
       : visibleAreaEntities;
     const areaData = this._getCachedAreaData(area);
-    const hasPicture = area.picture ? true : false;
+    const hasPicture = Boolean(area.picture);
     const pictureContrastClass = hasPicture ? this._getPictureContrastClass(area.picture) : '';
     const deviceCount = this._getAreaDeviceCount(area.area_id, visibleAreaEntities);
     const hasHeaderMetrics = Boolean(areaData.temperature || areaData.humidity);
@@ -13184,48 +13423,89 @@ export class DwainsLayoutCard extends LitElement {
       areaData.humidity,
     ].filter(Boolean).join(' · ');
     const areaSubtitle = this._areaHeaderStuck && !this._areaHeaderRevealed && stickyMetrics ? stickyMetrics : deviceLabel;
+    const desktopMeta = [
+      deviceLabel,
+      areaData.wattage,
+    ].filter(Boolean).join(' · ');
 
     return html`
       <div class="area-view">
-        <div class="area-header ${hasPicture ? 'has-picture' : ''} ${pictureContrastClass} ${hasHeaderMetrics ? 'has-metrics' : ''} ${hasMobileQuickControls ? 'has-quick-controls' : ''} ${this._areaHeaderStuck ? 'is-stuck' : ''} ${this._areaHeaderRevealed ? 'is-revealed' : ''}">
-          ${hasPicture ? html`
-            <div class="area-header-background" style="background-image: url('${area.picture}');"></div>
-          ` : nothing}
-          <div class="area-mobile-toolbar">
-            <button
-              class="area-mobile-round area-mobile-home"
-              title=${this._t('sidebar.home')}
-              aria-label=${this._t('navigation.back_home')}
-              @click=${() => this._selectView('home')}
-            >
-              ${this._renderStaticIcon(ICON_ARROW_LEFT)}
-            </button>
+        ${this._isMobile ? html`
+          <div class="area-header ${hasPicture ? 'has-picture' : ''} ${pictureContrastClass} ${hasHeaderMetrics ? 'has-metrics' : ''} ${hasMobileQuickControls ? 'has-quick-controls' : ''} ${this._areaHeaderStuck ? 'is-stuck' : ''} ${this._areaHeaderRevealed ? 'is-revealed' : ''}">
+            ${hasPicture ? html`
+              <div class="area-header-background" style="background-image: url('${area.picture}');"></div>
+            ` : nothing}
+            <div class="area-mobile-toolbar">
+              <button
+                class="area-mobile-round area-mobile-home"
+                title=${this._t('sidebar.home')}
+                aria-label=${this._t('navigation.back_home')}
+                @click=${() => this._selectView('home')}
+              >
+                ${this._renderStaticIcon(ICON_ARROW_LEFT)}
+              </button>
               ${this._renderAreaMobileQuickControls(area.area_id, visibleAreaEntities)}
-            <div class="area-mobile-actions">
-              ${this._renderAreaMobileCameraAction(visibleAreaEntities)}
-              ${this._renderUnavailableEntitiesIcon(area.area_id)}
-              ${this._canManageDashboard() ? html`
-                <button
-                  class="area-mobile-round area-mobile-edit ${this._editMode ? 'active' : ''}"
-                  title=${this._editMode ? this._t('layout.done_editing') : this._t('layout.edit_custom_cards')}
-                  @click=${this._toggleEditMode}
-                >
-                  <ha-icon icon=${this._editMode ? 'mdi:check' : 'mdi:pencil'}></ha-icon>
-                </button>
-              ` : nothing}
+              <div class="area-mobile-actions">
+                ${this._renderAreaMobileCameraAction(visibleAreaEntities)}
+                ${this._renderUnavailableEntitiesIcon(area.area_id)}
+                ${this._canManageDashboard() ? html`
+                  <button
+                    class="area-mobile-round area-mobile-edit ${this._editMode ? 'active' : ''}"
+                    title=${this._editMode ? this._t('layout.done_editing') : this._t('layout.edit_custom_cards')}
+                    @click=${this._toggleEditMode}
+                  >
+                    <ha-icon icon=${this._editMode ? 'mdi:check' : 'mdi:pencil'}></ha-icon>
+                  </button>
+                ` : nothing}
+              </div>
             </div>
+            <div class="area-header-content">
+              <div class="area-title-group">
+                <div class="area-header-icon">
+                  <ha-icon icon=${getAreaIcon(area)}></ha-icon>
+                </div>
+                <div class="area-title-copy">
+                  <h1 class="area-title">${area.name}</h1>
+                  <div class="area-subtitle">${areaSubtitle}</div>
+                </div>
+              </div>
+              <div class="area-header-actions">
+                ${this._renderUnavailableEntitiesIcon(area.area_id)}
+                ${this._canManageDashboard() ? html`
+                  <button
+                    class="dd-edit-toggle ${this._editMode ? 'active' : ''}"
+                    title=${this._editMode ? this._t('layout.done_editing') : this._t('layout.edit_custom_cards')}
+                    @click=${this._toggleEditMode}
+                  >
+                    <ha-icon icon=${this._editMode ? 'mdi:check' : 'mdi:pencil'}></ha-icon>
+                  </button>
+                ` : nothing}
+              </div>
+            </div>
+            ${this._renderAreaHeaderMetrics(areaData)}
+            ${this._renderAreaBadges(area, visibleAreaEntities, areaData)}
           </div>
-          <div class="area-header-content">
-            <div class="area-title-group">
-              <div class="area-header-icon">
-                <ha-icon icon=${getAreaIcon(area)}></ha-icon>
-              </div>
-              <div class="area-title-copy">
-                <h1 class="area-title">${area.name}</h1>
-                <div class="area-subtitle">${areaSubtitle}</div>
-              </div>
+        ` : html`
+          <div class="area-header area-header-desktop-compact">
+            <div class="area-desktop-room-media" aria-hidden="true">
+              ${hasPicture
+                ? html`<div class="area-desktop-room-picture" style=${`background-image: url('${area.picture}');`}></div>`
+                : html`
+                    <div class="area-desktop-room-icon">
+                      <ha-icon icon=${getAreaIcon(area)}></ha-icon>
+                    </div>
+                  `}
             </div>
+
+            <div class="area-desktop-room-copy">
+              <h1 class="area-title">${area.name}</h1>
+              <div class="area-desktop-room-meta">${desktopMeta}</div>
+            </div>
+
+            ${this._renderAreaHeaderMetrics(areaData)}
+
             <div class="area-header-actions">
+              ${this._renderAreaMobileCameraAction(visibleAreaEntities)}
               ${this._renderUnavailableEntitiesIcon(area.area_id)}
               ${this._canManageDashboard() ? html`
                 <button
@@ -13238,9 +13518,7 @@ export class DwainsLayoutCard extends LitElement {
               ` : nothing}
             </div>
           </div>
-          ${this._renderAreaHeaderMetrics(areaData)}
-          ${this._renderAreaBadges(area, visibleAreaEntities, areaData)}
-        </div>
+        `}
 
         ${this._renderCustomCardSlot(area.area_id, 'top', this._t('layout.custom_cards_top'))}
         ${this._renderMobileEntitiesSection(area, areaEntities)}
