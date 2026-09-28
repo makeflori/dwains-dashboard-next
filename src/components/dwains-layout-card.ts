@@ -2,7 +2,6 @@ import { LitElement, html, css, PropertyValues, TemplateResult, nothing } from '
 import { customElement, property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { repeat } from 'lit/directives/repeat.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
 import type { HomeAssistant } from '../types/home-assistant';
@@ -15673,11 +15672,6 @@ export class DwainsLayoutCard extends LitElement {
   }
 
   // Note: getTotalWattage is now handled by the header-status-domains utility
-
-  private _getHiddenStatusCount(): string {
-    // TODO: Calculate hidden status cards count
-    return '';
-  }
 
   private _getAreaDeviceCount(areaId: string, entities: EntityConfig[] = []): number {
     const deviceIds = new Set<string>();
