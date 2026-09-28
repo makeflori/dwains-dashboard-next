@@ -371,13 +371,6 @@ export class DwainsBottomNav extends LitElement {
     `;
   }
 
-  private _goHomeFromArea = (): void => {
-    this._pagesOpen = false;
-    this._restrictedMenuOpen = false;
-    this._active = 'home';
-    window.dispatchEvent(new CustomEvent('dwains-dashboard-next-open-home'));
-  };
-
   private _renderRestrictedMenuSheet() {
     if (!this._isHaMenuRestricted()) return nothing;
     return html`
