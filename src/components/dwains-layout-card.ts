@@ -10548,66 +10548,85 @@ export class DwainsLayoutCard extends LitElement {
     }
 
 
-    /* Responsive room UI v2.
-       Desktop is the base component model; mobile only adapts size and flow. */
+    /* Responsive room UI v3 — desktop reference is the base;
+       mobile only changes flow, scale and navigation. */
 
     .global-header {
-      padding: 8px 18px 0;
+      padding: 8px 16px 6px;
       border-bottom: 0;
-    }
-
-    .global-header .header-content,
-    .global-header .area-favorites-toggle,
-    .global-header .header-expanded-content {
-      width: calc(100% - 36px);
-      margin-left: 18px;
-      margin-right: 18px;
-      box-sizing: border-box;
+      background: var(--primary-background-color);
     }
 
     .global-header .header-content {
+      width: 100%;
       min-height: 54px;
-      padding-bottom: 8px;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-sizing: border-box;
+    }
+
+    .header-status-section {
+      min-width: 0;
+      flex: 1 1 auto;
     }
 
     .header-status-scroll {
+      display: flex;
+      align-items: center;
       gap: 8px;
-      align-items: stretch;
+      overflow-x: auto;
+      scrollbar-width: none;
     }
+
+    .header-status-scroll::-webkit-scrollbar { display: none; }
 
     .status-card-compact {
       width: auto;
-      min-width: 142px;
-      max-width: 190px;
-      height: 48px;
-      min-height: 48px;
-      padding: 6px 10px;
+      min-width: 152px;
+      max-width: 210px;
+      height: 50px;
+      min-height: 50px;
+      padding: 7px 11px;
+      flex: 0 0 auto;
       box-sizing: border-box;
       display: grid;
-      grid-template-columns: 32px minmax(0, 1fr);
+      grid-template-columns: 34px minmax(0, 1fr);
       grid-template-rows: 1fr 1fr;
       align-items: center;
-      column-gap: 8px;
-      row-gap: 0;
-      border: 1px solid color-mix(in srgb, var(--primary-text-color) 7%, transparent);
+      column-gap: 9px;
+      border: 1px solid color-mix(in srgb, var(--primary-text-color) 8%, transparent);
       border-radius: 8px;
       background: var(--card-background-color);
-      box-shadow: 0 4px 12px color-mix(in srgb, var(--primary-text-color) 4%, transparent);
+      box-shadow: 0 3px 10px rgba(15, 23, 42, 0.045);
     }
 
     .status-card-compact .status-card-icon-compact {
       grid-column: 1;
       grid-row: 1 / span 2;
-      width: 32px;
-      height: 32px;
+      position: relative;
+      width: 34px;
+      height: 34px;
       margin: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       border-radius: 8px;
       color: var(--status-color);
       background: color-mix(in srgb, var(--status-color) 12%, var(--card-background-color));
     }
 
-    .status-card-compact .status-card-icon-compact ha-icon {
-      --mdc-icon-size: 18px;
+    .status-card-compact .status-card-icon-compact ha-icon { --mdc-icon-size: 19px; }
+
+    .status-card-badge-compact {
+      top: -8px;
+      right: -8px;
+      min-width: 22px;
+      height: 22px;
+      padding: 0 5px;
     }
 
     .status-card-compact .status-card-title-compact {
@@ -10616,10 +10635,9 @@ export class DwainsLayoutCard extends LitElement {
       align-self: end;
       margin: 0;
       overflow: hidden;
-      color: var(--primary-text-color);
       font-size: 12px;
       font-weight: 850;
-      line-height: 1.05;
+      line-height: 1.08;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
@@ -10628,80 +10646,76 @@ export class DwainsLayoutCard extends LitElement {
       grid-column: 2;
       grid-row: 2;
       align-self: start;
-      margin: 2px 0 0;
+      margin-top: 2px;
       overflow: hidden;
       color: var(--secondary-text-color);
       font-size: 10px;
       font-weight: 650;
-      line-height: 1.05;
+      line-height: 1.08;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
-    .status-card-badge-compact {
-      top: -7px;
-      right: -7px;
-    }
-
     .header-time-weather {
-      min-width: 104px;
-      gap: 3px;
+      min-width: 116px;
+      flex: 0 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 4px;
     }
 
-    .header-time {
-      font-size: 20px;
-    }
+    .header-time { font-size: 21px; line-height: 1; }
+    .header-date { font-size: 12px; line-height: 1.1; }
+    .weather-compact { padding: 3px 9px; }
 
-    .header-date {
-      font-size: 12px;
-    }
-
-    .weather-compact {
-      padding: 3px 9px;
-    }
-
-    .area-favorites-toggle {
-      width: calc(100% - 36px);
-      min-height: 40px;
-      margin: 0 18px 10px;
-      padding: 0 12px;
-      border-radius: 8px;
+    .area-content-area {
+      padding: 8px 16px 16px;
     }
 
     .room-ui-v2 {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
     }
 
     .room-ui-v2 .room-header {
-      min-height: 96px;
+      position: relative;
+      width: 100%;
+      height: 96px !important;
+      min-height: 96px !important;
+      max-height: 96px !important;
       margin: 0;
       padding: 10px 12px;
-      display: grid;
-      grid-template-columns: 142px minmax(220px, 1fr) auto auto;
+      box-sizing: border-box;
+      display: grid !important;
+      grid-template-columns: 142px minmax(220px, 1fr) auto auto !important;
+      grid-template-rows: 1fr !important;
       align-items: center;
+      align-content: center;
       gap: 16px;
       overflow: visible;
       border: 1px solid color-mix(in srgb, var(--primary-text-color) 7%, transparent);
       border-radius: 8px;
       background: var(--card-background-color);
       color: var(--primary-text-color);
-      box-shadow: 0 8px 22px color-mix(in srgb, var(--primary-text-color) 5%, transparent);
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.045);
     }
 
-    .room-ui-v2 .room-header::before {
-      display: none;
+    .room-ui-v2 .room-header::before,
+    .room-ui-v2 .room-header::after {
+      display: none !important;
     }
 
     .room-header-media {
       position: relative;
       width: 142px;
       height: 76px;
+      align-self: center;
       overflow: hidden;
       border-radius: 8px;
-      background: color-mix(in srgb, var(--primary-color) 8%, var(--secondary-background-color));
-      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 8%, transparent);
+      background: color-mix(in srgb, var(--primary-color) 8%, var(--card-background-color));
     }
 
     .room-header-picture {
@@ -10722,23 +10736,22 @@ export class DwainsLayoutCard extends LitElement {
       background: color-mix(in srgb, var(--primary-color) 9%, var(--card-background-color));
     }
 
-    .room-header-icon ha-icon {
-      --mdc-icon-size: 38px;
-    }
+    .room-header-icon ha-icon { --mdc-icon-size: 38px; }
 
     .room-header-copy {
       min-width: 0;
+      height: 100%;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: 3px;
+      gap: 2px;
     }
 
     .room-ui-v2 .room-header .area-title {
       margin: 0;
-      color: var(--primary-text-color);
       font-size: clamp(25px, 2vw, 34px);
       line-height: 1;
+      font-weight: 850;
     }
 
     .room-header-device-count {
@@ -10748,57 +10761,59 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .room-header-summary {
-      margin-top: 4px;
+      margin-top: 3px;
       display: flex;
       align-items: center;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       gap: 8px;
+      overflow: hidden;
     }
 
     .room-summary-item {
+      min-height: 18px;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      min-height: 20px;
+      gap: 3px;
       color: var(--secondary-text-color);
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 750;
       line-height: 1;
+      white-space: nowrap;
     }
 
-    .room-summary-item ha-icon {
-      --mdc-icon-size: 15px;
-    }
-
+    .room-summary-item ha-icon { --mdc-icon-size: 14px; }
     .room-summary-item.temperature ha-icon { color: #7567d8; }
     .room-summary-item.humidity ha-icon { color: #35a9dc; }
     .room-summary-item.power ha-icon { color: #d99600; }
 
     .room-summary-item.status {
-      padding: 2px 7px;
+      padding: 2px 6px;
       border-radius: 999px;
       color: var(--room-summary-color);
       background: color-mix(in srgb, var(--room-summary-color) 10%, var(--card-background-color));
     }
 
     .room-ui-v2 .room-header .area-header-metrics {
-      position: static;
-      z-index: auto;
+      position: static !important;
+      inset: auto !important;
       min-width: 0;
       max-width: none;
-      margin: 0;
-      display: flex;
+      margin: 0 !important;
+      padding: 0 !important;
+      display: flex !important;
       align-items: center;
       justify-content: flex-end;
       flex-wrap: nowrap;
       gap: 8px;
+      transform: none !important;
     }
 
     .room-ui-v2 .room-header .area-header-metric {
-      min-width: 128px;
+      min-width: 122px;
       min-height: 42px;
-      padding: 6px 10px;
-      gap: 8px;
+      padding: 5px 9px;
+      box-sizing: border-box;
+      gap: 7px;
       border-radius: 999px;
     }
 
@@ -10807,77 +10822,95 @@ export class DwainsLayoutCard extends LitElement {
       height: 30px;
     }
 
-    .room-ui-v2 .room-header .area-header-metric .metric-label {
-      font-size: 9px;
-    }
-
-    .room-ui-v2 .room-header .area-header-metric .metric-reading {
-      font-size: 13px;
-    }
+    .room-ui-v2 .room-header .area-header-metric .metric-label { font-size: 9px; }
+    .room-ui-v2 .room-header .area-header-metric .metric-reading { font-size: 13px; }
 
     .room-header-actions {
+      position: static !important;
+      inset: auto !important;
+      min-width: max-content;
+      margin: 0 !important;
       display: inline-flex;
       align-items: center;
       justify-content: flex-end;
-      gap: 8px;
-      min-width: max-content;
+      gap: 7px;
+      transform: none !important;
     }
 
     .room-header-actions .unavailable-entities-icon,
     .room-header-actions .area-mobile-camera,
     .room-header-actions .dd-edit-toggle {
-      width: 40px;
-      height: 40px;
+      width: 38px;
+      height: 38px;
       margin: 0;
       border-radius: 999px;
     }
 
-    .room-header-back {
-      display: none;
+    .room-header-back { display: none; }
+
+    .room-favorites-block {
+      width: 100%;
+      margin: 0;
+    }
+
+    .room-favorites-toggle {
+      width: 100% !important;
+      min-height: 38px;
+      margin: 0 !important;
+      padding: 0 12px;
+      box-sizing: border-box;
+      border-radius: 8px;
+    }
+
+    .room-favorites-content {
+      margin-top: 8px;
     }
 
     .sidebar .room-area-button {
-      grid-template-columns: 82px minmax(0, 1fr);
-      min-height: 88px;
-      height: 88px;
-      gap: 9px;
-      padding: 7px;
-      margin-bottom: 7px;
+      min-height: 84px !important;
+      height: 84px !important;
+      padding: 6px !important;
+      grid-template-columns: 72px minmax(0, 1fr) !important;
+      align-items: center;
+      gap: 8px !important;
+      margin-bottom: 6px;
       border-radius: 10px;
     }
 
     .sidebar .room-area-button .area-media {
-      width: 82px;
-      height: 74px;
+      width: 72px !important;
+      height: 70px !important;
+      align-self: center;
       border-radius: 8px;
     }
 
-    .sidebar .room-area-button .area-media-icon ha-icon {
-      --mdc-icon-size: 31px;
-    }
+    .sidebar .room-area-button .area-media-icon ha-icon { --mdc-icon-size: 30px; }
 
     .sidebar .room-area-button .area-content {
-      gap: 4px;
+      min-width: 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
       justify-content: center;
+      gap: 4px !important;
     }
 
     .sidebar .room-area-button .area-name,
     .sidebar .room-area-button.has-picture .area-name {
       font-size: 13px;
+      line-height: 1.1;
       font-weight: 850;
-      line-height: 1.15;
     }
 
     .sidebar .room-area-button .area-sensors,
     .sidebar .room-area-button.has-picture .area-sensors {
-      margin-top: 2px;
+      margin-top: 1px;
       font-size: 10px;
-      line-height: 1.15;
+      line-height: 1.1;
     }
 
     .sidebar .room-area-button .area-info-badges {
-      position: static;
-      width: auto;
+      width: 100%;
       max-width: 100%;
       display: flex;
       flex-wrap: nowrap;
@@ -10888,74 +10921,79 @@ export class DwainsLayoutCard extends LitElement {
 
     .sidebar .room-area-button .info-badge,
     .sidebar .room-area-button.has-picture .info-badge {
-      min-width: 24px;
-      height: 19px;
+      min-width: 23px;
+      height: 18px;
       padding: 0 4px;
       flex: 0 0 auto;
       border-radius: 999px;
     }
 
-    .sidebar .room-area-button .info-badge ha-icon {
-      --mdc-icon-size: 11px;
-    }
-
-    .sidebar .room-area-button .badge-count {
-      font-size: 9px;
-    }
+    .sidebar .room-area-button .info-badge ha-icon { --mdc-icon-size: 10px; }
+    .sidebar .room-area-button .badge-count { font-size: 9px; }
 
     .room-ui-v2 .mobile-entities-section {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
       margin: 0;
     }
 
     .room-ui-v2 .mobile-domain-group {
       min-width: 0;
       margin: 0;
-      padding: 8px 10px 10px;
+      padding: 7px 9px 9px;
       border: 1px solid color-mix(in srgb, var(--primary-text-color) 7%, transparent);
       border-radius: 8px;
       background: var(--card-background-color);
-      box-shadow: 0 5px 14px color-mix(in srgb, var(--primary-text-color) 4%, transparent);
+      box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
       contain: layout style;
     }
 
     .room-ui-v2 .mobile-domain-header {
-      min-height: 34px;
-      margin: 0 0 7px;
-      padding: 0 2px;
+      min-height: 32px;
+      margin: 0 0 6px;
+      padding: 0;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
     }
 
-    .room-ui-v2 .mobile-domain-group.is-collapsed .mobile-domain-header {
-      margin-bottom: 0;
-    }
+    .room-ui-v2 .mobile-domain-group.is-collapsed .mobile-domain-header { margin-bottom: 0; }
 
     .room-ui-v2 .mobile-domain-title {
+      appearance: none;
       min-width: 0;
-      display: flex;
+      padding: 0;
+      border: 0;
+      display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 7px;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
     }
 
     .room-domain-icon {
-      width: 28px;
-      height: 28px;
+      width: 22px;
+      height: 22px;
       flex: 0 0 auto;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      border-radius: 8px;
-      color: var(--secondary-text-color);
-      background: color-mix(in srgb, var(--primary-text-color) 6%, var(--card-background-color));
+      border-radius: 0;
+      color: var(--domain-color);
+      background: transparent;
     }
 
-    .room-domain-icon ha-icon {
-      --mdc-icon-size: 17px;
+    .room-domain-icon ha-icon { --mdc-icon-size: 18px; }
+
+    .room-ui-v2 .mobile-domain-title-copy {
+      min-width: 0;
+      display: inline-flex;
+      align-items: baseline;
+      gap: 5px;
     }
 
     .room-ui-v2 .mobile-domain-title-label {
@@ -10964,123 +11002,121 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .room-ui-v2 .mobile-domain-count {
-      font-size: 11px;
+      color: var(--secondary-text-color);
+      font-size: 10px;
+      font-weight: 650;
+    }
+
+    .mobile-domain-title-chevron {
+      margin-left: 1px;
+      color: var(--secondary-text-color);
+      --mdc-icon-size: 16px;
     }
 
     .room-ui-v2 .mobile-domain-header-actions {
       display: inline-flex;
       align-items: center;
+      justify-content: flex-end;
       gap: 6px;
     }
 
     .room-ui-v2 .mobile-domain-master {
       min-width: 76px;
-    }
-
-    .room-ui-v2 .mobile-domain-collapse-button {
-      width: 28px;
       height: 28px;
-      padding: 0;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border: 0;
-      border-radius: 999px;
-      background: transparent;
-      color: var(--secondary-text-color);
-      cursor: pointer;
     }
 
-    .room-ui-v2 .mobile-domain-collapse-button:hover {
-      background: color-mix(in srgb, var(--primary-color) 8%, transparent);
-      color: var(--primary-text-color);
-    }
-
-    .room-ui-v2 .mobile-domain-collapse-button ha-icon {
-      --mdc-icon-size: 18px;
-    }
+    .room-ui-v2 .mobile-domain-collapse-button { display: none !important; }
 
     .room-ui-v2 .mobile-entity-rail,
     .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-rail {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
+      align-items: stretch;
       gap: 8px;
       margin: 0;
       padding: 0;
       overflow: visible;
       scroll-padding: 0;
       scroll-snap-type: none;
-      align-items: stretch;
     }
 
     .room-ui-v2 .mobile-entity-card,
     .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-card {
-      --entity-color: var(--primary-color);
-      position: relative;
-      width: 100%;
-      min-width: 0;
-      min-height: 68px;
-      height: auto;
-      flex: none;
-      padding: 10px 11px;
+      width: 100% !important;
+      min-width: 0 !important;
+      min-height: 62px !important;
+      height: auto !important;
+      margin: 0 !important;
+      padding: 8px 10px !important;
       box-sizing: border-box;
-      display: flex;
+      display: flex !important;
       flex-direction: column;
       justify-content: center;
       overflow: hidden;
-      border: 0;
+      border: 1px solid color-mix(in srgb, var(--primary-text-color) 6%, transparent);
       border-radius: 8px;
-      background: color-mix(in srgb, var(--card-background-color) 98%, #ffffff);
+      background: var(--card-background-color);
       color: var(--primary-text-color);
-      text-align: left;
+      box-shadow: 0 3px 9px rgba(15, 23, 42, 0.035);
       cursor: pointer;
       scroll-snap-align: none;
-      box-shadow:
-        0 7px 18px rgba(15, 23, 42, 0.055),
-        inset 0 0 0 1px rgba(15, 23, 42, 0.04);
     }
 
     .room-ui-v2 .mobile-entity-card:hover {
       transform: translateY(-1px);
-      box-shadow:
-        0 10px 22px rgba(15, 23, 42, 0.075),
-        inset 0 0 0 1px rgba(15, 23, 42, 0.05);
+      border-color: color-mix(in srgb, var(--primary-color) 14%, transparent);
+      box-shadow: 0 6px 14px rgba(15, 23, 42, 0.055);
     }
 
     .room-ui-v2 .mobile-entity-main {
       width: 100%;
       min-width: 0;
       display: grid;
-      grid-template-columns: 38px minmax(0, 1fr) auto;
+      grid-template-columns: 36px minmax(0, 1fr) auto;
       align-items: center;
-      gap: 10px;
+      gap: 9px;
     }
 
     .room-ui-v2 .mobile-entity-icon {
-      width: 38px;
-      height: 38px;
-      flex: 0 0 auto;
+      width: 36px;
+      height: 36px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       border-radius: 8px;
     }
 
-    .room-ui-v2 .mobile-entity-icon ha-icon {
-      --mdc-icon-size: 21px;
-    }
+    .room-ui-v2 .mobile-entity-icon ha-icon { --mdc-icon-size: 20px; }
 
     .room-ui-v2 .mobile-entity-content {
       min-width: 0;
-      display: block;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 2px;
     }
 
     .room-ui-v2 .mobile-entity-name {
       overflow: hidden;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 850;
       line-height: 1.15;
       text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .room-ui-v2 .mobile-entity-state {
+      overflow: hidden;
+      color: var(--secondary-text-color);
+      font-size: 10px;
+      font-weight: 650;
+      line-height: 1.1;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .room-ui-v2 .mobile-entity-state.active {
+      color: var(--entity-color);
     }
 
     .room-ui-v2 .mobile-entity-right {
@@ -11088,32 +11124,14 @@ export class DwainsLayoutCard extends LitElement {
       display: inline-flex;
       align-items: center;
       justify-content: flex-end;
-      gap: 7px;
+      gap: 5px;
     }
 
-    .room-ui-v2 .mobile-entity-status-pill {
-      max-width: 110px;
-      padding: 4px 8px;
-      overflow: hidden;
-      border-radius: 999px;
-      color: var(--secondary-text-color);
-      background: color-mix(in srgb, var(--primary-text-color) 6%, var(--card-background-color));
-      font-size: 10px;
-      font-weight: 750;
-      line-height: 1;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .room-ui-v2 .mobile-entity-card.mobile-entity-binary_sensor .mobile-entity-status-pill.active,
-    .room-ui-v2 .mobile-entity-card.action-toggle .mobile-entity-status-pill.active {
-      color: var(--entity-color);
-      background: color-mix(in srgb, var(--entity-color) 11%, var(--card-background-color));
-    }
+    .room-ui-v2 .mobile-entity-status-pill { display: none !important; }
 
     .room-ui-v2 .mobile-entity-brightness {
-      width: calc(100% - 48px);
-      margin: 7px 0 0 48px;
+      width: calc(100% - 45px);
+      margin: 6px 0 0 45px;
     }
 
     .room-ui-v2 .mobile-entity-brightness input[type="range"] {
@@ -11134,45 +11152,35 @@ export class DwainsLayoutCard extends LitElement {
 
     .room-ui-v2 .mobile-entity-brightness input[type="range"]::-webkit-slider-thumb {
       appearance: none;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
+      width: 14px;
+      height: 14px;
       border: 2px solid var(--entity-color);
+      border-radius: 50%;
       background: var(--card-background-color);
-      cursor: pointer;
     }
 
     .room-ui-v2 .mobile-entity-brightness input[type="range"]::-moz-range-thumb {
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
+      width: 12px;
+      height: 12px;
       border: 2px solid var(--entity-color);
+      border-radius: 50%;
       background: var(--card-background-color);
-      cursor: pointer;
     }
 
-    .room-ui-v2 .mobile-entity-more {
-      display: none !important;
-    }
+    .room-ui-v2 .mobile-entity-more { display: none !important; }
 
     @media (max-width: 1180px) and (min-width: 769px) {
       .room-ui-v2 .room-header {
-        grid-template-columns: 110px minmax(170px, 1fr) auto;
+        grid-template-columns: 112px minmax(170px, 1fr) auto auto !important;
       }
 
       .room-header-media {
-        width: 110px;
+        width: 112px;
         height: 68px;
       }
 
-      .room-ui-v2 .room-header .area-header-metrics {
-        grid-column: 2;
-        justify-content: flex-start;
-      }
-
-      .room-header-actions {
-        grid-column: 3;
-        grid-row: 1 / span 2;
+      .room-ui-v2 .room-header .area-header-metric {
+        min-width: 108px;
       }
 
       .room-ui-v2 .mobile-entity-rail,
@@ -11182,38 +11190,26 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     @media (max-width: 768px) {
-      .global-header {
-        padding: 10px 10px 0;
-      }
+      .global-header { padding: 8px 10px 6px; }
 
-      .global-header .header-content,
-      .global-header .area-favorites-toggle,
-      .global-header .header-expanded-content {
-        width: 100%;
-        margin-left: 0;
-        margin-right: 0;
-      }
+      .area-content-area { padding: 8px 10px 88px; }
 
-      .area-favorites-toggle {
-        width: 100%;
-        margin: 0 0 8px;
-      }
-
-      .room-ui-v2 {
-        gap: 8px;
-      }
+      .room-ui-v2 { gap: 7px; }
 
       .room-ui-v2 .room-header {
-        min-height: 0;
-        padding: 10px;
-        grid-template-columns: 42px 56px minmax(0, 1fr) auto;
-        gap: 8px;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        padding: 9px !important;
+        grid-template-columns: 40px 54px minmax(0, 1fr) auto !important;
+        grid-template-rows: auto auto !important;
+        gap: 7px;
         border-radius: 10px;
       }
 
       .room-header-back {
-        width: 42px;
-        height: 42px;
+        width: 40px;
+        height: 40px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -11224,109 +11220,95 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .room-header-media {
-        width: 56px;
-        height: 56px;
+        width: 54px;
+        height: 54px;
         border-radius: 8px;
       }
 
-      .room-header-icon ha-icon {
-        --mdc-icon-size: 28px;
-      }
-
-      .room-ui-v2 .room-header .area-title {
-        font-size: 20px;
-      }
-
-      .room-header-device-count {
-        font-size: 10px;
-      }
+      .room-header-icon ha-icon { --mdc-icon-size: 27px; }
+      .room-ui-v2 .room-header .area-title { font-size: 20px; }
+      .room-header-device-count { font-size: 10px; }
 
       .room-header-summary {
         gap: 5px;
+        flex-wrap: wrap;
       }
 
-      .room-summary-item {
-        font-size: 10px;
-      }
+      .room-summary-item { font-size: 10px; }
 
       .room-ui-v2 .room-header .area-header-metrics {
         grid-column: 2 / -1;
+        grid-row: 2;
         justify-content: flex-start;
         flex-wrap: wrap;
       }
 
       .room-ui-v2 .room-header .area-header-metric {
         min-width: 0;
-        min-height: 32px;
-        padding: 4px 8px;
+        min-height: 30px;
+        padding: 3px 7px;
       }
 
       .room-ui-v2 .room-header .area-header-metric .metric-ring {
-        width: 24px;
-        height: 24px;
+        width: 23px;
+        height: 23px;
       }
 
-      .room-ui-v2 .room-header .area-header-metric .metric-label {
-        display: none;
-      }
-
-      .room-ui-v2 .room-header .area-header-metric .metric-reading {
-        font-size: 11px;
-      }
+      .room-ui-v2 .room-header .area-header-metric .metric-label { display: none; }
+      .room-ui-v2 .room-header .area-header-metric .metric-reading { font-size: 11px; }
 
       .room-header-actions {
         grid-column: 4;
         grid-row: 1;
-        gap: 5px;
+        gap: 4px;
       }
 
       .room-header-actions .unavailable-entities-icon,
       .room-header-actions .area-mobile-camera,
       .room-header-actions .dd-edit-toggle {
-        width: 36px;
-        height: 36px;
+        width: 34px;
+        height: 34px;
+      }
+
+      .room-favorites-toggle {
+        min-height: 36px;
       }
 
       .room-ui-v2 .mobile-domain-group {
-        padding: 8px;
-        border-radius: 10px;
+        padding: 7px;
+        border-radius: 9px;
       }
 
       .room-ui-v2 .mobile-domain-header {
-        min-height: 34px;
-        margin-bottom: 6px;
+        min-height: 30px;
+        margin-bottom: 5px;
       }
 
       .room-ui-v2 .mobile-entity-rail,
       .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-rail {
         grid-template-columns: 1fr;
-        gap: 7px;
+        gap: 6px;
       }
 
       .room-ui-v2 .mobile-entity-card,
       .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-card {
-        min-height: 62px;
-        padding: 9px 10px;
+        min-height: 58px !important;
+        padding: 7px 9px !important;
       }
 
       .room-ui-v2 .mobile-entity-main {
-        grid-template-columns: 36px minmax(0, 1fr) auto;
+        grid-template-columns: 34px minmax(0, 1fr) auto;
         gap: 8px;
       }
 
       .room-ui-v2 .mobile-entity-icon {
-        width: 36px;
-        height: 36px;
-      }
-
-      .room-ui-v2 .mobile-entity-status-pill {
-        max-width: 96px;
-        padding: 4px 7px;
+        width: 34px;
+        height: 34px;
       }
 
       .room-ui-v2 .mobile-entity-brightness {
-        width: calc(100% - 44px);
-        margin-left: 44px;
+        width: calc(100% - 42px);
+        margin-left: 42px;
       }
     }
 
@@ -12559,7 +12541,7 @@ export class DwainsLayoutCard extends LitElement {
           ` : nothing}
         </div>
 
-        ${favoriteCount ? html`
+        ${favoriteCount && this._selectedView !== 'area' ? html`
           <button
             class="area-favorites-toggle"
             type="button"
@@ -12575,11 +12557,13 @@ export class DwainsLayoutCard extends LitElement {
           </button>
         ` : nothing}
 
-        <div class="header-expanded-content" style=${this._headerExpanded ? '' : 'display:none'}>
-          <div class="header-favorites">
-            ${this._renderFavoritesSection()}
+        ${this._selectedView !== 'area' ? html`
+          <div class="header-expanded-content" style=${this._headerExpanded ? '' : 'display:none'}>
+            <div class="header-favorites">
+              ${this._renderFavoritesSection()}
+            </div>
           </div>
-        </div>
+        ` : nothing}
       </header>
     `;
   }
@@ -14225,9 +14209,37 @@ export class DwainsLayoutCard extends LitElement {
           </div>
         </div>
 
+        ${this._renderRoomFavoritesBlock()}
+
         ${this._renderCustomCardSlot(area.area_id, 'top', this._t('layout.custom_cards_top'))}
         ${this._renderMobileEntitiesSection(area, areaEntities)}
         ${this._renderCustomCardSlot(area.area_id, 'bottom', this._t('layout.custom_cards_bottom'))}
+      </div>
+    `;
+  }
+
+  private _renderRoomFavoritesBlock() {
+    const favoriteCount = this._getEffectiveFavoriteEntities().length;
+    if (!favoriteCount) return nothing;
+
+    return html`
+      <div class="room-favorites-block">
+        <button
+          class="area-favorites-toggle room-favorites-toggle"
+          type="button"
+          aria-expanded=${this._headerExpanded ? 'true' : 'false'}
+          @click=${this._toggleHeader}
+        >
+          <span class="area-favorites-toggle-main">
+            <ha-icon icon="mdi:star"></ha-icon>
+            <span>${this._t('favorites.title')}</span>
+            <span class="area-favorites-count">(${favoriteCount})</span>
+          </span>
+          <ha-icon icon=${this._headerExpanded ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
+        </button>
+        <div class="room-favorites-content" style=${this._headerExpanded ? '' : 'display:none'}>
+          ${this._renderFavoritesSection()}
+        </div>
       </div>
     `;
   }
@@ -14856,6 +14868,11 @@ export class DwainsLayoutCard extends LitElement {
           const hasActions = this._mobileControllableEntities(group.entities).length > 0;
           const collapseKey = `${area.area_id}:${group.key}`;
           const groupCollapsed = Boolean(this._collapsedAreaGroups[collapseKey]);
+          const groupDomain = group.entities[0]?.entity_id.split('.')[0] || group.key;
+          const groupDeviceClass = group.entities[0]
+            ? this.hass.states[group.entities[0].entity_id]?.attributes?.device_class
+            : undefined;
+          const groupColor = getDomainColor(groupDomain, groupDeviceClass);
           const renderedEntities = this._isMobile && !this._editMode && !this._renderAllMobileAreaEntities && group.entities.length > MOBILE_INITIAL_ENTITY_CARDS
             ? group.entities.slice(0, MOBILE_INITIAL_ENTITY_CARDS)
             : group.entities;
@@ -14881,7 +14898,18 @@ export class DwainsLayoutCard extends LitElement {
               )}
             >
               <div class="mobile-domain-header">
-                <div class="mobile-domain-title">
+                <button
+                  class="mobile-domain-title"
+                  type="button"
+                  style=${`--domain-color: ${groupColor};`}
+                  aria-expanded=${groupCollapsed ? 'false' : 'true'}
+                  @click=${() => {
+                    this._collapsedAreaGroups = {
+                      ...this._collapsedAreaGroups,
+                      [collapseKey]: !groupCollapsed,
+                    };
+                  }}
+                >
                   <span class="room-domain-icon" aria-hidden="true">
                     <ha-icon icon=${group.key === 'todo' ? 'mdi:clipboard-list-outline' : this._mobileGroupIcon(group.key)}></ha-icon>
                   </span>
@@ -14891,7 +14919,8 @@ export class DwainsLayoutCard extends LitElement {
                       <span class="mobile-domain-count">(${this._tp('common.item', group.entities.length)})</span>
                     ` : nothing}
                   </span>
-                </div>
+                  <ha-icon class="mobile-domain-title-chevron" icon=${groupCollapsed ? 'mdi:chevron-down' : 'mdi:chevron-up'}></ha-icon>
+                </button>
                 <div class="mobile-domain-header-actions">
                   ${this._editMode && this._canManageDashboard() ? html`
                     <button
@@ -14944,21 +14973,6 @@ export class DwainsLayoutCard extends LitElement {
                     </button>
                   ` : nothing}
                   ${hasActions ? this._renderMobileDomainMaster(group) : nothing}
-                  <button
-                    class="mobile-domain-collapse-button"
-                    type="button"
-                    title=${groupCollapsed ? this._t('common.expand') : this._t('common.collapse')}
-                    aria-label=${groupCollapsed ? this._t('common.expand') : this._t('common.collapse')}
-                    aria-expanded=${groupCollapsed ? 'false' : 'true'}
-                    @click=${() => {
-                      this._collapsedAreaGroups = {
-                        ...this._collapsedAreaGroups,
-                        [collapseKey]: !groupCollapsed,
-                      };
-                    }}
-                  >
-                    <ha-icon icon=${groupCollapsed ? 'mdi:chevron-down' : 'mdi:chevron-up'}></ha-icon>
-                  </button>
                 </div>
 	              </div>
 	              <div class="mobile-entity-rail" style=${groupCollapsed ? 'display:none' : ''}>
@@ -15670,9 +15684,13 @@ export class DwainsLayoutCard extends LitElement {
       >
         <div class="mobile-entity-main">
           <div class="mobile-entity-icon"><ha-icon icon=${icon}></ha-icon></div>
-          <div class="mobile-entity-content"><div class="mobile-entity-name">${name}</div></div>
+          <div class="mobile-entity-content">
+            <div class="mobile-entity-name">${name}</div>
+            ${statusText ? html`
+              <div class="mobile-entity-state ${active ? 'active' : ''}">${statusText}</div>
+            ` : nothing}
+          </div>
           <div class="mobile-entity-right">
-            ${statusText ? html`<span class="mobile-entity-status-pill ${active ? 'active' : ''}">${statusText}</span>` : nothing}
             ${actionKind === 'more' ? nothing : this._renderMobileEntityActions(state, domain, active)}
           </div>
         </div>
