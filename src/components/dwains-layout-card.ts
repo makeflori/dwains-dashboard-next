@@ -11932,6 +11932,323 @@ export class DwainsLayoutCard extends LitElement {
       --mdc-icon-size: 16px;
     }
 
+    /* Final mobile room-view pass: compact room header and desktop-like area picker cards. */
+    @media (max-width: 768px) {
+      /* Room header: top row for navigation/identity/actions, full-width metric row below. */
+      .room-ui-v2 .room-header {
+        min-height: 0 !important;
+        padding: 10px !important;
+        grid-template-columns: 42px 60px minmax(0, 1fr) 76px !important;
+        grid-template-rows: auto auto !important;
+        grid-template-areas:
+          "back media copy actions"
+          "metrics metrics metrics metrics" !important;
+        column-gap: 9px !important;
+        row-gap: 10px !important;
+        align-items: center !important;
+      }
+
+      .room-ui-v2 .room-header-back {
+        grid-area: back !important;
+        align-self: center !important;
+      }
+
+      .room-ui-v2 .room-header-media {
+        grid-area: media !important;
+        width: 60px !important;
+        height: 60px !important;
+        align-self: center !important;
+      }
+
+      .room-ui-v2 .room-header-copy {
+        grid-area: copy !important;
+        min-width: 0 !important;
+        height: auto !important;
+        align-self: center !important;
+        justify-content: center !important;
+        gap: 3px !important;
+        overflow: hidden;
+      }
+
+      .room-ui-v2 .room-header .area-title {
+        display: block !important;
+        width: 100%;
+        margin: 0 !important;
+        overflow: hidden;
+        color: var(--primary-text-color);
+        font-size: 20px !important;
+        font-weight: 850 !important;
+        line-height: 1.05 !important;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .room-ui-v2 .room-header-device-count {
+        display: block !important;
+        width: 100%;
+        overflow: hidden;
+        font-size: 10px !important;
+        line-height: 1.15 !important;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .room-ui-v2 .room-header-summary {
+        width: 100%;
+        min-height: 18px;
+        margin-top: 1px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 4px !important;
+        overflow: hidden;
+      }
+
+      .room-ui-v2 .room-header-actions {
+        grid-area: actions !important;
+        width: 76px;
+        margin: 0 !important;
+        align-self: center !important;
+        justify-self: end !important;
+        display: grid !important;
+        grid-template-columns: repeat(2, 34px);
+        align-items: center;
+        justify-content: end;
+        gap: 6px !important;
+      }
+
+      .room-ui-v2 .room-header .area-header-metrics {
+        grid-area: metrics !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        align-items: center !important;
+        gap: 7px !important;
+      }
+
+      .room-ui-v2 .room-header .area-header-metric {
+        width: 100% !important;
+        min-width: 0 !important;
+        min-height: 34px !important;
+        padding: 4px 7px !important;
+        box-sizing: border-box;
+        justify-content: flex-start !important;
+        overflow: hidden;
+      }
+
+      .room-ui-v2 .room-header .area-header-metric .metric-reading {
+        overflow: hidden;
+        font-size: 11px !important;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      /* Area picker sheet: compact chrome and enough clearance above the bottom navigation. */
+      .layout-container > .sidebar,
+      .sidebar {
+        left: 16px !important;
+        right: 16px !important;
+        bottom: calc(116px + env(safe-area-inset-bottom, 0px)) !important;
+        max-height: min(72vh, 620px) !important;
+        padding: 10px !important;
+        border-radius: 12px !important;
+      }
+
+      .mobile-area-picker-head {
+        min-height: 34px !important;
+        margin: 0 2px 8px !important;
+      }
+
+      .mobile-area-picker-title {
+        font-size: 18px !important;
+        line-height: 1.1 !important;
+      }
+
+      .mobile-area-picker-close {
+        width: 34px !important;
+        height: 34px !important;
+      }
+
+      .sidebar::before {
+        margin-bottom: 7px !important;
+      }
+
+      .sidebar .area-list {
+        gap: 6px !important;
+      }
+
+      .sidebar .floor-section {
+        gap: 5px !important;
+        margin-bottom: 8px !important;
+      }
+
+      .sidebar .floor-areas {
+        gap: 5px !important;
+      }
+
+      .sidebar .floor-header {
+        padding: 4px 6px 2px !important;
+      }
+
+      .sidebar .floor-header h3 {
+        font-size: 13px !important;
+        font-weight: 760 !important;
+      }
+
+      /* Mobile room cards mirror the compact information hierarchy of the desktop sidebar. */
+      .sidebar .room-area-button {
+        min-height: 74px !important;
+        height: auto !important;
+        padding: 8px 10px !important;
+        display: grid !important;
+        grid-template-columns: 52px minmax(0, 1fr) !important;
+        grid-template-rows: auto !important;
+        align-items: center !important;
+        column-gap: 10px !important;
+        border-radius: 9px !important;
+      }
+
+      .sidebar .room-area-button .area-media {
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+        position: relative !important;
+        width: 52px !important;
+        height: 52px !important;
+        min-width: 52px !important;
+        align-self: center !important;
+        overflow: hidden;
+        border-radius: 8px !important;
+      }
+
+      .sidebar .room-area-button .area-media-icon,
+      .sidebar .room-area-button .area-media-picture {
+        width: 100% !important;
+        height: 100% !important;
+      }
+
+      .sidebar .room-area-button .area-media-icon {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: color-mix(in srgb, var(--primary-color) 12%, var(--card-background-color)) !important;
+        color: var(--primary-color) !important;
+      }
+
+      .sidebar .room-area-button .area-media-icon ha-icon {
+        --mdc-icon-size: 26px !important;
+      }
+
+      .sidebar .room-area-button .area-content {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+        min-width: 0 !important;
+        min-height: 52px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        justify-content: center !important;
+        gap: 2px !important;
+      }
+
+      .sidebar .room-area-button .area-top-section {
+        width: 100% !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+        display: block !important;
+      }
+
+      .sidebar .room-area-button .area-name {
+        width: 100% !important;
+        margin: 0 !important;
+        overflow: hidden;
+        font-size: 15px !important;
+        font-weight: 800 !important;
+        line-height: 1.1 !important;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .sidebar .room-area-button .area-sensors {
+        width: 100% !important;
+        margin-top: 3px !important;
+        overflow: hidden;
+        font-size: 11px !important;
+        font-weight: 650 !important;
+        line-height: 1.1 !important;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .sidebar .room-area-button .area-info-badges {
+        position: static !important;
+        width: 100% !important;
+        max-width: none !important;
+        margin-top: 4px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        flex-wrap: wrap !important;
+        gap: 4px !important;
+      }
+
+      .sidebar .room-area-button .info-badge {
+        min-width: 22px !important;
+        height: 19px !important;
+        padding: 0 5px !important;
+      }
+
+      .sidebar .room-area-button .info-badge ha-icon {
+        --mdc-icon-size: 11px !important;
+      }
+
+      .sidebar .room-area-button .badge-count {
+        font-size: 9px !important;
+      }
+
+      .sidebar .room-area-button.selected {
+        border-color: color-mix(in srgb, var(--primary-color) 52%, transparent) !important;
+        background: color-mix(in srgb, var(--card-background-color) 94%, var(--primary-color) 6%) !important;
+        box-shadow:
+          inset 3px 0 0 var(--primary-color),
+          inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 10%, transparent),
+          0 6px 14px rgba(15, 23, 42, 0.07) !important;
+      }
+
+      /* Home row stays compact and visually subordinate to room cards. */
+      .sidebar .area-button.home-button {
+        min-height: 54px !important;
+        height: 54px !important;
+        padding: 7px 10px !important;
+        display: grid !important;
+        grid-template-columns: 40px minmax(0, 1fr) 20px !important;
+        align-items: center !important;
+        gap: 10px !important;
+        margin: 0 0 7px !important;
+      }
+
+      .sidebar .area-button.home-button .area-icon {
+        position: relative !important;
+        left: auto !important;
+        top: auto !important;
+        width: 40px !important;
+        height: 40px !important;
+        transform: none !important;
+        border-radius: 8px !important;
+      }
+
+      .sidebar .area-button.home-button .area-info {
+        grid-column: 2 !important;
+        min-width: 0 !important;
+      }
+
+      .sidebar .area-button.home-button .area-menu-chevron {
+        grid-column: 3 !important;
+        justify-self: end !important;
+      }
+    }
+
   `;
 
   connectedCallback() {
