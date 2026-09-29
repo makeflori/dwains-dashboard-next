@@ -13422,6 +13422,15 @@ export class DwainsLayoutCard extends LitElement {
     return undefined;
   }
 
+  private _entityAreaName(entityId: string): string | undefined {
+    const entityReg = this.config?.entities?.find(e => e.entity_id === entityId);
+    const deviceReg = entityReg?.device_id
+      ? this.config?.devices?.find(d => d.device_id === entityReg.device_id)
+      : null;
+    const areaId = entityReg?.area_id || deviceReg?.area_id || this.hass?.entities?.[entityId]?.area_id;
+    return this.config?.areas?.find(a => a.area_id === areaId)?.name;
+  }
+
   private _renderHomeView() {
     const sections = this._getVisibleHomeSections();
 
