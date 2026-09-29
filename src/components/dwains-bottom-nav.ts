@@ -784,7 +784,7 @@ export class DwainsBottomNav extends LitElement {
       right: 18px;
       bottom: calc(94px + env(safe-area-inset-bottom, 0px));
       z-index: 141;
-      max-height: min(54vh, 460px);
+      max-height: min(64vh, 560px);
       display: flex;
       flex-direction: column;
       gap: 12px;
@@ -1054,7 +1054,9 @@ export class DwainsBottomNav extends LitElement {
     }
 
     :host([data-theme-dark]) .pages-backdrop {
-      background: rgba(0, 0, 0, 0.36);
+      background: rgba(0, 0, 0, 0.58);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
     }
 
     :host([data-theme-dark]) .pages-sheet {

@@ -11211,6 +11211,48 @@ export class DwainsLayoutCard extends LitElement {
       gap: 9px;
     }
 
+    .room-ui-v2 .mobile-entity-main.editing-inline {
+      grid-template-columns: 24px 36px minmax(0, 1fr) 34px;
+      gap: 7px;
+    }
+
+    .dd-generated-card-leading-drag-handle,
+    .dd-generated-card-visibility {
+      width: 30px;
+      height: 30px;
+      padding: 0;
+      border: 0;
+      border-radius: 7px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--secondary-text-color);
+      background: transparent;
+    }
+
+    .dd-generated-card-leading-drag-handle {
+      width: 24px;
+      cursor: grab;
+      color: var(--primary-color);
+    }
+
+    .dd-generated-card-leading-drag-handle:active { cursor: grabbing; }
+
+    .dd-generated-card-leading-drag-handle ha-icon,
+    .dd-generated-card-visibility ha-icon {
+      --mdc-icon-size: 19px;
+    }
+
+    .dd-generated-card-visibility {
+      color: var(--primary-text-color);
+      background: color-mix(in srgb, var(--primary-text-color) 5%, transparent);
+    }
+
+    .dd-generated-card-visibility:hover,
+    .dd-generated-card-leading-drag-handle:hover {
+      background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+    }
+
     .room-ui-v2 .mobile-entity-icon {
       width: 36px;
       height: 36px;
@@ -11451,6 +11493,11 @@ export class DwainsLayoutCard extends LitElement {
       .room-ui-v2 .mobile-entity-main {
         grid-template-columns: 34px minmax(0, 1fr) auto;
         gap: 8px;
+      }
+
+      .room-ui-v2 .mobile-entity-main.editing-inline {
+        grid-template-columns: 24px 34px minmax(0, 1fr) 34px;
+        gap: 7px;
       }
 
       .room-ui-v2 .mobile-entity-icon {
@@ -11863,14 +11910,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .room-ui-v2 .dd-generated-card-toolbar {
-      top: 4px;
-      right: 4px;
-      padding: 2px;
-    }
-
-    .room-ui-v2 .dd-generated-card-toolbar button {
-      width: 25px;
-      height: 25px;
+      display: none !important;
     }
 
     @media (max-width: 768px) {
@@ -12050,8 +12090,8 @@ export class DwainsLayoutCard extends LitElement {
       .sidebar {
         left: 16px !important;
         right: 16px !important;
-        bottom: calc(116px + env(safe-area-inset-bottom, 0px)) !important;
-        max-height: min(72vh, 620px) !important;
+        bottom: calc(94px + env(safe-area-inset-bottom, 0px)) !important;
+        max-height: min(64vh, 560px) !important;
         padding: 10px !important;
         border-radius: 12px !important;
       }
@@ -12099,7 +12139,7 @@ export class DwainsLayoutCard extends LitElement {
 
       /* Mobile room cards mirror the compact information hierarchy of the desktop sidebar. */
       .sidebar .room-area-button {
-        min-height: 74px !important;
+        min-height: 72px !important;
         height: auto !important;
         padding: 8px 10px !important;
         display: grid !important;
@@ -12145,18 +12185,21 @@ export class DwainsLayoutCard extends LitElement {
         grid-row: 1 !important;
         min-width: 0 !important;
         min-height: 52px !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        justify-content: center !important;
-        gap: 2px !important;
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) auto !important;
+        align-items: center !important;
+        column-gap: 8px !important;
       }
 
       .sidebar .room-area-button .area-top-section {
+        grid-column: 1 !important;
         width: 100% !important;
         min-width: 0 !important;
         margin: 0 !important;
-        display: block !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        gap: 3px !important;
       }
 
       .sidebar .room-area-button .area-name {
@@ -12182,15 +12225,21 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .sidebar .room-area-button .area-info-badges {
+        grid-column: 2 !important;
         position: static !important;
-        width: 100% !important;
-        max-width: none !important;
-        margin-top: 4px !important;
-        display: flex !important;
+        width: auto !important;
+        max-width: 74px !important;
+        margin: 0 !important;
+        display: grid !important;
+        grid-template-columns: repeat(2, max-content) !important;
         align-items: center !important;
-        justify-content: flex-start !important;
-        flex-wrap: wrap !important;
+        justify-content: end !important;
         gap: 4px !important;
+      }
+
+      .sidebar .room-area-button .area-info-badges:has(.info-badge:nth-child(5)) {
+        grid-template-columns: repeat(3, max-content) !important;
+        max-width: 108px !important;
       }
 
       .sidebar .room-area-button .info-badge {
@@ -16336,21 +16385,7 @@ export class DwainsLayoutCard extends LitElement {
         @dragend=${this._clearGeneratedCardDragState}
         @click=${(event: Event) => event.stopPropagation()}
       >
-        <div class="dd-generated-card-toolbar">
-          <button type="button" title=${this._t('layout.drag_card')} aria-label=${this._t('layout.drag_card')}>
-            <ha-icon icon="mdi:drag"></ha-icon>
-          </button>
-          <button
-            type="button"
-            title=${this._t(hidden ? 'common.show' : 'common.hide')}
-            aria-label=${this._t(hidden ? 'common.show' : 'common.hide')}
-            aria-pressed=${hidden ? 'true' : 'false'}
-            @click=${(event: Event) => this._toggleGeneratedCardVisibility(event, area.area_id, entity.entity_id)}
-          >
-            <ha-icon icon=${hidden ? 'mdi:eye' : 'mdi:eye-off-outline'}></ha-icon>
-          </button>
-        </div>
-        ${this._renderMobileEntityCard(area, entity)}
+        ${this._renderMobileEntityCard(area, entity, { areaId: area.area_id, hidden })}
       </div>
     `;
   }
@@ -16652,7 +16687,11 @@ export class DwainsLayoutCard extends LitElement {
     `;
   }
 
-  private _renderMobileEntityCard(_area: AreaConfig, entity: EntityConfig) {
+  private _renderMobileEntityCard(
+    _area: AreaConfig,
+    entity: EntityConfig,
+    editControls?: { areaId: string; hidden: boolean }
+  ) {
     const rawState = this.hass.states[entity.entity_id];
     if (!rawState) return nothing;
 
@@ -16695,7 +16734,18 @@ export class DwainsLayoutCard extends LitElement {
         @click=${() => this._showMoreInfo(entity.entity_id)}
         @keydown=${(event: KeyboardEvent) => this._handleMobileEntityKeydown(event, entity.entity_id)}
       >
-        <div class="mobile-entity-main">
+        <div class="mobile-entity-main ${editControls ? 'editing-inline' : ''}">
+          ${editControls ? html`
+            <button
+              class="dd-generated-card-leading-drag-handle"
+              type="button"
+              title=${this._t('layout.drag_card')}
+              aria-label=${this._t('layout.drag_card')}
+              @click=${(event: Event) => event.stopPropagation()}
+            >
+              <ha-icon icon="mdi:drag"></ha-icon>
+            </button>
+          ` : nothing}
           <div class="mobile-entity-icon"><ha-icon icon=${icon}></ha-icon></div>
           <div class="mobile-entity-content">
             <div class="mobile-entity-name">${name}</div>
@@ -16704,7 +16754,18 @@ export class DwainsLayoutCard extends LitElement {
             ` : nothing}
           </div>
           <div class="mobile-entity-right">
-            ${actionKind === 'more' ? nothing : this._renderMobileEntityActions(state, domain, active)}
+            ${editControls ? html`
+              <button
+                class="dd-generated-card-visibility"
+                type="button"
+                title=${this._t(editControls.hidden ? 'common.show' : 'common.hide')}
+                aria-label=${this._t(editControls.hidden ? 'common.show' : 'common.hide')}
+                aria-pressed=${editControls.hidden ? 'true' : 'false'}
+                @click=${(event: Event) => this._toggleGeneratedCardVisibility(event, editControls.areaId, entity.entity_id)}
+              >
+                <ha-icon icon=${editControls.hidden ? 'mdi:eye' : 'mdi:eye-off-outline'}></ha-icon>
+              </button>
+            ` : (actionKind === 'more' ? nothing : this._renderMobileEntityActions(state, domain, active))}
           </div>
         </div>
         ${hasBrightness ? html`

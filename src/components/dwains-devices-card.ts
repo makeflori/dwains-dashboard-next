@@ -2888,10 +2888,10 @@ export class DwainsDevicesCard extends LitElement {
         left: 18px !important;
         right: 18px !important;
         top: auto !important;
-        bottom: calc(82px + env(safe-area-inset-bottom, 0px)) !important;
+        bottom: calc(94px + env(safe-area-inset-bottom, 0px)) !important;
         width: auto !important;
         height: auto !important;
-        max-height: min(62vh, 520px);
+        max-height: min(64vh, 560px);
         padding: 10px;
         overflow-y: auto;
         border-radius: 8px;
