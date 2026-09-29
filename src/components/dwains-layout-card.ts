@@ -10689,6 +10689,7 @@ export class DwainsLayoutCard extends LitElement {
       box-sizing: border-box;
       display: grid;
       grid-template-columns: 142px minmax(220px, 1fr) auto auto;
+      grid-template-areas: "media copy metrics actions";
       align-items: center;
       gap: 16px;
       overflow: hidden;
@@ -10700,6 +10701,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .room-header-media {
+      grid-area: media;
       position: relative;
       width: 142px;
       height: 76px;
@@ -10730,6 +10732,7 @@ export class DwainsLayoutCard extends LitElement {
     .room-header-icon ha-icon { --mdc-icon-size: 38px; }
 
     .room-header-copy {
+      grid-area: copy;
       min-width: 0;
       height: 100%;
       display: flex;
@@ -10785,6 +10788,9 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .room-ui-v2 .room-header .area-header-metrics {
+      grid-area: metrics !important;
+      grid-column: auto !important;
+      grid-row: auto !important;
       position: static !important;
       inset: auto !important;
       min-width: 0;
@@ -10817,6 +10823,9 @@ export class DwainsLayoutCard extends LitElement {
     .room-ui-v2 .room-header .area-header-metric .metric-reading { font-size: 13px; }
 
     .room-header-actions {
+      grid-area: actions;
+      grid-column: auto;
+      grid-row: auto;
       position: static !important;
       inset: auto !important;
       min-width: max-content;
@@ -11174,6 +11183,7 @@ export class DwainsLayoutCard extends LitElement {
     @media (max-width: 1180px) and (min-width: 769px) {
       .room-ui-v2 .room-header {
         grid-template-columns: 112px minmax(170px, 1fr) auto auto;
+        grid-template-areas: "media copy metrics actions";
       }
 
       .room-header-media {
@@ -11203,11 +11213,15 @@ export class DwainsLayoutCard extends LitElement {
         padding: 9px;
         grid-template-columns: 40px 54px minmax(0, 1fr) auto;
         grid-template-rows: auto auto;
+        grid-template-areas:
+          "back media copy actions"
+          "back metrics metrics metrics";
         gap: 7px;
         border-radius: 10px;
       }
 
       .room-header-back {
+        grid-area: back;
         width: 40px;
         height: 40px;
         display: inline-flex;
@@ -11237,8 +11251,9 @@ export class DwainsLayoutCard extends LitElement {
       .room-summary-item { font-size: 10px; }
 
       .room-ui-v2 .room-header .area-header-metrics {
-        grid-column: 2 / -1;
-        grid-row: 2;
+        grid-area: metrics !important;
+        grid-column: auto !important;
+        grid-row: auto !important;
         justify-content: flex-start;
         flex-wrap: wrap;
       }
@@ -11258,8 +11273,9 @@ export class DwainsLayoutCard extends LitElement {
       .room-ui-v2 .room-header .area-header-metric .metric-reading { font-size: 11px; }
 
       .room-header-actions {
-        grid-column: 4;
-        grid-row: 1;
+        grid-area: actions;
+        grid-column: auto;
+        grid-row: auto;
         gap: 4px;
       }
 
