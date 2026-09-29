@@ -3138,6 +3138,13 @@ export class DwainsDevicesCard extends LitElement {
         padding: 2px 0;
       }
 
+      .devices-overview-view .device-page-header {
+        min-height: 82px;
+        margin-bottom: 14px;
+        padding: 10px 16px;
+        align-items: center;
+      }
+
       .device-page-header {
         min-height: 132px;
         margin: 0 -10px 18px;

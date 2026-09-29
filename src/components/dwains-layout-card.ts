@@ -9342,13 +9342,13 @@ export class DwainsLayoutCard extends LitElement {
         left: 18px !important;
         right: 18px !important;
         top: auto !important;
-        bottom: calc(82px + env(safe-area-inset-bottom, 0px)) !important;
+        bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important;
         width: auto !important;
         height: auto !important;
-        max-height: min(62vh, 520px);
-        padding: 10px;
+        max-height: min(72vh, 620px);
+        padding: 12px;
         overflow-y: auto;
-        border-radius: 8px;
+        border-radius: 12px;
         border: 1px solid rgba(0, 0, 0, 0.08);
         background: rgba(255, 255, 255, 0.94);
         box-shadow: 0 22px 48px rgba(0, 0, 0, 0.24);
@@ -9371,6 +9371,41 @@ export class DwainsLayoutCard extends LitElement {
         display: block;
         border-radius: 999px;
         background: rgba(0, 0, 0, 0.14);
+      }
+
+      .mobile-area-picker-head {
+        min-height: 42px;
+        margin: 0 2px 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .mobile-area-picker-title {
+        min-width: 0;
+        color: var(--primary-text-color);
+        font-size: 20px;
+        font-weight: 850;
+        line-height: 1.1;
+      }
+
+      .mobile-area-picker-close {
+        width: 38px;
+        height: 38px;
+        padding: 0;
+        border: 1px solid color-mix(in srgb, var(--primary-text-color) 10%, transparent);
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        background: color-mix(in srgb, var(--card-background-color) 92%, transparent);
+        color: var(--primary-text-color);
+      }
+
+      .mobile-area-picker-close ha-icon {
+        --mdc-icon-size: 21px;
       }
 
       .sidebar .area-list {
@@ -9632,12 +9667,13 @@ export class DwainsLayoutCard extends LitElement {
 
       .sidebar .area-button.selected,
       .sidebar .area-button.home-button.selected {
-        border-color: rgba(var(--rgb-primary-color, 3, 169, 244), 0.34);
-        background: rgba(255, 255, 255, 0.98);
+        border-color: color-mix(in srgb, var(--primary-color) 58%, transparent);
+        background: color-mix(in srgb, var(--card-background-color) 90%, var(--primary-color) 10%);
         color: var(--primary-text-color);
         box-shadow:
           0 14px 28px rgba(15, 23, 42, 0.1),
-          inset 3px 0 0 var(--primary-color);
+          inset 4px 0 0 var(--primary-color),
+          inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 16%, transparent);
       }
 
       .sidebar .area-button.home-button .area-icon,
@@ -11297,13 +11333,15 @@ export class DwainsLayoutCard extends LitElement {
 
       .room-ui-v2 .room-header {
         min-height: 0;
-        padding: 9px;
-        grid-template-columns: 40px 54px minmax(0, 1fr) auto;
+        padding: 10px;
+        grid-template-columns: 42px 64px minmax(0, 1fr) auto;
         grid-template-rows: auto auto;
         grid-template-areas:
           "back media copy actions"
-          "back metrics metrics metrics";
-        gap: 7px;
+          "metrics metrics metrics metrics";
+        column-gap: 9px;
+        row-gap: 10px;
+        align-items: center;
         border-radius: 10px;
       }
 
@@ -11321,12 +11359,12 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .room-header-media {
-        width: 54px;
-        height: 54px;
-        border-radius: 8px;
+        width: 64px;
+        height: 64px;
+        border-radius: 9px;
       }
 
-      .room-header-icon ha-icon { --mdc-icon-size: 27px; }
+      .room-header-icon ha-icon { --mdc-icon-size: 30px; }
       .room-header-breadcrumb { display: none; }
       .room-ui-v2 .room-header .area-title { font-size: 20px; }
       .room-header-device-count { font-size: 10px; }
@@ -11342,14 +11380,20 @@ export class DwainsLayoutCard extends LitElement {
         grid-area: metrics !important;
         grid-column: auto !important;
         grid-row: auto !important;
-        justify-content: flex-start;
-        flex-wrap: wrap;
+        width: 100%;
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        justify-content: stretch;
+        align-items: center;
+        gap: 8px;
       }
 
       .room-ui-v2 .room-header .area-header-metric {
+        width: 100%;
         min-width: 0;
-        min-height: 30px;
-        padding: 3px 7px;
+        min-height: 34px;
+        padding: 4px 8px;
+        justify-content: flex-start;
       }
 
       .room-ui-v2 .room-header .area-header-metric .metric-ring {
@@ -11364,7 +11408,9 @@ export class DwainsLayoutCard extends LitElement {
         grid-area: actions;
         grid-column: auto;
         grid-row: auto;
-        gap: 4px;
+        align-self: center;
+        gap: 5px;
+        margin-left: 0 !important;
       }
 
       .room-header-actions .unavailable-entities-icon,
@@ -12955,6 +13001,20 @@ export class DwainsLayoutCard extends LitElement {
 
     return html`
       <nav class=${classMap(classes)} @scroll=${this._handleSidebarScroll}>
+        ${this._isMobile ? html`
+          <div class="mobile-area-picker-head">
+            <div class="mobile-area-picker-title">${this._t('home.areas')}</div>
+            <button
+              class="mobile-area-picker-close"
+              type="button"
+              title=${this._t('common.close')}
+              aria-label=${this._t('common.close')}
+              @click=${this._closeMobileNav}
+            >
+              <ha-icon icon="mdi:close"></ha-icon>
+            </button>
+          </div>
+        ` : nothing}
         <div class="area-list">
           <div
             class="area-button home-button ${this._selectedView === 'home' ? 'selected' : ''} ${hasNotifications ? 'has-notifications' : ''}"
