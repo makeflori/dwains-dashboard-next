@@ -11772,6 +11772,114 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
+    /* Room follow-up: restore functional group drag handles. The title was intentionally
+       non-interactive in normal mode, which also swallowed pointer events for the new handle. */
+    .room-ui-v2 .mobile-domain-group.group-editing .mobile-domain-title {
+      pointer-events: auto;
+    }
+
+    .room-ui-v2 .mobile-domain-group.group-editing .mobile-domain-title-copy,
+    .room-ui-v2 .mobile-domain-group.group-editing .room-domain-icon {
+      pointer-events: none;
+    }
+
+    .room-ui-v2 .mobile-domain-leading-drag-handle {
+      pointer-events: auto;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-user-drag: element;
+    }
+
+    /* Hover must cover the complete type header, not an inset pseudo layer. */
+    .room-ui-v2 .mobile-domain-header.expandable-header::before {
+      display: none;
+    }
+
+    .room-ui-v2 .mobile-domain-header.expandable-header:hover {
+      background: color-mix(in srgb, var(--primary-color) 5%, var(--card-background-color)) !important;
+    }
+
+    .room-ui-v2 .mobile-domain-header.expandable-header:active {
+      background: color-mix(in srgb, var(--primary-color) 8%, var(--card-background-color)) !important;
+    }
+
+    /* House information: slightly narrower cards, a little more inset from the left,
+       and vertically centred single-line labels beside the icon. */
+    @media (min-width: 769px) {
+      .header-status-scroll {
+        padding-left: 7px;
+      }
+
+      .status-card-compact {
+        min-width: 144px;
+        max-width: 200px;
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+
+      .status-card-compact:not(.has-value) .status-card-title-compact {
+        grid-row: 1 / span 2;
+        align-self: center;
+        margin-top: 0;
+      }
+    }
+
+    /* Sidebar badges: lock icon and count to the same optical/vertical centre. */
+    .sidebar .room-area-button .info-badge,
+    .sidebar .room-area-button.has-picture .info-badge {
+      align-items: center !important;
+      justify-content: center !important;
+      line-height: 1 !important;
+    }
+
+    .sidebar .room-area-button .info-badge ha-icon,
+    .sidebar .room-area-button.has-picture .info-badge ha-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      vertical-align: middle;
+    }
+
+    .sidebar .room-area-button .badge-count,
+    .sidebar .room-area-button.has-picture .badge-count {
+      height: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 12px !important;
+      vertical-align: middle;
+    }
+
+    /* The first floor heading should use the same vertical rhythm as following floor headings. */
+    .sidebar .home-button + .floor-section {
+      margin-top: 10px;
+    }
+
+    /* Favorites: reduce the collapsed row height and keep a very subtle divider to the room header. */
+    .room-ui-v2 .room-favorites-block {
+      padding-top: 3px !important;
+      padding-bottom: 3px !important;
+      margin-bottom: 10px !important;
+    }
+
+    .room-ui-v2 .room-favorites-block .room-favorites-header {
+      min-height: 30px !important;
+      margin-left: -7px !important;
+      margin-right: -7px !important;
+      width: calc(100% + 14px) !important;
+      padding: 3px 7px !important;
+    }
+
+    .room-ui-v2 .room-favorites-block::after {
+      left: 8px;
+      right: 8px;
+      bottom: -6px;
+      height: 1px;
+      background: color-mix(in srgb, var(--divider-color) 82%, transparent);
+      opacity: 0.5;
+    }
+
   `;
 
   connectedCallback() {
