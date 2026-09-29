@@ -3679,8 +3679,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   ): void {
     if (!this._config || !this._area) return;
 
-    const current = this._config.areas_options?.[this._area]?.groups_options?.[group];
-    const nextHidden = new Set(current?.hidden || []);
+    const concrete = this._config.areas_options?.[this._area]?.groups_options?.[group];
+    const legacy = this._config.areas_options?.[this._area]?.groups_options?.[getLegacyAreaGroupKey(group)];
+    const current = concrete || legacy;
+    const nextHidden = new Set(
+      (current?.hidden || []).filter((entityId) => entityIds.includes(entityId))
+    );
     entityIds.forEach((entityId) => {
       if (hidden) nextHidden.add(entityId);
       else nextHidden.delete(entityId);
@@ -3840,7 +3844,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     const allGroupEntities = isUngrouped
       ? AREA_STRATEGY_GROUPS.flatMap((groupKey) => groups[groupKey] || [])
       : groups[group as keyof typeof groups] || [];
-    const groupOptions = this._config.areas_options?.[this._area]?.groups_options?.[group];
+    const concreteGroupOptions = this._config.areas_options?.[this._area]?.groups_options?.[group];
+    const legacyGroup = (AREA_STRATEGY_GROUPS as readonly string[]).includes(group)
+      ? getLegacyAreaGroupKey(group as AreaStrategyGroup)
+      : undefined;
+    const legacyGroupOptions = legacyGroup
+      ? this._config.areas_options?.[this._area]?.groups_options?.[legacyGroup]
+      : undefined;
+    const groupOptions = concreteGroupOptions || legacyGroupOptions;
     const entityOrder = isUngrouped
       ? this._config.areas_options?.[this._area]?.entity_order || []
       : groupOptions?.order || [];
@@ -3930,8 +3941,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   }
 
   private _toggleEntityVisibility(entityId: string, group: string): void {
-
-    const hidden = [...(this._config!.areas_options?.[this._area!]?.groups_options?.[group]?.hidden || [])];
+    const concrete = this._config!.areas_options?.[this._area!]?.groups_options?.[group];
+    const legacyGroup = (AREA_STRATEGY_GROUPS as readonly string[]).includes(group)
+      ? getLegacyAreaGroupKey(group as AreaStrategyGroup)
+      : undefined;
+    const legacy = legacyGroup
+      ? this._config!.areas_options?.[this._area!]?.groups_options?.[legacyGroup]
+      : undefined;
+    const hidden = [...((concrete || legacy)?.hidden || [])];
     const index = hidden.indexOf(entityId);
 
     if (index === -1) {
