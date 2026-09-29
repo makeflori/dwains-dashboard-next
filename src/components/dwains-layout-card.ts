@@ -11499,6 +11499,160 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
+
+    /* Follow-up: keep expandable headers visually centered and use a single, consistent leading chevron. */
+    .room-ui-v2 .mobile-domain-header.expandable-header {
+      margin-left: -9px;
+      margin-right: -9px;
+      width: calc(100% + 18px);
+      padding: 7px 9px;
+      min-height: 38px;
+      border-radius: 8px;
+    }
+
+    .room-ui-v2 .mobile-domain-group.is-collapsed .mobile-domain-header.expandable-header {
+      margin-bottom: -7px;
+    }
+
+    .room-ui-v2 .mobile-domain-title {
+      min-height: 24px;
+      align-items: center;
+      gap: 6px;
+      line-height: 1;
+    }
+
+    .room-ui-v2 .mobile-domain-title-copy {
+      align-items: center;
+      line-height: 1;
+    }
+
+    .room-ui-v2 .mobile-domain-title-label,
+    .room-ui-v2 .mobile-domain-count {
+      line-height: 1;
+    }
+
+    .mobile-domain-leading-chevron {
+      flex: 0 0 auto;
+      color: var(--secondary-text-color);
+      --mdc-icon-size: 14px;
+      opacity: 0.78;
+      pointer-events: none;
+    }
+
+    .mobile-domain-center-chevron,
+    .mobile-domain-title-chevron {
+      display: none !important;
+    }
+
+    /* The separator belongs below Favorites in both states; never use the global header's blue expanded border in area view. */
+    .room-favorites-block {
+      margin-bottom: 12px !important;
+    }
+
+    .room-favorites-block::after {
+      left: 12px;
+      right: 12px;
+      bottom: -7px;
+      width: auto;
+      height: 1px;
+      transform: none;
+      background: color-mix(in srgb, var(--primary-color) 18%, var(--divider-color));
+      opacity: 0.72;
+    }
+
+    /* Time/date/weather stay stacked, but compact enough to match the house-information row height. */
+    @media (min-width: 769px) {
+      .header-time-weather {
+        min-width: 112px;
+        height: 50px;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 2px;
+      }
+
+      .header-time-section {
+        min-width: 0;
+        gap: 0;
+      }
+
+      .header-time {
+        font-size: 17px;
+        line-height: 1;
+      }
+
+      .header-date {
+        font-size: 9px;
+        line-height: 1;
+      }
+
+      .weather-compact {
+        min-height: 24px;
+        padding: 2px 8px;
+      }
+
+      .weather-icon-compact ha-icon {
+        --mdc-icon-size: 17px;
+      }
+
+      .weather-temp-compact {
+        font-size: 11px;
+      }
+    }
+
+    /* Edit mode keeps exactly the same card footprint as the normal room view. */
+    .room-ui-v2 .dd-generated-card-wrap.editing {
+      width: 100%;
+      min-width: 0;
+      min-height: 62px;
+      height: auto;
+      flex: none;
+      border-radius: 8px;
+    }
+
+    .room-ui-v2 .dd-generated-card-wrap.editing > .mobile-entity-card {
+      min-height: 62px !important;
+      height: 100% !important;
+    }
+
+    .room-ui-v2 .mobile-entity-rail .dd-domain-add-card-final,
+    .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-rail .dd-domain-add-card-final {
+      min-height: 62px !important;
+      height: 62px;
+      opacity: 0.72;
+      border-radius: 8px;
+    }
+
+    .room-ui-v2 .dd-generated-card-toolbar {
+      top: 4px;
+      right: 4px;
+      padding: 2px;
+    }
+
+    .room-ui-v2 .dd-generated-card-toolbar button {
+      width: 25px;
+      height: 25px;
+    }
+
+    @media (max-width: 768px) {
+      .room-ui-v2 .mobile-domain-header.expandable-header {
+        margin-left: -7px;
+        margin-right: -7px;
+        width: calc(100% + 14px);
+        padding: 6px 7px;
+      }
+
+      .room-ui-v2 .dd-generated-card-wrap.editing,
+      .room-ui-v2 .dd-generated-card-wrap.editing > .mobile-entity-card,
+      .room-ui-v2 .mobile-entity-rail .dd-domain-add-card-final {
+        min-height: 58px !important;
+      }
+
+      .room-ui-v2 .mobile-entity-rail .dd-domain-add-card-final {
+        height: 58px;
+      }
+    }
+
   `;
 
   connectedCallback() {
@@ -12704,7 +12858,7 @@ export class DwainsLayoutCard extends LitElement {
     const classes = {
       'global-header': true,
       'compact': this._headerCompact,
-      'expanded': this._headerExpanded,
+      'expanded': this._headerExpanded && this._selectedView !== 'area',
       'mobile': this._isMobile
     };
     const favoriteCount = this._getEffectiveFavoriteEntities().length;
@@ -14426,6 +14580,11 @@ export class DwainsLayoutCard extends LitElement {
           @keydown=${onFavoritesKeydown}
         >
           <div class="mobile-domain-title room-favorites-title">
+            <ha-icon
+              class="mobile-domain-leading-chevron"
+              icon=${this._headerExpanded ? 'mdi:chevron-up' : 'mdi:chevron-down'}
+              aria-hidden="true"
+            ></ha-icon>
             <span class="room-domain-icon room-favorites-icon" aria-hidden="true">
               <ha-icon icon="mdi:star"></ha-icon>
             </span>
@@ -14435,11 +14594,6 @@ export class DwainsLayoutCard extends LitElement {
             </span>
           </div>
 
-          <ha-icon
-            class="mobile-domain-center-chevron"
-            icon=${this._headerExpanded ? 'mdi:chevron-up' : 'mdi:chevron-down'}
-            aria-hidden="true"
-          ></ha-icon>
         </div>
 
         <div class="room-favorites-content" style=${this._headerExpanded ? '' : 'display:none'}>
@@ -14508,14 +14662,6 @@ export class DwainsLayoutCard extends LitElement {
             entry => entry.id,
             (entry, index) => this._renderCustomCard(areaId, entry, index)
           )}
-          ${this._editMode && canEdit && cards.length === 0
-            ? html`
-                <button class="dd-add-card" @click=${() => this._addCard(areaId, placement, 0)}>
-                  <ha-icon icon="mdi:plus"></ha-icon>
-                  <span>${this._t('layout.add_card')}</span>
-                </button>
-              `
-            : nothing}
         </div>
       </div>
     `;
@@ -14642,9 +14788,9 @@ export class DwainsLayoutCard extends LitElement {
         entry,
         this._placementIndexForCard(entry, placementCounts)
       ))}
-      ${this._editMode && canEdit ? html`
+      ${this._editMode && canEdit && slotIndex === entityCount ? html`
         <button
-          class="dd-add-card dd-domain-add-card ${dragOver ? 'drag-over' : ''}"
+          class="dd-add-card dd-domain-add-card dd-domain-add-card-final ${dragOver ? 'drag-over' : ''}"
           @click=${() => this._addCard(areaId, placement, domainPlacementCardCount)}
           @dragover=${(event: DragEvent) => this._handleCustomSlotDragOver(event, areaId, placement, domainPlacementCardCount)}
           @drop=${(event: DragEvent) => this._handleCustomCardDrop(event, areaId, placement, domainPlacementCardCount)}
@@ -14656,7 +14802,7 @@ export class DwainsLayoutCard extends LitElement {
     `;
   }
 
-  private _renderUngroupedCustomCardSlot(areaId: string, slotIndex: number) {
+  private _renderUngroupedCustomCardSlot(areaId: string, slotIndex: number, entityCount: number) {
     const canEdit = this._canManageDashboard();
     if (!canEdit && this._editMode) this._editMode = false;
 
@@ -14669,9 +14815,9 @@ export class DwainsLayoutCard extends LitElement {
 
     return html`
       ${cards.map((entry, index) => this._renderCustomCard(areaId, entry, index))}
-      ${this._editMode && canEdit ? html`
+      ${this._editMode && canEdit && slotIndex === entityCount ? html`
         <button
-          class="dd-add-card dd-domain-add-card ${dragOver ? 'drag-over' : ''}"
+          class="dd-add-card dd-domain-add-card dd-domain-add-card-final ${dragOver ? 'drag-over' : ''}"
           @click=${() => this._addCard(areaId, placement, cards.length)}
           @dragover=${(event: DragEvent) => this._handleCustomSlotDragOver(event, areaId, placement, cards.length)}
           @drop=${(event: DragEvent) => this._handleCustomCardDrop(event, areaId, placement, cards.length)}
@@ -15126,22 +15272,21 @@ export class DwainsLayoutCard extends LitElement {
                   class="mobile-domain-title"
                   style=${`--domain-color: ${groupColor};`}
                 >
+                  <ha-icon
+                    class="mobile-domain-leading-chevron"
+                    icon=${groupCollapsed ? 'mdi:chevron-down' : 'mdi:chevron-up'}
+                    aria-hidden="true"
+                  ></ha-icon>
                   <span class="room-domain-icon" aria-hidden="true">
                     <ha-icon icon=${group.key === 'todo' ? 'mdi:clipboard-list-outline' : this._mobileGroupIcon(group.key)}></ha-icon>
                   </span>
                   <span class="mobile-domain-title-copy">
                     <span class="mobile-domain-title-label">${group.name}</span>
                     ${group.entities.length > 0 ? html`
-                      <span class="mobile-domain-count">(${this._tp('common.item', group.entities.length)})</span>
+                      <span class="mobile-domain-count">(${group.entities.length})</span>
                     ` : nothing}
                   </span>
                 </div>
-
-                <ha-icon
-                  class="mobile-domain-center-chevron"
-                  icon=${groupCollapsed ? 'mdi:chevron-down' : 'mdi:chevron-up'}
-                  aria-hidden="true"
-                ></ha-icon>
 
                 <div
                   class="mobile-domain-header-actions"
@@ -15256,7 +15401,7 @@ export class DwainsLayoutCard extends LitElement {
             </div>
           </div>
           <div class="mobile-entity-rail">
-            ${this._renderUngroupedCustomCardSlot(area.area_id, 0)}
+            ${this._renderUngroupedCustomCardSlot(area.area_id, 0, entities.length)}
             ${entities.map((entity, entityIndex) => {
               const groupKey = this._mobileEntityTypeKey(entity.entity_id) || 'other';
               const groupIndex = groupIndexes.get(groupKey) || 0;
@@ -15274,7 +15419,7 @@ export class DwainsLayoutCard extends LitElement {
                   entities.map(item => item.entity_id)
                 )}
                 ${this._renderDomainCustomCardSlot(area.area_id, groupKey, groupIndex + 1, groupTotal)}
-                ${this._renderUngroupedCustomCardSlot(area.area_id, entityIndex + 1)}
+                ${this._renderUngroupedCustomCardSlot(area.area_id, entityIndex + 1, entities.length)}
               `;
             })}
           </div>
