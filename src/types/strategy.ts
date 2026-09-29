@@ -113,6 +113,8 @@ export interface AreasDisplay {
   hidden?: string[];
   order?: string[];
   sort_mode?: AreaSortMode;
+  /** Default entity-type section order used by rooms without an individual override. */
+  group_order?: string[];
 }
 
 // Een blueprint-pagina die de gebruiker heeft toegevoegd (DD3-stijl), volledig
