@@ -4614,7 +4614,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .favorite-icon {
-      width: 34px;
+      width: 31px;
       height: 34px;
       display: inline-flex;
       align-items: center;
@@ -10591,11 +10591,11 @@ export class DwainsLayoutCard extends LitElement {
       max-width: 194px;
       height: 50px;
       min-height: 50px;
-      padding: 7px 9px;
+      padding: 7px 9px 7px 12px;
       flex: 0 0 auto;
       box-sizing: border-box;
       display: grid;
-      grid-template-columns: 34px minmax(0, 1fr);
+      grid-template-columns: 32px minmax(0, 1fr);
       grid-template-rows: 1fr 1fr;
       align-items: center;
       column-gap: 8px;
@@ -10765,6 +10765,42 @@ export class DwainsLayoutCard extends LitElement {
       font-weight: 850;
     }
 
+    .room-header-breadcrumb {
+      min-height: 18px;
+      margin-bottom: 1px;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      color: var(--secondary-text-color);
+      font-size: 10px;
+      font-weight: 700;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .room-header-home-link {
+      width: 20px;
+      height: 20px;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 5px;
+      color: var(--secondary-text-color);
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .room-header-home-link:hover {
+      color: var(--primary-color);
+      background: color-mix(in srgb, var(--primary-color) 8%, transparent);
+    }
+
+    .room-header-home-link ha-icon { --mdc-icon-size: 14px; }
+    .room-header-breadcrumb-chevron { --mdc-icon-size: 12px; opacity: 0.7; }
+
     .room-header-device-count {
       color: var(--secondary-text-color);
       font-size: 11px;
@@ -10851,6 +10887,7 @@ export class DwainsLayoutCard extends LitElement {
       align-items: center;
       justify-content: flex-end;
       gap: 7px;
+      margin-left: 7px !important;
       transform: none !important;
     }
 
@@ -10868,6 +10905,11 @@ export class DwainsLayoutCard extends LitElement {
     .room-favorites-block {
       width: 100%;
       margin: 0;
+      overflow: visible;
+      border: 1px solid color-mix(in srgb, var(--primary-text-color) 7%, transparent);
+      border-radius: 8px;
+      background: var(--card-background-color);
+      box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
     }
 
     .room-favorites-header {
@@ -11073,6 +11115,7 @@ export class DwainsLayoutCard extends LitElement {
       align-items: center;
       justify-content: flex-end;
       gap: 6px;
+      margin-right: 2px;
     }
 
     .room-ui-v2 .mobile-domain-master {
@@ -11284,6 +11327,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .room-header-icon ha-icon { --mdc-icon-size: 27px; }
+      .room-header-breadcrumb { display: none; }
       .room-ui-v2 .room-header .area-title { font-size: 20px; }
       .room-header-device-count { font-size: 10px; }
 
@@ -11707,39 +11751,41 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
-    /* Time/date/weather stay stacked, but compact enough to match the house-information row height. */
+    /* Desktop meta uses the available horizontal space: time/date stacked, weather beside it. */
     @media (min-width: 769px) {
       .header-time-weather {
-        min-width: 112px;
+        min-width: 176px;
         height: 50px;
-        flex-direction: column;
-        align-items: flex-end;
-        justify-content: center;
-        gap: 2px;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
       }
 
       .header-time-section {
-        min-width: 0;
-        gap: 0;
+        min-width: 76px;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 1px;
       }
 
       .header-time {
-        font-size: 17px;
-        line-height: 1;
+        font-size: 18px;
+        line-height: 1.05;
       }
 
       .header-date {
-        font-size: 9px;
-        line-height: 1;
+        font-size: 10px;
+        line-height: 1.05;
       }
 
       .weather-compact {
-        min-height: 24px;
-        padding: 2px 8px;
+        min-height: 30px;
+        padding: 3px 9px;
       }
 
       .weather-icon-compact ha-icon {
-        --mdc-icon-size: 17px;
+        --mdc-icon-size: 18px;
       }
 
       .weather-temp-compact {
@@ -11856,6 +11902,9 @@ export class DwainsLayoutCard extends LitElement {
     this._startTimeUpdate();
     this._initializeObservers();
     makeDialogManager(this);
+    requestAnimationFrame(() => this._restorePendingRoomDragScroll());
+    window.setTimeout(() => this._restorePendingRoomDragScroll(), 120);
+    window.setTimeout(() => this._restorePendingRoomDragScroll(), 420);
   }
 
   protected override willUpdate(changedProps: PropertyValues): void {
@@ -12065,10 +12114,12 @@ export class DwainsLayoutCard extends LitElement {
     requestAnimationFrame(restore);
     window.setTimeout(restore, 90);
     window.setTimeout(restore, 240);
+    window.setTimeout(restore, 600);
+    window.setTimeout(restore, 1200);
     window.setTimeout(() => {
       restore();
       try { window.sessionStorage.removeItem('dd-next-room-dnd-scroll'); } catch {}
-    }, 420);
+    }, 1800);
 
     return true;
   }
@@ -12135,11 +12186,20 @@ export class DwainsLayoutCard extends LitElement {
   }
 
   private _resetAreaHeaderAfterNavigation(): void {
+    if (this._restorePendingRoomDragScroll()) return;
     this._resetAreaHeaderScrollState(true);
-    requestAnimationFrame(() => this._resetAreaHeaderScrollState(true));
-    requestAnimationFrame(() => requestAnimationFrame(() => this._resetAreaHeaderScrollState(true)));
-    window.setTimeout(() => this._resetAreaHeaderScrollState(true), 80);
-    window.setTimeout(() => this._resetAreaHeaderScrollState(true), 220);
+    requestAnimationFrame(() => {
+      if (!this._restorePendingRoomDragScroll()) this._resetAreaHeaderScrollState(true);
+    });
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      if (!this._restorePendingRoomDragScroll()) this._resetAreaHeaderScrollState(true);
+    }));
+    window.setTimeout(() => {
+      if (!this._restorePendingRoomDragScroll()) this._resetAreaHeaderScrollState(true);
+    }, 80);
+    window.setTimeout(() => {
+      if (!this._restorePendingRoomDragScroll()) this._resetAreaHeaderScrollState(true);
+    }, 220);
   }
 
   private _resetProgressiveMobileRender(): void {
@@ -13310,17 +13370,7 @@ export class DwainsLayoutCard extends LitElement {
   private _statusCardTitle(domain: DomainCount): string {
     const activeLabel = this._statusCardActiveLabel(domain);
     if (activeLabel) {
-      if (domain.count === 1 && domain.entities?.length === 1) {
-        const areaName = this._entityAreaName(domain.entities[0]!);
-        return areaName ? `${activeLabel.singular} · ${areaName}` : activeLabel.singular;
-      }
-      return activeLabel.plural;
-    }
-
-    // Bij precies 1 actief: toon de ruimte ("Motion in Slaapkamer").
-    if (domain.domain !== 'person' && domain.count === 1 && domain.entities?.length === 1) {
-      const areaName = this._entityAreaName(domain.entities[0]!);
-      if (areaName) return `${domain.name} · ${areaName}`;
+      return domain.count === 1 ? activeLabel.singular : activeLabel.plural;
     }
     return domain.name;
   }
@@ -13370,15 +13420,6 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     return undefined;
-  }
-
-  private _entityAreaName(entityId: string): string | undefined {
-    const entityReg = this.config?.entities?.find(e => e.entity_id === entityId);
-    const deviceReg = entityReg?.device_id
-      ? this.config?.devices?.find(d => d.device_id === entityReg.device_id)
-      : null;
-    const areaId = entityReg?.area_id || deviceReg?.area_id || this.hass?.entities?.[entityId]?.area_id;
-    return this.config?.areas?.find(a => a.area_id === areaId)?.name;
   }
 
   private _renderHomeView() {
@@ -14745,37 +14786,34 @@ export class DwainsLayoutCard extends LitElement {
           </div>
 
           <div class="room-header-copy">
+            <div class="room-header-breadcrumb" aria-label="${this._t('sidebar.home')} › ${area.name}">
+              <button
+                class="room-header-home-link"
+                type="button"
+                title=${this._t('sidebar.home')}
+                aria-label=${this._t('navigation.back_home')}
+                @click=${() => this._selectView('home')}
+              >
+                <ha-icon icon="mdi:home-outline"></ha-icon>
+              </button>
+              <ha-icon class="room-header-breadcrumb-chevron" icon="mdi:chevron-right" aria-hidden="true"></ha-icon>
+              <span>${area.name}</span>
+            </div>
             <h1 class="area-title">${area.name}</h1>
             <div class="room-header-device-count">${deviceLabel}</div>
-            <div class="room-header-summary">
-              ${areaData.temperature ? html`
-                <span class="room-summary-item temperature">
-                  <ha-icon icon="mdi:thermometer"></ha-icon>
-                  <span>${areaData.temperature}</span>
-                </span>
-              ` : nothing}
-              ${areaData.humidity ? html`
-                <span class="room-summary-item humidity">
-                  <ha-icon icon="mdi:water-percent"></ha-icon>
-                  <span>${areaData.humidity}</span>
-                </span>
-              ` : nothing}
-              ${areaData.wattage ? html`
-                <span class="room-summary-item power">
-                  <ha-icon icon="mdi:flash"></ha-icon>
-                  <span>${areaData.wattage}</span>
-                </span>
-              ` : nothing}
-              ${roomBadges.map(badge => html`
-                <span
-                  class="room-summary-item status"
-                  style=${`--room-summary-color: ${badge.color};`}
-                >
-                  <ha-icon icon=${badge.icon}></ha-icon>
-                  <span>${badge.count}</span>
-                </span>
-              `)}
-            </div>
+            ${roomBadges.length ? html`
+              <div class="room-header-summary">
+                ${roomBadges.map(badge => html`
+                  <span
+                    class="room-summary-item status"
+                    style=${`--room-summary-color: ${badge.color};`}
+                  >
+                    <ha-icon icon=${badge.icon}></ha-icon>
+                    <span>${badge.count}</span>
+                  </span>
+                `)}
+              </div>
+            ` : nothing}
           </div>
 
           ${this._renderAreaHeaderMetrics(areaData)}
@@ -14814,7 +14852,7 @@ export class DwainsLayoutCard extends LitElement {
     };
 
     return html`
-      <section class="room-favorites-block mobile-domain-group ${this._headerExpanded ? '' : 'is-collapsed'}">
+      <section class="room-favorites-block ${this._headerExpanded ? '' : 'is-collapsed'}">
         <div
           class="mobile-domain-header room-favorites-header expandable-header"
           role="button"
@@ -15391,6 +15429,7 @@ export class DwainsLayoutCard extends LitElement {
     const metrics = [
       areaData.temperature ? this._renderMobileAreaMetric('temperature', this._t('home.temperature'), areaData.temperature, 0, 30, 'area-header-metric') : nothing,
       areaData.humidity ? this._renderMobileAreaMetric('humidity', this._t('home.humidity'), areaData.humidity, 20, 90, 'area-header-metric') : nothing,
+      areaData.wattage ? this._renderMobileAreaMetric('power', this._t('entity.power_usage'), areaData.wattage, undefined, undefined, 'area-header-metric') : nothing,
     ].filter((item) => item !== nothing);
 
     if (!metrics.length) return nothing;
@@ -16011,7 +16050,7 @@ export class DwainsLayoutCard extends LitElement {
         contentScrollTop,
         windowScrollX,
         windowScrollY,
-        expiresAt: Date.now() + 5000,
+        expiresAt: Date.now() + 10000,
       }));
     } catch {
       // Scroll restoration is best-effort only.
