@@ -13,7 +13,7 @@ import { getDeviceClassName, getDomainName } from '../utils/domain-names';
 import { filterHiddenDeviceEntities } from '../utils/device-admission';
 import { findReplacementAssignment, resolveEntityCardConfig } from '../utils/blueprint-replacements';
 import { restrictNonAdminDashboardSettings } from '../utils/security';
-import { sortAreas } from '../utils/area-entities';
+import { AREA_STRATEGY_GROUPS, getAreaEntityGroupKey, getLegacyAreaGroupKey, sortAreas, type AreaStrategyGroup } from '../utils/area-entities';
 import { navigateHomeAssistant } from '../utils/navigation';
 import { isHassDarkTheme } from '../utils/theme';
 import { normalizeHiddenHomeInformationCards, normalizeHiddenHomeSections, normalizeHomeSectionsOrder } from '../utils/home-sections';
@@ -15685,25 +15685,31 @@ export class DwainsLayoutCard extends LitElement {
   }
 
   private _sortAreaEntityGroups(areaId: string, groups: MobileEntityGroup[]): MobileEntityGroup[] {
-    const configuredOrder = this.config?.areas_options?.[areaId]?.group_order || [];
+    const localOrder = this.config?.areas_options?.[areaId]?.group_order || [];
+    const globalOrder = this.config?.areas_display?.group_order || [];
+    const configuredOrder = localOrder.length ? localOrder : globalOrder;
     if (!configuredOrder.length) return groups;
 
-    const directOrder = new Map(configuredOrder.map((groupKey, index) => [groupKey, index]));
-    const strategyOrder: string[] = [];
-    configuredOrder.forEach((groupKey) => {
-      const strategyGroup = this._strategyGroupForMobileGroupKey(groupKey);
-      if (!strategyOrder.includes(strategyGroup)) strategyOrder.push(strategyGroup);
-    });
-    const projectedOrder = new Map(strategyOrder.map((groupKey, index) => [groupKey, index]));
-    const groupIndex = (groupKey: string): number | undefined => directOrder.get(groupKey) ??
-      projectedOrder.get(this._strategyGroupForMobileGroupKey(groupKey));
+    const groupIndex = (groupKey: string): number | undefined => {
+      const direct = configuredOrder.indexOf(groupKey);
+      if (direct >= 0) return direct;
+
+      if ((AREA_STRATEGY_GROUPS as readonly string[]).includes(groupKey)) {
+        const legacy = configuredOrder.indexOf(getLegacyAreaGroupKey(groupKey as AreaStrategyGroup));
+        if (legacy >= 0) return legacy;
+      }
+      return undefined;
+    };
 
     return groups
       .map((group, fallbackIndex) => ({ group, fallbackIndex }))
       .sort((a, b) => {
         const aIndex = groupIndex(a.group.key);
         const bIndex = groupIndex(b.group.key);
-        if (aIndex !== undefined && bIndex !== undefined) return aIndex - bIndex;
+        if (aIndex !== undefined && bIndex !== undefined) {
+          if (aIndex !== bIndex) return aIndex - bIndex;
+          return a.fallbackIndex - b.fallbackIndex;
+        }
         if (aIndex !== undefined) return -1;
         if (bIndex !== undefined) return 1;
         return a.fallbackIndex - b.fallbackIndex;
@@ -15735,21 +15741,14 @@ export class DwainsLayoutCard extends LitElement {
         if (aIndex !== undefined) return -1;
         if (bIndex !== undefined) return 1;
       } else {
-        const aMobileGroup = this._mobileEntityTypeKey(a.entity_id);
-        const bMobileGroup = this._mobileEntityTypeKey(b.entity_id);
-        if (aMobileGroup === bMobileGroup && aMobileGroup) {
-          const mobileGroupOrder = areaOptions?.groups_options?.[aMobileGroup]?.order || [];
-          const aMobileIndex = mobileGroupOrder.indexOf(a.entity_id);
-          const bMobileIndex = mobileGroupOrder.indexOf(b.entity_id);
-          if (aMobileIndex !== -1 && bMobileIndex !== -1) return aMobileIndex - bMobileIndex;
-          if (aMobileIndex !== -1) return -1;
-          if (bMobileIndex !== -1) return 1;
-        }
-
-        const aGroup = this._areaStrategyGroupKey(a.entity_id);
-        const bGroup = this._areaStrategyGroupKey(b.entity_id);
+        const aGroup = this._mobileEntityTypeKey(a.entity_id);
+        const bGroup = this._mobileEntityTypeKey(b.entity_id);
         if (aGroup === bGroup && aGroup) {
-          const groupOrder = areaOptions?.groups_options?.[aGroup]?.order || [];
+          const directOptions = areaOptions?.groups_options?.[aGroup];
+          const legacyOptions = (AREA_STRATEGY_GROUPS as readonly string[]).includes(aGroup)
+            ? areaOptions?.groups_options?.[getLegacyAreaGroupKey(aGroup as AreaStrategyGroup)]
+            : undefined;
+          const groupOrder = directOptions?.order || legacyOptions?.order || [];
           const aIndex = groupOrder.indexOf(a.entity_id);
           const bIndex = groupOrder.indexOf(b.entity_id);
           if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
@@ -16016,30 +16015,14 @@ export class DwainsLayoutCard extends LitElement {
   }
 
   private _areaStrategyGroupKey(entityId: string): string | undefined {
-    const domain = entityId.split('.')[0] || '';
-    const deviceClass = String(this.hass.states[entityId]?.attributes?.device_class || '');
-
-    if (domain === 'light') return 'lights';
-    if (['climate', 'humidifier', 'water_heater', 'fan'].includes(domain)) return 'climate';
-    if (domain === 'cover') return 'covers';
-    if (domain === 'binary_sensor' && ['door', 'garage_door', 'window'].includes(deviceClass)) return 'covers';
-    if (domain === 'media_player') return 'media_players';
-    if (['alarm_control_panel', 'lock', 'camera'].includes(domain)) return 'security';
-    if (domain === 'binary_sensor' && ['motion', 'occupancy', 'presence'].includes(deviceClass)) return 'motion';
-    if (['script', 'scene', 'automation', 'todo'].includes(domain)) return 'actions';
-    if (['switch', 'button', 'input_boolean', 'vacuum', 'lawn_mower', 'valve', 'select', 'number',
-      'input_select', 'input_number', 'counter', 'timer', 'sensor'].includes(domain)) return 'others';
-    return undefined;
+    return getAreaEntityGroupKey(entityId, this.hass) || this._mobileEntityTypeKey(entityId);
   }
 
   private _mobileEntityTypeKey(entityId: string): string | undefined {
+    const concrete = getAreaEntityGroupKey(entityId, this.hass);
+    if (concrete) return concrete;
     const domain = entityId.split('.')[0];
-    if (!domain) return undefined;
-    if (domain === 'binary_sensor') {
-      const deviceClass = this.hass.states[entityId]?.attributes?.device_class;
-      return deviceClass === 'motion' ? 'motion' : 'binary_sensor';
-    }
-    return domain;
+    return domain || undefined;
   }
 
   private _mobileGroupName(key: string): string {
