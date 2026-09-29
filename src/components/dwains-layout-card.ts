@@ -15717,17 +15717,6 @@ export class DwainsLayoutCard extends LitElement {
       .map(({ group }) => group);
   }
 
-  private _strategyGroupForMobileGroupKey(groupKey: string): string {
-    if (groupKey === 'light' || groupKey === 'lights') return 'lights';
-    if (['climate', 'humidifier', 'water_heater', 'fan'].includes(groupKey)) return 'climate';
-    if (groupKey === 'cover' || groupKey === 'covers') return 'covers';
-    if (groupKey === 'media_player' || groupKey === 'media_players') return 'media_players';
-    if (['alarm_control_panel', 'lock', 'camera', 'binary_sensor', 'security'].includes(groupKey)) return 'security';
-    if (groupKey === 'motion') return 'motion';
-    if (['script', 'scene', 'automation', 'todo', 'event', 'actions'].includes(groupKey)) return 'actions';
-    return 'others';
-  }
-
   private _sortAreaEntities(areaId: string, entities: EntityConfig[]): EntityConfig[] {
     const areaOptions = this.config?.areas_options?.[areaId];
     const ungrouped = areaOptions?.entity_layout === 'ungrouped';
