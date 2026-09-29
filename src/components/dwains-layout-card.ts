@@ -15334,7 +15334,7 @@ export class DwainsLayoutCard extends LitElement {
 
     return html`
       <section class="mobile-entities-section layout-${this._mobileEntityLayout}">
-        ${renderedGroups.map((group, groupIndex) => {
+        ${renderedGroups.map((group) => {
           const hasActions = this._mobileControllableEntities(group.entities).length > 0;
           const collapseKey = `${area.area_id}:${group.key}`;
           const groupCollapsed = !this._editMode && Boolean(this._collapsedAreaGroups[collapseKey]);
@@ -15865,25 +15865,6 @@ export class DwainsLayoutCard extends LitElement {
     if (moved) reordered.splice(targetIndex, 0, moved);
     void this._saveAreaOptionsPatch(areaId, { group_order: reordered });
     this._clearGeneratedGroupDragState();
-  }
-
-  private _moveGeneratedGroup(
-    event: Event,
-    areaId: string,
-    orderedGroupKeys: string[],
-    index: number,
-    direction: -1 | 1
-  ): void {
-    event.preventDefault();
-    event.stopPropagation();
-    const targetIndex = index + direction;
-    if (targetIndex < 0 || targetIndex >= orderedGroupKeys.length) return;
-
-    const reordered = [...orderedGroupKeys];
-    const [moved] = reordered.splice(index, 1);
-    if (!moved) return;
-    reordered.splice(targetIndex, 0, moved);
-    void this._saveAreaOptionsPatch(areaId, { group_order: reordered });
   }
 
   private _clearGeneratedGroupDragState = (): void => {
