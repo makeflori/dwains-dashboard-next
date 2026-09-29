@@ -5861,8 +5861,8 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .header-status-scroll {
-      gap: 10px;
-      padding: 2px 2px 4px;
+      gap: 8px;
+      padding: 2px 2px 4px 12px;
     }
 
     .status-card-compact {
@@ -10586,18 +10586,18 @@ export class DwainsLayoutCard extends LitElement {
 
     .status-card-compact {
       width: auto;
-      min-width: 152px;
-      max-width: 210px;
+      min-width: 140px;
+      max-width: 194px;
       height: 50px;
       min-height: 50px;
-      padding: 7px 11px;
+      padding: 7px 9px;
       flex: 0 0 auto;
       box-sizing: border-box;
       display: grid;
       grid-template-columns: 34px minmax(0, 1fr);
       grid-template-rows: 1fr 1fr;
       align-items: center;
-      column-gap: 9px;
+      column-gap: 8px;
       border: 1px solid color-mix(in srgb, var(--primary-text-color) 8%, transparent);
       border-radius: 8px;
       background: var(--card-background-color);
@@ -10640,6 +10640,19 @@ export class DwainsLayoutCard extends LitElement {
       line-height: 1.08;
       text-overflow: ellipsis;
       white-space: nowrap;
+    }
+
+    .status-card-compact:not(.has-value) {
+      grid-template-rows: 1fr;
+    }
+
+    .status-card-compact:not(.has-value) .status-card-title-compact {
+      grid-row: 1;
+      align-self: center;
+      display: flex;
+      align-items: center;
+      min-height: 34px;
+      margin: 0;
     }
 
     .status-card-compact .status-card-subtitle-compact {
@@ -10932,15 +10945,35 @@ export class DwainsLayoutCard extends LitElement {
 
     .sidebar .room-area-button .info-badge,
     .sidebar .room-area-button.has-picture .info-badge {
-      min-width: 23px;
-      height: 18px;
+      min-width: 22px;
+      height: 19px;
       padding: 0 4px;
       flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
       border-radius: 999px;
+      line-height: 1;
     }
 
-    .sidebar .room-area-button .info-badge ha-icon { --mdc-icon-size: 10px; }
-    .sidebar .room-area-button .badge-count { font-size: 9px; }
+    .sidebar .room-area-button .info-badge ha-icon {
+      width: 11px;
+      height: 11px;
+      flex: 0 0 11px;
+      display: block;
+      --mdc-icon-size: 11px;
+      line-height: 0;
+    }
+
+    .sidebar .room-area-button .badge-count {
+      height: 11px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      line-height: 11px;
+    }
 
     .room-ui-v2 .mobile-entities-section {
       display: flex;
@@ -10952,7 +10985,8 @@ export class DwainsLayoutCard extends LitElement {
     .room-ui-v2 .mobile-domain-group {
       min-width: 0;
       margin: 0;
-      padding: 7px 9px 9px;
+      padding: 0;
+      overflow: hidden;
       border: 1px solid color-mix(in srgb, var(--primary-text-color) 7%, transparent);
       border-radius: 8px;
       background: var(--card-background-color);
@@ -10961,16 +10995,22 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .room-ui-v2 .mobile-domain-header {
-      min-height: 32px;
-      margin: 0 0 6px;
-      padding: 0;
+      width: 100%;
+      min-height: 38px;
+      margin: 0;
+      padding: 7px 9px;
+      box-sizing: border-box;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
+      border-radius: 7px 7px 0 0;
     }
 
-    .room-ui-v2 .mobile-domain-group.is-collapsed .mobile-domain-header { margin-bottom: 0; }
+    .room-ui-v2 .mobile-domain-group.is-collapsed .mobile-domain-header {
+      margin-bottom: 0;
+      border-radius: 7px;
+    }
 
     .room-ui-v2 .mobile-domain-title {
       appearance: none;
@@ -11045,7 +11085,7 @@ export class DwainsLayoutCard extends LitElement {
       align-items: stretch;
       gap: 8px;
       margin: 0;
-      padding: 0;
+      padding: 0 9px 9px;
       overflow: visible;
       scroll-padding: 0;
       scroll-snap-type: none;
@@ -11291,19 +11331,21 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .room-ui-v2 .mobile-domain-group {
-        padding: 7px;
+        padding: 0;
         border-radius: 9px;
       }
 
       .room-ui-v2 .mobile-domain-header {
-        min-height: 30px;
-        margin-bottom: 5px;
+        min-height: 36px;
+        margin: 0;
+        padding: 6px 7px;
       }
 
       .room-ui-v2 .mobile-entity-rail,
       .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-rail {
         grid-template-columns: 1fr;
         gap: 6px;
+        padding: 0 7px 7px;
       }
 
       .room-ui-v2 .mobile-entity-card,
@@ -11408,19 +11450,21 @@ export class DwainsLayoutCard extends LitElement {
     .room-favorites-block {
       position: relative;
       box-sizing: border-box;
-      margin-bottom: 8px !important;
+      overflow: visible !important;
+      margin-bottom: 11px !important;
     }
 
     .room-favorites-block::after {
       content: "";
       position: absolute;
-      left: 50%;
-      bottom: -6px;
-      width: 56px;
+      left: 10px;
+      right: 10px;
+      bottom: -7px;
+      width: auto;
       height: 1px;
       border-radius: 999px;
-      background: color-mix(in srgb, var(--primary-color) 28%, transparent);
-      transform: translateX(-50%);
+      background: var(--divider-color);
+      opacity: 0.28;
       pointer-events: none;
     }
 
@@ -11446,18 +11490,17 @@ export class DwainsLayoutCard extends LitElement {
       width: 100%;
       box-sizing: border-box;
       cursor: pointer;
-      border-radius: 6px;
       transition:
         background-color 0.15s ease,
         box-shadow 0.15s ease;
     }
 
     .room-ui-v2 .mobile-domain-header.expandable-header:hover {
-      background: color-mix(in srgb, var(--primary-color) 5%, transparent);
+      background: color-mix(in srgb, var(--primary-color) 6%, var(--card-background-color));
     }
 
     .room-ui-v2 .mobile-domain-header.expandable-header:active {
-      background: color-mix(in srgb, var(--primary-color) 8%, transparent);
+      background: color-mix(in srgb, var(--primary-color) 9%, var(--card-background-color));
     }
 
     .room-ui-v2 .mobile-domain-header.expandable-header:focus-visible {
@@ -11500,18 +11543,9 @@ export class DwainsLayoutCard extends LitElement {
     }
 
 
-    /* Follow-up: keep expandable headers visually centered and use a single, consistent leading chevron. */
+    /* Keep expandable headers visually centered and use a single, consistent leading chevron. */
     .room-ui-v2 .mobile-domain-header.expandable-header {
-      margin-left: -9px;
-      margin-right: -9px;
-      width: calc(100% + 18px);
-      padding: 7px 9px;
       min-height: 38px;
-      border-radius: 8px;
-    }
-
-    .room-ui-v2 .mobile-domain-group.is-collapsed .mobile-domain-header.expandable-header {
-      margin-bottom: -7px;
     }
 
     .room-ui-v2 .mobile-domain-title {
@@ -11589,37 +11623,9 @@ export class DwainsLayoutCard extends LitElement {
       opacity: 0.72;
     }
 
-    /* Room section hover belongs to the complete header surface. */
-    .room-ui-v2 .mobile-domain-header.expandable-header {
-      isolation: isolate;
-    }
-
-    .room-ui-v2 .mobile-domain-header.expandable-header::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      z-index: -1;
-      border-radius: inherit;
-      background: transparent;
-      transition: background-color 0.15s ease;
-      pointer-events: none;
-    }
-
-    .room-ui-v2 .mobile-domain-header.expandable-header:hover {
-      background: transparent;
-    }
-
-    .room-ui-v2 .mobile-domain-header.expandable-header:hover::before {
-      background: color-mix(in srgb, var(--primary-color) 5%, transparent);
-    }
-
-    .room-ui-v2 .mobile-domain-header.expandable-header:active::before {
-      background: color-mix(in srgb, var(--primary-color) 8%, transparent);
-    }
-
     /* Compact sidebar: denser rooms, slimmer badges, vertically centered badge contents. */
     .sidebar .floor-section {
-      margin-bottom: 10px;
+      margin: 0 0 10px;
     }
 
     .sidebar .floor-header {
@@ -11629,6 +11635,10 @@ export class DwainsLayoutCard extends LitElement {
 
     .sidebar .floor-areas {
       gap: 4px;
+    }
+
+    .sidebar .area-button.home-button {
+      margin-bottom: 10px !important;
     }
 
     @media (min-width: 769px) {
@@ -11755,9 +11765,7 @@ export class DwainsLayoutCard extends LitElement {
 
     @media (max-width: 768px) {
       .room-ui-v2 .mobile-domain-header.expandable-header {
-        margin-left: -7px;
-        margin-right: -7px;
-        width: calc(100% + 14px);
+        width: 100%;
         padding: 6px 7px;
       }
 
@@ -11790,224 +11798,15 @@ export class DwainsLayoutCard extends LitElement {
       -webkit-user-drag: element;
     }
 
-    /* Hover must cover the complete type header, not an inset pseudo layer. */
-    .room-ui-v2 .mobile-domain-header.expandable-header::before {
-      display: none;
+    /* Expanded favorites content keeps the same inset as generated room content. */
+    .room-favorites-content {
+      padding: 6px 9px 9px;
     }
 
-    .room-ui-v2 .mobile-domain-header.expandable-header:hover {
-      background: color-mix(in srgb, var(--primary-color) 5%, var(--card-background-color)) !important;
-    }
-
-    .room-ui-v2 .mobile-domain-header.expandable-header:active {
-      background: color-mix(in srgb, var(--primary-color) 8%, var(--card-background-color)) !important;
-    }
-
-    /* House information: slightly narrower cards, a little more inset from the left,
-       and vertically centred single-line labels beside the icon. */
-    @media (min-width: 769px) {
-      .header-status-scroll {
-        padding-left: 7px;
-      }
-
-      .status-card-compact {
-        min-width: 144px;
-        max-width: 200px;
-        padding-left: 10px;
-        padding-right: 10px;
-      }
-
-      .status-card-compact:not(.has-value) .status-card-title-compact {
-        grid-row: 1 / span 2;
-        align-self: center;
-        margin-top: 0;
-      }
-    }
-
-    /* Sidebar badges: lock icon and count to the same optical/vertical centre. */
-    .sidebar .room-area-button .info-badge,
-    .sidebar .room-area-button.has-picture .info-badge {
-      align-items: center !important;
-      justify-content: center !important;
-      line-height: 1 !important;
-    }
-
-    .sidebar .room-area-button .info-badge ha-icon,
-    .sidebar .room-area-button.has-picture .info-badge ha-icon {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      line-height: 1;
-      vertical-align: middle;
-    }
-
-    .sidebar .room-area-button .badge-count,
-    .sidebar .room-area-button.has-picture .badge-count {
-      height: 12px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      line-height: 12px !important;
-      vertical-align: middle;
-    }
-
-    /* The first floor heading should use the same vertical rhythm as following floor headings. */
-    .sidebar .home-button + .floor-section {
-      margin-top: 10px;
-    }
-
-    /* Favorites: reduce the collapsed row height and keep a very subtle divider to the room header. */
-    .room-ui-v2 .room-favorites-block {
-      padding-top: 3px !important;
-      padding-bottom: 3px !important;
-      margin-bottom: 10px !important;
-    }
-
-    .room-ui-v2 .room-favorites-block .room-favorites-header {
-      min-height: 30px !important;
-      margin-left: -7px !important;
-      margin-right: -7px !important;
-      width: calc(100% + 14px) !important;
-      padding: 3px 7px !important;
-    }
-
-    .room-ui-v2 .room-favorites-block::after {
-      left: 8px;
-      right: 8px;
-      bottom: -6px;
-      height: 1px;
-      background: color-mix(in srgb, var(--divider-color) 82%, transparent);
-      opacity: 0.5;
-    }
-
-    /* Final room/sidebar/header corrections.
-       Keep these at the end so older redesign rules cannot override them. */
-
-    /* Type-title hover: fill the complete outer header footprint, including the card padding. */
-    .room-ui-v2 .mobile-domain-group > .mobile-domain-header.expandable-header {
-      margin: -7px -9px 6px !important;
-      width: calc(100% + 18px) !important;
-      min-height: 38px;
-      padding: 7px 9px !important;
-      box-sizing: border-box;
-      border-radius: 8px 8px 6px 6px;
-      background: transparent;
-    }
-
-    .room-ui-v2 .mobile-domain-group.is-collapsed > .mobile-domain-header.expandable-header {
-      margin-bottom: -9px !important;
-      padding-bottom: 9px !important;
-      border-radius: 8px;
-    }
-
-    .room-ui-v2 .mobile-domain-group > .mobile-domain-header.expandable-header:hover {
-      background: color-mix(in srgb, var(--primary-color) 6%, var(--card-background-color)) !important;
-    }
-
-    .room-ui-v2 .mobile-domain-group > .mobile-domain-header.expandable-header:active {
-      background: color-mix(in srgb, var(--primary-color) 9%, var(--card-background-color)) !important;
-    }
-
-    /* Favorites use the same full-width header treatment, but a visibly more compact row. */
-    .room-ui-v2 .room-favorites-block {
-      padding: 4px 9px !important;
-      margin-bottom: 11px !important;
-    }
-
-    .room-ui-v2 .room-favorites-block > .room-favorites-header {
-      min-height: 28px !important;
-      margin: -4px -9px !important;
-      width: calc(100% + 18px) !important;
-      padding: 4px 9px !important;
-      border-radius: 8px !important;
-    }
-
-    .room-ui-v2 .room-favorites-block::after {
-      left: 10px !important;
-      right: 10px !important;
-      bottom: -7px !important;
-      width: auto !important;
-      transform: none !important;
-      background: var(--divider-color) !important;
-      opacity: 0.28 !important;
-    }
-
-    /* House-information cards: narrower, shifted slightly right and vertically centred text. */
-    @media (min-width: 769px) {
-      .global-header .header-status-scroll {
-        padding-left: 14px !important;
-        gap: 8px !important;
-      }
-
-      .global-header .status-card-compact {
-        min-width: 136px !important;
-        max-width: 188px !important;
-        padding-left: 9px !important;
-        padding-right: 9px !important;
-      }
-
-      .global-header .status-card-compact:not(.has-value) .status-card-title-compact {
-        grid-column: 2 !important;
-        grid-row: 1 / span 2 !important;
-        align-self: center !important;
-        margin: 0 !important;
-        display: flex !important;
-        align-items: center !important;
-        min-height: 34px;
-        line-height: 1.12 !important;
-      }
-    }
-
-    /* Sidebar status badges: fixed equal icon/count boxes prevent baseline drift. */
-    .sidebar .room-area-button .info-badge,
-    .sidebar .room-area-button.has-picture .info-badge {
-      min-width: 22px !important;
-      height: 19px !important;
-      padding: 0 4px !important;
-      display: inline-grid !important;
-      grid-auto-flow: column;
-      grid-auto-columns: max-content;
-      align-items: center !important;
-      justify-content: center !important;
-      gap: 2px !important;
-      line-height: 1 !important;
-    }
-
-    .sidebar .room-area-button .info-badge > ha-icon,
-    .sidebar .room-area-button.has-picture .info-badge > ha-icon {
-      width: 11px !important;
-      height: 11px !important;
-      min-width: 11px;
-      display: block !important;
-      align-self: center !important;
-      --mdc-icon-size: 11px !important;
-      line-height: 0 !important;
-    }
-
-    .sidebar .room-area-button .info-badge > .badge-count,
-    .sidebar .room-area-button.has-picture .info-badge > .badge-count {
-      min-width: 7px;
-      height: 11px !important;
-      padding: 0;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      align-self: center !important;
-      font-size: 9px !important;
-      line-height: 11px !important;
-    }
-
-    /* Equal spacing before every floor title: remove the home button's legacy bottom margin. */
-    .sidebar .area-list > .home-button {
-      margin-bottom: 0 !important;
-    }
-
-    .sidebar .area-list > .home-button + .floor-section {
-      margin-top: 10px !important;
-    }
-
-    .sidebar .floor-section + .floor-section {
-      margin-top: 0 !important;
+    .room-ui-v2 .room-favorites-header {
+      min-height: 30px;
+      padding: 5px 9px;
+      border-radius: 7px;
     }
 
   `;
@@ -16098,21 +15897,35 @@ export class DwainsLayoutCard extends LitElement {
     const activeElement = this.shadowRoot?.activeElement as HTMLElement | null;
     activeElement?.blur();
 
+    const restoreScroll = () => {
+      if (contentArea && Math.abs(contentArea.scrollTop - contentScrollTop) > 1) {
+        contentArea.scrollTop = contentScrollTop;
+      }
+      if (Math.abs(window.scrollY - windowScrollY) > 1 || Math.abs(window.scrollX - windowScrollX) > 1) {
+        window.scrollTo(windowScrollX, windowScrollY);
+      }
+    };
+
+    const restoreAfterRender = () => {
+      void this.updateComplete.then(() => {
+        requestAnimationFrame(() => {
+          restoreScroll();
+          requestAnimationFrame(restoreScroll);
+        });
+      });
+    };
+
     const savePromise = this._saveAreaOptionsPatch(areaId, { group_order: reordered });
     this._clearGeneratedGroupDragState();
 
-    // Reordering updates the Lit tree immediately. Restore the viewport after that render
-    // so the moved/focused drag handle cannot pull the room view back to the top.
-    void this.updateComplete.then(() => {
-      requestAnimationFrame(() => {
-        if (contentArea) contentArea.scrollTop = contentScrollTop;
-        if (Math.abs(window.scrollY - windowScrollY) > 1 || Math.abs(window.scrollX - windowScrollX) > 1) {
-          window.scrollTo(windowScrollX, windowScrollY);
-        }
-      });
+    // The local reorder and the later Lovelace config-save can both rerender the room.
+    // Restore after both phases so dropping a group never navigates the viewport to the top.
+    restoreAfterRender();
+    void savePromise.finally(() => {
+      restoreAfterRender();
+      window.setTimeout(restoreScroll, 80);
+      window.setTimeout(restoreScroll, 220);
     });
-
-    void savePromise;
   }
 
   private _clearGeneratedGroupDragState = (): void => {
