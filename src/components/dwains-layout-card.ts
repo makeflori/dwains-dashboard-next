@@ -11539,6 +11539,35 @@ export class DwainsLayoutCard extends LitElement {
       pointer-events: none;
     }
 
+    .mobile-domain-leading-drag-handle {
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border: 0;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      color: var(--secondary-text-color);
+      background: transparent;
+      cursor: grab;
+      touch-action: none;
+    }
+
+    .mobile-domain-leading-drag-handle:hover {
+      background: color-mix(in srgb, var(--primary-color) 8%, transparent);
+      color: var(--primary-color);
+    }
+
+    .mobile-domain-leading-drag-handle:active {
+      cursor: grabbing;
+    }
+
+    .mobile-domain-leading-drag-handle ha-icon {
+      --mdc-icon-size: 17px;
+    }
+
     .mobile-domain-center-chevron,
     .mobile-domain-title-chevron {
       display: none !important;
@@ -11558,6 +11587,96 @@ export class DwainsLayoutCard extends LitElement {
       transform: none;
       background: color-mix(in srgb, var(--primary-color) 18%, var(--divider-color));
       opacity: 0.72;
+    }
+
+    /* Room section hover belongs to the complete header surface. */
+    .room-ui-v2 .mobile-domain-header.expandable-header {
+      isolation: isolate;
+    }
+
+    .room-ui-v2 .mobile-domain-header.expandable-header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      border-radius: inherit;
+      background: transparent;
+      transition: background-color 0.15s ease;
+      pointer-events: none;
+    }
+
+    .room-ui-v2 .mobile-domain-header.expandable-header:hover {
+      background: transparent;
+    }
+
+    .room-ui-v2 .mobile-domain-header.expandable-header:hover::before {
+      background: color-mix(in srgb, var(--primary-color) 5%, transparent);
+    }
+
+    .room-ui-v2 .mobile-domain-header.expandable-header:active::before {
+      background: color-mix(in srgb, var(--primary-color) 8%, transparent);
+    }
+
+    /* Compact sidebar: denser rooms, slimmer badges, vertically centered badge contents. */
+    .sidebar .floor-section {
+      margin-bottom: 10px;
+    }
+
+    .sidebar .floor-header {
+      padding: 5px 8px 3px;
+      margin-bottom: 2px;
+    }
+
+    .sidebar .floor-areas {
+      gap: 4px;
+    }
+
+    @media (min-width: 769px) {
+      .sidebar .room-area-button {
+        margin-bottom: 0;
+      }
+
+      .sidebar .room-area-button .area-content {
+        gap: 5px;
+      }
+
+      .sidebar .room-area-button .area-name,
+      .sidebar .room-area-button.has-picture .area-name {
+        font-size: 14px;
+      }
+
+      .sidebar .room-area-button .area-sensors,
+      .sidebar .room-area-button.has-picture .area-sensors {
+        margin-top: 2px;
+        font-size: 11px;
+      }
+
+      .sidebar .room-area-button .area-info-badges {
+        gap: 3px;
+        min-height: 20px;
+      }
+
+      .sidebar .room-area-button .info-badge,
+      .sidebar .room-area-button.has-picture .info-badge {
+        min-width: 21px;
+        height: 20px;
+        padding: 0 3px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        line-height: 1;
+      }
+
+      .sidebar .room-area-button .info-badge ha-icon {
+        --mdc-icon-size: 12px;
+        flex: 0 0 auto;
+      }
+
+      .sidebar .room-area-button .badge-count {
+        font-size: 10px;
+        line-height: 1;
+      }
     }
 
     /* Time/date/weather stay stacked, but compact enough to match the house-information row height. */
@@ -15218,7 +15337,7 @@ export class DwainsLayoutCard extends LitElement {
         ${renderedGroups.map((group, groupIndex) => {
           const hasActions = this._mobileControllableEntities(group.entities).length > 0;
           const collapseKey = `${area.area_id}:${group.key}`;
-          const groupCollapsed = Boolean(this._collapsedAreaGroups[collapseKey]);
+          const groupCollapsed = !this._editMode && Boolean(this._collapsedAreaGroups[collapseKey]);
           const groupDomain = group.entities[0]?.entity_id.split('.')[0] || group.key;
           const groupDeviceClass = group.entities[0]
             ? this.hass.states[group.entities[0].entity_id]?.attributes?.device_class
@@ -15254,13 +15373,14 @@ export class DwainsLayoutCard extends LitElement {
                 tabindex="0"
                 aria-expanded=${groupCollapsed ? 'false' : 'true'}
                 @click=${() => {
+                  if (this._editMode) return;
                   this._collapsedAreaGroups = {
                     ...this._collapsedAreaGroups,
                     [collapseKey]: !groupCollapsed,
                   };
                 }}
                 @keydown=${(event: KeyboardEvent) => {
-                  if (event.key !== 'Enter' && event.key !== ' ') return;
+                  if (this._editMode || (event.key !== 'Enter' && event.key !== ' ')) return;
                   event.preventDefault();
                   this._collapsedAreaGroups = {
                     ...this._collapsedAreaGroups,
@@ -15272,11 +15392,30 @@ export class DwainsLayoutCard extends LitElement {
                   class="mobile-domain-title"
                   style=${`--domain-color: ${groupColor};`}
                 >
-                  <ha-icon
-                    class="mobile-domain-leading-chevron"
-                    icon=${groupCollapsed ? 'mdi:chevron-down' : 'mdi:chevron-up'}
-                    aria-hidden="true"
-                  ></ha-icon>
+                  ${this._editMode && this._canManageDashboard() ? html`
+                    <button
+                      class="mobile-domain-leading-drag-handle"
+                      type="button"
+                      draggable="true"
+                      title=${this._t('layout.drag_group')}
+                      aria-label=${this._t('layout.drag_group')}
+                      @click=${(event: Event) => event.stopPropagation()}
+                      @dragstart=${(event: DragEvent) => this._handleGeneratedGroupDragStart(
+                        event,
+                        area.area_id,
+                        group.key
+                      )}
+                      @dragend=${this._clearGeneratedGroupDragState}
+                    >
+                      <ha-icon icon="mdi:drag"></ha-icon>
+                    </button>
+                  ` : html`
+                    <ha-icon
+                      class="mobile-domain-leading-chevron"
+                      icon=${groupCollapsed ? 'mdi:chevron-down' : 'mdi:chevron-up'}
+                      aria-hidden="true"
+                    ></ha-icon>
+                  `}
                   <span class="room-domain-icon" aria-hidden="true">
                     <ha-icon icon=${group.key === 'todo' ? 'mdi:clipboard-list-outline' : this._mobileGroupIcon(group.key)}></ha-icon>
                   </span>
@@ -15293,56 +15432,6 @@ export class DwainsLayoutCard extends LitElement {
                   @click=${(event: Event) => event.stopPropagation()}
                   @keydown=${(event: KeyboardEvent) => event.stopPropagation()}
                 >
-                  ${this._editMode && this._canManageDashboard() ? html`
-                    <button
-                      class="mobile-domain-order-button"
-                      type="button"
-                      title=${this._t('settings.move_up')}
-                      aria-label=${this._t('settings.move_up')}
-                      ?disabled=${groupIndex === 0}
-                      @click=${(event: Event) => this._moveGeneratedGroup(
-                        event,
-                        area.area_id,
-                        groups.map(item => item.key),
-                        groupIndex,
-                        -1
-                      )}
-                    >
-                      <ha-icon icon="mdi:arrow-up"></ha-icon>
-                    </button>
-                    <button
-                      class="mobile-domain-order-button"
-                      type="button"
-                      title=${this._t('settings.move_down')}
-                      aria-label=${this._t('settings.move_down')}
-                      ?disabled=${groupIndex === groups.length - 1}
-                      @click=${(event: Event) => this._moveGeneratedGroup(
-                        event,
-                        area.area_id,
-                        groups.map(item => item.key),
-                        groupIndex,
-                        1
-                      )}
-                    >
-                      <ha-icon icon="mdi:arrow-down"></ha-icon>
-                    </button>
-                    <button
-                      class="mobile-domain-drag-handle"
-                      type="button"
-                      draggable="true"
-                      title=${this._t('layout.drag_group')}
-                      aria-label=${this._t('layout.drag_group')}
-                      @dragstart=${(event: DragEvent) => this._handleGeneratedGroupDragStart(
-                        event,
-                        area.area_id,
-                        group.key
-                      )}
-                      @dragend=${this._clearGeneratedGroupDragState}
-                      @click=${(event: Event) => event.stopPropagation()}
-                    >
-                      <ha-icon icon="mdi:drag"></ha-icon>
-                    </button>
-                  ` : nothing}
                   ${hasActions ? this._renderMobileDomainMaster(group) : nothing}
                 </div>
 	              </div>
