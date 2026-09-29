@@ -3174,6 +3174,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       } else if (domain === 'binary_sensor' && state?.attributes?.device_class &&
                  ['motion', 'occupancy', 'presence'].includes(state.attributes.device_class)) {
         grouped.motion.push(entityId);
+      } else if (domain === 'binary_sensor') {
+        grouped.security.push(entityId);
       } else if (domain === 'script' || domain === 'scene' || domain === 'automation' || domain === 'todo') {
         grouped.actions.push(entityId);
       } else if (domain === 'switch' || domain === 'button' || domain === 'input_boolean' ||
