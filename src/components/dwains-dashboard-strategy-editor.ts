@@ -24,6 +24,8 @@ import { openReplacementManager } from "./dwains-replacement-manager-dialog";
 import {
   AREA_STRATEGY_GROUPS,
   AREA_STRATEGY_GROUP_ICONS,
+  getAreaEntityGroupKey,
+  getLegacyAreaGroupKey,
   resolveAreaSortMode,
   sortAreas,
   type AreaStrategyGroup
@@ -182,6 +184,15 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
   @state()
   private _areaPreviewOrder?: string[];
+
+  @state()
+  private _draggedGlobalAreaGroup?: AreaStrategyGroup;
+
+  @state()
+  private _dragOverGlobalAreaGroupIndex?: number;
+
+  @state()
+  private _globalAreaGroupPreviewOrder?: AreaStrategyGroup[];
 
   @state()
   private _expandedDeviceTypes = new Set<string>();
@@ -1361,7 +1372,57 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       { mode: 'custom', icon: 'mdi:drag-vertical' },
     ];
 
+    const globalGroupOrder = this._getGlobalAreaGroupOrder();
+
     return html`
+      <section class="area-order-settings global-area-group-order" aria-labelledby="global-area-group-order-title">
+        <div class="area-order-heading">
+          <strong id="global-area-group-order-title">${this._t('settings.global_area_group_order_title')}</strong>
+        </div>
+        <p class="area-order-list-hint">${this._t('settings.global_area_group_order_description')}</p>
+        <div class="sortable-container area-settings-sortable is-custom-order ${this._draggedGlobalAreaGroup ? 'dragging' : ''}">
+          ${repeat(
+            globalGroupOrder,
+            (group) => group,
+            (group, index) => {
+              const isDragging = this._draggedGlobalAreaGroup === group;
+              const isDragOver = this._dragOverGlobalAreaGroupIndex === index &&
+                this._draggedGlobalAreaGroup && this._draggedGlobalAreaGroup !== group;
+              return html`
+                <div
+                  class="sortable-item dd-area-sortable-row ${isDragging ? 'dragging' : ''} ${isDragOver ? 'drag-over' : ''}"
+                  draggable="true"
+                  @dragstart=${(event: DragEvent) => this._handleGlobalAreaGroupDragStart(event, group)}
+                  @dragend=${this._handleGlobalAreaGroupDragEnd}
+                  @dragover=${(event: DragEvent) => this._handleGlobalAreaGroupDragOver(event, index)}
+                  @dragleave=${this._handleGlobalAreaGroupDragLeave}
+                  @drop=${(event: DragEvent) => this._handleGlobalAreaGroupDrop(event)}
+                >
+                  <div class="area-item">
+                    <div class="handle" aria-hidden="true">
+                      <ha-svg-icon .path=${mdiDrag}></ha-svg-icon>
+                    </div>
+                    <ha-icon
+                      .icon=${AREA_STRATEGY_GROUP_ICONS[group]}
+                      class="area-icon"
+                      style=${`color: ${this._getAreaStrategyGroupColor(group)};`}
+                    ></ha-icon>
+                    <span class="area-name">${this._getGroupTitle(group)}</span>
+                  </div>
+                </div>
+              `;
+            }
+          )}
+        </div>
+        <button
+          class="home-layout-reset area-list-reset"
+          type="button"
+          @click=${this._applyGlobalAreaGroupOrderToAllAreas}
+        >
+          ${this._t('settings.apply_group_order_all_areas')}
+        </button>
+      </section>
+
       <section class="area-order-settings" aria-labelledby="area-order-title">
         <div class="area-order-heading">
           <strong id="area-order-title">${this._t('settings.area_order_title')}</strong>
@@ -1790,7 +1851,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         ` : groupedSections.map((group) => {
           // Get ALL entities for this group (don't filter hidden ones)
           const allGroupEntities = groups[group] || [];
-          const groupOptions = this._config!.areas_options?.[this._area!]?.groups_options?.[group];
+          const concreteGroupOptions = this._config!.areas_options?.[this._area!]?.groups_options?.[group];
+          const legacyGroupOptions = this._config!.areas_options?.[this._area!]?.groups_options?.[getLegacyAreaGroupKey(group)];
+          const groupOptions = concreteGroupOptions || legacyGroupOptions;
           const hiddenEntities = new Set(groupOptions?.hidden || []);
           const entityOrder = groupOptions?.order || [];
 
@@ -3009,17 +3072,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   }
 
   private _getGroupTitle(group: string): string {
-    const titles: Record<string, string> = {
-      lights: "Lighting",
-      climate: "Climate",
-      media_players: "Media Players",
-      covers: "Covers",
-      security: "Security",
-      motion: "Motion",
-      actions: ddLocale(this.hass).toLowerCase().startsWith("de") ? "Aktionen" : "Actions",
-      others: "Sensors"
-    };
-    return titles[group] || group;
+    if (group === 'motion') {
+      return ddLocale(this.hass).toLowerCase().startsWith('de') ? 'Bewegung' : 'Motion';
+    }
+    return getDomainName(this.hass, group);
   }
 
   private _sortEntityIds(entityIds: string[], order: string[]): string[] {
@@ -3037,17 +3093,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   }
 
   private _getAreaStrategyGroupColor(group: AreaStrategyGroup): string {
-    switch (group) {
-      case 'lights': return getDomainColor('light');
-      case 'climate': return getDomainColor('climate');
-      case 'covers': return getDomainColor('cover');
-      case 'media_players': return getDomainColor('media_player');
-      case 'security': return getDomainColor('lock');
-      case 'motion': return getDomainColor('binary_sensor', 'motion');
-      case 'actions': return getDomainColor('scene');
-      case 'others':
-      default: return getDomainColor('switch');
-    }
+    return group === 'motion'
+      ? getDomainColor('binary_sensor', 'motion')
+      : getDomainColor(group);
   }
 
   private _resetAreaEntitySettings = (): void => {
@@ -3133,58 +3181,21 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     areaEntities: { entity_id: string }[],
     hass: HomeAssistant
   ): Record<AreaStrategyGroup, string[]> {
-    const grouped = {
-      lights: [] as string[],
-      climate: [] as string[],
-      covers: [] as string[],
-      media_players: [] as string[],
-      security: [] as string[],
-      motion: [] as string[],
-      actions: [] as string[],
-      others: [] as string[],
-    };
+    const grouped = Object.fromEntries(
+      AREA_STRATEGY_GROUPS.map((group) => [group, [] as string[]])
+    ) as Record<AreaStrategyGroup, string[]>;
 
     areaEntities.forEach((entity) => {
       const entityId = entity.entity_id;
-      const domain = entityId.split('.')[0];
-      const state = hass.states[entityId];
+      if (!hass.states[entityId]) return;
 
-      if (!state) return;
-
-      // Skip hidden and diagnostic entities
       const entityRegistry = hass.entities?.[entityId];
       if (entityRegistry?.hidden_by || entityRegistry?.entity_category === 'diagnostic' || entityRegistry?.entity_category === 'config') {
         return;
       }
 
-      // Group based on domain
-      if (domain === 'light') {
-        grouped.lights.push(entityId);
-      } else if (domain === 'climate' || domain === 'humidifier' || domain === 'water_heater' || domain === 'fan') {
-        grouped.climate.push(entityId);
-      } else if (domain === 'cover') {
-        grouped.covers.push(entityId);
-      } else if (domain === 'binary_sensor' && state?.attributes?.device_class &&
-                 ['door', 'garage_door', 'window'].includes(state.attributes.device_class)) {
-        grouped.covers.push(entityId);
-      } else if (domain === 'media_player') {
-        grouped.media_players.push(entityId);
-      } else if (domain === 'alarm_control_panel' || domain === 'lock' || domain === 'camera') {
-        grouped.security.push(entityId);
-      } else if (domain === 'binary_sensor' && state?.attributes?.device_class &&
-                 ['motion', 'occupancy', 'presence'].includes(state.attributes.device_class)) {
-        grouped.motion.push(entityId);
-      } else if (domain === 'binary_sensor') {
-        grouped.security.push(entityId);
-      } else if (domain === 'script' || domain === 'scene' || domain === 'automation' || domain === 'todo') {
-        grouped.actions.push(entityId);
-      } else if (domain === 'switch' || domain === 'button' || domain === 'input_boolean' ||
-                 domain === 'vacuum' || domain === 'lawn_mower' || domain === 'valve' ||
-                  domain === 'select' || domain === 'number' || domain === 'input_select' ||
-                  domain === 'input_number' || domain === 'counter' || domain === 'timer' ||
-                  domain === 'sensor') {
-        grouped.others.push(entityId);
-      }
+      const group = getAreaEntityGroupKey(entityId, hass);
+      if (group) grouped[group].push(entityId);
     });
 
     return grouped;
@@ -3318,12 +3329,120 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     this._handleHomeCameraDragEnd();
   }
 
+  private _getGlobalAreaGroupOrder(): AreaStrategyGroup[] {
+    const present = new Set<AreaStrategyGroup>();
+    (this._config?.entities || []).forEach((entity) => {
+      const group = getAreaEntityGroupKey(entity.entity_id, this.hass!);
+      if (group) present.add(group);
+    });
+
+    const base = AREA_STRATEGY_GROUPS.filter((group) => present.has(group));
+    const configured = this._config?.areas_display?.group_order || [];
+    if (!configured.length) return [...base];
+
+    return base
+      .map((group, fallbackIndex) => ({ group, fallbackIndex }))
+      .sort((a, b) => {
+        const aIndex = this._areaGroupOrderIndex(a.group, configured);
+        const bIndex = this._areaGroupOrderIndex(b.group, configured);
+        if (aIndex !== undefined && bIndex !== undefined) {
+          if (aIndex !== bIndex) return aIndex - bIndex;
+          return a.fallbackIndex - b.fallbackIndex;
+        }
+        if (aIndex !== undefined) return -1;
+        if (bIndex !== undefined) return 1;
+        return a.fallbackIndex - b.fallbackIndex;
+      })
+      .map(({ group }) => group);
+  }
+
+  private _handleGlobalAreaGroupDragStart(event: DragEvent, group: AreaStrategyGroup): void {
+    this._draggedGlobalAreaGroup = group;
+    this._globalAreaGroupPreviewOrder = [...this._getGlobalAreaGroupOrder()];
+    this._dragOverGlobalAreaGroupIndex = undefined;
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', group);
+    }
+  }
+
+  private _handleGlobalAreaGroupDragOver(event: DragEvent, index: number): void {
+    event.preventDefault();
+    const dragged = this._draggedGlobalAreaGroup;
+    if (!dragged) return;
+
+    const preview = [...(this._globalAreaGroupPreviewOrder || this._getGlobalAreaGroupOrder())];
+    const fromIndex = preview.indexOf(dragged);
+    if (fromIndex >= 0 && fromIndex !== index) {
+      const [moved] = preview.splice(fromIndex, 1);
+      if (moved) preview.splice(index, 0, moved);
+      this._globalAreaGroupPreviewOrder = preview;
+    }
+    this._dragOverGlobalAreaGroupIndex = index;
+    if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+    this.requestUpdate();
+  }
+
+  private _handleGlobalAreaGroupDragLeave = (event: DragEvent): void => {
+    const currentTarget = event.currentTarget as HTMLElement | null;
+    const relatedTarget = event.relatedTarget as Node | null;
+    if (!currentTarget?.contains(relatedTarget)) this._dragOverGlobalAreaGroupIndex = undefined;
+  };
+
+  private _handleGlobalAreaGroupDrop(event: DragEvent): void {
+    event.preventDefault();
+    if (!this._config || !this._draggedGlobalAreaGroup) return;
+    const order = this._globalAreaGroupPreviewOrder || this._getGlobalAreaGroupOrder();
+
+    this._fireConfigChanged({
+      ...this._config,
+      areas_display: {
+        ...this._config.areas_display,
+        group_order: [...order],
+      },
+    });
+    this._handleGlobalAreaGroupDragEnd();
+  }
+
+  private _handleGlobalAreaGroupDragEnd = (): void => {
+    this._draggedGlobalAreaGroup = undefined;
+    this._dragOverGlobalAreaGroupIndex = undefined;
+    this._globalAreaGroupPreviewOrder = undefined;
+  };
+
+  private _applyGlobalAreaGroupOrderToAllAreas = (): void => {
+    if (!this._config) return;
+    const order = this._getGlobalAreaGroupOrder();
+    const nextAreaOptions = { ...this._config.areas_options };
+
+    (this._config.areas || []).forEach((area) => {
+      nextAreaOptions[area.area_id] = {
+        ...nextAreaOptions[area.area_id],
+        group_order: [...order],
+      };
+    });
+
+    this._fireConfigChanged({
+      ...this._config,
+      areas_display: {
+        ...this._config.areas_display,
+        group_order: [...order],
+      },
+      areas_options: nextAreaOptions,
+    });
+  };
+
   private _resetAreasConfiguration = (): void => {
     if (!this._config) return;
     this._areaPreviewOrder = undefined;
     this._fireConfigChanged({
       ...this._config,
-      areas_display: undefined,
+      areas_display: {
+        ...this._config.areas_display,
+        hidden: [],
+        order: [],
+        sort_mode: undefined,
+      },
     });
   };
 
@@ -3496,36 +3615,29 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     });
   }
 
-  private _strategyGroupForOrderKey(groupKey: string): AreaStrategyGroup {
-    if ((AREA_STRATEGY_GROUPS as readonly string[]).includes(groupKey)) {
-      return groupKey as AreaStrategyGroup;
-    }
-    if (groupKey === 'light') return 'lights';
-    if (['climate', 'humidifier', 'water_heater', 'fan'].includes(groupKey)) return 'climate';
-    if (groupKey === 'cover') return 'covers';
-    if (groupKey === 'media_player') return 'media_players';
-    if (['alarm_control_panel', 'lock', 'camera', 'binary_sensor'].includes(groupKey)) return 'security';
-    if (groupKey === 'motion') return 'motion';
-    if (['script', 'scene', 'automation', 'todo', 'event'].includes(groupKey)) return 'actions';
-    return 'others';
+  private _areaGroupOrderIndex(group: AreaStrategyGroup, configuredOrder: readonly string[]): number | undefined {
+    const direct = configuredOrder.indexOf(group);
+    if (direct >= 0) return direct;
+
+    const legacy = configuredOrder.indexOf(getLegacyAreaGroupKey(group));
+    return legacy >= 0 ? legacy : undefined;
   }
 
   private _sortAreaStrategyGroups(groups: readonly AreaStrategyGroup[]): AreaStrategyGroup[] {
-    const configuredOrder = this._config?.areas_options?.[this._area || '']?.group_order || [];
+    const localOrder = this._config?.areas_options?.[this._area || '']?.group_order || [];
+    const globalOrder = this._config?.areas_display?.group_order || [];
+    const configuredOrder = localOrder.length ? localOrder : globalOrder;
     if (!configuredOrder.length) return [...groups];
 
-    const projectedOrder: AreaStrategyGroup[] = [];
-    configuredOrder.forEach((groupKey) => {
-      const strategyGroup = this._strategyGroupForOrderKey(groupKey);
-      if (!projectedOrder.includes(strategyGroup)) projectedOrder.push(strategyGroup);
-    });
-    const order = new Map(projectedOrder.map((group, index) => [group, index]));
     return groups
       .map((group, fallbackIndex) => ({ group, fallbackIndex }))
       .sort((a, b) => {
-        const aIndex = order.get(a.group);
-        const bIndex = order.get(b.group);
-        if (aIndex !== undefined && bIndex !== undefined) return aIndex - bIndex;
+        const aIndex = this._areaGroupOrderIndex(a.group, configuredOrder);
+        const bIndex = this._areaGroupOrderIndex(b.group, configuredOrder);
+        if (aIndex !== undefined && bIndex !== undefined) {
+          if (aIndex !== bIndex) return aIndex - bIndex;
+          return a.fallbackIndex - b.fallbackIndex;
+        }
         if (aIndex !== undefined) return -1;
         if (bIndex !== undefined) return 1;
         return a.fallbackIndex - b.fallbackIndex;
@@ -3540,15 +3652,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       ...visibleOrder,
       ...AREA_STRATEGY_GROUPS.filter(group => !visibleOrder.includes(group)),
     ];
-    const previousOrder = this._config.areas_options?.[this._area]?.group_order || [];
-    const previousByGroup = new Map<AreaStrategyGroup, string[]>();
-    previousOrder.forEach((groupKey) => {
-      const strategyGroup = this._strategyGroupForOrderKey(groupKey);
-      const entries = previousByGroup.get(strategyGroup) || [];
-      if (!entries.includes(groupKey)) entries.push(groupKey);
-      previousByGroup.set(strategyGroup, entries);
-    });
-    const groupOrder = completeOrder.flatMap(group => previousByGroup.get(group) || [group]);
 
     this._fireConfigChanged({
       ...this._config,
@@ -3556,7 +3659,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         ...this._config.areas_options,
         [this._area]: {
           ...this._config.areas_options?.[this._area],
-          group_order: groupOrder,
+          group_order: completeOrder,
         },
       },
     });
