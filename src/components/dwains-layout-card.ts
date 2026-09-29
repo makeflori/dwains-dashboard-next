@@ -10578,6 +10578,7 @@ export class DwainsLayoutCard extends LitElement {
       display: flex;
       align-items: center;
       gap: 8px;
+      padding: 0;
       overflow-x: auto;
       scrollbar-width: none;
     }
@@ -10622,11 +10623,14 @@ export class DwainsLayoutCard extends LitElement {
     .status-card-compact .status-card-icon-compact ha-icon { --mdc-icon-size: 19px; }
 
     .status-card-badge-compact {
-      top: -8px;
-      right: -8px;
-      min-width: 22px;
-      height: 22px;
-      padding: 0 5px;
+      top: -7px;
+      right: -11px;
+      min-width: 18px;
+      height: 20px;
+      padding: 0 4px;
+      box-sizing: border-box;
+      font-size: 10px;
+      line-height: 1;
     }
 
     .status-card-compact .status-card-title-compact {
@@ -11607,7 +11611,7 @@ export class DwainsLayoutCard extends LitElement {
       display: none !important;
     }
 
-    /* The separator belongs below Favorites in both states; never use the global header's blue expanded border in area view. */
+    /* Compact Favorites row with a quiet divider before the room header. */
     .room-favorites-block {
       margin-bottom: 12px !important;
     }
@@ -11619,8 +11623,8 @@ export class DwainsLayoutCard extends LitElement {
       width: auto;
       height: 1px;
       transform: none;
-      background: color-mix(in srgb, var(--primary-color) 18%, var(--divider-color));
-      opacity: 0.72;
+      background: var(--divider-color);
+      opacity: 0.42;
     }
 
     /* Compact sidebar: denser rooms, slimmer badges, vertically centered badge contents. */
@@ -11668,24 +11672,38 @@ export class DwainsLayoutCard extends LitElement {
 
       .sidebar .room-area-button .info-badge,
       .sidebar .room-area-button.has-picture .info-badge {
-        min-width: 21px;
-        height: 20px;
-        padding: 0 3px;
-        display: inline-flex;
+        min-width: 22px;
+        height: 19px;
+        padding: 0 4px;
+        display: inline-grid;
+        grid-template-columns: 11px max-content;
         align-items: center;
         justify-content: center;
-        gap: 2px;
+        column-gap: 2px;
         line-height: 1;
       }
 
-      .sidebar .room-area-button .info-badge ha-icon {
-        --mdc-icon-size: 12px;
-        flex: 0 0 auto;
+      .sidebar .room-area-button .info-badge ha-icon,
+      .sidebar .room-area-button.has-picture .info-badge ha-icon {
+        width: 11px;
+        height: 11px;
+        display: block;
+        align-self: center;
+        --mdc-icon-size: 11px;
+        line-height: 0;
+        transform: translateY(-0.5px);
       }
 
-      .sidebar .room-area-button .badge-count {
-        font-size: 10px;
-        line-height: 1;
+      .sidebar .room-area-button .badge-count,
+      .sidebar .room-area-button.has-picture .badge-count {
+        height: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        align-self: center;
+        font-size: 9px;
+        line-height: 11px;
+        transform: translateY(0.5px);
       }
     }
 
@@ -11803,10 +11821,23 @@ export class DwainsLayoutCard extends LitElement {
       padding: 6px 9px 9px;
     }
 
-    .room-ui-v2 .room-favorites-header {
-      min-height: 30px;
-      padding: 5px 9px;
+    .room-ui-v2 .mobile-domain-header.room-favorites-header.expandable-header {
+      min-height: 32px;
+      padding: 3px 9px;
       border-radius: 7px;
+    }
+
+    .room-ui-v2 .room-favorites-title {
+      min-height: 20px;
+    }
+
+    .room-ui-v2 .room-favorites-title .room-domain-icon {
+      width: 19px;
+      height: 19px;
+    }
+
+    .room-ui-v2 .room-favorites-title .room-domain-icon ha-icon {
+      --mdc-icon-size: 16px;
     }
 
   `;
@@ -11988,6 +12019,59 @@ export class DwainsLayoutCard extends LitElement {
       this._setAreaHeaderStuckForScroll(this._pendingAreaScrollTop, true);
     });
   };
+
+  private _restorePendingRoomDragScroll(): boolean {
+    if (this._selectedView !== 'area' || !this._selectedArea) return false;
+
+    let snapshot: {
+      areaId: string;
+      pathname: string;
+      contentScrollTop: number;
+      windowScrollX: number;
+      windowScrollY: number;
+      expiresAt: number;
+    } | null = null;
+
+    try {
+      const raw = window.sessionStorage.getItem('dd-next-room-dnd-scroll');
+      if (raw) snapshot = JSON.parse(raw);
+    } catch {
+      return false;
+    }
+
+    if (
+      !snapshot ||
+      snapshot.expiresAt < Date.now() ||
+      snapshot.areaId !== this._selectedArea ||
+      snapshot.pathname !== window.location.pathname
+    ) {
+      try { window.sessionStorage.removeItem('dd-next-room-dnd-scroll'); } catch {}
+      return false;
+    }
+
+    const restore = () => {
+      const contentArea = this.shadowRoot?.querySelector('.content-area') as HTMLElement | null;
+      if (contentArea && Math.abs(contentArea.scrollTop - snapshot!.contentScrollTop) > 1) {
+        contentArea.scrollTop = snapshot!.contentScrollTop;
+      }
+      if (
+        Math.abs(window.scrollX - snapshot!.windowScrollX) > 1 ||
+        Math.abs(window.scrollY - snapshot!.windowScrollY) > 1
+      ) {
+        window.scrollTo(snapshot!.windowScrollX, snapshot!.windowScrollY);
+      }
+    };
+
+    requestAnimationFrame(restore);
+    window.setTimeout(restore, 90);
+    window.setTimeout(restore, 240);
+    window.setTimeout(() => {
+      restore();
+      try { window.sessionStorage.removeItem('dd-next-room-dnd-scroll'); } catch {}
+    }, 420);
+
+    return true;
+  }
 
   private _scrollContentAreaToTop(): void {
     const scrollContainer = this.shadowRoot?.querySelector('.content-area') as HTMLElement | null;
@@ -12553,10 +12637,14 @@ export class DwainsLayoutCard extends LitElement {
       this._resetProgressiveMobileRender();
 
       if (this._selectedView === 'area') {
-        this._resetAreaHeaderAfterNavigation();
+        if (!this._restorePendingRoomDragScroll()) {
+          this._resetAreaHeaderAfterNavigation();
+        }
       } else {
         this._resetAreaHeaderScrollState(false);
       }
+    } else if (changedProps.has('config') && this._selectedView === 'area') {
+      this._restorePendingRoomDragScroll();
     }
 
     if (
@@ -15849,6 +15937,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     event.stopPropagation();
+    (event.currentTarget as HTMLElement | null)?.blur();
     this._clearCustomCardDragState();
     this._clearGeneratedCardDragState();
     this._generatedGroupDrag = { areaId, groupKey };
@@ -15914,6 +16003,19 @@ export class DwainsLayoutCard extends LitElement {
         });
       });
     };
+
+    try {
+      window.sessionStorage.setItem('dd-next-room-dnd-scroll', JSON.stringify({
+        areaId,
+        pathname: window.location.pathname,
+        contentScrollTop,
+        windowScrollX,
+        windowScrollY,
+        expiresAt: Date.now() + 5000,
+      }));
+    } catch {
+      // Scroll restoration is best-effort only.
+    }
 
     const savePromise = this._saveAreaOptionsPatch(areaId, { group_order: reordered });
     this._clearGeneratedGroupDragState();
