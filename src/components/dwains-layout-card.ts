@@ -14316,8 +14316,6 @@ export class DwainsLayoutCard extends LitElement {
               ` : nothing}
             </div>
           ` : nothing}
-            </div>
-          ` : nothing}
         </div>
       </div>
     `;
