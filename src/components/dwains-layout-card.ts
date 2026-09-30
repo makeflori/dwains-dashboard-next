@@ -14584,6 +14584,184 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
+
+    /* 2026-09-30 entity-card refinements */
+    @media (min-width: 769px) {
+      /* Favorites: identical component in Home and room header; use every pixel for text. */
+      .home-favorites-section .favorite-card-wrapper,
+      .header-favorites .favorite-card-wrapper,
+      .room-favorites-content .favorite-card-wrapper {
+        grid-template-columns: 32px minmax(0, 1fr) auto !important;
+        gap: 5px !important;
+        padding: 6px 7px !important;
+      }
+
+      .home-favorites-section .favorite-icon,
+      .header-favorites .favorite-icon,
+      .room-favorites-content .favorite-icon {
+        width: 32px !important;
+        height: 32px !important;
+      }
+
+      .home-favorites-section .favorite-body,
+      .header-favorites .favorite-body,
+      .room-favorites-content .favorite-body {
+        height: 32px !important;
+        gap: 2px !important;
+      }
+
+      .home-favorites-section .favorite-name,
+      .header-favorites .favorite-name,
+      .room-favorites-content .favorite-name {
+        font-size: 10px !important;
+        letter-spacing: -0.2px !important;
+      }
+
+      .home-favorites-section .favorite-name.is-long,
+      .header-favorites .favorite-name.is-long,
+      .room-favorites-content .favorite-name.is-long {
+        font-size: 9px !important;
+        letter-spacing: -0.28px !important;
+      }
+
+      .home-favorites-section .favorite-name.is-very-long,
+      .header-favorites .favorite-name.is-very-long,
+      .room-favorites-content .favorite-name.is-very-long {
+        font-size: 8px !important;
+        letter-spacing: -0.32px !important;
+      }
+
+      .home-favorites-section .favorite-meta,
+      .header-favorites .favorite-meta,
+      .room-favorites-content .favorite-meta {
+        font-size: 8.7px !important;
+        gap: 2px !important;
+      }
+
+      .home-favorites-section .favorite-quick-action,
+      .header-favorites .favorite-quick-action,
+      .room-favorites-content .favorite-quick-action {
+        width: 36px !important;
+        height: 21px !important;
+      }
+
+      .home-favorites-section .favorite-end,
+      .header-favorites .favorite-end,
+      .room-favorites-content .favorite-end {
+        height: 32px !important;
+        margin-left: 2px !important;
+      }
+
+      .header-favorites .favorites-grid,
+      .room-favorites-content .favorites-grid {
+        grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+      }
+
+      /* Light controls: only rendered while ON. Keep cards compact and place icons after slider. */
+      .room-ui-v2 .mobile-entity-card.has-light-controls,
+      .room-ui-v2 .mobile-entity-card.has-cover-position {
+        min-height: 94px !important;
+        padding-bottom: 6px !important;
+      }
+
+      .mobile-light-control-row {
+        margin-top: 6px !important;
+        grid-template-columns: minmax(0, 1fr) auto !important;
+        gap: 7px !important;
+      }
+
+      .mobile-light-mode-buttons {
+        order: 2;
+        gap: 3px !important;
+      }
+
+      .mobile-light-control-slider {
+        order: 1;
+      }
+
+      .mobile-light-mode-button {
+        width: 27px !important;
+        height: 27px !important;
+      }
+
+      /* Slightly stronger sliders/thumbs for lights and covers. */
+      .mobile-light-control-slider,
+      .mobile-cover-position input[type="range"] {
+        height: 6px !important;
+      }
+
+      .mobile-light-control-slider::-webkit-slider-thumb,
+      .mobile-cover-position input[type="range"]::-webkit-slider-thumb {
+        width: 16px !important;
+        height: 16px !important;
+      }
+
+      .mobile-light-control-slider::-moz-range-thumb,
+      .mobile-cover-position input[type="range"]::-moz-range-thumb {
+        width: 14px !important;
+        height: 14px !important;
+      }
+
+      .mobile-cover-position {
+        margin-top: 7px !important;
+      }
+
+      /* A cover percentage describes the open position, so fill from the left up to that value. */
+      .mobile-cover-position input[type="range"] {
+        background: linear-gradient(
+          90deg,
+          #D66A1F 0%,
+          #D66A1F var(--cover-position),
+          color-mix(in srgb, var(--primary-text-color) 13%, transparent) var(--cover-position),
+          color-mix(in srgb, var(--primary-text-color) 13%, transparent) 100%
+        ) !important;
+      }
+
+      /* Select/input-select: keep the entity icon in its normal slot and the chevron inside the select. */
+      .room-ui-v2 .mobile-entity-card.has-inline-select {
+        min-height: 102px !important;
+        padding: 8px 10px 7px !important;
+        justify-content: flex-start !important;
+        gap: 6px !important;
+      }
+
+      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-main {
+        width: 100% !important;
+        align-items: center !important;
+      }
+
+      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-icon {
+        position: static !important;
+        inset: auto !important;
+        transform: none !important;
+        align-self: center !important;
+      }
+
+      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-content {
+        margin-top: 0 !important;
+        align-self: center !important;
+      }
+
+      .room-ui-v2 .mobile-entity-select {
+        position: relative !important;
+        width: 100% !important;
+        margin-top: 2px !important;
+      }
+
+      .room-ui-v2 .mobile-entity-select .mobile-select-chevron {
+        position: absolute !important;
+        top: 50% !important;
+        right: 11px !important;
+        left: auto !important;
+        bottom: auto !important;
+        margin: 0 !important;
+        transform: translateY(-50%) !important;
+        --mdc-icon-size: 16px !important;
+        pointer-events: none !important;
+      }
+    }
+
   `;
 
   connectedCallback() {
@@ -17470,7 +17648,10 @@ export class DwainsLayoutCard extends LitElement {
           <ha-icon icon=${icon}></ha-icon>
         </div>
         <div class="favorite-body">
-          <div class="favorite-name" title=${name}>${name}</div>
+          <div
+            class="favorite-name ${name.length > 24 ? 'is-very-long' : name.length > 18 ? 'is-long' : ''}"
+            title=${name}
+          >${name}</div>
           <div class="favorite-meta">
             ${areaName ? html`<span class="favorite-area">${areaName}</span>` : nothing}
             ${areaName && formattedState ? html`<span class="favorite-meta-separator">·</span>` : nothing}
@@ -19257,7 +19438,11 @@ export class DwainsLayoutCard extends LitElement {
     const lightMode = domain === 'light'
       ? this._lightControlModeForState(entity.entity_id, state, lightModes)
       : null;
-    const hasLightControls = domain === 'light' && lightModes.length > 0 && lightMode !== null;
+    const hasLightControls =
+      domain === 'light' &&
+      String(state.state || '').toLowerCase() === 'on' &&
+      lightModes.length > 0 &&
+      lightMode !== null;
     const statusText = domain === 'light' && lightMode
       ? this._lightControlStatus(state, lightMode)
       : this._mobileEntityStatusText(state, domain);
@@ -19331,6 +19516,7 @@ export class DwainsLayoutCard extends LitElement {
         ${hasCoverPosition ? html`
           <div
             class="mobile-cover-position"
+            style=${`--cover-position: ${coverPosition}%;`}
             @click=${(event: Event) => event.stopPropagation()}
             @keydown=${(event: KeyboardEvent) => event.stopPropagation()}
           >
@@ -19379,10 +19565,10 @@ export class DwainsLayoutCard extends LitElement {
     const selected = this._lightControlModes[entityId];
     if (selected && modes.includes(selected)) return selected;
 
-    const colorMode = String(state?.attributes?.color_mode || '').toLowerCase();
-    if (colorMode === 'color_temp' && modes.includes('color_temp')) return 'color_temp';
-    if (['hs', 'xy', 'rgb', 'rgbw', 'rgbww'].includes(colorMode) && modes.includes('color')) return 'color';
+    // Keep the room card predictable: brightness is always the initial mode when available.
     if (modes.includes('brightness')) return 'brightness';
+    if (modes.includes('color_temp')) return 'color_temp';
+    if (modes.includes('color')) return 'color';
     return modes[0] || null;
   }
 
@@ -19445,6 +19631,16 @@ export class DwainsLayoutCard extends LitElement {
         @click=${(event: Event) => event.stopPropagation()}
         @keydown=${(event: KeyboardEvent) => event.stopPropagation()}
       >
+        <input
+          class="mobile-light-control-slider"
+          type="range"
+          min=${String(config.min)}
+          max=${String(config.max)}
+          step=${String(config.step)}
+          .value=${String(config.value)}
+          aria-label=${this._lightControlModeLabel(mode)}
+          @change=${(event: Event) => this._handleMobileLightControlChange(event, state, mode)}
+        />
         <div class="mobile-light-mode-buttons">
           ${modes.map(candidate => html`
             <button
@@ -19459,16 +19655,6 @@ export class DwainsLayoutCard extends LitElement {
             </button>
           `)}
         </div>
-        <input
-          class="mobile-light-control-slider"
-          type="range"
-          min=${String(config.min)}
-          max=${String(config.max)}
-          step=${String(config.step)}
-          .value=${String(config.value)}
-          aria-label=${this._lightControlModeLabel(mode)}
-          @change=${(event: Event) => this._handleMobileLightControlChange(event, state, mode)}
-        />
       </div>
     `;
   }
@@ -19571,7 +19757,7 @@ export class DwainsLayoutCard extends LitElement {
             <option value=${option} ?selected=${option === selected}>${option}</option>
           `)}
         </select>
-        <ha-icon icon="mdi:chevron-down"></ha-icon>
+        <ha-icon class="mobile-select-chevron" icon="mdi:chevron-down"></ha-icon>
       </label>
     `;
   }
@@ -20734,7 +20920,7 @@ export class DwainsLayoutCard extends LitElement {
           ${repeat(
             availableFavorites,
             (entityId) => entityId,
-            (entityId) => this._renderFavoriteTile(entityId)
+            (entityId) => this._renderFavoriteCard(entityId)
           )}
         </div>
       </div>
