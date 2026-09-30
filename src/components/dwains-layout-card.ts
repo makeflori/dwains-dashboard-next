@@ -16284,9 +16284,7 @@ export class DwainsLayoutCard extends LitElement {
   }
 
   private _sortAreaEntityGroups(areaId: string, groups: MobileEntityGroup[]): MobileEntityGroup[] {
-    const localOrder = this.config?.areas_options?.[areaId]?.group_order || [];
-    const globalOrder = this.config?.areas_display?.group_order || [];
-    const configuredOrder = localOrder.length ? localOrder : globalOrder;
+    const configuredOrder = this.config?.areas_options?.[areaId]?.group_order || [];
     if (!configuredOrder.length) return groups;
 
     const groupIndex = (groupKey: string): number | undefined => {
