@@ -503,6 +503,8 @@ export const ru = {
   'settings.visible_in_dd': 'Видимо в DD',
   'settings.hidden_in_dd': 'Скрыто в DD',
   'settings.discard_confirm': 'Отменить несохранённые настройки панели?',
+  'settings.discard_title': 'Отменить изменения?',
+  'settings.discard_action': 'Отменить',
 
   'settings.show_suggested_favorites': "Показывать предложенное избранное",
   'settings.suggested_favorites_description': "Добавляет часто используемые сущности, предложенные Home Assistant, рядом с вашим собственным избранным. Выбранные вручную элементы всегда сохраняются.",
