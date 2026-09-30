@@ -14047,6 +14047,181 @@ export class DwainsLayoutCard extends LitElement {
       font-size: 10px !important;
     }
 
+
+    /* 2026-09 Home polish: readable favorites, clear Home state, exact Favorites header alignment. */
+    @media (min-width: 769px) {
+      .home-favorites-section .favorites-grid {
+        grid-template-columns: repeat(auto-fit, minmax(245px, 1fr)) !important;
+        gap: 10px !important;
+      }
+
+      .home-favorites-section .favorite-card-wrapper {
+        min-height: 86px !important;
+        height: auto !important;
+        padding: 10px 12px !important;
+        display: grid !important;
+        grid-template-columns: 40px minmax(0, 1fr) auto !important;
+        align-items: center !important;
+        gap: 10px !important;
+      }
+
+      .home-favorites-section .favorite-icon {
+        width: 40px !important;
+        height: 40px !important;
+        margin: 0 !important;
+        align-self: center !important;
+      }
+
+      .home-favorites-section .favorite-body {
+        min-width: 0 !important;
+        overflow: visible !important;
+        align-self: center !important;
+        gap: 3px !important;
+      }
+
+      .home-favorites-section .favorite-name,
+      .home-favorites-section .favorite-area {
+        max-width: 100% !important;
+        display: block !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        white-space: normal !important;
+        overflow-wrap: anywhere !important;
+        -webkit-line-clamp: unset !important;
+        -webkit-box-orient: initial !important;
+      }
+
+      .home-favorites-section .favorite-name {
+        margin: 0 !important;
+        font-size: 13px !important;
+        line-height: 1.12 !important;
+      }
+
+      .home-favorites-section .favorite-area {
+        margin: 0 !important;
+        font-size: 10px !important;
+        line-height: 1.12 !important;
+      }
+
+      .home-favorites-section .favorite-end {
+        width: auto !important;
+        min-width: 0 !important;
+        height: auto !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        gap: 8px !important;
+      }
+
+      .home-favorites-section .favorite-end-state {
+        width: auto !important;
+        max-width: none !important;
+        margin: 0 !important;
+        color: var(--favorite-color) !important;
+        font-size: 10px !important;
+        font-weight: 850 !important;
+        line-height: 1 !important;
+        text-align: right !important;
+        overflow: visible !important;
+        white-space: nowrap !important;
+      }
+
+      .home-favorites-section .favorite-quick-action {
+        width: 40px !important;
+        height: 24px !important;
+        margin: 0 !important;
+        flex: 0 0 auto !important;
+      }
+
+      .home-favorites-section .favorite-info-state {
+        width: auto !important;
+        max-width: none !important;
+        height: auto !important;
+        display: block !important;
+        color: var(--favorite-color) !important;
+        font-size: 15px !important;
+        font-weight: 900 !important;
+        line-height: 1 !important;
+        text-align: right !important;
+        overflow: visible !important;
+        white-space: nowrap !important;
+      }
+
+      .sidebar .area-button.home-button {
+        background: color-mix(in srgb, var(--primary-color) 9%, var(--secondary-background-color)) !important;
+        border: 1px solid color-mix(in srgb, var(--primary-color) 22%, var(--divider-color)) !important;
+        box-shadow: 0 5px 12px rgba(15, 23, 42, 0.045) !important;
+      }
+
+      .sidebar .area-button.home-button.selected {
+        background: color-mix(in srgb, var(--primary-color) 20%, var(--card-background-color)) !important;
+        border-color: color-mix(in srgb, var(--primary-color) 46%, var(--divider-color)) !important;
+        box-shadow:
+          inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 12%, transparent),
+          0 8px 18px color-mix(in srgb, var(--primary-color) 10%, transparent) !important;
+      }
+    }
+
+    .room-favorites-header {
+      min-height: 40px !important;
+      height: 40px !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+      display: flex !important;
+      align-items: center !important;
+    }
+
+    .room-favorites-title,
+    .room-favorites-title .mobile-domain-title-copy {
+      min-height: 0 !important;
+      height: auto !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      align-self: center !important;
+      line-height: 1.15 !important;
+      transform: none !important;
+    }
+
+    .room-favorites-title {
+      gap: 6px !important;
+    }
+
+    .room-favorites-title .mobile-domain-title-copy {
+      gap: 5px !important;
+    }
+
+    .room-favorites-title .mobile-domain-leading-chevron,
+    .room-favorites-title .room-domain-icon {
+      width: 18px !important;
+      height: 18px !important;
+      min-height: 18px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      align-self: center !important;
+      line-height: 0 !important;
+      transform: none !important;
+    }
+
+    .room-favorites-title .mobile-domain-title-label,
+    .room-favorites-title .mobile-domain-count {
+      min-height: 0 !important;
+      height: auto !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      align-self: center !important;
+      line-height: 1.15 !important;
+      transform: none !important;
+      vertical-align: middle !important;
+    }
+
   `;
 
   connectedCallback() {
@@ -16892,6 +17067,11 @@ export class DwainsLayoutCard extends LitElement {
     const icon = registry?.icon || state.attributes?.icon || getDeviceClassIcon(domain, deviceClass) || getDomainIcon(domain);
     const activeState = this._favoriteActiveState(state, domain);
     const supportsToggle = this._favoriteSupportsQuickToggle(domain);
+    const favoriteColorDomain =
+      domain === 'sensor' && (deviceClass === 'temperature' || deviceClass === 'humidity')
+        ? deviceClass
+        : domain;
+    const favoriteColor = getDomainColor(favoriteColorDomain, deviceClass);
     const classes = [
       'favorite-card-wrapper',
       `favorite-${domain}`,
@@ -16903,6 +17083,7 @@ export class DwainsLayoutCard extends LitElement {
     return html`
       <article
         class=${classes}
+        style=${`--favorite-color: ${favoriteColor};`}
         data-entity=${entityId}
         role="button"
         tabindex="0"
@@ -16918,6 +17099,7 @@ export class DwainsLayoutCard extends LitElement {
         </div>
         <div class="favorite-end">
           ${supportsToggle ? html`
+            <div class="favorite-end-state">${formattedState}</div>
             <button
               class="favorite-quick-action"
               type="button"
@@ -16926,7 +17108,6 @@ export class DwainsLayoutCard extends LitElement {
             >
               <ha-icon icon=${this._favoriteQuickIcon(state, domain)}></ha-icon>
             </button>
-            <div class="favorite-end-state">${formattedState}</div>
           ` : html`
             <div class="favorite-info-state">${formattedState}</div>
           `}
@@ -20480,8 +20661,8 @@ export class DwainsLayoutCard extends LitElement {
 
   private _houseInfoEnergyViewLabel(): string {
     return String(this.hass?.language || '').toLowerCase().startsWith('de')
-      ? 'Energieansicht öffnen'
-      : 'Open energy view';
+      ? 'Energiesensoren anzeigen'
+      : 'View energy sensors';
   }
 
   private _showHouseStatusEntities(domain: DomainCount) {
@@ -20511,6 +20692,7 @@ export class DwainsLayoutCard extends LitElement {
     showDomainEntitiesDialog(this, {
       domain: 'person',
       config: this.config,
+      entityIds: this._getVisiblePersonEntities().map(person => person.entity_id),
       customTitle: this._t('home.people'),
       viewAllLabel: this._houseInfoDeviceViewLabel(),
       onViewAll: () => this._openDeviceDomain('person'),

@@ -872,6 +872,66 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       }
     }
 
+
+    /* Unified Home-information dialog header and readable two-column cards. */
+    .dialog-title-icon {
+      width: 34px;
+      height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      border-radius: 9px;
+      color: var(--dialog-accent);
+      background: color-mix(in srgb, var(--dialog-accent) 11%, transparent);
+    }
+
+    .dialog-title-icon ha-icon {
+      --mdc-icon-size: 19px;
+    }
+
+    .entities-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .domain-entity-card {
+      min-height: 116px !important;
+      height: auto !important;
+    }
+
+    .domain-entity-name,
+    .domain-entity-meta,
+    .domain-entity-status {
+      overflow: visible !important;
+      text-overflow: clip !important;
+      white-space: normal !important;
+      overflow-wrap: anywhere !important;
+    }
+
+    .domain-entity-status {
+      color: var(--entity-color) !important;
+      font-weight: 800 !important;
+    }
+
+    @media (max-width: 600px) {
+      .dialog-title-line {
+        flex-wrap: wrap !important;
+      }
+
+      .dialog-title-icon {
+        width: 30px;
+        height: 30px;
+      }
+
+      .dialog-header-destination {
+        order: 3;
+      }
+
+      .entities-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      }
+    }
+
   `;
 
   public async showDialog(params: DomainEntitiesDialogParams): Promise<void> {
@@ -1149,6 +1209,13 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       domainTitle = deviceClassTitles[deviceClass] || this._getLocalizedDomainTitle(domain);
     }
 
+    const headerIcon = filterByUnitOfMeasurement === 'W'
+      ? 'mdi:flash'
+      : getDeviceClassIcon(domain, deviceClass) || getDomainIcon(domain);
+    const headerColor = filterByUnitOfMeasurement === 'W'
+      ? getDomainColor('wattage')
+      : this._entityColor(domain, deviceClass);
+
     return html`
       <ha-dialog
         open
@@ -1161,13 +1228,10 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       >
         <ha-dialog-header slot="header">
           <div class="sheet-handle" aria-hidden="true"></div>
-          <ha-icon-button
-            slot="navigationIcon"
-            .label=${this._t('common.close')}
-            .path=${mdiClose}
-            @click=${() => this.closeDialog()}
-          ></ha-icon-button>
-          <span slot="title" class="dialog-title-line">
+          <span slot="title" class="dialog-title-line" style=${`--dialog-accent: ${headerColor};`}>
+            <span class="dialog-title-icon" aria-hidden="true">
+              <ha-icon icon=${headerIcon}></ha-icon>
+            </span>
             <span class="dialog-title-text">${domainTitle}</span>
             ${this._params?.onViewAll ? html`
               <button
@@ -1180,6 +1244,12 @@ export class DwainsDomainEntitiesDialog extends LitElement {
               </button>
             ` : nothing}
           </span>
+          <ha-icon-button
+            slot="actionItems"
+            .label=${this._t('common.close')}
+            .path=${mdiClose}
+            @click=${() => this.closeDialog()}
+          ></ha-icon-button>
         </ha-dialog-header>
 
         <div class="content">
@@ -1789,6 +1859,9 @@ export class DwainsDomainEntitiesDialog extends LitElement {
   }
 
   private _entityColor(domain: string, deviceClass?: string): string {
+    if (domain === 'sensor' && (deviceClass === 'temperature' || deviceClass === 'humidity')) {
+      return getDomainColor(deviceClass, deviceClass);
+    }
     return getDomainColor(domain, deviceClass);
   }
 
