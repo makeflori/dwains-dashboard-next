@@ -1035,8 +1035,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
 
     // Group by area (or by status for persons)
     entities.forEach(entity => {
-      const entityState = this.hass!.states[entity.entity_id];
-
       if (domain === 'person') {
         const groupKey = 'people';
         if (!grouped[groupKey]) {
