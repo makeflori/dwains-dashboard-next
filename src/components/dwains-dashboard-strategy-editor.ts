@@ -1952,7 +1952,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         })}
         ${entityLayout === 'grouped' ? html`
           <button
-            class="home-layout-reset area-list-reset"
+            class="home-layout-reset area-list-reset area-apply-type-order"
             type="button"
             ?disabled=${!this._areaGroupOrderDirty}
             @click=${this._applyAreaGroupOrderToAllAreas}
@@ -5240,6 +5240,17 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         font: inherit;
         font-weight: 700;
         cursor: pointer;
+      }
+
+      .home-layout-reset:disabled {
+        color: var(--disabled-text-color, var(--secondary-text-color));
+        background: color-mix(in srgb, var(--primary-text-color) 5%, transparent);
+        cursor: default;
+        opacity: 0.55;
+      }
+
+      .area-apply-type-order:not(:disabled) {
+        color: var(--primary-color);
       }
 
       .dd-field {
