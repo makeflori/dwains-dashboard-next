@@ -485,6 +485,8 @@ export const es = {
   'settings.visible_in_dd': 'Visible en DD',
   'settings.hidden_in_dd': 'Oculto en DD',
   'settings.discard_confirm': '¿Descartar la configuración del panel no guardada?',
+  'settings.discard_title': '¿Descartar cambios?',
+  'settings.discard_action': 'Descartar',
   'settings.show_suggested_favorites': "Mostrar favoritos sugeridos",
   'settings.suggested_favorites_description': "Añade entidades de uso frecuente sugeridas por Home Assistant junto a tus propios favoritos. Tus favoritos seleccionados manualmente siempre se mantienen.",
   'settings.add_entity': 'Añadir entidad',
