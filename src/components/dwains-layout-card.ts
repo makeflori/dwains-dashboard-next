@@ -12522,6 +12522,159 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
+    /* Follow-up: keep requested density changes coherent instead of content-dependent. */
+    @media (min-width: 769px) {
+      /* House information uses two intentional heights:
+         detailed summary cards are equal; simple active-status cards are compact and equal. */
+      .home-status-grid {
+        align-items: start;
+      }
+
+      .home-status-card {
+        box-sizing: border-box;
+        height: 94px;
+        min-height: 94px;
+        padding: 10px 12px;
+        justify-content: flex-start;
+        gap: 7px;
+      }
+
+      .home-status-card .status-card-icon {
+        width: 38px;
+        height: 38px;
+        margin: 0;
+      }
+
+      .home-status-card .status-card-icon ha-icon {
+        --mdc-icon-size: 21px;
+      }
+
+      .home-status-card .status-card-title {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.1;
+      }
+
+      .home-status-card.has-value .status-card-value {
+        margin: 0;
+      }
+
+      .home-status-card.house-persons-card,
+      .home-status-card.house-climate-card,
+      .home-status-card.house-power-card {
+        height: 162px;
+        min-height: 162px;
+        padding: 12px;
+        gap: 8px;
+        overflow: hidden;
+      }
+
+      .house-person-mini {
+        min-height: 36px;
+        padding: 4px 6px;
+      }
+
+      .house-person-avatar {
+        width: 24px;
+        height: 24px;
+      }
+
+      .house-climate-metric {
+        min-height: 44px;
+      }
+
+      .house-power-list {
+        gap: 3px;
+      }
+
+      .house-power-room {
+        grid-template-columns: 20px minmax(0, 1fr) auto;
+        column-gap: 6px;
+        row-gap: 2px;
+      }
+
+      .house-power-room-icon {
+        width: 20px;
+        height: 20px;
+        border-radius: 7px;
+      }
+
+      .house-power-room-icon ha-icon {
+        --mdc-icon-size: 13px;
+      }
+
+      .house-power-bar {
+        height: 3px;
+      }
+
+      /* The Home affordance should read as navigation, not as a second room tile. */
+      .room-header-home-link {
+        width: 24px;
+        height: 24px;
+        padding: 0;
+        border-radius: 6px;
+        background: transparent;
+        box-shadow: none;
+        color: var(--primary-color);
+      }
+
+      .room-header-home-link:hover {
+        background: color-mix(in srgb, var(--primary-color) 8%, transparent);
+      }
+
+      .room-header-home-link ha-icon {
+        --mdc-icon-size: 18px;
+      }
+
+      /* Favorites matches the generated type header in height, typography and interaction. */
+      .global-header.room-context .room-favorites-block {
+        background: var(--card-background-color);
+        border-color: color-mix(in srgb, var(--primary-text-color) 7%, transparent);
+        box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
+      }
+
+      .global-header.room-context .room-favorites-header {
+        height: 38px !important;
+        min-height: 38px !important;
+        padding: 7px 9px !important;
+        box-sizing: border-box;
+        transition: background-color 0.16s ease, box-shadow 0.16s ease;
+      }
+
+      .global-header.room-context .room-favorites-header:hover {
+        background: color-mix(in srgb, var(--primary-color) 5%, transparent);
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 10%, transparent);
+      }
+
+      .global-header.room-context .room-favorites-title {
+        min-height: 24px !important;
+        align-items: center !important;
+        line-height: 1 !important;
+      }
+
+      .global-header.room-context .room-favorites-title .mobile-domain-leading-chevron,
+      .global-header.room-context .room-favorites-title .room-domain-icon,
+      .global-header.room-context .room-favorites-title .mobile-domain-title-copy,
+      .global-header.room-context .room-favorites-title .mobile-domain-count {
+        align-self: center;
+      }
+
+      .global-header.room-context .room-favorites-title .mobile-domain-title-copy {
+        align-items: center !important;
+        line-height: 1 !important;
+      }
+
+      /* Keep the title block at the same vertical position even when no active room badge exists. */
+      .room-header-summary {
+        min-height: 22px;
+      }
+
+      .room-header-summary.is-empty {
+        visibility: hidden;
+        pointer-events: none;
+      }
+    }
+
   `;
 
   connectedCallback() {
@@ -15478,19 +15631,17 @@ export class DwainsLayoutCard extends LitElement {
               <h1 class="area-title">${area.name}</h1>
             </div>
             <div class="room-header-device-count">${deviceLabel}</div>
-            ${roomBadges.length ? html`
-              <div class="room-header-summary">
-                ${roomBadges.map(badge => html`
-                  <span
-                    class="room-summary-item status"
-                    style=${`--room-summary-color: ${badge.color};`}
-                  >
-                    <ha-icon icon=${badge.icon}></ha-icon>
-                    <span>${badge.count}</span>
-                  </span>
-                `)}
-              </div>
-            ` : nothing}
+            <div class="room-header-summary ${roomBadges.length ? '' : 'is-empty'}" aria-hidden=${roomBadges.length ? 'false' : 'true'}>
+              ${roomBadges.map(badge => html`
+                <span
+                  class="room-summary-item status"
+                  style=${`--room-summary-color: ${badge.color};`}
+                >
+                  <ha-icon icon=${badge.icon}></ha-icon>
+                  <span>${badge.count}</span>
+                </span>
+              `)}
+            </div>
           </div>
 
           ${this._renderAreaHeaderMetrics(areaData)}
