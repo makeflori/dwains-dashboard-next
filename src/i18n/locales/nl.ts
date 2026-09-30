@@ -485,6 +485,8 @@ export const nl = {
   'settings.visible_in_dd': 'Zichtbaar in DD',
   'settings.hidden_in_dd': 'Verborgen in DD',
   'settings.discard_confirm': 'Niet-opgeslagen dashboardinstellingen verwijderen?',
+  'settings.discard_title': 'Wijzigingen verwerpen?',
+  'settings.discard_action': 'Verwerpen',
   'settings.show_suggested_favorites': "Voorgestelde favorieten tonen",
   'settings.suggested_favorites_description': "Voegt vaak gebruikte, door Home Assistant voorgestelde entiteiten toe naast je eigen favorieten. Je handmatig gekozen favorieten blijven altijd behouden.",
   'settings.add_entity': 'Entiteit toevoegen',
