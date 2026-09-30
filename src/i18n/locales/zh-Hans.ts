@@ -663,4 +663,10 @@ export const zhHans = {
   'settings.home_climate_area_excluded': "Excluded from house average",
   'settings.unassigned_area': '未分配',
 
+  'home.outdoor_climate': "室外气候",
+  'home_card.outdoor_climate.label': "室外气候",
+  'home_card.outdoor_climate.description': "来自室外区域的温度和湿度。",
+  'settings.home_outdoor_climate_areas_title': "室外区域",
+  'settings.home_outdoor_climate_areas_description': "选择哪些 Home Assistant 区域位于室外。它们指定的温度和湿度传感器会显示在室外气候卡片中，并且不计入室内气候。",
+  'settings.home_climate_area_outdoor': "用于室外气候",
 } as const satisfies TranslationDictionary;

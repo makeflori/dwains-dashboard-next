@@ -665,4 +665,10 @@ export const de = {
   'settings.home_climate_area_excluded': "Vom Hausdurchschnitt ausgeschlossen",
   'settings.unassigned_area': 'Nicht zugeordnet',
 
+  'home.outdoor_climate': "Außenklima",
+  'home_card.outdoor_climate.label': "Außenklima",
+  'home_card.outdoor_climate.description': "Temperatur und Luftfeuchtigkeit aus Außenbereichen.",
+  'settings.home_outdoor_climate_areas_title': "Außenbereiche",
+  'settings.home_outdoor_climate_areas_description': "Lege fest, welche Home-Assistant-Bereiche draußen liegen. Ihre zugewiesenen Temperatur- und Feuchtigkeitssensoren erscheinen in der Karte Außenklima und zählen nicht zum Raumklima.",
+  'settings.home_climate_area_outdoor': "Für das Außenklima verwendet",
 } as const satisfies TranslationDictionary;

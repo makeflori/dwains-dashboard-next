@@ -665,4 +665,10 @@ export const nl = {
   'settings.home_climate_area_excluded': "Excluded from house average",
   'settings.unassigned_area': 'Niet toegewezen',
 
+  'home.outdoor_climate': "Buitenklimaat",
+  'home_card.outdoor_climate.label': "Buitenklimaat",
+  'home_card.outdoor_climate.description': "Temperatuur en luchtvochtigheid van buitenruimtes.",
+  'settings.home_outdoor_climate_areas_title': "Buitenruimtes",
+  'settings.home_outdoor_climate_areas_description': "Kies welke Home Assistant-ruimtes buiten zijn. Hun gekoppelde temperatuur- en luchtvochtigheidssensoren staan op de kaart Buitenklimaat en tellen niet mee voor het binnenklimaat.",
+  'settings.home_climate_area_outdoor': "Gebruikt voor buitenklimaat",
 } as const satisfies TranslationDictionary;
