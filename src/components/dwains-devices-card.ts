@@ -3310,6 +3310,118 @@ export class DwainsDevicesCard extends LitElement {
         justify-self: start;
       }
     }
+    /* Compact device headers and stable desktop grids */
+    @media (min-width: 769px) {
+      .content-area {
+        scrollbar-gutter: stable;
+      }
+
+      .device-page-header,
+      .devices-overview-view .device-page-header {
+        min-height: 86px;
+        margin-bottom: 14px;
+        padding: 12px 16px;
+        gap: 12px;
+        border-radius: 8px;
+        background:
+          linear-gradient(135deg,
+            color-mix(in srgb, var(--card-background-color) 97%, var(--domain-color) 3%),
+            var(--card-background-color));
+        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
+      }
+
+      .device-header-back {
+        width: 40px;
+        height: 40px;
+        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
+      }
+
+      .device-header-back ha-icon {
+        --mdc-icon-size: 21px;
+      }
+
+      .device-header-main {
+        gap: 11px;
+      }
+
+      .device-header-icon {
+        width: 44px;
+        height: 44px;
+      }
+
+      .device-header-icon ha-icon {
+        --mdc-icon-size: 24px;
+      }
+
+      .device-title {
+        font-size: clamp(22px, 2vw, 30px);
+        line-height: 1.05;
+      }
+
+      .device-subtitle {
+        margin-top: 3px;
+        font-size: 12px;
+      }
+
+      .device-header-count {
+        height: 30px;
+        min-width: 30px;
+        padding: 0 10px;
+        font-size: 12px;
+      }
+
+      .entities-grid,
+      .entities-grid.cover-entities-grid,
+      .entities-grid.light-entities-grid,
+      .entities-grid.sensor-entities-grid,
+      .entities-grid.motion-entities-grid,
+      .maintenance-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .entities-grid.todo-entities-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .recent-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 768px) {
+      .device-page-header,
+      .devices-overview-view .device-page-header {
+        min-height: 88px;
+        margin: 0 -10px 14px;
+        padding: 12px 16px 14px;
+        align-items: center;
+      }
+
+      .device-page-header.has-back .device-header-main {
+        align-items: center;
+        flex-direction: row;
+        gap: 9px;
+      }
+
+      .device-page-header.has-back .device-header-icon {
+        display: inline-flex;
+        width: 38px;
+        height: 38px;
+      }
+
+      .device-page-header.has-back .device-header-icon ha-icon {
+        --mdc-icon-size: 21px;
+      }
+
+      .device-title {
+        font-size: 22px;
+      }
+
+      .device-header-actions {
+        align-self: center;
+      }
+    }
+
   `;
 }
 
