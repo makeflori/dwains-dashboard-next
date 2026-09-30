@@ -254,7 +254,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _settingsPage: SettingsPageKey = "overview";
 
   @state()
-  private _homeSettingsDetail: 'overview' | 'house_information' | 'climate' | 'cameras' | 'custom_cards' = 'overview';
+  private _homeSettingsDetail: 'overview' | 'house_information' | 'climate' | 'outdoor_climate' | 'cameras' | 'custom_cards' = 'overview';
 
   // Dashboard-eigenschappen (naam + sidebar-icoon)
   @state() private _dashboardId?: string;
@@ -2186,7 +2186,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       storedOrder.every((section, index) => section === defaultHomeOrder[index]);
 
     const sectionIsOpen = (section: HomeSectionKey) => {
-      if (section === 'devices') return activeDetail === 'house_information' || activeDetail === 'climate';
+      if (section === 'devices') return activeDetail === 'house_information' || activeDetail === 'climate' || activeDetail === 'outdoor_climate';
       return this._homeSectionDetail(section) === activeDetail;
     };
 
@@ -2428,9 +2428,24 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     });
   }
 
+  private _getHomeOutdoorClimateAreas(): Set<string> {
+    return new Set(this._config?.settings?.home_outdoor_climate_areas || []);
+  }
+
+  private _toggleHomeOutdoorClimateArea(areaId: string, outdoor: boolean): void {
+    if (!this._config) return;
+    const areas = this._getHomeOutdoorClimateAreas();
+    if (outdoor) areas.add(areaId); else areas.delete(areaId);
+    this._fireConfigChanged({
+      ...this._config,
+      settings: { ...this._config.settings, home_outdoor_climate_areas: [...areas] },
+    });
+  }
+
   private _renderHomeClimateAreaSettings() {
     if (!this._config || !this.hass) return nothing;
     const excluded = this._getExcludedHomeClimateAreas();
+    const outdoor = this._getHomeOutdoorClimateAreas();
     const hiddenAreas = new Set(this._config.areas_display?.hidden || []);
     const areas = sortAreas(
       Object.values(this.hass.areas || {}),
@@ -2443,19 +2458,24 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         <p class="dd-inline-description dd-climate-description">${this._t('settings.home_climate_areas_description')}</p>
         <div class="home-info-card-list">
           ${areas.map((area) => {
-            const included = !excluded.has(area.area_id);
+            const isOutdoor = outdoor.has(area.area_id);
+            const included = !isOutdoor && !excluded.has(area.area_id);
             return html`
               <div class="home-info-card-item ${included ? 'enabled' : 'disabled'}">
                 <div class="home-section-icon"><ha-icon icon=${area.icon || 'mdi:floor-plan'}></ha-icon></div>
-                <div class="home-section-copy"><div class="home-section-title">${area.name}</div></div>
+                <div class="home-section-copy">
+                  <div class="home-section-title">${area.name}</div>
+                  ${isOutdoor ? html`<div class="home-section-description">${this._t('settings.home_climate_area_outdoor')}</div>` : nothing}
+                </div>
                 <div class="dd-climate-actions">
                   <button
                     class="home-section-toggle ${included ? 'enabled' : ''}"
                     type="button"
+                    ?disabled=${isOutdoor}
                     title=${included ? this._t('common.hide') : this._t('common.show')}
                     aria-label=${included ? this._t('common.hide') : this._t('common.show')}
                     aria-pressed=${included ? 'true' : 'false'}
-                    @click=${() => this._toggleHomeClimateArea(area.area_id, !included)}
+                    @click=${() => !isOutdoor && this._toggleHomeClimateArea(area.area_id, !included)}
                   >
                     <ha-icon icon=${included ? 'mdi:eye-outline' : 'mdi:eye-off-outline'}></ha-icon>
                   </button>
@@ -2468,12 +2488,53 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     `;
   }
 
+  private _renderHomeOutdoorClimateAreaSettings() {
+    if (!this._config || !this.hass) return nothing;
+    const outdoor = this._getHomeOutdoorClimateAreas();
+    const areas = sortAreas(
+      Object.values(this.hass.areas || {}),
+      { ...this._config.areas_display, hidden: [] },
+      ddLocale(this.hass)
+    );
+
+    return html`
+      <div class="home-info-card-section home-climate-area-settings dd-climate-area-settings">
+        <p class="dd-inline-description dd-climate-description">${this._t('settings.home_outdoor_climate_areas_description')}</p>
+        <div class="home-info-card-list">
+          ${areas.map((area) => {
+            const selected = outdoor.has(area.area_id);
+            return html`
+              <div class="home-info-card-item ${selected ? 'enabled' : 'disabled'}">
+                <div class="home-section-icon"><ha-icon icon=${area.icon || 'mdi:floor-plan'}></ha-icon></div>
+                <div class="home-section-copy"><div class="home-section-title">${area.name}</div></div>
+                <div class="dd-climate-actions">
+                  <button
+                    class="home-section-toggle ${selected ? 'enabled' : ''}"
+                    type="button"
+                    title=${selected ? this._t('common.hide') : this._t('common.show')}
+                    aria-label=${selected ? this._t('common.hide') : this._t('common.show')}
+                    aria-pressed=${selected ? 'true' : 'false'}
+                    @click=${() => this._toggleHomeOutdoorClimateArea(area.area_id, !selected)}
+                  >
+                    <ha-icon icon=${selected ? 'mdi:eye-outline' : 'mdi:eye-off-outline'}></ha-icon>
+                  </button>
+                </div>
+              </div>
+            `;
+          })}
+        </div>
+      </div>
+    `;
+  }
+
   private _renderHomeInformationCardSettings() {
     const hiddenCards = this._getHiddenHomeInformationCards();
-    const climateOpen = this._homeSettingsDetail === 'climate';
 
-    const toggleClimate = () => {
-      this._homeSettingsDetail = climateOpen ? 'house_information' : 'climate';
+    const detailFor = (card: HomeInformationCardKey): 'climate' | 'outdoor_climate' | undefined =>
+      card === 'climate' || card === 'outdoor_climate' ? card : undefined;
+
+    const toggleDetail = (detail: 'climate' | 'outdoor_climate') => {
+      this._homeSettingsDetail = this._homeSettingsDetail === detail ? 'house_information' : detail;
       this._closeInlinePickers();
     };
 
@@ -2483,11 +2544,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           ${DEFAULT_HOME_INFORMATION_CARDS.map((card) => {
             const meta = HOME_INFORMATION_CARD_META[card];
             const enabled = !hiddenCards.has(card);
-            const isClimate = card === 'climate';
+            const detail = detailFor(card);
+            const open = detail ? this._homeSettingsDetail === detail : false;
 
             return html`
-              <div class="dd-flat-subitem ${isClimate && climateOpen ? 'open' : ''}">
-                <div class="dd-flat-subitem-row ${isClimate ? 'has-detail' : ''}" @click=${() => isClimate && toggleClimate()}>
+              <div class="dd-flat-subitem ${open ? 'open' : ''}">
+                <div class="dd-flat-subitem-row ${detail ? 'has-detail' : ''}" @click=${() => detail && toggleDetail(detail)}>
                   <div class="home-section-icon"><ha-icon icon=${meta.icon}></ha-icon></div>
                   <div class="home-section-copy">
                     <div class="home-section-title">${this._t(meta.labelKey)}</div>
@@ -2504,21 +2566,22 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                       <ha-icon icon=${enabled ? 'mdi:eye-outline' : 'mdi:eye-off-outline'}></ha-icon>
                     </button>
                   </div>
-                  ${isClimate ? html`
+                  ${detail ? html`
                     <button
                       class="dd-integrated-chevron"
                       type="button"
-                      aria-expanded=${climateOpen ? 'true' : 'false'}
+                      aria-expanded=${open ? 'true' : 'false'}
                       @click=${(event: Event) => {
                         event.stopPropagation();
-                        toggleClimate();
+                        toggleDetail(detail);
                       }}
                     >
-                      <ha-icon icon=${climateOpen ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
+                      <ha-icon icon=${open ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
                     </button>
                   ` : nothing}
                 </div>
-                ${isClimate && climateOpen ? html`<div class="dd-flat-subdetail">${this._renderHomeClimateAreaSettings()}</div>` : nothing}
+                ${detail === 'climate' && open ? html`<div class="dd-flat-subdetail">${this._renderHomeClimateAreaSettings()}</div>` : nothing}
+                ${detail === 'outdoor_climate' && open ? html`<div class="dd-flat-subdetail">${this._renderHomeOutdoorClimateAreaSettings()}</div>` : nothing}
               </div>
             `;
           })}
