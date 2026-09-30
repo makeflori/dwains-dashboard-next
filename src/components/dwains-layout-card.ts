@@ -215,6 +215,7 @@ export class DwainsLayoutCard extends LitElement {
   @state() private _settingsPageParentTitle = '';
   @state() private _settingsPageDescription = '';
   @state() private _confirmationDialog: ConfirmationDialogState | null = null;
+  @state() private _housePowerDialogOpen = false;
 
   // Performance optimizations
   private _areaEntitiesCache = new Map<string, { entities: EntityConfig[], timestamp: number }>();
@@ -12899,6 +12900,365 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
+    /* Final visual consistency pass for Home and room header. */
+    @media (min-width: 769px) {
+      /* Home status count badges match the compact room/header badge proportions. */
+      .home-status-card .status-card-badge {
+        top: -6px;
+        right: -11px;
+        min-width: 18px;
+        height: 20px;
+        padding: 0 4px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        line-height: 1;
+        box-shadow: 0 3px 8px color-mix(in srgb, var(--status-color) 22%, transparent);
+      }
+
+      /* Place simple status labels in the exact visual center between icon tile and accent line. */
+      .home-status-card:not(.house-persons-card):not(.house-climate-card):not(.house-power-card):not(.has-value) .status-card-title {
+        position: absolute;
+        left: 11px;
+        right: 11px;
+        bottom: 9px;
+        min-height: 18px;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        font-size: 13px;
+        line-height: 1;
+      }
+
+      /* Room meta: time/date equals status-card height; weather is slightly larger but still secondary. */
+      .global-header.room-context .header-time-weather {
+        height: 50px;
+        gap: 12px;
+      }
+
+      .global-header.room-context .header-time-section {
+        width: 94px;
+        min-width: 94px;
+        height: 50px;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: center;
+      }
+
+      .global-header.room-context .header-time {
+        font-size: 24px;
+        line-height: 1;
+      }
+
+      .global-header.room-context .header-date {
+        margin-top: 3px;
+        font-size: 11px;
+        line-height: 1;
+      }
+
+      .global-header.room-context .weather-compact {
+        min-height: 38px;
+        padding: 0 12px;
+        gap: 7px;
+        border-radius: 999px;
+      }
+
+      .global-header.room-context .weather-icon-compact ha-icon {
+        --mdc-icon-size: 18px;
+      }
+
+      .global-header.room-context .weather-temp-compact {
+        font-size: 13px;
+      }
+
+      /* Filled Home breadcrumb reads like navigation but remains distinct from the large room icon. */
+      .room-header-home-link ha-icon {
+        --mdc-icon-size: 19px;
+      }
+
+      /* Sidebar Home follows the room-card rhythm while remaining a special global destination. */
+      .sidebar .area-button.home-button {
+        min-height: 68px !important;
+        height: 68px !important;
+        padding: 8px 10px !important;
+        grid-template-columns: 50px minmax(0, 1fr) auto 20px !important;
+        gap: 9px !important;
+        border-color: color-mix(in srgb, var(--primary-color) 18%, var(--divider-color)) !important;
+        background: color-mix(in srgb, var(--primary-color) 4%, var(--card-background-color)) !important;
+      }
+
+      .sidebar .area-button.home-button .area-icon {
+        width: 50px !important;
+        height: 50px !important;
+        border-radius: 9px !important;
+        background: color-mix(in srgb, var(--primary-color) 12%, var(--card-background-color)) !important;
+      }
+
+      .sidebar .area-button.home-button .area-icon ha-icon {
+        --mdc-icon-size: 25px !important;
+      }
+
+      .sidebar .area-button.home-button .area-name {
+        font-size: 14px;
+        font-weight: 850;
+      }
+
+      .sidebar .area-button.home-button.selected {
+        background: color-mix(in srgb, var(--primary-color) 9%, var(--card-background-color)) !important;
+        box-shadow:
+          inset 3px 0 0 var(--primary-color),
+          inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 14%, transparent),
+          0 6px 14px rgba(15, 23, 42, 0.06) !important;
+      }
+
+      /* Room metric pills: direct icons, no nested circular icon background. */
+      .room-ui-v2 .area-header-metric .metric-ring.metric-icon {
+        width: 24px !important;
+        height: 30px !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+      }
+
+      .room-ui-v2 .area-header-metric .metric-ring.metric-icon ha-icon {
+        --mdc-icon-size: 20px !important;
+      }
+
+      /* Climate card uses exactly the same temperature/humidity colors as the room view. */
+      .house-climate-metric.temperature { --metric-color: #7c67c7 !important; }
+      .house-climate-metric.humidity { --metric-color: #34a6d8 !important; }
+
+      /* Climate metric icons are direct, slightly larger icons without a second circle. */
+      .house-climate-metric-icon {
+        width: 28px !important;
+        height: 34px !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+      }
+
+      .house-climate-metric-icon ha-icon {
+        --mdc-icon-size: 21px !important;
+      }
+
+      /* Desktop section headings are labels, not buttons: color only, no chip/background. */
+      .home-status-heading ha-icon,
+      .home-camera-section .home-status-heading ha-icon,
+      .home-summaries-section .home-status-heading ha-icon,
+      .home-todos-section .home-status-heading ha-icon,
+      .home-custom-cards-section .home-status-heading ha-icon,
+      .home-favorites-section .favorites-header ha-icon {
+        width: 24px !important;
+        height: 24px !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+      }
+
+      .home-status-heading ha-icon { color: var(--primary-color); }
+      .home-camera-section .home-status-heading ha-icon { color: #ef4444; }
+      .home-summaries-section .home-status-heading ha-icon { color: #c56f12; }
+      .home-todos-section .home-status-heading ha-icon { color: #7c3aed; }
+      .home-custom-cards-section .home-status-heading ha-icon { color: #0ea5a8; }
+      .home-favorites-section .favorites-header ha-icon { color: #f59e0b; }
+    }
+
+    /* House power detail dialog mirrors the local Climate-dialog workflow instead of navigating away. */
+    .house-power-dialog-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(8, 13, 24, 0.48);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+    }
+
+    .house-power-dialog {
+      width: min(720px, calc(100vw - 32px));
+      max-height: min(78vh, 760px);
+      padding: 16px;
+      overflow-y: auto;
+      border: 1px solid color-mix(in srgb, var(--divider-color) 72%, transparent);
+      border-radius: 14px;
+      background: var(--card-background-color);
+      color: var(--primary-text-color);
+      box-shadow: 0 24px 64px rgba(8, 13, 24, 0.24);
+      outline: none;
+    }
+
+    .house-power-dialog-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .house-power-dialog-title-wrap {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .house-power-dialog-icon {
+      width: 40px;
+      height: 40px;
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      color: #d88e20;
+      background: color-mix(in srgb, #d88e20 12%, var(--card-background-color));
+    }
+
+    .house-power-dialog-icon ha-icon { --mdc-icon-size: 23px; }
+    .house-power-dialog-title { font-size: 20px; font-weight: 900; line-height: 1.05; }
+    .house-power-dialog-subtitle { margin-top: 3px; color: var(--secondary-text-color); font-size: 12px; font-weight: 700; }
+
+    .house-power-dialog-close {
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      border: 0;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: color-mix(in srgb, var(--primary-text-color) 6%, transparent);
+      color: var(--primary-text-color);
+      cursor: pointer;
+    }
+
+    .house-power-dialog-total {
+      min-height: 72px;
+      margin-bottom: 12px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border-radius: 10px;
+      background: color-mix(in srgb, #d88e20 8%, var(--card-background-color));
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, #d88e20 14%, transparent);
+    }
+
+    .house-power-dialog-total span { font-size: 28px; font-weight: 950; line-height: 1; }
+    .house-power-dialog-total small { margin-top: 4px; color: var(--secondary-text-color); font-size: 11px; font-weight: 750; }
+
+    .house-power-dialog-areas { display: grid; gap: 10px; }
+    .house-power-dialog-area {
+      padding: 11px 12px;
+      border-radius: 10px;
+      background: color-mix(in srgb, var(--primary-background-color) 72%, var(--card-background-color));
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 6%, transparent);
+    }
+
+    .house-power-dialog-area-head {
+      display: grid;
+      grid-template-columns: 30px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .house-power-dialog-area-icon {
+      width: 30px;
+      height: 30px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      color: #d88e20;
+      background: color-mix(in srgb, #d88e20 10%, transparent);
+    }
+
+    .house-power-dialog-area-icon ha-icon { --mdc-icon-size: 17px; }
+    .house-power-dialog-area-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 850; }
+
+    .house-power-dialog-bar {
+      position: relative;
+      height: 5px;
+      margin: 8px 0 6px 38px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: color-mix(in srgb, #d88e20 10%, var(--secondary-background-color));
+    }
+
+    .house-power-dialog-bar span {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: var(--power-width, 0%);
+      min-width: 4px;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #d88e20, #f4c34d);
+    }
+
+    .house-power-dialog-entities {
+      margin-left: 38px;
+      display: grid;
+      gap: 2px;
+    }
+
+    .house-power-dialog-entity {
+      width: 100%;
+      min-height: 30px;
+      padding: 4px 6px;
+      border: 0;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .house-power-dialog-entity:hover {
+      background: color-mix(in srgb, #d88e20 7%, transparent);
+    }
+
+    .house-power-dialog-entity span {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--secondary-text-color);
+      font-size: 12px;
+    }
+
+    .house-power-dialog-entity strong { font-size: 12px; white-space: nowrap; }
+    .house-power-dialog-empty {
+      min-height: 88px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--secondary-text-color);
+      text-align: center;
+    }
+
+    @media (max-width: 768px) {
+      .house-power-dialog-overlay {
+        align-items: flex-end;
+        padding: 12px 12px calc(96px + env(safe-area-inset-bottom, 0px));
+      }
+
+      .house-power-dialog {
+        width: 100%;
+        max-height: 68vh;
+        border-radius: 18px;
+      }
+    }
+
   `;
 
   connectedCallback() {
@@ -13800,6 +14160,7 @@ export class DwainsLayoutCard extends LitElement {
       </div>
       ${this._renderToast()}
       ${this._renderConfirmationDialog()}
+      ${this._renderHousePowerDialog()}
       ${this._renderNotificationsPanel()}
     `;
   }
@@ -14777,7 +15138,6 @@ export class DwainsLayoutCard extends LitElement {
                 >
                   <ha-icon icon=${weatherEntity.attributes.icon || 'mdi:weather-cloudy'}></ha-icon>
                   <span class="weather-temp">${weatherTemperature}</span>
-                  <span class="weather-label">${this._t('home.outside')}</span>
                 </div>
               ` : nothing}
               <div class="welcome-time-section">
@@ -14823,7 +15183,6 @@ export class DwainsLayoutCard extends LitElement {
                 >
                   <ha-icon icon=${weatherEntity.attributes.icon || 'mdi:weather-cloudy'}></ha-icon>
                   <span class="weather-temp">${weatherTemperature}</span>
-                  <span class="weather-label">${this._t('home.outside')}</span>
                 </div>
               ` : nothing}
             </div>
@@ -15044,7 +15403,7 @@ export class DwainsLayoutCard extends LitElement {
     return html`
       <div
         class="home-status-card house-power-card wattage ${powerUsage.sensorCount ? 'has-power' : 'is-empty'}"
-        @click=${() => this._openDeviceDomain('energy')}
+        @click=${this._openHousePowerDialog}
         @keydown=${this._handleHousePowerKeydown}
         data-domain="wattage"
         role="button"
@@ -15148,8 +15507,97 @@ export class DwainsLayoutCard extends LitElement {
   private _handleHousePowerKeydown = (event: KeyboardEvent): void => {
     if (event.key !== 'Enter' && event.key !== ' ') return;
     event.preventDefault();
-    this._openDeviceDomain('energy');
+    this._openHousePowerDialog();
   };
+
+  private _openHousePowerDialog = () => {
+    this._housePowerDialogOpen = true;
+  };
+
+  private _closeHousePowerDialog = () => {
+    this._housePowerDialogOpen = false;
+  };
+
+  private _handleHousePowerDialogKeydown = (event: KeyboardEvent): void => {
+    if (event.key !== 'Escape') return;
+    event.preventDefault();
+    this._closeHousePowerDialog();
+  };
+
+  private _renderHousePowerDialog() {
+    if (!this._housePowerDialogOpen) return nothing;
+
+    const usage = buildHousePowerUsage(this.hass, this.config);
+
+    return html`
+      <div class="house-power-dialog-overlay" @click=${this._closeHousePowerDialog}>
+        <section
+          class="house-power-dialog"
+          role="dialog"
+          aria-modal="true"
+          aria-label=${this._t('home.house_power_usage')}
+          tabindex="0"
+          @click=${(event: Event) => event.stopPropagation()}
+          @keydown=${this._handleHousePowerDialogKeydown}
+        >
+          <div class="house-power-dialog-head">
+            <div class="house-power-dialog-title-wrap">
+              <span class="house-power-dialog-icon"><ha-icon icon="mdi:flash"></ha-icon></span>
+              <div>
+                <div class="house-power-dialog-title">${this._t('home.house_power_usage')}</div>
+                <div class="house-power-dialog-subtitle">${this._tp('devices.live_power_sensor', usage.sensorCount)}</div>
+              </div>
+            </div>
+            <button
+              class="house-power-dialog-close"
+              type="button"
+              title=${this._t('common.close')}
+              aria-label=${this._t('common.close')}
+              @click=${this._closeHousePowerDialog}
+            >
+              <ha-icon icon="mdi:close"></ha-icon>
+            </button>
+          </div>
+
+          <div class="house-power-dialog-total">
+            <span>${usage.formattedTotal || '0 W'}</span>
+            <small>${this._t('home.house_power_usage')}</small>
+          </div>
+
+          ${usage.areas.length ? html`
+            <div class="house-power-dialog-areas">
+              ${usage.areas.map(area => html`
+                <section class="house-power-dialog-area">
+                  <div class="house-power-dialog-area-head">
+                    <span class="house-power-dialog-area-icon"><ha-icon icon=${area.icon}></ha-icon></span>
+                    <span class="house-power-dialog-area-name">${area.name}</span>
+                    <strong>${area.formattedTotal}</strong>
+                  </div>
+                  <div class="house-power-dialog-bar" style=${`--power-width: ${area.percentage}%`}>
+                    <span></span>
+                  </div>
+                  <div class="house-power-dialog-entities">
+                    ${area.entities.map(entity => html`
+                      <button
+                        class="house-power-dialog-entity"
+                        type="button"
+                        @click=${() => this._showMoreInfo(entity.entityId)}
+                      >
+                        <span>${entity.name}</span>
+                        <strong>${entity.formatted}</strong>
+                      </button>
+                    `)}
+                  </div>
+                </section>
+              `)}
+            </div>
+          ` : html`
+            <div class="house-power-dialog-empty">${this._t('home.no_room_power_usage')}</div>
+          `}
+        </section>
+      </div>
+    `;
+  }
 
   private _handleHouseClimateKeydown = (event: KeyboardEvent): void => {
     if (event.key !== 'Enter' && event.key !== ' ') return;
@@ -15849,7 +16297,7 @@ export class DwainsLayoutCard extends LitElement {
                 aria-label=${this._t('navigation.back_home')}
                 @click=${() => this._selectView('home')}
               >
-                <ha-icon icon="mdi:home-outline"></ha-icon>
+                <ha-icon icon="mdi:home"></ha-icon>
               </button>
               <ha-icon class="room-header-home-chevron" icon="mdi:chevron-right" aria-hidden="true"></ha-icon>
               <h1 class="area-title">${area.name}</h1>
