@@ -485,6 +485,8 @@ export const de = {
   'settings.visible_in_dd': 'Sichtbar in DD',
   'settings.hidden_in_dd': 'Versteckt in DD',
   'settings.discard_confirm': 'Nicht gespeicherte Dashboard-Einstellungen verwerfen?',
+  'settings.discard_title': 'Änderungen verwerfen?',
+  'settings.discard_action': 'Verwerfen',
   'settings.show_suggested_favorites': "Vorgeschlagene Favoriten anzeigen",
   'settings.suggested_favorites_description': "Ergänzt deine eigenen Favoriten um häufig verwendete, von Home Assistant vorgeschlagene Entitäten. Deine selbst gewählten Favoriten bleiben immer erhalten.",
   'settings.add_entity': 'Entität hinzufügen',
