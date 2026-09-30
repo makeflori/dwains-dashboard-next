@@ -108,6 +108,8 @@ interface HouseClimateSummary {
   metrics: HouseClimateMetric[];
 }
 
+type HouseClimateScope = 'indoor' | 'outdoor';
+
 interface HomeAreaCamera {
   areaId: string;
   areaName: string;
@@ -178,7 +180,6 @@ export class DwainsLayoutCard extends LitElement {
   @state() private _currentTime = '';
   @state() private _currentDate = '';
   @state() private _mobileNavOpen = false;
-  @state() private _hasRelevantStateChanges = false;
   @state() private _editMode = false;
   @state() private _notificationsOpen = false;
   @state() private _persistentNotifications: PersistentNotification[] = [];
@@ -14272,8 +14273,6 @@ export class DwainsLayoutCard extends LitElement {
 
       if (oldHass && this._shouldUpdateEntities(oldHass, this.hass)) {
         this._invalidateChangedAreaCaches(oldHass, this.hass);
-        // Mark component for re-render to show live updates
-        this._hasRelevantStateChanges = true;
       }
     }
   }
@@ -15015,11 +15014,6 @@ export class DwainsLayoutCard extends LitElement {
 
     if (changedProps.has('_isMobile')) {
       this._restoreAreaSidebarScroll();
-    }
-
-    // Reset the state changes flag after render
-    if (this._hasRelevantStateChanges) {
-      this._hasRelevantStateChanges = false;
     }
 
     // Render favorite tile cards when header becomes expanded
@@ -16189,7 +16183,8 @@ export class DwainsLayoutCard extends LitElement {
 
     const primaryCards = [
       this._homeInformationCardVisible('people') ? this._renderHousePersonsStatusCard() : nothing,
-      this._homeInformationCardVisible('climate') ? this._renderHouseClimateStatusCard() : nothing,
+      this._homeInformationCardVisible('climate') ? this._renderHouseClimateStatusCard('indoor') : nothing,
+      this._homeInformationCardVisible('outdoor_climate') ? this._renderHouseClimateStatusCard('outdoor') : nothing,
       this._homeInformationCardVisible('power') ? this._renderHousePowerStatusCard() : nothing,
     ].filter(card => card !== nothing);
 
@@ -16421,26 +16416,31 @@ export class DwainsLayoutCard extends LitElement {
     `;
   }
 
-  private _renderHouseClimateStatusCard() {
-    const climate = this._getHouseClimateSummary();
+  private _houseClimateTitle(scope: HouseClimateScope): string {
+    return scope === 'outdoor' ? this._t('home.outdoor_climate') : this._t('home.indoor_climate');
+  }
+
+  private _renderHouseClimateStatusCard(scope: HouseClimateScope) {
+    const climate = this._getHouseClimateSummary(scope);
     if (!climate.metrics.length) return nothing;
+    const title = this._houseClimateTitle(scope);
 
     return html`
       <div
-        class="home-status-card house-climate-card sensor metrics-${Math.min(climate.metrics.length, 4)}"
-        @click=${() => this._showHouseClimateEntities()}
-        @keydown=${this._handleHouseClimateKeydown}
+        class="home-status-card house-climate-card sensor ${scope} metrics-${Math.min(climate.metrics.length, 4)}"
+        @click=${() => this._showHouseClimateEntities(undefined, scope)}
+        @keydown=${(event: KeyboardEvent) => this._handleHouseClimateKeydown(event, scope)}
         data-domain="sensor"
         role="button"
         tabindex="0"
-        aria-label=${this._t('home.indoor_climate')}
+        aria-label=${title}
       >
         <div class="house-climate-head">
           <div class="status-card-icon house-climate-icon">
-            <ha-icon icon="mdi:home-thermometer-outline"></ha-icon>
+            <ha-icon icon=${scope === 'outdoor' ? 'mdi:sun-thermometer-outline' : 'mdi:home-thermometer-outline'}></ha-icon>
           </div>
           <div class="house-climate-copy">
-            <div class="house-climate-title">${this._t('home.indoor_climate')}</div>
+            <div class="house-climate-title">${title}</div>
             <div class="house-climate-subtitle">
               ${this._tp('common.sensor', climate.sensorCount)}
             </div>
@@ -16454,7 +16454,7 @@ export class DwainsLayoutCard extends LitElement {
               type="button"
               @click=${(event: Event) => {
                 event.stopPropagation();
-                this._showHouseClimateEntities(metric.kind);
+                this._showHouseClimateEntities(metric.kind, scope);
               }}
             >
               <span class="house-climate-metric-icon">
@@ -16642,14 +16642,14 @@ export class DwainsLayoutCard extends LitElement {
     `;
   }
 
-  private _handleHouseClimateKeydown = (event: KeyboardEvent): void => {
+  private _handleHouseClimateKeydown(event: KeyboardEvent, scope: HouseClimateScope): void {
     if (event.key !== 'Enter' && event.key !== ' ') return;
     event.preventDefault();
-    this._showHouseClimateEntities();
-  };
+    this._showHouseClimateEntities(undefined, scope);
+  }
 
-  private _showHouseClimateEntities(kind?: HouseClimateMetric['kind']): void {
-    const climate = this._getHouseClimateSummary();
+  private _showHouseClimateEntities(kind?: HouseClimateMetric['kind'], scope: HouseClimateScope = 'indoor'): void {
+    const climate = this._getHouseClimateSummary(scope);
     const metrics = kind
       ? climate.metrics.filter(metric => metric.kind === kind)
       : climate.metrics;
@@ -16661,8 +16661,8 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     const title = kind
-      ? metrics[0]?.label || this._t('home.indoor_climate')
-      : this._t('home.indoor_climate');
+      ? metrics[0]?.label || this._houseClimateTitle(scope)
+      : this._houseClimateTitle(scope);
 
     showDomainEntitiesDialog(this, {
       domain: 'sensor',
@@ -16832,11 +16832,15 @@ export class DwainsLayoutCard extends LitElement {
     };
   }
 
-  private _getHouseClimateSummary(): HouseClimateSummary {
+  private _getHouseClimateSummary(scope: HouseClimateScope = 'indoor'): HouseClimateSummary {
     const values: Record<HouseClimateMetric['kind'], Array<{ value: number; unit: string; entityIds: string[] }>> = { temperature: [], humidity: [] };
     const excludedAreas = new Set(this.config?.settings?.home_climate_excluded_areas || []);
-    this._getVisibleSortedAreas().forEach(area => {
-      if (excludedAreas.has(area.area_id)) return;
+    const outdoorAreas = new Set(this.config?.settings?.home_outdoor_climate_areas || []);
+    const areas = scope === 'outdoor'
+      ? (this.config?.areas || []).filter(area => outdoorAreas.has(area.area_id))
+      : this._getVisibleSortedAreas().filter(area => !excludedAreas.has(area.area_id) && !outdoorAreas.has(area.area_id));
+
+    areas.forEach(area => {
       const areaRegistry = this.hass?.areas?.[area.area_id] as any;
       (['temperature', 'humidity'] as const).forEach(kind => {
         const entityId = kind === 'temperature' ? areaRegistry?.temperature_entity_id : areaRegistry?.humidity_entity_id;
@@ -16848,9 +16852,10 @@ export class DwainsLayoutCard extends LitElement {
         values[kind].push({ value, unit: String(state.attributes?.unit_of_measurement || (kind === 'temperature' ? this.hass?.config?.unit_system?.temperature || '°C' : '%')), entityIds: [entityId] });
       });
     });
+
     const metrics: HouseClimateMetric[] = [];
-    const temperature = this._houseClimateMetric('temperature', values.temperature);
-    const humidity = this._houseClimateMetric('humidity', values.humidity);
+    const temperature = this._houseClimateMetric('temperature', values.temperature, scope);
+    const humidity = this._houseClimateMetric('humidity', values.humidity, scope);
     if (temperature) metrics.push(temperature);
     if (humidity) metrics.push(humidity);
     return { sensorCount: values.temperature.length + values.humidity.length, metrics };
@@ -16858,17 +16863,21 @@ export class DwainsLayoutCard extends LitElement {
 
   private _houseClimateMetric(
     kind: HouseClimateMetric['kind'],
-    values: Array<{ value: number; unit: string; entityIds: string[] }>
+    values: Array<{ value: number; unit: string; entityIds: string[] }>,
+    scope: HouseClimateScope = 'indoor'
   ): HouseClimateMetric | undefined {
     if (!values.length) return undefined;
 
     const average = values.reduce((total, item) => total + item.value, 0) / values.length;
     const unit = values[0]?.unit || (kind === 'temperature' ? '°C' : '%');
     const value = formatValueWithUnit(kind === 'temperature' ? average.toFixed(1) : Math.round(average), unit);
+    const averaged = scope === 'indoor' || values.length > 1;
 
     return {
       kind,
-      label: kind === 'temperature' ? this._t('home.average_temperature') : this._t('home.average_humidity'),
+      label: kind === 'temperature'
+        ? this._t(averaged ? 'home.average_temperature' : 'home.temperature')
+        : this._t(averaged ? 'home.average_humidity' : 'home.humidity'),
       value,
       count: values.length,
       icon: kind === 'temperature' ? getDeviceClassIcon('sensor', 'temperature') : getDeviceClassIcon('sensor', 'humidity'),
