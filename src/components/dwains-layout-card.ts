@@ -12387,6 +12387,141 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
+    /* 1.8.10x desktop density and hierarchy follow-up */
+    @media (min-width: 769px) {
+      .content-area {
+        scrollbar-gutter: stable;
+      }
+
+      .welcome-notification-action {
+        width: 48px;
+        height: 48px;
+        border-radius: 999px;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .welcome-notification-action ha-icon {
+        --mdc-icon-size: 26px;
+      }
+
+      .welcome-settings-action {
+        width: 44px;
+        height: 44px;
+        border-radius: 999px;
+      }
+
+      .home-status-grid {
+        align-items: start;
+      }
+
+      .home-status-card {
+        min-height: 104px;
+        padding: 12px;
+      }
+
+      .home-status-card .status-card-icon {
+        width: 42px;
+        height: 42px;
+        margin-bottom: 10px;
+      }
+
+      .home-status-card.house-persons-card,
+      .home-status-card.house-climate-card,
+      .home-status-card.house-power-card {
+        min-height: 0;
+        height: auto;
+        align-self: start;
+        padding: 12px;
+        gap: 8px;
+      }
+
+      .house-persons-grid {
+        margin-top: 2px;
+      }
+
+      .house-climate-grid {
+        gap: 7px;
+      }
+
+      .house-climate-metric {
+        min-height: 42px;
+        padding: 6px 8px;
+      }
+
+      .house-power-list {
+        margin-top: 2px;
+      }
+
+      .global-header.room-context .room-favorites-block {
+        border-color: color-mix(in srgb, var(--primary-color) 12%, var(--divider-color));
+        background: color-mix(in srgb, var(--primary-color) 3%, var(--card-background-color));
+      }
+
+      .global-header.room-context .room-favorites-header {
+        min-height: 38px !important;
+        padding: 7px 9px !important;
+      }
+
+      .global-header.room-context .room-favorites-title {
+        min-height: 24px !important;
+      }
+
+      .global-header.room-context .room-favorites-title .mobile-domain-title-label {
+        font-size: 15px !important;
+        font-weight: 850 !important;
+        line-height: 1 !important;
+      }
+
+      .global-header.room-context .room-favorites-title .mobile-domain-count {
+        font-size: 10px !important;
+        font-weight: 650 !important;
+        line-height: 1 !important;
+      }
+
+      .global-header.room-context .room-favorites-title .room-domain-icon {
+        width: 22px !important;
+        height: 22px !important;
+      }
+
+      .global-header.room-context .room-favorites-title .room-domain-icon ha-icon {
+        --mdc-icon-size: 18px !important;
+      }
+
+      .room-header-title-row {
+        gap: 5px;
+      }
+
+      .room-header-home-link {
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--primary-color) 8%, transparent);
+        color: var(--primary-color);
+      }
+
+      .room-header-home-link:hover {
+        background: color-mix(in srgb, var(--primary-color) 14%, transparent);
+      }
+
+      .room-header-home-link ha-icon {
+        --mdc-icon-size: 19px;
+      }
+
+      .room-header-home-chevron {
+        flex: 0 0 auto;
+        color: var(--secondary-text-color);
+        --mdc-icon-size: 16px;
+        opacity: 0.7;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .room-header-home-chevron {
+        display: none;
+      }
+    }
+
   `;
 
   connectedCallback() {
@@ -15339,6 +15474,7 @@ export class DwainsLayoutCard extends LitElement {
               >
                 <ha-icon icon="mdi:home-outline"></ha-icon>
               </button>
+              <ha-icon class="room-header-home-chevron" icon="mdi:chevron-right" aria-hidden="true"></ha-icon>
               <h1 class="area-title">${area.name}</h1>
             </div>
             <div class="room-header-device-count">${deviceLabel}</div>
