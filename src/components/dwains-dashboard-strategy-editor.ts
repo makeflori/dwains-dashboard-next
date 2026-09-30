@@ -722,6 +722,25 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     this._resetSettingsScrollPosition();
   }
 
+  public _restoreSettingsNavigation(page: string, areaId?: string): void {
+    const validPages: SettingsPageKey[] = [
+      "overview", "dashboard", "home", "header", "controls", "devices",
+      "people", "areas", "favorites", "replacements", "permissions", "support"
+    ];
+    const nextPage = validPages.includes(page as SettingsPageKey)
+      ? page as SettingsPageKey
+      : "overview";
+
+    this._settingsPage = nextPage;
+    this._area = nextPage === "areas" && areaId && this.hass?.areas?.[areaId]
+      ? areaId
+      : undefined;
+    this._areaGroupOrderDirty = false;
+    if (this._area) this._collapsedAreaEntityGroups = new Set(AREA_STRATEGY_GROUPS);
+    this._closeInlinePickers();
+    this._emitSettingsPageContext();
+  }
+
   public _backToSettingsOverview = (): void => {
     if (this._area) {
       this._area = undefined;
@@ -753,6 +772,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     this.dispatchEvent(new CustomEvent("dd-settings-page-changed", {
       detail: {
         page: this._settingsPage,
+        areaId: this._area,
         title: pageTitle,
         parentTitle: areaName ? this._settingsPageTitle("areas") : undefined,
         description: pageDescription,
@@ -1464,7 +1484,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           }
         )}
       </div>
-      <button class="home-layout-reset area-list-reset" type="button" @click=${this._resetAreasConfiguration}>
+      <button
+        class="home-layout-reset area-list-reset"
+        type="button"
+        ?disabled=${hiddenAreas.size === 0 && sortMode === 'alphabetical'}
+        @click=${this._resetAreasConfiguration}
+      >
         ${this._t('settings.reset_layout')}
       </button>
     `;
@@ -1704,6 +1729,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         )
       )
     );
+    const areaEntityLayoutIsDefault =
+      areaOptions.entity_layout === undefined &&
+      !(areaOptions.group_order?.length) &&
+      !(areaOptions.entity_order?.length) &&
+      !Object.values(areaOptions.groups_options || {}).some((options) =>
+        Boolean(options?.hidden?.length || options?.order?.length)
+      ) &&
+      !customCards.some((entry) => entry.placement.startsWith('ungrouped:'));
 
     return html`
       <div class="editor-container area-detail-editor">
@@ -1963,7 +1996,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         ${customCards.length || this._draggedAreaCustomCardId
           ? this._renderAreaCustomCardPlacement(customCards, 'bottom', this._t('layout.custom_cards_bottom'))
           : nothing}
-        <button class="home-layout-reset area-list-reset" type="button" @click=${this._resetAreaEntitySettings}>
+        <button
+          class="home-layout-reset area-list-reset"
+          type="button"
+          ?disabled=${areaEntityLayoutIsDefault}
+          @click=${this._resetAreaEntitySettings}
+        >
           ${this._t('settings.reset_layout')}
         </button>
       </div>
@@ -2141,6 +2179,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       : storedOrder;
     const hiddenSections = this._getHiddenHomeSections();
     const activeDetail = this._homeSettingsDetail;
+    const defaultHomeOrder = normalizeHomeSectionsOrder();
+    const homeLayoutIsDefault =
+      hiddenSections.size === 0 &&
+      storedOrder.length === defaultHomeOrder.length &&
+      storedOrder.every((section, index) => section === defaultHomeOrder[index]);
 
     const sectionIsOpen = (section: HomeSectionKey) => {
       if (section === 'devices') return activeDetail === 'house_information' || activeDetail === 'climate';
@@ -2230,7 +2273,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
             `;
           })}
         </div>
-        <button class="home-layout-reset" type="button" @click=${this._resetHomeSectionsOrder}>
+        <button
+          class="home-layout-reset"
+          type="button"
+          ?disabled=${homeLayoutIsDefault}
+          @click=${this._resetHomeSectionsOrder}
+        >
           ${this._t('settings.reset_layout')}
         </button>
       </div>
@@ -2482,6 +2530,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _renderHomeCameraSettings() {
     const cameras = this._getHomeCameraSettings();
     const hidden = new Set(this._config?.settings?.home_cameras_hidden || []);
+    const cameraLayoutIsDefault =
+      (this._config?.settings?.home_camera_order || []).length === 0 &&
+      hidden.size === 0;
 
     return html`
       <div class="dd-inline-section">
@@ -2525,7 +2576,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
               `;
             })}
           </div>
-          <button class="home-layout-reset" type="button" @click=${this._resetHomeCameraSettings}>
+          <button
+            class="home-layout-reset"
+            type="button"
+            ?disabled=${cameraLayoutIsDefault}
+            @click=${this._resetHomeCameraSettings}
+          >
             ${this._t('settings.reset_camera_cards')}
           </button>
         ` : html`<div class="dd-empty-state">${this._t('settings.home_camera_cards_empty')}</div>`}
@@ -2575,6 +2631,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     const groupsByKey = new Map(this._getDeviceVisibilityGroups().map((group) => [group.key, group]));
     const hiddenTypes = this._getHiddenDeviceTypes();
     const hiddenEntities = this._getHiddenDeviceEntityIds();
+    const deviceLayoutIsDefault =
+      hiddenTypes.size === 0 &&
+      hiddenEntities.size === 0 &&
+      this._getHiddenDeviceIds().size === 0;
 
     return html`
       <section class="device-visibility-section">
@@ -2669,7 +2729,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
             `;
           })}
         </div>
-        <button class="home-layout-reset area-list-reset" type="button" @click=${this._resetDeviceVisibility}>
+        <button
+          class="home-layout-reset area-list-reset"
+          type="button"
+          ?disabled=${deviceLayoutIsDefault}
+          @click=${this._resetDeviceVisibility}
+        >
           ${this._t('settings.reset_layout')}
         </button>
       </section>
