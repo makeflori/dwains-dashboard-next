@@ -59,6 +59,7 @@ type SettingsPageKey =
   | "devices"
   | "people"
   | "areas"
+  | "favorites"
   | "replacements"
   | "permissions"
   | "support";
@@ -186,15 +187,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _areaPreviewOrder?: string[];
 
   @state()
-  private _draggedGlobalAreaGroup?: AreaStrategyGroup;
-
-  @state()
-  private _dragOverGlobalAreaGroupIndex?: number;
-
-  @state()
-  private _globalAreaGroupPreviewOrder?: AreaStrategyGroup[];
-
-  @state()
   private _expandedDeviceTypes = new Set<string>();
 
   @state()
@@ -232,6 +224,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _collapsedAreaEntityGroups = new Set<AreaStrategyGroup>();
 
   @state()
+  private _areaGroupOrderDirty = false;
+
+  @state()
   private _draggedAreaCustomCardId?: string;
 
   @state()
@@ -259,7 +254,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _settingsPage: SettingsPageKey = "overview";
 
   @state()
-  private _homeSettingsDetail: 'overview' | 'house_information' | 'climate' | 'cameras' | 'custom_cards' | 'favorites' = 'overview';
+  private _homeSettingsDetail: 'overview' | 'house_information' | 'climate' | 'cameras' | 'custom_cards' = 'overview';
 
   // Dashboard-eigenschappen (naam + sidebar-icoon)
   @state() private _dashboardId?: string;
@@ -566,6 +561,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     const protectedMasterActionCount = MASTER_ACTION_CONFIRMATION_DOMAINS
       .filter((domain) => masterActionConfirmationEnabled(this._config?.settings, domain))
       .length;
+    const favoriteCount = (this._config?.favorites || []).length;
 
     return [
       {
@@ -621,6 +617,15 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         title: this._t('settings.areas'),
         description: this._t('settings.areas_description'),
         summary: this._tp('common.area', areaCount),
+      },
+      {
+        page: "favorites",
+        group: "content",
+        icon: "mdi:star-outline",
+        color: "#8b5cf6",
+        title: this._t('favorites.title'),
+        description: this._t('settings.favorites_global_description'),
+        summary: this._tp('common.favorite', favoriteCount),
       },
       {
         page: "devices",
@@ -720,6 +725,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   public _backToSettingsOverview = (): void => {
     if (this._area) {
       this._area = undefined;
+      this._areaGroupOrderDirty = false;
       this._emitSettingsPageContext();
       this._resetSettingsScrollPosition();
       return;
@@ -842,6 +848,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         return this._t('settings.people_page_description');
       case "areas":
         return this._t('settings.areas_page_description');
+      case "favorites":
+        return this._t('settings.favorites_global_description');
       case "replacements":
         return this._t('settings.replace_description');
       case "permissions":
@@ -882,6 +890,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         return this._renderPersonsSettingsPanel();
       case "areas":
         return this._renderAreasSettingsPanel();
+      case "favorites":
+        return this._renderFavoritesSettingsPanel();
       case "replacements":
         return this._renderReplacementsSettingsPanel();
       case "permissions":
@@ -902,6 +912,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       case "devices": return this._t('settings.devices_page');
       case "people": return this._t('settings.people');
       case "areas": return this._t('settings.areas');
+      case "favorites": return this._t('favorites.title');
       case "replacements": return this._t('settings.blueprint_replacements');
       case "permissions": return this._t('settings.user_permissions');
       case "support": return this._t('settings.support');
@@ -1047,7 +1058,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     if (section === 'devices') return 'house_information';
     if (section === 'cameras') return 'cameras';
     if (section === 'custom_cards') return 'custom_cards';
-    if (section === 'favorites') return 'favorites';
     return undefined;
   }
 
@@ -1157,7 +1167,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _renderFavoritesSettingsPanel() {
     const suggestedEnabled = this._config?.settings?.show_suggested_favorites !== false;
 
-    return html`
+    return this._renderSettingsPanel(
+      "mdi:star-outline",
+      this._t('favorites.title'),
+      this._t('settings.favorites_global_description'),
+      html`
       <div class="favorites-section dd-favorites-inline">
         <div class="dd-favorite-suggestions-row">
           <div class="dd-favorite-suggestions-copy">
@@ -1180,7 +1194,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           ${this._showEntityPicker ? this._renderEntityPicker() : nothing}
         </div>
       </div>
-    `;
+    `
+    );
   }
 
   private _renderHeaderStatusSettingsPanel() {
@@ -1372,57 +1387,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       { mode: 'custom', icon: 'mdi:drag-vertical' },
     ];
 
-    const globalGroupOrder = this._getGlobalAreaGroupOrder();
-
     return html`
-      <section class="area-order-settings global-area-group-order" aria-labelledby="global-area-group-order-title">
-        <div class="area-order-heading">
-          <strong id="global-area-group-order-title">${this._t('settings.global_area_group_order_title')}</strong>
-        </div>
-        <p class="area-order-list-hint">${this._t('settings.global_area_group_order_description')}</p>
-        <div class="sortable-container area-settings-sortable is-custom-order ${this._draggedGlobalAreaGroup ? 'dragging' : ''}">
-          ${repeat(
-            globalGroupOrder,
-            (group) => group,
-            (group, index) => {
-              const isDragging = this._draggedGlobalAreaGroup === group;
-              const isDragOver = this._dragOverGlobalAreaGroupIndex === index &&
-                this._draggedGlobalAreaGroup && this._draggedGlobalAreaGroup !== group;
-              return html`
-                <div
-                  class="sortable-item dd-area-sortable-row ${isDragging ? 'dragging' : ''} ${isDragOver ? 'drag-over' : ''}"
-                  draggable="true"
-                  @dragstart=${(event: DragEvent) => this._handleGlobalAreaGroupDragStart(event, group)}
-                  @dragend=${this._handleGlobalAreaGroupDragEnd}
-                  @dragover=${(event: DragEvent) => this._handleGlobalAreaGroupDragOver(event, index)}
-                  @dragleave=${this._handleGlobalAreaGroupDragLeave}
-                  @drop=${(event: DragEvent) => this._handleGlobalAreaGroupDrop(event)}
-                >
-                  <div class="area-item">
-                    <div class="handle" aria-hidden="true">
-                      <ha-svg-icon .path=${mdiDrag}></ha-svg-icon>
-                    </div>
-                    <ha-icon
-                      .icon=${AREA_STRATEGY_GROUP_ICONS[group]}
-                      class="area-icon"
-                      style=${`color: ${this._getAreaStrategyGroupColor(group)};`}
-                    ></ha-icon>
-                    <span class="area-name">${this._getGroupTitle(group)}</span>
-                  </div>
-                </div>
-              `;
-            }
-          )}
-        </div>
-        <button
-          class="home-layout-reset area-list-reset"
-          type="button"
-          @click=${this._applyGlobalAreaGroupOrderToAllAreas}
-        >
-          ${this._t('settings.apply_group_order_all_areas')}
-        </button>
-      </section>
-
       <section class="area-order-settings" aria-labelledby="area-order-title">
         <div class="area-order-heading">
           <strong id="area-order-title">${this._t('settings.area_order_title')}</strong>
@@ -1985,6 +1950,16 @@ export class DwainsDashboardStrategyEditor extends LitElement {
             </div>
           `;
         })}
+        ${entityLayout === 'grouped' ? html`
+          <button
+            class="home-layout-reset area-list-reset"
+            type="button"
+            ?disabled=${!this._areaGroupOrderDirty}
+            @click=${this._applyAreaGroupOrderToAllAreas}
+          >
+            ${this._t('settings.apply_type_order_all_rooms')}
+          </button>
+        ` : nothing}
         ${customCards.length || this._draggedAreaCustomCardId
           ? this._renderAreaCustomCardPlacement(customCards, 'bottom', this._t('layout.custom_cards_bottom'))
           : nothing}
@@ -2183,7 +2158,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       if (!sectionIsOpen(section)) return nothing;
       if (section === 'cameras') return this._renderHomeCameraSettings();
       if (section === 'custom_cards') return this._renderHomeCustomCardsSettings();
-      if (section === 'favorites') return this._renderFavoritesSettingsPanel();
       if (section === 'devices') {
         return html`<div class="dd-home-house-information">${this._renderHomeInformationCardSettings()}</div>`;
       }
@@ -3101,6 +3075,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _resetAreaEntitySettings = (): void => {
     if (!this._config || !this._area) return;
     const current = this._config.areas_options?.[this._area] || {};
+    const groupOrderChanged = Boolean(current.group_order?.length);
     const nextAreaOptions = { ...current };
     delete nextAreaOptions.entity_layout;
     delete nextAreaOptions.group_order;
@@ -3119,6 +3094,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         [this._area]: nextAreaOptions,
       },
     });
+    if (groupOrderChanged) this._areaGroupOrderDirty = true;
   };
 
   private _setAreaEntityLayout(
@@ -3329,109 +3305,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     this._handleHomeCameraDragEnd();
   }
 
-  private _getGlobalAreaGroupOrder(): AreaStrategyGroup[] {
-    const present = new Set<AreaStrategyGroup>();
-    (this._config?.entities || []).forEach((entity) => {
-      const group = getAreaEntityGroupKey(entity.entity_id, this.hass!);
-      if (group) present.add(group);
-    });
-
-    const base = AREA_STRATEGY_GROUPS.filter((group) => present.has(group));
-    const configured = this._config?.areas_display?.group_order || [];
-    if (!configured.length) return [...base];
-
-    return base
-      .map((group, fallbackIndex) => ({ group, fallbackIndex }))
-      .sort((a, b) => {
-        const aIndex = this._areaGroupOrderIndex(a.group, configured);
-        const bIndex = this._areaGroupOrderIndex(b.group, configured);
-        if (aIndex !== undefined && bIndex !== undefined) {
-          if (aIndex !== bIndex) return aIndex - bIndex;
-          return a.fallbackIndex - b.fallbackIndex;
-        }
-        if (aIndex !== undefined) return -1;
-        if (bIndex !== undefined) return 1;
-        return a.fallbackIndex - b.fallbackIndex;
-      })
-      .map(({ group }) => group);
-  }
-
-  private _handleGlobalAreaGroupDragStart(event: DragEvent, group: AreaStrategyGroup): void {
-    this._draggedGlobalAreaGroup = group;
-    this._globalAreaGroupPreviewOrder = [...this._getGlobalAreaGroupOrder()];
-    this._dragOverGlobalAreaGroupIndex = undefined;
-    if (event.dataTransfer) {
-      event.dataTransfer.effectAllowed = 'move';
-      event.dataTransfer.setData('text/plain', group);
-    }
-  }
-
-  private _handleGlobalAreaGroupDragOver(event: DragEvent, index: number): void {
-    event.preventDefault();
-    const dragged = this._draggedGlobalAreaGroup;
-    if (!dragged) return;
-
-    const preview = [...(this._globalAreaGroupPreviewOrder || this._getGlobalAreaGroupOrder())];
-    const fromIndex = preview.indexOf(dragged);
-    if (fromIndex >= 0 && fromIndex !== index) {
-      const [moved] = preview.splice(fromIndex, 1);
-      if (moved) preview.splice(index, 0, moved);
-      this._globalAreaGroupPreviewOrder = preview;
-    }
-    this._dragOverGlobalAreaGroupIndex = index;
-    if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
-    this.requestUpdate();
-  }
-
-  private _handleGlobalAreaGroupDragLeave = (event: DragEvent): void => {
-    const currentTarget = event.currentTarget as HTMLElement | null;
-    const relatedTarget = event.relatedTarget as Node | null;
-    if (!currentTarget?.contains(relatedTarget)) this._dragOverGlobalAreaGroupIndex = undefined;
-  };
-
-  private _handleGlobalAreaGroupDrop(event: DragEvent): void {
-    event.preventDefault();
-    if (!this._config || !this._draggedGlobalAreaGroup) return;
-    const order = this._globalAreaGroupPreviewOrder || this._getGlobalAreaGroupOrder();
-
-    this._fireConfigChanged({
-      ...this._config,
-      areas_display: {
-        ...this._config.areas_display,
-        group_order: [...order],
-      },
-    });
-    this._handleGlobalAreaGroupDragEnd();
-  }
-
-  private _handleGlobalAreaGroupDragEnd = (): void => {
-    this._draggedGlobalAreaGroup = undefined;
-    this._dragOverGlobalAreaGroupIndex = undefined;
-    this._globalAreaGroupPreviewOrder = undefined;
-  };
-
-  private _applyGlobalAreaGroupOrderToAllAreas = (): void => {
-    if (!this._config) return;
-    const order = this._getGlobalAreaGroupOrder();
-    const nextAreaOptions = { ...this._config.areas_options };
-
-    (this._config.areas || []).forEach((area) => {
-      nextAreaOptions[area.area_id] = {
-        ...nextAreaOptions[area.area_id],
-        group_order: [...order],
-      };
-    });
-
-    this._fireConfigChanged({
-      ...this._config,
-      areas_display: {
-        ...this._config.areas_display,
-        group_order: [...order],
-      },
-      areas_options: nextAreaOptions,
-    });
-  };
-
   private _resetAreasConfiguration = (): void => {
     if (!this._config) return;
     this._areaPreviewOrder = undefined;
@@ -3624,9 +3497,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   }
 
   private _sortAreaStrategyGroups(groups: readonly AreaStrategyGroup[]): AreaStrategyGroup[] {
-    const localOrder = this._config?.areas_options?.[this._area || '']?.group_order || [];
-    const globalOrder = this._config?.areas_display?.group_order || [];
-    const configuredOrder = localOrder.length ? localOrder : globalOrder;
+    const configuredOrder = this._config?.areas_options?.[this._area || '']?.group_order || [];
     if (!configuredOrder.length) return [...groups];
 
     return groups
@@ -3663,7 +3534,29 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         },
       },
     });
+    this._areaGroupOrderDirty = true;
   }
+
+  private _applyAreaGroupOrderToAllAreas = (): void => {
+    if (!this._config || !this._area || !this._areaGroupOrderDirty) return;
+
+    const currentOrder = this._config.areas_options?.[this._area]?.group_order;
+    const order = currentOrder?.length ? [...currentOrder] : [...AREA_STRATEGY_GROUPS];
+    const nextAreaOptions = { ...this._config.areas_options };
+
+    (this._config.areas || []).forEach((area) => {
+      nextAreaOptions[area.area_id] = {
+        ...nextAreaOptions[area.area_id],
+        group_order: [...order],
+      };
+    });
+
+    this._fireConfigChanged({
+      ...this._config,
+      areas_options: nextAreaOptions,
+    });
+    this._areaGroupOrderDirty = false;
+  };
 
   private _toggleAreaEntityGroup(group: AreaStrategyGroup): void {
     const next = new Set(this._collapsedAreaEntityGroups);
@@ -3979,6 +3872,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
   private _editArea(area: string): void {
     this._area = area;
+    this._areaGroupOrderDirty = false;
     this._collapsedAreaEntityGroups = new Set(AREA_STRATEGY_GROUPS);
     this._emitSettingsPageContext();
     this._resetSettingsScrollPosition();
