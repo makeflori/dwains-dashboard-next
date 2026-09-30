@@ -665,4 +665,10 @@ export const es = {
   'settings.home_climate_area_excluded': "Excluded from house average",
   'settings.unassigned_area': 'Sin asignar',
 
+  'home.outdoor_climate': "Clima exterior",
+  'home_card.outdoor_climate.label': "Clima exterior",
+  'home_card.outdoor_climate.description': "Temperatura y humedad de las áreas exteriores.",
+  'settings.home_outdoor_climate_areas_title': "Áreas exteriores",
+  'settings.home_outdoor_climate_areas_description': "Elige qué áreas de Home Assistant están en el exterior. Sus sensores de temperatura y humedad asignados se muestran en la tarjeta Clima exterior y no cuentan para el clima interior.",
+  'settings.home_climate_area_outdoor': "Usada para el clima exterior",
 } as const satisfies TranslationDictionary;
