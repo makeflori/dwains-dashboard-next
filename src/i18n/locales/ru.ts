@@ -688,4 +688,10 @@ export const ru = {
   'settings.home_climate_area_excluded': "Excluded from house average",
   'settings.unassigned_area': 'Не назначено',
 
+  'home.outdoor_climate': "Климат на улице",
+  'home_card.outdoor_climate.label': "Климат на улице",
+  'home_card.outdoor_climate.description': "Температура и влажность уличных зон.",
+  'settings.home_outdoor_climate_areas_title': "Уличные зоны",
+  'settings.home_outdoor_climate_areas_description': "Выберите, какие помещения Home Assistant находятся на улице. Их назначенные датчики температуры и влажности показываются в карточке климата на улице и не учитываются в климате в помещении.",
+  'settings.home_climate_area_outdoor': "Используется для климата на улице",
 } as const satisfies TranslationDictionary;
