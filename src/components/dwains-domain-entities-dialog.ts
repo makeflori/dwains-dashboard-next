@@ -906,7 +906,9 @@ export class DwainsDomainEntitiesDialog extends LitElement {
 
       // Check if entity is hidden
       const groupKey = entityDomain;
-      const hiddenEntities = config.areas_options?.[entityAreaId]?.groups_options?.[groupKey]?.hidden || [];
+      const hiddenEntities = entityAreaId
+        ? config.areas_options?.[entityAreaId]?.groups_options?.[groupKey]?.hidden || []
+        : [];
       if (hiddenEntities.includes(entityId)) return;
 
       // Apply unit_of_measurement filter if specified
@@ -1126,23 +1128,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
         ([areaId]) => areaId,
         ([areaId, group]) => this._renderAreaSection(areaId, group)
       )}
-    `;
-  }
-
-  private _renderViewAllAction() {
-    if (!this._params?.onViewAll) return nothing;
-
-    return html`
-      <div class="domain-actions">
-        <button
-          class="dialog-view-all"
-          type="button"
-          @click=${this._handleViewAll}
-        >
-          <span>${this._params.viewAllLabel || this._t('common.view_all')}</span>
-          <ha-icon icon="mdi:chevron-right"></ha-icon>
-        </button>
-      </div>
     `;
   }
 
