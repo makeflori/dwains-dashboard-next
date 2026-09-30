@@ -1441,10 +1441,18 @@ export class DwainsLayoutCard extends LitElement {
 
     .welcome-header {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) auto auto;
+      grid-template-columns: minmax(0, 1fr) auto;
       align-items: center;
       gap: 18px;
       margin-bottom: 0;
+    }
+
+    .welcome-header-meta {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 14px;
+      min-width: 0;
     }
 
     .welcome-user {
@@ -1561,6 +1569,30 @@ export class DwainsLayoutCard extends LitElement {
     .welcome-action:hover {
       background: color-mix(in srgb, var(--primary-color) 10%, var(--card-background-color));
       box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 18%, transparent);
+    }
+
+    .welcome-notification-action {
+      width: 38px;
+      height: 42px;
+      border-radius: 10px;
+      color: var(--secondary-text-color);
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .welcome-notification-action:hover {
+      color: var(--primary-color);
+      background: color-mix(in srgb, var(--primary-color) 7%, transparent);
+      box-shadow: none;
+    }
+
+    .welcome-notification-action .welcome-action-badge {
+      top: -1px;
+      right: -3px;
+    }
+
+    .welcome-settings-action {
+      margin-left: 2px;
     }
 
     .welcome-action ha-icon {
@@ -11558,6 +11590,42 @@ export class DwainsLayoutCard extends LitElement {
     }
 
 
+    /* Room context: global house information and Favorites form one subtle visual zone. */
+    .global-header.room-context {
+      background: color-mix(in srgb, var(--secondary-background-color) 34%, var(--card-background-color));
+      border-bottom-color: transparent;
+      box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--divider-color) 42%, transparent);
+    }
+
+    .global-header.room-context .room-favorites-block {
+      margin-top: 10px !important;
+      margin-bottom: 0 !important;
+      background: color-mix(in srgb, var(--card-background-color) 78%, transparent);
+      box-shadow: none;
+    }
+
+    .global-header.room-context .room-favorites-block::after {
+      display: none;
+    }
+
+    .room-header-title-row {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .room-header-title-row .area-title {
+      min-width: 0;
+      margin: 0;
+    }
+
+    @media (max-width: 768px) {
+      .room-header-title-row .room-header-home-link {
+        display: none;
+      }
+    }
+
     /* Final polish for global meta, Favorites and expandable room sections. */
     @media (min-width: 769px) {
       .global-header {
@@ -11877,6 +11945,10 @@ export class DwainsLayoutCard extends LitElement {
         align-items: flex-end;
         justify-content: center;
         gap: 1px;
+        padding: 0;
+        background: transparent;
+        border: 0;
+        box-shadow: none;
       }
 
       .header-time {
@@ -13606,6 +13678,7 @@ export class DwainsLayoutCard extends LitElement {
       'global-header': true,
       'compact': this._headerCompact,
       'expanded': this._headerExpanded && this._selectedView !== 'area',
+      'room-context': this._selectedView === 'area',
       'mobile': this._isMobile
     };
     const favoriteCount = this._getEffectiveFavoriteEntities().length;
@@ -13617,16 +13690,20 @@ export class DwainsLayoutCard extends LitElement {
 
           ${!this._isMobile ? html`
             <div class="header-time-weather">
+              ${this._renderWeatherDisplay()}
               ${this.config?.settings?.show_time !== false ? html`
                 <div class="header-time-section">
                   <div class="header-time">${this._currentTime}</div>
                   <div class="header-date">${this._currentDate}</div>
                 </div>
               ` : nothing}
-              ${this._renderWeatherDisplay()}
             </div>
           ` : nothing}
         </div>
+
+        ${this._selectedView === 'area' && !this._isMobile
+          ? this._renderRoomFavoritesBlock()
+          : nothing}
 
         ${favoriteCount && this._selectedView !== 'area' ? html`
           <button
@@ -14178,40 +14255,8 @@ export class DwainsLayoutCard extends LitElement {
                 </div>
               </div>
             </div>
-            <div class="welcome-actions">
-              ${this._canManageDashboard() ? html`
-                <button
-                  class="welcome-action"
-                  type="button"
-                  title=${this._t('sidebar.dashboard_settings')}
-                  @click=${this._openDashboardSettings}
-                >
-                  <ha-icon icon="mdi:cog-outline"></ha-icon>
-                </button>
-              ` : nothing}
-              ${this._showNotificationsUi() ? html`
-                <button
-                  class="welcome-action"
-                  type="button"
-                  title=${this._t('home.notifications')}
-                  @click=${this._openNotifications}
-                >
-                  <ha-icon icon="mdi:bell-outline"></ha-icon>
-                  ${this._persistentNotifications.length
-                    ? html`<span class="welcome-action-badge">${this._persistentNotifications.length}</span>`
-                    : nothing}
-                </button>
-              ` : nothing}
-            </div>
-            <div class="welcome-time-section">
-              <div class="welcome-time">${this._currentTime}</div>
-              <div class="welcome-date">${this._currentDate}</div>
-            </div>
-          </div>
-          ${alarmContent !== nothing || weatherTemperature ? html`
-            <div class="welcome-subheader">
-              ${alarmContent}
-              ${weatherEntity && weatherTemperature ? html`
+            <div class="welcome-header-meta">
+              ${!this._isMobile && weatherEntity && weatherTemperature ? html`
                 <div
                   class="welcome-weather"
                   title=${this._weatherTitle(weatherEntity)}
@@ -14223,6 +14268,54 @@ export class DwainsLayoutCard extends LitElement {
                   <span class="weather-label">${this._t('home.outside')}</span>
                 </div>
               ` : nothing}
+              <div class="welcome-time-section">
+                <div class="welcome-time">${this._currentTime}</div>
+                <div class="welcome-date">${this._currentDate}</div>
+              </div>
+              <div class="welcome-actions">
+                ${this._showNotificationsUi() ? html`
+                  <button
+                    class="welcome-action welcome-notification-action"
+                    type="button"
+                    title=${this._t('home.notifications')}
+                    @click=${this._openNotifications}
+                  >
+                    <ha-icon icon="mdi:bell-outline"></ha-icon>
+                    ${this._persistentNotifications.length
+                      ? html`<span class="welcome-action-badge">${this._persistentNotifications.length}</span>`
+                      : nothing}
+                  </button>
+                ` : nothing}
+                ${this._canManageDashboard() ? html`
+                  <button
+                    class="welcome-action welcome-settings-action"
+                    type="button"
+                    title=${this._t('sidebar.dashboard_settings')}
+                    @click=${this._openDashboardSettings}
+                  >
+                    <ha-icon icon="mdi:cog-outline"></ha-icon>
+                  </button>
+                ` : nothing}
+              </div>
+            </div>
+          </div>
+          ${alarmContent !== nothing || (this._isMobile && weatherTemperature) ? html`
+            <div class="welcome-subheader">
+              ${alarmContent}
+              ${this._isMobile && weatherEntity && weatherTemperature ? html`
+                <div
+                  class="welcome-weather"
+                  title=${this._weatherTitle(weatherEntity)}
+                  aria-label=${this._weatherTitle(weatherEntity)}
+                  @click=${() => this._showMoreInfo(weatherEntity.entity_id)}
+                >
+                  <ha-icon icon=${weatherEntity.attributes.icon || 'mdi:weather-cloudy'}></ha-icon>
+                  <span class="weather-temp">${weatherTemperature}</span>
+                  <span class="weather-label">${this._t('home.outside')}</span>
+                </div>
+              ` : nothing}
+            </div>
+          ` : nothing}
             </div>
           ` : nothing}
         </div>
@@ -15212,7 +15305,7 @@ export class DwainsLayoutCard extends LitElement {
 
     return html`
       <div class="area-view room-ui-v2">
-        ${this._renderRoomFavoritesBlock()}
+        ${this._isMobile ? this._renderRoomFavoritesBlock() : nothing}
 
         <div class="room-header">
           ${this._isMobile ? html`
@@ -15238,7 +15331,7 @@ export class DwainsLayoutCard extends LitElement {
           </div>
 
           <div class="room-header-copy">
-            <div class="room-header-breadcrumb" aria-label="${this._t('sidebar.home')} › ${area.name}">
+            <div class="room-header-title-row">
               <button
                 class="room-header-home-link"
                 type="button"
@@ -15248,10 +15341,8 @@ export class DwainsLayoutCard extends LitElement {
               >
                 <ha-icon icon="mdi:home-outline"></ha-icon>
               </button>
-              <ha-icon class="room-header-breadcrumb-chevron" icon="mdi:chevron-right" aria-hidden="true"></ha-icon>
-              <span>${area.name}</span>
+              <h1 class="area-title">${area.name}</h1>
             </div>
-            <h1 class="area-title">${area.name}</h1>
             <div class="room-header-device-count">${deviceLabel}</div>
             ${roomBadges.length ? html`
               <div class="room-header-summary">
