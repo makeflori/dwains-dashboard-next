@@ -485,6 +485,8 @@ export const zhHans = {
   'settings.visible_in_dd': '在 DD 显示',
   'settings.hidden_in_dd': '在 DD 隐藏',
   'settings.discard_confirm': '要舍弃未保存的仪表板设置吗?',
+  'settings.discard_title': '舍弃更改？',
+  'settings.discard_action': '舍弃',
   'settings.show_suggested_favorites': "显示建议收藏",
   'settings.suggested_favorites_description': "在你自己的收藏之外，加入 Home Assistant 建议的常用实体。你手动选择的收藏会始终保留。",
   'settings.add_entity': '添加实体',
