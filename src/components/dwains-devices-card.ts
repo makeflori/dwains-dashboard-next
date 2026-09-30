@@ -1197,12 +1197,6 @@ export class DwainsDevicesCard extends LitElement {
           subtitle: this._t('devices.live_power_usage'),
           color: this._typeColor(ENERGY_KEY),
           back: true,
-          actions: html`
-            <div class="energy-header-total">
-              <span>${summary.formattedTotal}</span>
-              <small>${this._tp('devices.live_power_sensor', summary.sensorCount)}</small>
-            </div>
-          `,
         })}
 
         ${summary.sensorCount
@@ -1383,7 +1377,6 @@ export class DwainsDevicesCard extends LitElement {
   }
 
   private _renderMaintenanceView(maintenance: Map<string, MaintenanceBucket>) {
-    const summary = this._maintenanceSummary(maintenance);
     const orderedBuckets = this._orderedMaintenanceBuckets(maintenance);
 
     return html`
@@ -1394,18 +1387,6 @@ export class DwainsDevicesCard extends LitElement {
           subtitle: this._maintenanceSubtitle(maintenance),
           color: this._typeColor(MAINTENANCE_KEY),
           back: true,
-          actions: html`
-            <div class="maintenance-summary">
-              <span>
-                <ha-icon icon="mdi:battery-alert"></ha-icon>
-                ${summary.lowBatteryCount}
-              </span>
-              <span>
-                <ha-icon icon="mdi:alert-circle-outline"></ha-icon>
-                ${summary.unavailableDeviceCount}
-              </span>
-            </div>
-          `,
         })}
 
         ${orderedBuckets.length
@@ -1534,7 +1515,6 @@ export class DwainsDevicesCard extends LitElement {
           subtitle: this._t('devices.new_description', { hours: NEW_DEVICE_WINDOW_HOURS }),
           color: this._typeColor(NEW_DEVICES_KEY),
           back: true,
-          actions: html`<span class="device-header-count">${devices.length}</span>`,
         })}
         <section class="recent-devices new-devices-view">
           <div class="recent-grid">
