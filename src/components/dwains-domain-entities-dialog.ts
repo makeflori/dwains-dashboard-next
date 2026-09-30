@@ -573,6 +573,137 @@ export class DwainsDomainEntitiesDialog extends LitElement {
         min-height: 126px;
       }
     }
+    /* Shared Home-information dialog language, aligned with the power detail dialog. */
+    :host {
+      --mdc-dialog-max-width: 900px;
+    }
+
+    ha-dialog {
+      --ha-dialog-border-radius: 14px;
+      --mdc-dialog-container-elevation: 0 24px 64px rgba(8, 13, 24, 0.24);
+    }
+
+    ha-dialog-header {
+      min-height: 64px;
+      padding: 10px 14px;
+      background: var(--card-background-color);
+      box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--divider-color) 65%, transparent);
+    }
+
+    ha-dialog-header span[slot="title"] {
+      font-size: 20px;
+      font-weight: 900;
+      line-height: 1.05;
+    }
+
+    .content {
+      padding: 14px 16px 18px !important;
+      background: var(--primary-background-color);
+    }
+
+    .domain-actions {
+      margin-bottom: 12px;
+    }
+
+    .dialog-view-all,
+    .domain-action-button {
+      min-height: 36px;
+      border-radius: 999px;
+      font-size: 12px;
+    }
+
+    .area-section {
+      margin-bottom: 12px;
+      border-radius: 11px;
+      background: var(--card-background-color);
+      box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 7%, transparent),
+        0 8px 22px rgba(15, 23, 42, 0.04);
+    }
+
+    .area-header {
+      min-height: 48px;
+      padding: 10px 12px 0;
+    }
+
+    .area-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+    }
+
+    .area-icon ha-icon {
+      --mdc-icon-size: 17px;
+    }
+
+    .area-name {
+      font-size: 15px;
+      font-weight: 850;
+    }
+
+    .entity-count {
+      font-size: 11px;
+    }
+
+    .entities-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 9px;
+      padding: 10px 12px 12px;
+    }
+
+    .domain-entity-card {
+      min-height: 108px;
+      padding: 11px;
+      border-radius: 10px;
+      background: var(--card-background-color);
+      box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 6%, transparent),
+        0 6px 16px rgba(15, 23, 42, 0.04);
+    }
+
+    .domain-entity-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+    }
+
+    .domain-entity-icon ha-icon {
+      --mdc-icon-size: 18px;
+    }
+
+    .domain-entity-name {
+      font-size: 13px;
+    }
+
+    .domain-entity-status {
+      font-size: 11px;
+    }
+
+    @media (max-width: 900px) and (min-width: 601px) {
+      .entities-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 600px) {
+      .content {
+        padding: 12px 12px calc(84px + env(safe-area-inset-bottom, 0px)) !important;
+      }
+
+      .area-section {
+        border-radius: 14px;
+      }
+
+      .entities-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .domain-entity-card {
+        min-height: 116px;
+      }
+    }
+
   `;
 
   public async showDialog(params: DomainEntitiesDialogParams): Promise<void> {
