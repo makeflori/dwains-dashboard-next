@@ -12675,6 +12675,230 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
+    /* Home information density: fixed outer heights, content-aware inner grids. */
+    @media (min-width: 769px) {
+      /* Normalize section rhythm across Home. */
+      .home-status-section,
+      .home-favorites-section,
+      .home-summaries-section,
+      .home-camera-section,
+      .home-todos-section,
+      .home-custom-cards-section {
+        margin-bottom: 36px;
+      }
+
+      /* Detailed Home information cards stay equal in outer height. */
+      .home-status-card.house-persons-card,
+      .home-status-card.house-climate-card,
+      .home-status-card.house-power-card {
+        height: 162px;
+        min-height: 162px;
+      }
+
+      /* Simple active-status cards are exactly half the detailed-card height. */
+      .home-status-card:not(.house-persons-card):not(.house-climate-card):not(.house-power-card) {
+        height: 81px;
+        min-height: 81px;
+        padding: 9px 11px 7px;
+        display: grid;
+        grid-template-rows: 34px minmax(0, 1fr);
+        align-items: start;
+        gap: 0;
+      }
+
+      .home-status-card:not(.house-persons-card):not(.house-climate-card):not(.house-power-card) .status-card-icon {
+        width: 34px;
+        height: 34px;
+        margin: 0;
+        align-self: start;
+      }
+
+      .home-status-card:not(.house-persons-card):not(.house-climate-card):not(.house-power-card) .status-card-icon ha-icon {
+        --mdc-icon-size: 19px;
+      }
+
+      .home-status-card:not(.house-persons-card):not(.house-climate-card):not(.house-power-card) .status-card-title {
+        width: 100%;
+        min-height: 30px;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        align-self: stretch;
+        font-size: 13px;
+        line-height: 1.05;
+      }
+
+      .home-status-card:not(.house-persons-card):not(.house-climate-card):not(.house-power-card).has-value {
+        grid-template-rows: 30px auto minmax(0, 1fr);
+      }
+
+      .home-status-card:not(.house-persons-card):not(.house-climate-card):not(.house-power-card).has-value .status-card-value {
+        margin: 0;
+        font-size: 17px;
+        line-height: 1;
+      }
+
+      .home-status-card:not(.house-persons-card):not(.house-climate-card):not(.house-power-card).has-value .status-card-title {
+        min-height: 18px;
+        font-size: 10px;
+      }
+
+      /* Compact status count pills like the room badges: smaller and shifted outward. */
+      .home-status-card .status-card-badge {
+        top: -5px;
+        right: -14px;
+        min-width: 20px;
+        height: 20px;
+        padding: 0 5px;
+        font-size: 10px;
+        line-height: 20px;
+        box-shadow: 0 3px 8px color-mix(in srgb, var(--status-color) 24%, transparent);
+      }
+
+      /* Person grid fills the available matrix according to the actual HA person count. */
+      .house-persons-grid {
+        flex: 1 1 auto;
+        min-height: 0;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: repeat(2, minmax(0, 1fr));
+        gap: 7px;
+      }
+
+      .house-persons-card.persons-1 .house-persons-grid {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr);
+      }
+
+      .house-persons-card.persons-2 .house-persons-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: minmax(0, 1fr);
+      }
+
+      .house-persons-card.persons-3 .house-persons-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: repeat(2, minmax(0, 1fr));
+      }
+
+      .house-persons-card.persons-3 .house-person-mini:last-child {
+        grid-column: 1 / -1;
+      }
+
+      .house-person-mini {
+        min-height: 0;
+        height: 100%;
+        padding: 6px 8px;
+      }
+
+      .house-persons-card.persons-1 .house-person-mini {
+        justify-content: center;
+      }
+
+      .house-persons-card.persons-1 .house-person-avatar {
+        width: 34px;
+        height: 34px;
+      }
+
+      .house-persons-card.persons-1 .house-person-mini-name {
+        font-size: 13px;
+      }
+
+      .house-persons-card.persons-1 .house-person-mini-state {
+        font-size: 11px;
+      }
+
+      /* Climate metrics consume the full remaining body height when only one or two metrics exist. */
+      .house-climate-grid {
+        flex: 1 1 auto;
+        min-height: 0;
+        align-items: stretch;
+      }
+
+      .house-climate-card.metrics-1 .house-climate-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .house-climate-card.metrics-2 .house-climate-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .house-climate-card.metrics-1 .house-climate-metric,
+      .house-climate-card.metrics-2 .house-climate-metric {
+        min-height: 0;
+        height: 100%;
+        padding: 10px 12px;
+        grid-template-columns: 34px minmax(0, 1fr);
+        column-gap: 10px;
+      }
+
+      .house-climate-card.metrics-1 .house-climate-metric-icon,
+      .house-climate-card.metrics-2 .house-climate-metric-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+      }
+
+      .house-climate-card.metrics-1 .house-climate-metric-icon ha-icon,
+      .house-climate-card.metrics-2 .house-climate-metric-icon ha-icon {
+        --mdc-icon-size: 19px;
+      }
+
+      .house-climate-card.metrics-1 .house-climate-metric-value,
+      .house-climate-card.metrics-2 .house-climate-metric-value {
+        font-size: 18px;
+      }
+
+      .house-climate-card.metrics-1 .house-climate-metric-label,
+      .house-climate-card.metrics-2 .house-climate-metric-label {
+        font-size: 11px;
+      }
+
+      /* Power keeps a stable card height; empty state sits in the visual center of the body. */
+      .house-power-empty {
+        flex: 1 1 auto;
+        min-height: 0;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding-top: 6px;
+        text-align: center;
+      }
+
+      /* Home Favorites uses the same section-header language as the other Home sections. */
+      .home-favorites-section .favorites-header {
+        min-height: 30px;
+        margin: 0 0 14px;
+        padding: 0;
+        border: 0;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        color: var(--primary-text-color);
+        font-size: 20px;
+        font-weight: 850;
+        line-height: 1.1;
+      }
+
+      .home-favorites-section .favorites-header ha-icon {
+        width: 30px;
+        height: 30px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        --mdc-icon-size: 20px;
+        color: #f59e0b;
+        background: color-mix(in srgb, #f59e0b 13%, transparent);
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, #f59e0b 9%, transparent);
+      }
+
+      .home-favorites-section .favorites-header span {
+        display: inline-flex;
+        align-items: center;
+        min-height: 30px;
+      }
+    }
+
   `;
 
   connectedCallback() {
@@ -14858,7 +15082,7 @@ export class DwainsLayoutCard extends LitElement {
 
     return html`
       <div
-        class="home-status-card house-climate-card sensor"
+        class="home-status-card house-climate-card sensor metrics-${Math.min(climate.metrics.length, 4)}"
         @click=${() => this._showHouseClimateEntities()}
         @keydown=${this._handleHouseClimateKeydown}
         data-domain="sensor"
@@ -14968,7 +15192,7 @@ export class DwainsLayoutCard extends LitElement {
 
     return html`
       <div
-        class="home-status-card house-persons-card person"
+        class="home-status-card house-persons-card person persons-${Math.min(personEntities.length, 4)}"
         @click=${() => this._openDeviceDomain('person')}
         data-domain="person"
       >
