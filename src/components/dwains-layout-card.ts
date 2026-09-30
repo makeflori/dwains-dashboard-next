@@ -13756,6 +13756,124 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
+    /* Final Home polish: compact Favorites, clear Home state, exact room-Favorites centering. */
+    @media (min-width: 769px) {
+      .home-favorites-section .favorite-card-wrapper {
+        height: 84px !important;
+        min-height: 84px !important;
+        grid-template-columns: 34px minmax(0, 1fr) 46px !important;
+        gap: 8px !important;
+        padding: 9px 10px !important;
+      }
+      .home-favorites-section .favorite-icon {
+        width: 34px !important;
+        height: 34px !important;
+      }
+      .home-favorites-section .favorite-icon ha-icon { --mdc-icon-size: 19px !important; }
+      .home-favorites-section .favorite-body {
+        gap: 2px !important;
+        overflow: visible !important;
+      }
+      .home-favorites-section .favorite-name {
+        display: -webkit-box !important;
+        overflow: hidden !important;
+        text-overflow: clip !important;
+        white-space: normal !important;
+        overflow-wrap: anywhere;
+        -webkit-line-clamp: 2 !important;
+        -webkit-box-orient: vertical !important;
+        font-size: 12px !important;
+        line-height: 1.08 !important;
+      }
+      .home-favorites-section .favorite-area {
+        overflow: hidden !important;
+        text-overflow: clip !important;
+        white-space: nowrap !important;
+      }
+      .home-favorites-section .favorite-end {
+        width: 46px !important;
+        min-width: 46px !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 3px !important;
+      }
+      .home-favorites-section .favorite-quick-action { margin: 0 auto !important; }
+      .home-favorites-section .favorite-end-state {
+        width: 100% !important;
+        max-width: none !important;
+        text-align: center !important;
+        font-size: 9px !important;
+        line-height: 1 !important;
+      }
+      .home-favorites-section .favorite-info-state {
+        width: 100% !important;
+        max-width: none !important;
+        text-align: center !important;
+        color: var(--favorite-color) !important;
+        font-size: 13px !important;
+        font-weight: 900 !important;
+        line-height: 1 !important;
+      }
+
+      .sidebar .area-button.home-button {
+        background: color-mix(in srgb, var(--primary-color) 7%, var(--card-background-color)) !important;
+        border: 1px solid color-mix(in srgb, var(--primary-color) 20%, var(--divider-color)) !important;
+        box-shadow: 0 5px 12px rgba(15, 23, 42, 0.045) !important;
+      }
+      .sidebar .area-button.home-button.selected {
+        background: color-mix(in srgb, var(--primary-color) 18%, var(--card-background-color)) !important;
+        border-color: color-mix(in srgb, var(--primary-color) 48%, var(--divider-color)) !important;
+        box-shadow:
+          inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 10%, transparent),
+          0 8px 18px color-mix(in srgb, var(--primary-color) 11%, transparent) !important;
+      }
+      .sidebar .room-area-button.selected {
+        background: color-mix(in srgb, var(--primary-color) 7%, var(--card-background-color)) !important;
+      }
+    }
+
+    .room-favorites-title,
+    .room-favorites-title .mobile-domain-leading-chevron,
+    .room-favorites-title .room-domain-icon,
+    .room-favorites-title .mobile-domain-title-copy,
+    .room-favorites-title .mobile-domain-title-label,
+    .room-favorites-title .mobile-domain-count {
+      height: 24px !important;
+      min-height: 24px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      align-self: center !important;
+      line-height: 24px !important;
+      vertical-align: middle !important;
+      transform: none !important;
+    }
+    .room-favorites-title {
+      gap: 6px !important;
+    }
+    .room-favorites-title .mobile-domain-title-copy {
+      gap: 5px !important;
+    }
+
+    .house-power-dialog-title-wrap {
+      display: flex !important;
+      align-items: center !important;
+      gap: 9px !important;
+      flex-wrap: wrap;
+      min-width: 0;
+    }
+    .house-power-dialog-energy-link {
+      min-height: 30px !important;
+      padding: 0 10px !important;
+      margin-left: 2px !important;
+      font-size: 11px !important;
+    }
+    @media (max-width: 768px) {
+      .house-power-dialog-energy-link span { display: inline !important; }
+      .house-power-dialog-energy-link { width: auto !important; }
+    }
+
   `;
 
   connectedCallback() {
@@ -16072,21 +16190,17 @@ export class DwainsLayoutCard extends LitElement {
           <div class="house-power-dialog-head">
             <div class="house-power-dialog-title-wrap">
               <span class="house-power-dialog-icon"><ha-icon icon="mdi:flash"></ha-icon></span>
-              <div>
-                <div class="house-power-dialog-title">${this._t('home.house_power_usage')}</div>
-              </div>
-            </div>
-            <div class="house-power-dialog-actions">
+              <div class="house-power-dialog-title">${this._t('home.house_power_usage')}</div>
               <button
                 class="house-power-dialog-energy-link"
                 type="button"
                 @click=${this._openEnergyFromPowerDialog}
               >
-                <ha-icon icon="mdi:flash"></ha-icon>
-                <span>${this._t('devices.energy')}</span>
+                <span>${this._houseInfoEnergyViewLabel()}</span>
                 <ha-icon icon="mdi:chevron-right"></ha-icon>
               </button>
-              <button
+            </div>
+            <button
               class="house-power-dialog-close"
               type="button"
               title=${this._t('common.close')}
@@ -16094,8 +16208,7 @@ export class DwainsLayoutCard extends LitElement {
               @click=${this._closeHousePowerDialog}
             >
               <ha-icon icon="mdi:close"></ha-icon>
-              </button>
-            </div>
+            </button>
           </div>
 
           <div class="house-power-dialog-overview">
@@ -16207,7 +16320,7 @@ export class DwainsLayoutCard extends LitElement {
       config: this.config,
       entityIds,
       customTitle: title,
-      viewAllLabel: this._t('home.view_sensors'),
+      viewAllLabel: this._houseInfoDeviceViewLabel(),
       onViewAll: () => this._openDeviceDomain('sensor'),
     });
   }
@@ -20186,6 +20299,18 @@ export class DwainsLayoutCard extends LitElement {
     }
   }
 
+  private _houseInfoDeviceViewLabel(): string {
+    return String(this.hass?.language || '').toLowerCase().startsWith('de')
+      ? 'Zur Geräteansicht'
+      : 'Open device view';
+  }
+
+  private _houseInfoEnergyViewLabel(): string {
+    return String(this.hass?.language || '').toLowerCase().startsWith('de')
+      ? 'Zur Energieansicht'
+      : 'Open energy view';
+  }
+
   private _showHouseStatusEntities(domain: DomainCount) {
     const entityIds = domain.entities || [];
     if (!entityIds.length) {
@@ -20199,7 +20324,7 @@ export class DwainsLayoutCard extends LitElement {
       deviceClass: domain.deviceClass,
       entityIds,
       customTitle: domain.name,
-      viewAllLabel: this._t('common.view_all'),
+      viewAllLabel: this._houseInfoDeviceViewLabel(),
       onViewAll: () => this._openDeviceDomain(this._statusDeviceDomainKey(domain)),
     });
   }
@@ -20212,7 +20337,10 @@ export class DwainsLayoutCard extends LitElement {
     // TODO: Implement person entities dialog
     showDomainEntitiesDialog(this, {
       domain: 'person',
-      config: this.config
+      config: this.config,
+      customTitle: this._t('home.people'),
+      viewAllLabel: this._houseInfoDeviceViewLabel(),
+      onViewAll: () => this._openDeviceDomain('person'),
     });
   }
 

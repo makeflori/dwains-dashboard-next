@@ -704,6 +704,74 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       }
     }
 
+    /* House-information dialogs share one compact two-column language. */
+    .dialog-title-line {
+      min-width: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .dialog-title-text {
+      font-size: 20px;
+      font-weight: 900;
+      line-height: 1.05;
+    }
+    .dialog-header-destination {
+      min-height: 30px;
+      padding: 0 10px;
+      border: 0;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      color: var(--primary-color);
+      background: color-mix(in srgb, var(--primary-color) 10%, var(--card-background-color));
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 14%, transparent);
+      font: inherit;
+      font-size: 11px;
+      font-weight: 850;
+      cursor: pointer;
+    }
+    .dialog-header-destination:hover {
+      background: color-mix(in srgb, var(--primary-color) 15%, var(--card-background-color));
+    }
+    .dialog-header-destination ha-icon { --mdc-icon-size: 16px; }
+
+    .entities-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 10px !important;
+    }
+    .domain-entity-card { min-height: 112px !important; }
+    .domain-entity-name {
+      overflow: visible !important;
+      text-overflow: clip !important;
+      white-space: normal !important;
+      overflow-wrap: anywhere;
+      display: block !important;
+      -webkit-line-clamp: unset !important;
+      -webkit-box-orient: initial !important;
+      line-height: 1.12 !important;
+    }
+    .domain-entity-status {
+      overflow: visible !important;
+      text-overflow: clip !important;
+      white-space: normal !important;
+    }
+    @media (max-width: 600px) {
+      .dialog-title-line { gap: 7px; }
+      .dialog-title-text { font-size: 18px; }
+      .dialog-header-destination {
+        min-height: 28px;
+        padding: 0 8px;
+        font-size: 10px;
+      }
+      .entities-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      }
+    }
+
   `;
 
   public async showDialog(params: DomainEntitiesDialogParams): Promise<void> {
@@ -826,14 +894,15 @@ export class DwainsDomainEntitiesDialog extends LitElement {
         config.devices?.find(d => d.device_id === entityReg.device_id) : null;
       const entityAreaId = entityReg?.area_id || deviceReg?.area_id || this.hass?.entities?.[entityId]?.area_id;
 
-      // Skip entities without area
-      if (!entityAreaId) return;
+      // Persons are grouped by presence/location and therefore do not need
+      // an HA area assignment. Area-based domains still require one.
+      if (domain !== 'person' && !entityAreaId) return;
 
       // Check area filter if specified
       if (areaId && entityAreaId !== areaId) return;
 
-      // Check if area exists in our areas map
-      if (!entityAreaId || !areasMap.has(entityAreaId)) return;
+      // Check if area exists for area-based domains.
+      if (domain !== 'person' && (!entityAreaId || !areasMap.has(entityAreaId))) return;
 
       // Check if entity is hidden
       const groupKey = entityDomain;
@@ -857,7 +926,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       // Create EntityConfig-like object
       entities.push({
         entity_id: entityId,
-        area_id: entityAreaId,
+        ...(entityAreaId ? { area_id: entityAreaId } : {}),
         hidden: false
       });
     });
@@ -1005,7 +1074,19 @@ export class DwainsDomainEntitiesDialog extends LitElement {
             .path=${mdiClose}
             @click=${() => this.closeDialog()}
           ></ha-icon-button>
-          <span slot="title">${domainTitle}</span>
+          <span slot="title" class="dialog-title-line">
+            <span class="dialog-title-text">${domainTitle}</span>
+            ${this._params?.onViewAll ? html`
+              <button
+                class="dialog-header-destination"
+                type="button"
+                @click=${this._handleViewAll}
+              >
+                <span>${this._params.viewAllLabel || 'Open device view'}</span>
+                <ha-icon icon="mdi:chevron-right"></ha-icon>
+              </button>
+            ` : nothing}
+          </span>
         </ha-dialog-header>
 
         <div class="content">
@@ -1039,7 +1120,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     }
 
     return html`
-      ${this._renderViewAllAction()}
       ${this._renderDomainActions(entities)}
       ${repeat(
         Object.entries(this._groupedEntities),
