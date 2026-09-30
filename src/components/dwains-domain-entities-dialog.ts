@@ -772,6 +772,106 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       }
     }
 
+    /* Final house-information dialog consistency pass. */
+    :host {
+      --mdc-dialog-max-width: 760px;
+    }
+
+    ha-dialog-header {
+      min-height: 62px !important;
+      padding: 10px 14px !important;
+      background: var(--card-background-color) !important;
+      box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--divider-color) 70%, transparent);
+    }
+
+    .dialog-title-line {
+      min-width: 0 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 9px !important;
+      flex-wrap: nowrap !important;
+    }
+
+    .dialog-title-text {
+      min-width: 0 !important;
+      font-size: 20px !important;
+      font-weight: 900 !important;
+      line-height: 1.05 !important;
+    }
+
+    .dialog-header-destination {
+      flex: 0 0 auto;
+      min-height: 30px !important;
+      padding: 0 10px !important;
+      font-size: 11px !important;
+      white-space: nowrap !important;
+    }
+
+    .content {
+      padding: 14px 16px 18px !important;
+    }
+
+    .entities-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 10px !important;
+    }
+
+    .domain-entity-card {
+      min-width: 0 !important;
+      min-height: 116px !important;
+      padding: 11px 12px !important;
+    }
+
+    .domain-entity-copy {
+      min-width: 0 !important;
+    }
+
+    .domain-entity-name,
+    .domain-entity-meta,
+    .domain-entity-status {
+      max-width: 100% !important;
+      overflow: visible !important;
+      text-overflow: clip !important;
+      white-space: normal !important;
+      overflow-wrap: anywhere !important;
+    }
+
+    .domain-entity-name {
+      display: block !important;
+      -webkit-line-clamp: unset !important;
+      -webkit-box-orient: initial !important;
+      font-size: 14px !important;
+      line-height: 1.12 !important;
+    }
+
+    .domain-entity-meta {
+      font-size: 10px !important;
+    }
+
+    .domain-entity-status {
+      font-size: 11px !important;
+    }
+
+    @media (max-width: 600px) {
+      .dialog-title-line {
+        gap: 6px !important;
+      }
+
+      .dialog-title-text {
+        font-size: 18px !important;
+      }
+
+      .dialog-header-destination {
+        min-height: 28px !important;
+        padding: 0 8px !important;
+        font-size: 10px !important;
+      }
+
+      .entities-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      }
+    }
+
   `;
 
   public async showDialog(params: DomainEntitiesDialogParams): Promise<void> {
@@ -938,21 +1038,14 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       const entityState = this.hass!.states[entity.entity_id];
 
       if (domain === 'person') {
-        // For persons, group by location/status instead of area
-        const location = entityState?.state || 'unknown';
-        const locationKey = location === 'home' ? 'home' : 'away';
-            const locationName = location === 'home' ? 'Home' :
-                          location === 'away' ? 'Away' :
-                          location === 'not_home' ? 'Away' :
-                            `${location.charAt(0).toUpperCase()}${location.slice(1)}`;
-
-        if (!grouped[locationKey]) {
-          grouped[locationKey] = {
-            areaName: locationName,
+        const groupKey = 'people';
+        if (!grouped[groupKey]) {
+          grouped[groupKey] = {
+            areaName: this._t('home.people'),
             entities: []
           };
         }
-        grouped[locationKey].entities.push(entity);
+        grouped[groupKey].entities.push(entity);
       } else {
         // For other domains, group by area as usual
         const areaId = entity.area_id!;
@@ -1040,7 +1133,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     let domainTitle = customTitle || this._getLocalizedDomainTitle(domain);
     if (filterByUnitOfMeasurement === 'W') {
       domainTitle = this._t('dialog.power_sensors');
-    } else if (deviceClass) {
+    } else if (deviceClass && !customTitle) {
       const deviceClassTitles: Record<string, string> = {
         motion: this._t('dialog.motion_sensors'),
         door: this._t('dialog.door_sensors'),
@@ -1236,15 +1329,9 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       }
     }
 
-    // Special handling for person domain
+    // Persons are shown as one household group instead of room-based groups.
     if (this._params?.domain === 'person') {
-      if (_areaId === 'home') {
-        areaIcon = 'mdi:home-account';
-      } else if (_areaId === 'away') {
-        areaIcon = 'mdi:account-arrow-right';
-      } else {
-        areaIcon = 'mdi:account-question';
-      }
+      areaIcon = 'mdi:account-group';
     }
 
     return html`
