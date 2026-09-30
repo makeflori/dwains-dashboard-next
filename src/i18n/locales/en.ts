@@ -501,6 +501,8 @@ export const en = {
   'settings.visible_in_dd': 'Visible in DD',
   'settings.hidden_in_dd': 'Hidden in DD',
   'settings.discard_confirm': 'Discard unsaved dashboard settings?',
+  'settings.discard_title': 'Discard changes?',
+  'settings.discard_action': 'Discard',
 
   'settings.show_suggested_favorites': "Show suggested favorites",
   'settings.suggested_favorites_description': "Adds frequently used entities suggested by Home Assistant alongside your own favorites. Your manually selected favorites always remain.",
