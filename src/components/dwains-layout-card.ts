@@ -13595,6 +13595,167 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
+    /* Compact Home Favorites and clearer sidebar Home state. */
+    @media (min-width: 769px) {
+      .home-favorites-section .favorites-grid {
+        grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+        gap: 10px !important;
+      }
+
+      .home-favorites-section .favorite-card-wrapper {
+        min-height: 81px !important;
+        height: 81px !important;
+        padding: 9px 10px !important;
+        display: grid !important;
+        grid-template-columns: 38px minmax(0, 1fr) auto !important;
+        grid-template-rows: 1fr !important;
+        align-items: center !important;
+        gap: 9px !important;
+      }
+
+      .home-favorites-section .favorite-icon {
+        width: 38px !important;
+        height: 38px !important;
+        margin: 0 !important;
+        align-self: center !important;
+      }
+
+      .home-favorites-section .favorite-icon ha-icon {
+        --mdc-icon-size: 21px !important;
+      }
+
+      .home-favorites-section .favorite-body {
+        min-width: 0;
+        display: flex !important;
+        flex-direction: column;
+        justify-content: center;
+        gap: 3px;
+      }
+
+      .home-favorites-section .favorite-name {
+        margin: 0 !important;
+        font-size: 13px !important;
+        line-height: 1.05 !important;
+        -webkit-line-clamp: 1 !important;
+      }
+
+      .home-favorites-section .favorite-area {
+        margin: 0 !important;
+        font-size: 9px !important;
+        line-height: 1 !important;
+      }
+
+      .home-favorites-section .favorite-end {
+        min-width: 48px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 4px;
+      }
+
+      .home-favorites-section .favorite-quick-action {
+        width: 38px !important;
+        height: 22px !important;
+        flex: 0 0 auto;
+      }
+
+      .home-favorites-section .favorite-end-state,
+      .home-favorites-section .favorite-info-state {
+        max-width: 76px;
+        color: var(--secondary-text-color);
+        font-size: 9px;
+        font-weight: 750;
+        line-height: 1.05;
+        text-align: right;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .home-favorites-section .favorite-info-state {
+        font-size: 12px;
+        color: var(--primary-text-color);
+      }
+
+      .home-favorites-section .favorite-state {
+        display: none !important;
+      }
+
+      /* Unselected Home must not resemble a selected room. */
+      .sidebar .area-button.home-button {
+        background: var(--card-background-color) !important;
+        border-color: color-mix(in srgb, var(--primary-color) 16%, var(--divider-color)) !important;
+        box-shadow:
+          inset 3px 0 0 color-mix(in srgb, var(--primary-color) 60%, transparent),
+          0 5px 12px rgba(15, 23, 42, 0.04) !important;
+      }
+
+      .sidebar .area-button.home-button.selected {
+        background: color-mix(in srgb, var(--primary-color) 18%, var(--card-background-color)) !important;
+        border-color: color-mix(in srgb, var(--primary-color) 46%, var(--divider-color)) !important;
+        box-shadow:
+          inset 4px 0 0 var(--primary-color),
+          inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 12%, transparent),
+          0 8px 18px color-mix(in srgb, var(--primary-color) 10%, transparent) !important;
+      }
+
+      .sidebar .room-area-button.selected {
+        background: color-mix(in srgb, var(--card-background-color) 94%, var(--primary-color) 6%) !important;
+      }
+    }
+
+    @media (max-width: 1250px) and (min-width: 769px) {
+      .home-favorites-section .favorites-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+      }
+    }
+
+    .house-power-dialog-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+
+    .house-power-dialog-energy-link {
+      min-height: 36px;
+      padding: 0 11px;
+      border: 0;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: #d88e20;
+      background: color-mix(in srgb, #d88e20 10%, var(--card-background-color));
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, #d88e20 14%, transparent);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 850;
+      cursor: pointer;
+    }
+
+    .house-power-dialog-energy-link:hover {
+      background: color-mix(in srgb, #d88e20 15%, var(--card-background-color));
+    }
+
+    .house-power-dialog-energy-link ha-icon {
+      --mdc-icon-size: 17px;
+    }
+
+    @media (max-width: 768px) {
+      .house-power-dialog-energy-link span {
+        display: none;
+      }
+
+      .house-power-dialog-energy-link {
+        width: 36px;
+        padding: 0;
+      }
+    }
+
   `;
 
   connectedCallback() {
@@ -15876,6 +16037,11 @@ export class DwainsLayoutCard extends LitElement {
     this._housePowerDialogOpen = false;
   };
 
+  private _openEnergyFromPowerDialog = () => {
+    this._closeHousePowerDialog();
+    this._openDeviceDomain('energy');
+  };
+
   private _handleHousePowerDialogKeydown = (event: KeyboardEvent): void => {
     if (event.key !== 'Escape') return;
     event.preventDefault();
@@ -15908,10 +16074,19 @@ export class DwainsLayoutCard extends LitElement {
               <span class="house-power-dialog-icon"><ha-icon icon="mdi:flash"></ha-icon></span>
               <div>
                 <div class="house-power-dialog-title">${this._t('home.house_power_usage')}</div>
-                <div class="house-power-dialog-subtitle">${this._tp('devices.live_power_sensor', usage.sensorCount)}</div>
               </div>
             </div>
-            <button
+            <div class="house-power-dialog-actions">
+              <button
+                class="house-power-dialog-energy-link"
+                type="button"
+                @click=${this._openEnergyFromPowerDialog}
+              >
+                <ha-icon icon="mdi:flash"></ha-icon>
+                <span>${this._t('devices.energy')}</span>
+                <ha-icon icon="mdi:chevron-right"></ha-icon>
+              </button>
+              <button
               class="house-power-dialog-close"
               type="button"
               title=${this._t('common.close')}
@@ -15919,7 +16094,8 @@ export class DwainsLayoutCard extends LitElement {
               @click=${this._closeHousePowerDialog}
             >
               <ha-icon icon="mdi:close"></ha-icon>
-            </button>
+              </button>
+            </div>
           </div>
 
           <div class="house-power-dialog-overview">
@@ -16046,7 +16222,7 @@ export class DwainsLayoutCard extends LitElement {
     return html`
       <div
         class="home-status-card house-persons-card person persons-${Math.min(personEntities.length, 4)}"
-        @click=${() => this._openDeviceDomain('person')}
+        @click=${() => this._showPersonEntities()}
         data-domain="person"
       >
         <div class="house-persons-head">
@@ -16447,23 +16623,27 @@ export class DwainsLayoutCard extends LitElement {
         @click=${() => this._showMoreInfo(entityId)}
         @keydown=${(event: KeyboardEvent) => this._handleFavoriteKeydown(event, entityId)}
       >
-        <div class="favorite-top">
-          <div class="favorite-icon">
-            <ha-icon icon=${icon}></ha-icon>
-          </div>
-          <button
-            class="favorite-quick-action"
-            type="button"
-            title=${this._favoriteQuickTitle(state, domain)}
-            @click=${(event: Event) => this._handleFavoriteQuickAction(event, state, domain)}
-          >
-            <ha-icon icon=${this._favoriteQuickIcon(state, domain)}></ha-icon>
-          </button>
+        <div class="favorite-icon">
+          <ha-icon icon=${icon}></ha-icon>
         </div>
         <div class="favorite-body">
           <div class="favorite-name">${name}</div>
-          <div class="favorite-state">${formattedState}</div>
           ${areaName ? html`<div class="favorite-area">${areaName}</div>` : nothing}
+        </div>
+        <div class="favorite-end">
+          ${supportsToggle ? html`
+            <button
+              class="favorite-quick-action"
+              type="button"
+              title=${this._favoriteQuickTitle(state, domain)}
+              @click=${(event: Event) => this._handleFavoriteQuickAction(event, state, domain)}
+            >
+              <ha-icon icon=${this._favoriteQuickIcon(state, domain)}></ha-icon>
+            </button>
+            <div class="favorite-end-state">${formattedState}</div>
+          ` : html`
+            <div class="favorite-info-state">${formattedState}</div>
+          `}
         </div>
       </article>
     `;
