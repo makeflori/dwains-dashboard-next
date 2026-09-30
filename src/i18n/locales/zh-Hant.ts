@@ -485,6 +485,8 @@ export const zhHant = {
   'settings.visible_in_dd': '在 DD 顯示',
   'settings.hidden_in_dd': '在 DD 隱藏',
   'settings.discard_confirm': '要捨棄未儲存的儀表板設定嗎?',
+  'settings.discard_title': '捨棄變更？',
+  'settings.discard_action': '捨棄',
   'settings.show_suggested_favorites': "顯示建議收藏",
   'settings.suggested_favorites_description': "在你自己的收藏之外，加入 Home Assistant 建議的常用實體。你手動選擇的收藏會始終保留。",
   'settings.add_entity': '新增實體',
