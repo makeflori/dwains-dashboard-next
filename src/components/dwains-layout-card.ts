@@ -13259,6 +13259,342 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
+    /* Desktop Home alignment and section rhythm. */
+    @media (min-width: 769px) {
+      .home-view,
+      .home-welcome,
+      .home-status-section,
+      .home-favorites-section,
+      .home-summaries-section,
+      .home-camera-section,
+      .home-todos-section,
+      .home-custom-cards-section {
+        width: 100%;
+        max-width: none;
+        box-sizing: border-box;
+      }
+
+      .home-status-heading,
+      .home-favorites-section .favorites-header {
+        margin-bottom: 10px !important;
+      }
+
+      .home-status-section,
+      .home-favorites-section,
+      .home-summaries-section,
+      .home-camera-section,
+      .home-todos-section,
+      .home-custom-cards-section {
+        margin-bottom: 28px !important;
+      }
+
+      .home-welcome {
+        margin-bottom: 28px !important;
+      }
+
+      /* One shared three-column master grid for prominent Home content. */
+      .home-status-primary-grid,
+      .favorites-grid,
+      .home-summary-list {
+        width: 100%;
+        max-width: none !important;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        align-items: stretch;
+      }
+
+      .home-status-primary-grid > .home-status-card {
+        width: 100%;
+        min-width: 0;
+        grid-column: auto !important;
+      }
+
+      .home-status-stack {
+        min-width: 0;
+        height: 162px;
+        display: grid;
+        grid-template-rows: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .home-status-stack .home-status-card.compact-status {
+        width: 100%;
+        height: auto;
+        min-height: 0;
+      }
+
+      /* Once status cards move below the primary row, they use the six-column compact grid. */
+      .home-status-secondary-grid {
+        width: 100%;
+        margin-top: 12px;
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .home-status-secondary-grid .home-status-card.compact-status {
+        width: 100%;
+        min-width: 0;
+        height: 81px;
+      }
+
+      /* Favorites/Summary cards use the same column width as a primary House Information card. */
+      .home-favorites-section .favorite-card-wrapper,
+      .home-summary-list .home-summary-card {
+        width: 100%;
+        min-width: 0;
+      }
+
+      /* Room Favorites: hard vertical centering across chevron, star, text and count. */
+      .global-header.room-context .room-favorites-header {
+        display: flex !important;
+        align-items: center !important;
+      }
+
+      .global-header.room-context .room-favorites-title {
+        height: 24px !important;
+        min-height: 24px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 7px !important;
+      }
+
+      .global-header.room-context .room-favorites-title > *,
+      .global-header.room-context .room-favorites-title .mobile-domain-title-copy,
+      .global-header.room-context .room-favorites-title .mobile-domain-title-label,
+      .global-header.room-context .room-favorites-title .mobile-domain-count {
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        align-self: center !important;
+        line-height: 1 !important;
+      }
+
+      .global-header.room-context .room-favorites-title .mobile-domain-leading-chevron {
+        transform: translateY(0) !important;
+      }
+
+      .global-header.room-context .room-favorites-title .room-domain-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transform: translateY(0) !important;
+      }
+
+      /* Home sidebar item: no photo-like icon tile, stronger global distinction, readable selection. */
+      .sidebar .area-button.home-button .area-icon {
+        width: 32px !important;
+        height: 32px !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+      }
+
+      .sidebar .area-button.home-button .area-icon ha-icon {
+        --mdc-icon-size: 25px !important;
+        color: var(--primary-color) !important;
+      }
+
+      .sidebar .area-button.home-button {
+        background: color-mix(in srgb, var(--primary-color) 7%, var(--card-background-color)) !important;
+        border-color: color-mix(in srgb, var(--primary-color) 24%, var(--divider-color)) !important;
+      }
+
+      .sidebar .area-button.home-button.selected {
+        color: var(--primary-text-color) !important;
+        background: color-mix(in srgb, var(--primary-color) 18%, var(--card-background-color)) !important;
+        border-color: color-mix(in srgb, var(--primary-color) 42%, var(--divider-color)) !important;
+      }
+
+      .sidebar .area-button.home-button.selected .area-name,
+      .sidebar .area-button.home-button.selected .area-menu-chevron {
+        color: var(--primary-text-color) !important;
+      }
+
+      .sidebar .area-button.home-button.selected .area-icon ha-icon {
+        color: var(--primary-color) !important;
+      }
+
+      /* Status counts match room badges: near-circle, never pill-shaped for 1–2 digits. */
+      .home-status-card .status-card-badge {
+        min-width: 20px !important;
+        width: 20px !important;
+        height: 20px !important;
+        padding: 0 !important;
+        border-radius: 999px !important;
+      }
+    }
+
+    /* Richer power dialog mirrors the Devices > Energy information density. */
+    .house-power-dialog {
+      width: min(900px, calc(100vw - 32px));
+    }
+
+    .house-power-dialog-overview {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .house-power-dialog-overview-card {
+      min-width: 0;
+      padding: 13px;
+      border-radius: 11px;
+      background: var(--card-background-color);
+      box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 7%, transparent),
+        0 8px 22px rgba(15, 23, 42, 0.04);
+    }
+
+    .house-power-dialog-overview-head {
+      display: grid;
+      grid-template-columns: 38px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .house-power-dialog-overview-icon {
+      width: 38px;
+      height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      color: #d88e20;
+      background: color-mix(in srgb, #d88e20 10%, transparent);
+    }
+
+    .house-power-dialog-overview-icon ha-icon { --mdc-icon-size: 21px; }
+    .house-power-dialog-overview-head strong { display: block; font-size: 14px; font-weight: 850; }
+    .house-power-dialog-overview-head small { display: block; margin-top: 3px; color: var(--secondary-text-color); font-size: 11px; font-weight: 700; }
+    .house-power-dialog-overview-head b { font-size: 20px; font-weight: 950; white-space: nowrap; }
+
+    .house-power-statistics-card {
+      display: block;
+      min-height: 132px;
+      margin-top: 10px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: color-mix(in srgb, #d88e20 4%, transparent);
+      --ha-card-background: transparent;
+      --ha-card-box-shadow: none;
+      --ha-card-border-width: 0;
+      --ha-card-border-radius: 10px;
+    }
+
+    .house-power-dialog-top-entities {
+      margin-top: 10px;
+      display: grid;
+      gap: 5px;
+    }
+
+    .house-power-dialog-top-entities button {
+      min-height: 30px;
+      padding: 0 9px;
+      border: 0;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: color-mix(in srgb, #d88e20 5%, transparent);
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .house-power-dialog-entity.detailed {
+      display: grid;
+      grid-template-columns: 32px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+      min-height: 42px;
+      padding: 5px 6px;
+    }
+
+    .house-power-dialog-entity-icon {
+      width: 32px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      color: #d88e20;
+      background: color-mix(in srgb, #d88e20 9%, transparent);
+    }
+
+    .house-power-dialog-entity-icon ha-icon { --mdc-icon-size: 17px; }
+
+    .house-power-dialog-entity-copy {
+      min-width: 0;
+      display: grid;
+      gap: 2px;
+    }
+
+    .house-power-dialog-entity-copy > strong {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 12px;
+    }
+
+    .house-power-dialog-entity-copy > small {
+      color: var(--secondary-text-color);
+      font-size: 10px;
+    }
+
+    .house-power-dialog-entity-bar {
+      position: relative;
+      height: 3px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: color-mix(in srgb, #d88e20 10%, var(--secondary-background-color));
+    }
+
+    .house-power-dialog-entity-bar span {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: var(--entity-power-width, 0%);
+      min-width: 3px;
+      border-radius: inherit;
+      background: #d88e20;
+    }
+
+    .house-power-dialog-entity.detailed > b {
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 1100px) and (min-width: 769px) {
+      .home-status-primary-grid,
+      .favorites-grid,
+      .home-summary-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .home-status-secondary-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 768px) {
+      .home-status-primary-grid,
+      .home-status-secondary-grid {
+        display: contents;
+      }
+
+      .home-status-stack {
+        display: contents;
+      }
+
+      .house-power-dialog-overview {
+        grid-template-columns: 1fr;
+      }
+    }
+
   `;
 
   connectedCallback() {
@@ -15202,32 +15538,42 @@ export class DwainsLayoutCard extends LitElement {
         )
       : [];
     const gridMode = this._mobileHomeDevicesLayout === 'grid';
-    const cards = [
+
+    const renderStatusCard = (domain: DomainCount) => html`
+      <div
+        class="home-status-card compact-status ${domain.domain} ${domain.value ? 'has-value' : ''}"
+        style=${this._domainStatusStyle(domain.domain, domain.deviceClass)}
+        @click=${() => this._handleStatusCardClick(domain)}
+        data-domain=${domain.domain}
+        title=${this._statusCardTitle(domain)}
+        aria-label=${this._statusCardTitle(domain)}
+      >
+        <div class="status-card-icon">
+          <ha-icon icon=${domain.icon}></ha-icon>
+          ${domain.count > 0 ? html`
+            <div class="status-card-badge">${domain.count}</div>
+          ` : nothing}
+        </div>
+        ${domain.value ? html`<div class="status-card-value">${domain.value}</div>` : nothing}
+        <div class="status-card-title">${this._statusCardTitle(domain)}</div>
+      </div>
+    `;
+
+    const primaryCards = [
       this._homeInformationCardVisible('people') ? this._renderHousePersonsStatusCard() : nothing,
       this._homeInformationCardVisible('climate') ? this._renderHouseClimateStatusCard() : nothing,
       this._homeInformationCardVisible('power') ? this._renderHousePowerStatusCard() : nothing,
-      ...visibleDomains.map(domain => html`
-        <div
-          class="home-status-card ${domain.domain} ${domain.value ? 'has-value' : ''}"
-          style=${this._domainStatusStyle(domain.domain, domain.deviceClass)}
-          @click=${() => this._handleStatusCardClick(domain)}
-          data-domain=${domain.domain}
-          title=${this._statusCardTitle(domain)}
-          aria-label=${this._statusCardTitle(domain)}
-        >
-          <div class="status-card-icon">
-            <ha-icon icon=${domain.icon}></ha-icon>
-            ${domain.count > 0 ? html`
-              <div class="status-card-badge">${domain.count}</div>
-            ` : nothing}
-          </div>
-          ${domain.value ? html`<div class="status-card-value">${domain.value}</div>` : nothing}
-          <div class="status-card-title">${this._statusCardTitle(domain)}</div>
-        </div>
-      `),
     ].filter(card => card !== nothing);
 
-    if (!cards.length) return nothing;
+    const openPrimarySlots = Math.max(0, 3 - primaryCards.length);
+    const promotedStatusCount = Math.min(visibleDomains.length, openPrimarySlots * 2);
+    const promotedStatuses = visibleDomains.slice(0, promotedStatusCount);
+    const remainingStatuses = visibleDomains.slice(promotedStatusCount);
+    const promotedStacks = Array.from({ length: Math.ceil(promotedStatuses.length / 2) }, (_, index) =>
+      promotedStatuses.slice(index * 2, index * 2 + 2)
+    );
+
+    if (!primaryCards.length && !visibleDomains.length) return nothing;
 
     return html`
       <div class="home-status-section layout-${this._mobileHomeDevicesLayout}">
@@ -15257,9 +15603,21 @@ export class DwainsLayoutCard extends LitElement {
             <ha-icon icon="mdi:chevron-right"></ha-icon>
           </button>
         </div>
-        <div class="home-status-grid">
-          ${cards}
+
+        <div class="home-status-primary-grid">
+          ${primaryCards}
+          ${promotedStacks.map(stack => html`
+            <div class="home-status-stack">
+              ${stack.map(renderStatusCard)}
+            </div>
+          `)}
         </div>
+
+        ${remainingStatuses.length ? html`
+          <div class="home-status-secondary-grid">
+            ${remainingStatuses.map(renderStatusCard)}
+          </div>
+        ` : nothing}
       </div>
     `;
   }
@@ -15528,6 +15886,11 @@ export class DwainsLayoutCard extends LitElement {
     if (!this._housePowerDialogOpen) return nothing;
 
     const usage = buildHousePowerUsage(this.hass, this.config);
+    const topArea = usage.areas[0];
+    const wholeHouseStats = this._housePowerStatisticsEntities(
+      usage.areas.flatMap(area => area.entities),
+      8
+    );
 
     return html`
       <div class="house-power-dialog-overlay" @click=${this._closeHousePowerDialog}>
@@ -15559,9 +15922,39 @@ export class DwainsLayoutCard extends LitElement {
             </button>
           </div>
 
-          <div class="house-power-dialog-total">
-            <span>${usage.formattedTotal || '0 W'}</span>
-            <small>${this._t('home.house_power_usage')}</small>
+          <div class="house-power-dialog-overview">
+            <section class="house-power-dialog-overview-card">
+              <div class="house-power-dialog-overview-head">
+                <span class="house-power-dialog-overview-icon"><ha-icon icon="mdi:home-lightning-bolt-outline"></ha-icon></span>
+                <div>
+                  <strong>${this._t('devices.whole_house')}</strong>
+                  <small>${this._tp('devices.live_power_sensor', usage.sensorCount)}</small>
+                </div>
+                <b>${usage.formattedTotal || '0 W'}</b>
+              </div>
+              ${this._renderHousePowerStatisticsGraph(wholeHouseStats, this._t('devices.whole_house_history'))}
+            </section>
+
+            ${topArea ? html`
+              <section class="house-power-dialog-overview-card">
+                <div class="house-power-dialog-overview-head">
+                  <span class="house-power-dialog-overview-icon"><ha-icon icon=${topArea.icon}></ha-icon></span>
+                  <div>
+                    <strong>${this._t('devices.top_area')}</strong>
+                    <small>${topArea.name}</small>
+                  </div>
+                  <b>${topArea.formattedTotal}</b>
+                </div>
+                <div class="house-power-dialog-top-entities">
+                  ${topArea.entities.slice(0, 3).map(entity => html`
+                    <button type="button" @click=${() => this._showMoreInfo(entity.entityId)}>
+                      <span>${entity.name}</span>
+                      <strong>${entity.formatted}</strong>
+                    </button>
+                  `)}
+                </div>
+              </section>
+            ` : nothing}
           </div>
 
           ${usage.areas.length ? html`
@@ -15573,20 +15966,32 @@ export class DwainsLayoutCard extends LitElement {
                     <span class="house-power-dialog-area-name">${area.name}</span>
                     <strong>${area.formattedTotal}</strong>
                   </div>
-                  <div class="house-power-dialog-bar" style=${`--power-width: ${area.percentage}%`}>
-                    <span></span>
-                  </div>
+                  ${this._renderHousePowerStatisticsGraph(
+                    this._housePowerStatisticsEntities(area.entities, 6),
+                    `${area.name} power history`
+                  )}
                   <div class="house-power-dialog-entities">
-                    ${area.entities.map(entity => html`
-                      <button
-                        class="house-power-dialog-entity"
-                        type="button"
-                        @click=${() => this._showMoreInfo(entity.entityId)}
-                      >
-                        <span>${entity.name}</span>
-                        <strong>${entity.formatted}</strong>
-                      </button>
-                    `)}
+                    ${area.entities.map(entity => {
+                      const pct = area.totalWatts > 0
+                        ? Math.max(4, Math.min(100, Math.round((entity.watts / area.totalWatts) * 100)))
+                        : 0;
+                      return html`
+                        <button
+                          class="house-power-dialog-entity detailed"
+                          type="button"
+                          style=${`--entity-power-width: ${pct}%`}
+                          @click=${() => this._showMoreInfo(entity.entityId)}
+                        >
+                          <span class="house-power-dialog-entity-icon"><ha-icon icon=${entity.icon}></ha-icon></span>
+                          <span class="house-power-dialog-entity-copy">
+                            <strong>${entity.name}</strong>
+                            <small>${area.name}</small>
+                            <span class="house-power-dialog-entity-bar"><span></span></span>
+                          </span>
+                          <b>${entity.formatted}</b>
+                        </button>
+                      `;
+                    })}
                   </div>
                 </section>
               `)}
@@ -18370,6 +18775,43 @@ export class DwainsLayoutCard extends LitElement {
 
   private _mobileEntityColor(domain: string, deviceClass?: string): string {
     return getDomainColor(domain, deviceClass);
+  }
+
+  private _housePowerStatisticsEntities(
+    entities: Array<{ entityId: string; name: string; watts: number; stateClass?: string }>,
+    limit: number
+  ): Array<{ entity: string; name: string }> {
+    return entities
+      .filter(entity => ['measurement', 'total', 'total_increasing'].includes(entity.stateClass || ''))
+      .sort((a, b) => b.watts - a.watts)
+      .slice(0, limit)
+      .map(entity => ({ entity: entity.entityId, name: entity.name }));
+  }
+
+  private _renderHousePowerStatisticsGraph(
+    entities: Array<{ entity: string; name: string }>,
+    label: string
+  ) {
+    if (!entities.length) return nothing;
+
+    return html`
+      <dwains-dashboard-next-card-host
+        class="house-power-statistics-card"
+        aria-label=${label}
+        .hass=${this.hass}
+        .config=${{
+          type: 'statistics-graph',
+          entities,
+          days_to_show: 1,
+          period: '5minute',
+          stat_types: ['mean'],
+          chart_type: 'line',
+          hide_legend: true,
+          fit_y_data: true,
+          min_y_axis: 0,
+        }}
+      ></dwains-dashboard-next-card-host>
+    `;
   }
 
   private _numericValue(value: string): number | null {
