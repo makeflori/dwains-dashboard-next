@@ -242,6 +242,8 @@ export class DwainsLayoutCard extends LitElement {
   private _progressiveRenderCancel?: () => void;
   private _pendingSettingsConfig?: Partial<DwainsDashboardConfig>;
   private _settingsEditorInitialized = false;
+  private _settingsRestorePageKey = 'overview';
+  private _settingsRestoreAreaId?: string;
   private _confirmationResolve?: (confirmed: boolean) => void;
 
   // Debounce timers
@@ -261,6 +263,15 @@ export class DwainsLayoutCard extends LitElement {
       if (settingsOpen) {
         this._selectedArea = null;
         this._selectedView = 'settings';
+        const savedSettingsState = window.history.state?.[SETTINGS_HISTORY_STATE_KEY];
+        if (savedSettingsState && typeof savedSettingsState === 'object') {
+          this._settingsRestorePageKey = typeof savedSettingsState.page === 'string'
+            ? savedSettingsState.page
+            : 'overview';
+          this._settingsRestoreAreaId = typeof savedSettingsState.areaId === 'string'
+            ? savedSettingsState.areaId
+            : undefined;
+        }
       } else if (urlArea && config.areas?.some(a => a.area_id === urlArea)) {
         this._selectedArea = urlArea;
         this._selectedView = 'area';
@@ -296,8 +307,14 @@ export class DwainsLayoutCard extends LitElement {
         ? window.history.state
         : {};
       const next = { ...current };
-      if (open) next[SETTINGS_HISTORY_STATE_KEY] = true;
-      else delete next[SETTINGS_HISTORY_STATE_KEY];
+      if (open) {
+        next[SETTINGS_HISTORY_STATE_KEY] = {
+          page: this._settingsPageKey || 'overview',
+          areaId: this._settingsRestoreAreaId,
+        };
+      } else {
+        delete next[SETTINGS_HISTORY_STATE_KEY];
+      }
       window.history.replaceState(next, '', window.location.href);
     } catch {
       /* history state can be unavailable in restricted contexts */
@@ -17782,9 +17799,16 @@ export class DwainsLayoutCard extends LitElement {
   }
 
   // Event Handlers
-  private _confirmDiscardSettings(): boolean {
+  private async _confirmDiscardSettings(): Promise<boolean> {
     if (this._selectedView !== 'settings' || !this._settingsDirty) return true;
-    return window.confirm('Discard unsaved dashboard settings?');
+    return this._showConfirmation(
+      this._t('settings.discard_title'),
+      this._t('settings.discard_confirm'),
+      {
+        confirmLabel: this._t('settings.discard_action'),
+        destructive: true,
+      }
+    );
   }
 
   private _clearSettingsEditState(): void {
@@ -17794,13 +17818,15 @@ export class DwainsLayoutCard extends LitElement {
     this._settingsSavePending = false;
     this._settingsEditorInitialized = false;
     this._settingsPageKey = 'overview';
+    this._settingsRestorePageKey = 'overview';
+    this._settingsRestoreAreaId = undefined;
     this._settingsPageTitle = '';
     this._settingsPageParentTitle = '';
     this._settingsPageDescription = '';
   }
 
-  private _selectView(view: DwainsSelectedView) {
-    if (view !== 'settings' && !this._confirmDiscardSettings()) return;
+  private async _selectView(view: DwainsSelectedView) {
+    if (view !== 'settings' && !(await this._confirmDiscardSettings())) return;
     this._setSettingsHistoryState(view === 'settings');
     this._resetAreaHeaderScrollState(view === 'area');
     this._selectedView = view;
@@ -17828,8 +17854,8 @@ export class DwainsLayoutCard extends LitElement {
     this._closeMobileNav();
   }
 
-  private _selectArea(areaId: string) {
-    if (!this._confirmDiscardSettings()) return;
+  private async _selectArea(areaId: string) {
+    if (!(await this._confirmDiscardSettings())) return;
     this._resetAreaHeaderScrollState(true);
     this._selectedArea = areaId;
     this._selectedView = 'area';
@@ -17869,9 +17895,9 @@ export class DwainsLayoutCard extends LitElement {
     this._selectView('home');
   };
 
-  private _openMobileAreaSwitcher = () => {
+  private _openMobileAreaSwitcher = async () => {
     if (!this._isMobile) return;
-    if (!this._confirmDiscardSettings()) return;
+    if (!(await this._confirmDiscardSettings())) return;
     this._selectedView = 'home';
     this._selectedArea = null;
     this._resetAreaHeaderScrollState(false);
@@ -18127,7 +18153,11 @@ export class DwainsLayoutCard extends LitElement {
     editor.hass = this.hass;
     if (!this._settingsEditorInitialized) {
       this._settingsEditorInitialized = true;
-      void editor.setConfig(this.config);
+      const restorePage = this._settingsRestorePageKey || this._settingsPageKey || 'overview';
+      const restoreArea = this._settingsRestoreAreaId;
+      void editor.setConfig(this.config).then(() => {
+        editor._restoreSettingsNavigation?.(restorePage, restoreArea);
+      });
     }
   }
 
@@ -18141,11 +18171,14 @@ export class DwainsLayoutCard extends LitElement {
 
   private _handleSettingsPageChanged = (event: Event): void => {
     event.stopPropagation();
-    const detail = (event as CustomEvent<{ page?: string; title?: string; parentTitle?: string; description?: string }>).detail || {};
+    const detail = (event as CustomEvent<{ page?: string; areaId?: string; title?: string; parentTitle?: string; description?: string }>).detail || {};
     this._settingsPageKey = detail.page || 'overview';
+    this._settingsRestorePageKey = this._settingsPageKey;
+    this._settingsRestoreAreaId = detail.areaId || undefined;
     this._settingsPageTitle = detail.title || '';
     this._settingsPageParentTitle = detail.parentTitle || '';
     this._settingsPageDescription = detail.description || '';
+    this._setSettingsHistoryState(true);
   };
 
   private _settingsBackToOverview = (): void => {
@@ -18157,10 +18190,10 @@ export class DwainsLayoutCard extends LitElement {
     this._closeSettingsPage();
   };
 
-  private _closeSettingsPage = (): void => {
-    if (!this._confirmDiscardSettings()) return;
+  private _closeSettingsPage = async (): Promise<void> => {
+    if (!(await this._confirmDiscardSettings())) return;
     this._clearSettingsEditState();
-    this._selectView('home');
+    await this._selectView('home');
   };
 
   private async _saveSettingsPage(): Promise<void> {
@@ -18169,6 +18202,7 @@ export class DwainsLayoutCard extends LitElement {
 
     this._settingsSavePending = true;
     this._settingsSaveError = '';
+    this._setSettingsHistoryState(true);
 
     try {
       const urlPath = this._getDashboardUrlPath();
@@ -18299,9 +18333,12 @@ export class DwainsLayoutCard extends LitElement {
     this._settingsSaveError = '';
     this._settingsEditorInitialized = false;
     this._settingsPageKey = 'overview';
+    this._settingsRestorePageKey = 'overview';
+    this._settingsRestoreAreaId = undefined;
     this._settingsPageTitle = '';
     this._settingsPageParentTitle = '';
     this._settingsPageDescription = '';
+    this._setSettingsHistoryState(true);
     this._closeMobileNav();
     this._syncBottomNavAreaContext();
     this.updateComplete.then(() => this._scrollContentAreaToTop());
