@@ -1,6 +1,7 @@
-import type { TranslationDictionary } from './en';
+import { en, type TranslationDictionary } from './en';
 
 export const ptBR = {
+  ...en,
   'common.save': 'Salvar',
   'common.back': 'Voltar',
   'common.close': 'Fechar',
