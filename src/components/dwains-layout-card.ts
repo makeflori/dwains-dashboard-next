@@ -11278,6 +11278,7 @@ export class DwainsLayoutCard extends LitElement {
       justify-content: center;
       color: var(--secondary-text-color);
       background: transparent;
+      pointer-events: auto;
     }
 
     .dd-generated-card-leading-drag-handle {
