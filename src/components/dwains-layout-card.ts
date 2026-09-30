@@ -37,6 +37,7 @@ import {
 type DomainCount = StatusDomainCount;
 type DwainsSelectedView = 'home' | 'area' | 'settings';
 type PictureTextTone = 'light' | 'dark';
+type LightControlMode = 'brightness' | 'color_temp' | 'color';
 
 const SETTINGS_HISTORY_STATE_KEY = 'dwainsDashboardNextSettingsOpen';
 type PictureContrastCacheValue = PictureTextTone | 'pending';
@@ -217,6 +218,7 @@ export class DwainsLayoutCard extends LitElement {
   @state() private _settingsPageDescription = '';
   @state() private _confirmationDialog: ConfirmationDialogState | null = null;
   @state() private _housePowerDialogOpen = false;
+  @state() private _lightControlModes: Record<string, LightControlMode> = {};
 
   // Performance optimizations
   private _areaEntitiesCache = new Map<string, { entities: EntityConfig[], timestamp: number }>();
@@ -14224,6 +14226,364 @@ export class DwainsLayoutCard extends LitElement {
       vertical-align: middle !important;
     }
 
+
+    /* 2026-09-30 final entity-card system: compact favorites + four-column room controls. */
+    @media (min-width: 769px) {
+      .home-favorites-section .favorites-grid,
+      .room-favorites-content .favorites-grid {
+        grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+      }
+
+      .home-favorites-section .favorite-card-wrapper,
+      .room-favorites-content .favorite-card-wrapper {
+        width: 100% !important;
+        height: 58px !important;
+        min-height: 58px !important;
+        padding: 7px 8px !important;
+        box-sizing: border-box !important;
+        display: grid !important;
+        grid-template-columns: 36px minmax(0, 1fr) auto !important;
+        grid-template-rows: 1fr !important;
+        align-items: center !important;
+        gap: 7px !important;
+        overflow: hidden !important;
+        border-radius: 8px !important;
+      }
+
+      .home-favorites-section .favorite-icon,
+      .room-favorites-content .favorite-icon {
+        width: 36px !important;
+        height: 36px !important;
+        margin: 0 !important;
+        align-self: center !important;
+        border-radius: 8px !important;
+      }
+
+      .home-favorites-section .favorite-icon ha-icon,
+      .room-favorites-content .favorite-icon ha-icon {
+        --mdc-icon-size: 19px !important;
+      }
+
+      .home-favorites-section .favorite-body,
+      .room-favorites-content .favorite-body {
+        min-width: 0 !important;
+        height: 36px !important;
+        align-self: center !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        gap: 3px !important;
+        overflow: hidden !important;
+      }
+
+      .home-favorites-section .favorite-name,
+      .room-favorites-content .favorite-name {
+        min-width: 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        display: block !important;
+        overflow: hidden !important;
+        text-overflow: clip !important;
+        white-space: nowrap !important;
+        font-size: 10.5px !important;
+        font-weight: 850 !important;
+        line-height: 1.05 !important;
+        letter-spacing: -0.12px !important;
+      }
+
+      .home-favorites-section .favorite-meta,
+      .room-favorites-content .favorite-meta {
+        min-width: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 3px !important;
+        overflow: hidden !important;
+        white-space: nowrap !important;
+        font-size: 9.5px !important;
+        font-weight: 700 !important;
+        line-height: 1 !important;
+      }
+
+      .home-favorites-section .favorite-area,
+      .room-favorites-content .favorite-area {
+        min-width: 0 !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+        text-overflow: clip !important;
+        white-space: nowrap !important;
+        color: var(--secondary-text-color) !important;
+        font-size: inherit !important;
+        line-height: inherit !important;
+      }
+
+      .home-favorites-section .favorite-meta-separator,
+      .room-favorites-content .favorite-meta-separator {
+        flex: 0 0 auto !important;
+        color: color-mix(in srgb, var(--secondary-text-color) 72%, transparent) !important;
+      }
+
+      .home-favorites-section .favorite-inline-state,
+      .room-favorites-content .favorite-inline-state {
+        flex: 0 0 auto !important;
+        color: var(--favorite-color) !important;
+        font-weight: 850 !important;
+      }
+
+      .home-favorites-section .favorite-card-wrapper.is-off .favorite-inline-state,
+      .home-favorites-section .favorite-card-wrapper.is-idle .favorite-inline-state,
+      .room-favorites-content .favorite-card-wrapper.is-off .favorite-inline-state,
+      .room-favorites-content .favorite-card-wrapper.is-idle .favorite-inline-state {
+        color: var(--secondary-text-color) !important;
+      }
+
+      .home-favorites-section .favorite-card-wrapper.favorite-cover,
+      .room-favorites-content .favorite-card-wrapper.favorite-cover {
+        --favorite-color: #D66A1F !important;
+      }
+
+      .home-favorites-section .favorite-end,
+      .room-favorites-content .favorite-end {
+        width: auto !important;
+        min-width: 0 !important;
+        height: 36px !important;
+        display: inline-flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        gap: 4px !important;
+        align-self: center !important;
+      }
+
+      .home-favorites-section .favorite-quick-action,
+      .room-favorites-content .favorite-quick-action {
+        width: 38px !important;
+        height: 22px !important;
+        margin: 0 !important;
+      }
+
+      .favorite-cover-actions {
+        min-height: 30px;
+        padding: 2px;
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--secondary-background-color) 74%, #ffffff);
+        box-shadow:
+          inset 0 0 0 1px rgba(15, 23, 42, 0.055),
+          0 4px 10px rgba(15, 23, 42, 0.06);
+      }
+
+      .favorite-cover-action {
+        width: 25px;
+        height: 25px;
+        padding: 0;
+        border: 0;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: color-mix(in srgb, var(--primary-text-color) 60%, transparent);
+        background: transparent;
+        cursor: pointer;
+      }
+
+      .favorite-cover-action ha-icon { --mdc-icon-size: 15px; }
+
+      .favorite-cover-action.active {
+        color: #fff;
+        background: var(--favorite-color);
+      }
+
+      .room-ui-v2 .mobile-entity-rail,
+      .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-rail {
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+      }
+
+      .room-ui-v2 .mobile-entity-card,
+      .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-card {
+        min-height: 62px !important;
+        padding: 8px 10px !important;
+        justify-content: center !important;
+        overflow: hidden !important;
+      }
+
+      .room-ui-v2 .mobile-entity-card.has-light-controls,
+      .room-ui-v2 .mobile-entity-card.has-cover-position {
+        min-height: 104px !important;
+        justify-content: flex-start !important;
+      }
+
+      .room-ui-v2 .mobile-entity-main {
+        grid-template-columns: 36px minmax(0, 1fr) auto !important;
+        gap: 9px !important;
+        align-items: center !important;
+      }
+
+      .room-ui-v2 .mobile-entity-content {
+        min-width: 0 !important;
+        height: 36px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        gap: 3px !important;
+        overflow: hidden !important;
+      }
+
+      .room-ui-v2 .mobile-entity-name {
+        min-width: 0 !important;
+        width: 100% !important;
+        overflow: hidden !important;
+        text-overflow: clip !important;
+        white-space: nowrap !important;
+        font-size: 12px !important;
+        line-height: 1.08 !important;
+        letter-spacing: -0.1px !important;
+      }
+
+      .room-ui-v2 .mobile-entity-state {
+        margin: 0 !important;
+        overflow: hidden !important;
+        text-overflow: clip !important;
+        white-space: nowrap !important;
+        font-size: 10.5px !important;
+        font-weight: 800 !important;
+        line-height: 1 !important;
+      }
+
+      .room-ui-v2 .mobile-entity-right {
+        min-width: max-content !important;
+        max-width: 86px !important;
+        margin-left: 4px !important;
+        align-self: center !important;
+      }
+
+      .room-ui-v2 .mobile-entity-cover {
+        --entity-color: #D66A1F !important;
+      }
+
+      .room-ui-v2 .mobile-cover-actions {
+        min-height: 30px !important;
+        padding: 2px !important;
+        gap: 2px !important;
+      }
+
+      .room-ui-v2 .mobile-cover-action {
+        width: 25px !important;
+        height: 25px !important;
+      }
+
+      .mobile-light-control-row {
+        width: 100%;
+        min-width: 0;
+        margin-top: 8px;
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: center;
+        gap: 8px;
+      }
+
+      .mobile-light-mode-buttons {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .mobile-light-mode-button {
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        border: 0;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: color-mix(in srgb, var(--primary-text-color) 64%, transparent);
+        background: color-mix(in srgb, var(--secondary-background-color) 74%, var(--card-background-color));
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 5%, transparent);
+        cursor: pointer;
+      }
+
+      .mobile-light-mode-button ha-icon { --mdc-icon-size: 16px; }
+
+      .mobile-light-mode-button.active {
+        color: var(--entity-color);
+        background: color-mix(in srgb, var(--entity-color) 15%, var(--card-background-color));
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--entity-color) 24%, transparent);
+      }
+
+      .mobile-light-control-slider,
+      .mobile-cover-position input[type="range"] {
+        appearance: none;
+        width: 100%;
+        height: 5px;
+        margin: 0;
+        border: 0;
+        border-radius: 999px;
+        outline: none;
+        background: color-mix(in srgb, var(--primary-text-color) 13%, transparent);
+        cursor: pointer;
+      }
+
+      .mobile-light-control-row.mode-brightness .mobile-light-control-slider {
+        background: linear-gradient(90deg, #e1a129 0%, #f0bd45 100%);
+      }
+
+      .mobile-light-control-row.mode-color_temp .mobile-light-control-slider {
+        background: linear-gradient(90deg, #f4a340 0%, #ffe4aa 43%, #d9ecff 66%, #7eb9ff 100%);
+      }
+
+      .mobile-light-control-row.mode-color .mobile-light-control-slider {
+        background: linear-gradient(
+          90deg,
+          #ff3b30 0%,
+          #ff9500 16%,
+          #ffcc00 30%,
+          #34c759 45%,
+          #00c7be 58%,
+          #007aff 72%,
+          #5856d6 84%,
+          #af52de 92%,
+          #ff2d55 100%
+        );
+      }
+
+      .mobile-light-control-slider::-webkit-slider-thumb,
+      .mobile-cover-position input[type="range"]::-webkit-slider-thumb {
+        appearance: none;
+        width: 15px;
+        height: 15px;
+        border: 2px solid var(--entity-color);
+        border-radius: 50%;
+        background: var(--card-background-color);
+        box-shadow: 0 2px 5px rgba(15, 23, 42, 0.12);
+      }
+
+      .mobile-light-control-slider::-moz-range-thumb,
+      .mobile-cover-position input[type="range"]::-moz-range-thumb {
+        width: 13px;
+        height: 13px;
+        border: 2px solid var(--entity-color);
+        border-radius: 50%;
+        background: var(--card-background-color);
+      }
+
+      .mobile-cover-position {
+        width: 100%;
+        margin-top: 10px;
+      }
+
+      .mobile-cover-position input[type="range"] {
+        background: linear-gradient(90deg, #D66A1F 0%, #E98A3B 100%) !important;
+      }
+
+      .mobile-entity-brightness {
+        display: none !important;
+      }
+    }
+
   `;
 
   connectedCallback() {
@@ -17072,16 +17432,22 @@ export class DwainsLayoutCard extends LitElement {
     const domain = entityId.split('.')[0] || 'unknown';
     const deviceClass = state.attributes?.device_class;
     const name = state.attributes?.friendly_name || registry?.name || entityId;
-    const formattedState = this._formatFavoriteState(state);
+    const formattedState = this._favoriteDisplayState(state, domain);
     const areaName = this._entityAreaName(entityId);
     const icon = registry?.icon || state.attributes?.icon || getDeviceClassIcon(domain, deviceClass) || getDomainIcon(domain);
     const activeState = this._favoriteActiveState(state, domain);
     const supportsToggle = this._favoriteSupportsQuickToggle(domain);
     const favoriteColorDomain =
-      domain === 'sensor' && (deviceClass === 'temperature' || deviceClass === 'humidity')
-        ? deviceClass
-        : domain;
-    const favoriteColor = getDomainColor(favoriteColorDomain, deviceClass);
+      domain === 'cover'
+        ? 'opening'
+        : domain === 'sensor' && (deviceClass === 'temperature' || deviceClass === 'humidity')
+          ? deviceClass
+          : domain === 'sensor' && deviceClass === 'power'
+            ? 'wattage'
+            : domain;
+    const favoriteColor = favoriteColorDomain === 'opening'
+      ? '#D66A1F'
+      : getDomainColor(favoriteColorDomain, deviceClass);
     const classes = [
       'favorite-card-wrapper',
       `favorite-${domain}`,
@@ -17104,25 +17470,76 @@ export class DwainsLayoutCard extends LitElement {
           <ha-icon icon=${icon}></ha-icon>
         </div>
         <div class="favorite-body">
-          <div class="favorite-name">${name}</div>
-          ${areaName ? html`<div class="favorite-area">${areaName}</div>` : nothing}
+          <div class="favorite-name" title=${name}>${name}</div>
+          <div class="favorite-meta">
+            ${areaName ? html`<span class="favorite-area">${areaName}</span>` : nothing}
+            ${areaName && formattedState ? html`<span class="favorite-meta-separator">·</span>` : nothing}
+            ${formattedState ? html`<span class="favorite-inline-state">${formattedState}</span>` : nothing}
+          </div>
         </div>
         <div class="favorite-end">
-          ${supportsToggle ? html`
-            <div class="favorite-end-state">${formattedState}</div>
-            <button
-              class="favorite-quick-action"
-              type="button"
-              title=${this._favoriteQuickTitle(state, domain)}
-              @click=${(event: Event) => this._handleFavoriteQuickAction(event, state, domain)}
-            >
-              <ha-icon icon=${this._favoriteQuickIcon(state, domain)}></ha-icon>
-            </button>
-          ` : html`
-            <div class="favorite-info-state">${formattedState}</div>
-          `}
+          ${domain === 'cover'
+            ? this._renderFavoriteCoverActions(state)
+            : supportsToggle ? html`
+              <button
+                class="favorite-quick-action"
+                type="button"
+                title=${this._favoriteQuickTitle(state, domain)}
+                @click=${(event: Event) => this._handleFavoriteQuickAction(event, state, domain)}
+              >
+                <ha-icon icon=${this._favoriteQuickIcon(state, domain)}></ha-icon>
+              </button>
+            ` : nothing}
         </div>
       </article>
+    `;
+  }
+
+  private _favoriteDisplayState(state: any, domain: string): string {
+    if (domain === 'light' && String(state?.state || '').toLowerCase() === 'on' && typeof state?.attributes?.brightness === 'number') {
+      return `${Math.round((Number(state.attributes.brightness) / 255) * 100)} %`;
+    }
+
+    if (domain === 'cover' && typeof state?.attributes?.current_position === 'number') {
+      return `${Math.round(Number(state.attributes.current_position))} %`;
+    }
+
+    return this._formatFavoriteState(state);
+  }
+
+  private _renderFavoriteCoverActions(state: any) {
+    const value = String(state?.state || '').toLowerCase();
+    const unavailable = ['unavailable', 'unknown'].includes(value);
+    const canOpen = this._coverSupportsFeature(state, 1);
+    const canClose = this._coverSupportsFeature(state, 2);
+
+    return html`
+      <div class="favorite-cover-actions" @click=${(event: Event) => event.stopPropagation()}>
+        ${canOpen ? html`
+          <button
+            class="favorite-cover-action ${value === 'opening' ? 'active' : ''}"
+            type="button"
+            title=${this._t('action.open')}
+            aria-label=${this._t('action.open')}
+            ?disabled=${unavailable}
+            @click=${(event: Event) => this._handleMobileCoverAction(event, state, 'open')}
+          >
+            <ha-icon icon="mdi:arrow-up"></ha-icon>
+          </button>
+        ` : nothing}
+        ${canClose ? html`
+          <button
+            class="favorite-cover-action ${value === 'closing' ? 'active' : ''}"
+            type="button"
+            title=${this._t('action.close')}
+            aria-label=${this._t('action.close')}
+            ?disabled=${unavailable}
+            @click=${(event: Event) => this._handleMobileCoverAction(event, state, 'close')}
+          >
+            <ha-icon icon="mdi:arrow-down"></ha-icon>
+          </button>
+        ` : nothing}
+      </div>
     `;
   }
 
@@ -18835,9 +19252,21 @@ export class DwainsLayoutCard extends LitElement {
     const unavailable = ['unavailable', 'unknown'].includes(String(state.state).toLowerCase());
     const unknownIsNormal = domain === 'scene' || domain === 'event';
     const hasInlineSelect = this._mobileEntityHasInlineSelect(domain, state);
-    const statusText = this._mobileEntityStatusText(state, domain);
-    const hasBrightness = domain === 'light' && state.state === 'on' && typeof state.attributes?.brightness === 'number';
-    const brightness = hasBrightness ? Math.round((Number(state.attributes.brightness) / 255) * 100) : 0;
+
+    const lightModes = domain === 'light' ? this._lightControlModesForState(state) : [];
+    const lightMode = domain === 'light'
+      ? this._lightControlModeForState(entity.entity_id, state, lightModes)
+      : null;
+    const hasLightControls = domain === 'light' && lightModes.length > 0 && lightMode !== null;
+    const statusText = domain === 'light' && lightMode
+      ? this._lightControlStatus(state, lightMode)
+      : this._mobileEntityStatusText(state, domain);
+
+    const coverPosition = domain === 'cover' && typeof state.attributes?.current_position === 'number'
+      ? Math.max(0, Math.min(100, Math.round(Number(state.attributes.current_position))))
+      : null;
+    const hasCoverPosition = coverPosition !== null;
+
     const classes = [
       'mobile-entity-card',
       `mobile-entity-${domain}`,
@@ -18845,14 +19274,15 @@ export class DwainsLayoutCard extends LitElement {
       `action-${actionKind}`,
       active ? 'is-active' : 'is-off',
       hasInlineSelect ? 'has-inline-select' : '',
-      hasBrightness ? 'has-brightness' : '',
+      hasLightControls ? 'has-light-controls' : '',
+      hasCoverPosition ? 'has-cover-position' : '',
       unavailable && !unknownIsNormal ? 'is-unavailable' : '',
     ].join(' ');
 
     return html`
       <article
         class=${classes}
-        style=${`--entity-color: ${this._mobileEntityColor(domain, deviceClass)}; --brightness: ${brightness}%;`}
+        style=${`--entity-color: ${this._mobileEntityColor(domain, deviceClass)};`}
         role="button"
         tabindex="0"
         aria-label=${name}
@@ -18873,7 +19303,7 @@ export class DwainsLayoutCard extends LitElement {
           ` : nothing}
           <div class="mobile-entity-icon"><ha-icon icon=${icon}></ha-icon></div>
           <div class="mobile-entity-content">
-            <div class="mobile-entity-name">${name}</div>
+            <div class="mobile-entity-name" title=${name}>${name}</div>
             ${statusText ? html`
               <div class="mobile-entity-state ${active ? 'active' : ''}">${statusText}</div>
             ` : nothing}
@@ -18893,28 +19323,206 @@ export class DwainsLayoutCard extends LitElement {
             ` : (actionKind === 'more' ? nothing : this._renderMobileEntityActions(state, domain, active))}
           </div>
         </div>
-        ${hasBrightness ? html`
-          <div class="mobile-entity-brightness" @click=${(event: Event) => event.stopPropagation()} @keydown=${(event: KeyboardEvent) => event.stopPropagation()}>
-            <input type="range" min="1" max="100" .value=${String(brightness)}
-              aria-label=${this._t('entity.brightness', { value: brightness })}
-              @change=${(event: Event) => this._handleMobileLightBrightness(event, state)} />
+
+        ${hasLightControls && lightMode
+          ? this._renderMobileLightControls(state, lightMode, lightModes)
+          : nothing}
+
+        ${hasCoverPosition ? html`
+          <div
+            class="mobile-cover-position"
+            @click=${(event: Event) => event.stopPropagation()}
+            @keydown=${(event: KeyboardEvent) => event.stopPropagation()}
+          >
+            <input
+              type="range"
+              min="0"
+              max="100"
+              .value=${String(coverPosition)}
+              aria-label=${`${coverPosition} %`}
+              @change=${(event: Event) => this._handleMobileCoverPosition(event, state)}
+            />
           </div>
         ` : nothing}
+
         ${hasInlineSelect ? this._renderMobileEntitySelect(state, domain) : nothing}
       </article>
     `;
   }
 
-  private async _handleMobileLightBrightness(event: Event, state: any): Promise<void> {
+  private _lightControlModesForState(state: any): LightControlMode[] {
+    const supported = Array.isArray(state?.attributes?.supported_color_modes)
+      ? state.attributes.supported_color_modes.map((value: unknown) => String(value).toLowerCase())
+      : [];
+    const supportedFeatures = Number(state?.attributes?.supported_features || 0);
+    const modes: LightControlMode[] = [];
+
+    const supportsBrightness =
+      typeof state?.attributes?.brightness === 'number' ||
+      (supportedFeatures & 1) !== 0 ||
+      supported.some((mode: string) => mode !== 'onoff');
+
+    if (supportsBrightness) modes.push('brightness');
+    if (supported.includes('color_temp')) modes.push('color_temp');
+    if (supported.some((mode: string) => ['hs', 'xy', 'rgb', 'rgbw', 'rgbww'].includes(mode))) modes.push('color');
+
+    return modes;
+  }
+
+  private _lightControlModeForState(
+    entityId: string,
+    state: any,
+    modes: LightControlMode[]
+  ): LightControlMode | null {
+    if (!modes.length) return null;
+
+    const selected = this._lightControlModes[entityId];
+    if (selected && modes.includes(selected)) return selected;
+
+    const colorMode = String(state?.attributes?.color_mode || '').toLowerCase();
+    if (colorMode === 'color_temp' && modes.includes('color_temp')) return 'color_temp';
+    if (['hs', 'xy', 'rgb', 'rgbw', 'rgbww'].includes(colorMode) && modes.includes('color')) return 'color';
+    if (modes.includes('brightness')) return 'brightness';
+    return modes[0] || null;
+  }
+
+  private _lightControlModeLabel(mode: LightControlMode): string {
+    const de = String(this.hass?.language || '').toLowerCase().startsWith('de');
+    if (mode === 'brightness') return de ? 'Helligkeit' : 'Brightness';
+    if (mode === 'color_temp') return de ? 'Farbtemperatur' : 'Color temperature';
+    return de ? 'Farbe' : 'Color';
+  }
+
+  private _lightControlModeIcon(mode: LightControlMode): string {
+    if (mode === 'brightness') return 'mdi:brightness-6';
+    if (mode === 'color_temp') return 'mdi:thermometer';
+    return 'mdi:palette';
+  }
+
+  private _lightControlStatus(state: any, mode: LightControlMode): string {
+    const value = String(state?.state || '').toLowerCase();
+    if (value === 'off') return this._formatFavoriteState(state);
+
+    if (mode === 'brightness') {
+      const brightness = Number(state?.attributes?.brightness);
+      if (Number.isFinite(brightness)) return `${Math.round((brightness / 255) * 100)} %`;
+    }
+
+    if (mode === 'color_temp') {
+      const kelvin = Number(state?.attributes?.color_temp_kelvin);
+      if (Number.isFinite(kelvin) && kelvin > 0) return `${Math.round(kelvin).toLocaleString(ddLocale(this.hass))} K`;
+    }
+
+    return this._formatFavoriteState(state);
+  }
+
+  private _lightControlSliderConfig(state: any, mode: LightControlMode) {
+    if (mode === 'brightness') {
+      const brightness = Number(state?.attributes?.brightness);
+      const value = Number.isFinite(brightness) ? Math.max(1, Math.min(100, Math.round((brightness / 255) * 100))) : 100;
+      return { min: 1, max: 100, value, step: 1 };
+    }
+
+    if (mode === 'color_temp') {
+      const min = Number(state?.attributes?.min_color_temp_kelvin) || 2000;
+      const max = Number(state?.attributes?.max_color_temp_kelvin) || 6500;
+      const current = Number(state?.attributes?.color_temp_kelvin);
+      const value = Number.isFinite(current) && current > 0 ? Math.max(min, Math.min(max, current)) : Math.round((min + max) / 2);
+      return { min, max, value, step: 50 };
+    }
+
+    const hs = Array.isArray(state?.attributes?.hs_color) ? state.attributes.hs_color : [];
+    const hue = Number(hs[0]);
+    return { min: 0, max: 360, value: Number.isFinite(hue) ? Math.max(0, Math.min(360, hue)) : 30, step: 1 };
+  }
+
+  private _renderMobileLightControls(state: any, mode: LightControlMode, modes: LightControlMode[]) {
+    const config = this._lightControlSliderConfig(state, mode);
+
+    return html`
+      <div
+        class="mobile-light-control-row mode-${mode}"
+        @click=${(event: Event) => event.stopPropagation()}
+        @keydown=${(event: KeyboardEvent) => event.stopPropagation()}
+      >
+        <div class="mobile-light-mode-buttons">
+          ${modes.map(candidate => html`
+            <button
+              class="mobile-light-mode-button ${candidate === mode ? 'active' : ''}"
+              type="button"
+              title=${this._lightControlModeLabel(candidate)}
+              aria-label=${this._lightControlModeLabel(candidate)}
+              aria-pressed=${candidate === mode ? 'true' : 'false'}
+              @click=${(event: Event) => this._setMobileLightControlMode(event, state.entity_id, candidate)}
+            >
+              <ha-icon icon=${this._lightControlModeIcon(candidate)}></ha-icon>
+            </button>
+          `)}
+        </div>
+        <input
+          class="mobile-light-control-slider"
+          type="range"
+          min=${String(config.min)}
+          max=${String(config.max)}
+          step=${String(config.step)}
+          .value=${String(config.value)}
+          aria-label=${this._lightControlModeLabel(mode)}
+          @change=${(event: Event) => this._handleMobileLightControlChange(event, state, mode)}
+        />
+      </div>
+    `;
+  }
+
+  private _setMobileLightControlMode(event: Event, entityId: string, mode: LightControlMode): void {
+    event.stopPropagation();
+    this._lightControlModes = {
+      ...this._lightControlModes,
+      [entityId]: mode,
+    };
+  }
+
+  private async _handleMobileLightControlChange(event: Event, state: any, mode: LightControlMode): Promise<void> {
     event.stopPropagation();
     const target = event.currentTarget as HTMLInputElement | null;
     const entityId = state?.entity_id;
     if (!target || !entityId) return;
-    const brightnessPct = Math.max(1, Math.min(100, Number(target.value) || 1));
+
+    const numericValue = Number(target.value);
+    if (!Number.isFinite(numericValue)) return;
+
+    const data: Record<string, unknown> = { entity_id: entityId };
+    if (mode === 'brightness') {
+      data.brightness_pct = Math.max(1, Math.min(100, Math.round(numericValue)));
+    } else if (mode === 'color_temp') {
+      data.color_temp_kelvin = Math.round(numericValue);
+    } else {
+      const hs = Array.isArray(state?.attributes?.hs_color) ? state.attributes.hs_color : [];
+      const saturation = Number(hs[1]);
+      data.hs_color = [Math.max(0, Math.min(360, numericValue)), Number.isFinite(saturation) && saturation > 0 ? saturation : 100];
+    }
+
     try {
-      await this.hass.callService('light', 'turn_on', { entity_id: entityId, brightness_pct: brightnessPct });
+      await this.hass.callService('light', 'turn_on', data);
     } catch (err) {
-      console.warn(`Failed to set light brightness for ${entityId}:`, err);
+      console.warn(`Failed to update light control for ${entityId}:`, err);
+      this._showToast(this._t('entity.update_failed'));
+    }
+  }
+
+  private async _handleMobileCoverPosition(event: Event, state: any): Promise<void> {
+    event.stopPropagation();
+    const target = event.currentTarget as HTMLInputElement | null;
+    const entityId = state?.entity_id;
+    if (!target || !entityId) return;
+
+    const position = Math.max(0, Math.min(100, Math.round(Number(target.value) || 0)));
+    try {
+      await this.hass.callService('cover', 'set_cover_position', {
+        entity_id: entityId,
+        position,
+      });
+    } catch (err) {
+      console.warn(`Failed to set cover position for ${entityId}:`, err);
       this._showToast(this._t('entity.update_failed'));
     }
   }
@@ -19431,6 +20039,11 @@ export class DwainsLayoutCard extends LitElement {
   }
 
   private _mobileEntityColor(domain: string, deviceClass?: string): string {
+    if (domain === 'cover') return '#D66A1F';
+    if (domain === 'sensor' && (deviceClass === 'temperature' || deviceClass === 'humidity')) {
+      return getDomainColor(deviceClass, deviceClass);
+    }
+    if (domain === 'sensor' && deviceClass === 'power') return getDomainColor('wattage');
     return getDomainColor(domain, deviceClass);
   }
 
