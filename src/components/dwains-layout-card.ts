@@ -13874,6 +13874,179 @@ export class DwainsLayoutCard extends LitElement {
       .house-power-dialog-energy-link { width: auto !important; }
     }
 
+    /* Final visual cleanup for Home favorites and room Favorites header. */
+    @media (min-width: 769px) {
+      .home-favorites-section .favorite-card-wrapper {
+        min-height: 84px !important;
+        height: 84px !important;
+        padding: 9px 10px !important;
+        grid-template-columns: 38px minmax(0, 1fr) 50px !important;
+        align-items: center !important;
+        gap: 9px !important;
+      }
+
+      .home-favorites-section .favorite-body {
+        min-width: 0 !important;
+        align-self: center !important;
+        gap: 3px !important;
+      }
+
+      .home-favorites-section .favorite-name {
+        max-width: 100% !important;
+        margin: 0 !important;
+        display: -webkit-box !important;
+        -webkit-box-orient: vertical !important;
+        -webkit-line-clamp: 2 !important;
+        overflow: hidden !important;
+        text-overflow: clip !important;
+        white-space: normal !important;
+        overflow-wrap: anywhere !important;
+        font-size: 13px !important;
+        line-height: 1.08 !important;
+      }
+
+      .home-favorites-section .favorite-area {
+        max-width: 100% !important;
+        overflow: hidden !important;
+        text-overflow: clip !important;
+        white-space: nowrap !important;
+        font-size: 9px !important;
+        line-height: 1.05 !important;
+      }
+
+      .home-favorites-section .favorite-end {
+        width: 50px !important;
+        min-width: 50px !important;
+        height: 48px !important;
+        display: grid !important;
+        grid-template-rows: 26px 14px !important;
+        align-content: center !important;
+        justify-items: center !important;
+        gap: 2px !important;
+      }
+
+      .home-favorites-section .favorite-quick-action {
+        width: 40px !important;
+        height: 24px !important;
+        margin: 0 !important;
+      }
+
+      .home-favorites-section .favorite-end-state {
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        color: var(--secondary-text-color) !important;
+        font-size: 9px !important;
+        font-weight: 800 !important;
+        line-height: 12px !important;
+        text-align: center !important;
+        overflow: visible !important;
+        white-space: nowrap !important;
+      }
+
+      .home-favorites-section .favorite-info-state {
+        width: 100% !important;
+        max-width: none !important;
+        height: 48px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        color: var(--favorite-color) !important;
+        font-size: 13px !important;
+        font-weight: 900 !important;
+        line-height: 1 !important;
+        text-align: center !important;
+        overflow: visible !important;
+        white-space: nowrap !important;
+      }
+
+      .sidebar .area-button.home-button {
+        background: color-mix(in srgb, var(--secondary-background-color) 72%, var(--card-background-color)) !important;
+        border: 1px solid color-mix(in srgb, var(--primary-text-color) 10%, var(--divider-color)) !important;
+        box-shadow: 0 5px 12px rgba(15, 23, 42, 0.05) !important;
+      }
+
+      .sidebar .area-button.home-button.selected {
+        background: color-mix(in srgb, var(--primary-color) 14%, var(--card-background-color)) !important;
+        border-color: color-mix(in srgb, var(--primary-color) 38%, var(--divider-color)) !important;
+        box-shadow:
+          inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 10%, transparent),
+          0 8px 18px color-mix(in srgb, var(--primary-color) 10%, transparent) !important;
+      }
+    }
+
+    .room-favorites-header {
+      min-height: 38px !important;
+      height: 38px !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+      display: flex !important;
+      align-items: center !important;
+    }
+
+    .room-favorites-title {
+      min-height: 20px !important;
+      height: 20px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      line-height: 1 !important;
+    }
+
+    .room-favorites-title .mobile-domain-leading-chevron,
+    .room-favorites-title .room-domain-icon {
+      width: 18px !important;
+      height: 18px !important;
+      min-height: 18px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      line-height: 0 !important;
+      transform: none !important;
+    }
+
+    .room-favorites-title .mobile-domain-leading-chevron {
+      --mdc-icon-size: 16px !important;
+    }
+
+    .room-favorites-title .room-favorites-icon ha-icon {
+      --mdc-icon-size: 18px !important;
+    }
+
+    .room-favorites-title .mobile-domain-title-copy {
+      min-height: 20px !important;
+      height: 20px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 5px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    .room-favorites-title .mobile-domain-title-label,
+    .room-favorites-title .mobile-domain-count {
+      min-height: 20px !important;
+      height: 20px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      line-height: 20px !important;
+      transform: translateY(0.5px) !important;
+    }
+
+    .room-favorites-title .mobile-domain-title-label {
+      font-size: 15px !important;
+    }
+
+    .room-favorites-title .mobile-domain-count {
+      font-size: 10px !important;
+    }
+
   `;
 
   connectedCallback() {
@@ -20301,13 +20474,13 @@ export class DwainsLayoutCard extends LitElement {
 
   private _houseInfoDeviceViewLabel(): string {
     return String(this.hass?.language || '').toLowerCase().startsWith('de')
-      ? 'Zur Geräteansicht'
+      ? 'Geräteansicht öffnen'
       : 'Open device view';
   }
 
   private _houseInfoEnergyViewLabel(): string {
     return String(this.hass?.language || '').toLowerCase().startsWith('de')
-      ? 'Zur Energieansicht'
+      ? 'Energieansicht öffnen'
       : 'Open energy view';
   }
 
