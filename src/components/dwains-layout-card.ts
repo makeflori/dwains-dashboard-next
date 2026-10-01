@@ -16320,6 +16320,312 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
+
+    /*
+     * 2026-10-01 mobile Home parity pass.
+     * Match the desktop component rhythm while retaining mobile rail/grid switching.
+     */
+    @media (max-width: 768px) {
+      .home-status-section .home-status-grid {
+        display: flex !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+        margin: 0 !important;
+        padding: 2px 18px 16px !important;
+        overflow-x: auto !important;
+        overflow-y: visible !important;
+        scroll-padding: 18px !important;
+        scroll-snap-type: x proximity !important;
+        scrollbar-width: none !important;
+      }
+
+      .home-status-section .home-status-grid::-webkit-scrollbar {
+        display: none !important;
+      }
+
+      .home-status-section.layout-grid .home-status-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+        overflow: visible !important;
+        scroll-snap-type: none !important;
+      }
+
+      .home-status-section .home-status-card.compact-status {
+        flex: 0 0 118px !important;
+        width: 118px !important;
+        min-width: 118px !important;
+        min-height: 102px !important;
+        padding: 12px !important;
+        border-radius: 15px !important;
+      }
+
+      .home-status-section.layout-grid .home-status-card.compact-status {
+        width: 100% !important;
+        min-width: 0 !important;
+        min-height: 100px !important;
+        flex: none !important;
+      }
+
+      .home-status-section .home-status-card.house-persons-card,
+      .home-status-section .home-status-card.house-climate-card,
+      .home-status-section .home-status-card.house-power-card {
+        flex: 0 0 238px !important;
+        width: 238px !important;
+        min-width: 238px !important;
+        min-height: 124px !important;
+        padding: 13px !important;
+      }
+
+      .home-status-section.layout-grid .home-status-card.house-persons-card,
+      .home-status-section.layout-grid .home-status-card.house-climate-card,
+      .home-status-section.layout-grid .home-status-card.house-power-card {
+        grid-column: 1 / -1 !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        flex: none !important;
+      }
+
+      .home-status-section .home-status-card.compact-status .status-card-icon {
+        width: 38px !important;
+        height: 38px !important;
+        margin-bottom: 10px !important;
+        border-radius: 11px !important;
+      }
+
+      .home-status-section .home-status-card.compact-status .status-card-icon ha-icon {
+        --mdc-icon-size: 20px !important;
+      }
+
+      .home-status-section .home-status-card.compact-status .status-card-title {
+        font-size: 13px !important;
+        line-height: 1.12 !important;
+      }
+
+      .mobile-area-card {
+        flex-basis: 148px !important;
+        min-height: 116px !important;
+        height: 116px !important;
+        padding: 12px !important;
+        border-radius: 16px !important;
+      }
+
+      .mobile-area-card.has-picture {
+        min-height: 116px !important;
+        height: 116px !important;
+      }
+
+      .mobile-home-section.layout-grid .mobile-area-card {
+        height: 118px !important;
+        min-height: 118px !important;
+      }
+
+      .mobile-area-icon {
+        width: 38px !important;
+        height: 38px !important;
+        border-radius: 12px !important;
+      }
+
+      .mobile-area-icon ha-icon {
+        --mdc-icon-size: 21px !important;
+      }
+
+      .mobile-area-badges {
+        display: grid !important;
+        grid-template-columns: repeat(2, max-content) !important;
+        grid-auto-rows: 22px !important;
+        justify-content: end !important;
+        align-content: start !important;
+        gap: 4px !important;
+        max-width: 82px !important;
+        overflow: visible !important;
+      }
+
+      .mobile-area-badge {
+        min-width: 22px !important;
+        height: 22px !important;
+        padding: 0 6px !important;
+        gap: 3px !important;
+        font-size: 10px !important;
+      }
+
+      .mobile-area-badge ha-icon {
+        --mdc-icon-size: 13px !important;
+      }
+
+      .mobile-area-name {
+        font-size: 14px !important;
+      }
+
+      .mobile-area-meta {
+        margin-top: 3px !important;
+        font-size: 11px !important;
+      }
+
+      .home-favorites-section .favorite-card-wrapper {
+        display: grid !important;
+        grid-template-columns: 38px minmax(0, 1fr) auto !important;
+        grid-template-rows: 1fr !important;
+        align-items: start !important;
+        gap: 9px !important;
+        height: 104px !important;
+        min-height: 104px !important;
+        padding: 12px !important;
+        overflow: visible !important;
+      }
+
+      .home-favorites-section .favorite-icon {
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+        width: 38px !important;
+        height: 38px !important;
+        align-self: start !important;
+        margin: 0 !important;
+      }
+
+      .home-favorites-section .favorite-icon ha-icon {
+        --mdc-icon-size: 21px !important;
+      }
+
+      .home-favorites-section .favorite-body {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+        min-width: 0 !important;
+        align-self: start !important;
+        padding-top: 1px !important;
+      }
+
+      .home-favorites-section .favorite-end {
+        grid-column: 3 !important;
+        grid-row: 1 !important;
+        align-self: start !important;
+        justify-self: end !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      .home-favorites-section .favorite-name {
+        margin-top: 0 !important;
+        font-size: 14px !important;
+        line-height: 1.08 !important;
+      }
+
+      .home-favorites-section .favorite-area {
+        margin-top: 5px !important;
+        font-size: 10px !important;
+      }
+
+      .sidebar .room-area-button {
+        display: grid !important;
+        grid-template-columns: 54px minmax(0, 1fr) !important;
+        align-items: center !important;
+        gap: 12px !important;
+        min-height: 78px !important;
+        height: 78px !important;
+        padding: 10px 12px !important;
+        border-radius: 12px !important;
+        overflow: visible !important;
+      }
+
+      .sidebar .room-area-button .area-media,
+      .sidebar .room-area-button .area-media-icon {
+        position: relative !important;
+        width: 54px !important;
+        height: 54px !important;
+        min-width: 54px !important;
+        min-height: 54px !important;
+        left: auto !important;
+        top: auto !important;
+        transform: none !important;
+        align-self: center !important;
+      }
+
+      .sidebar .room-area-button .area-media-icon ha-icon {
+        --mdc-icon-size: 26px !important;
+      }
+
+      .sidebar .room-area-button .area-content {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) auto !important;
+        grid-template-rows: 1fr !important;
+        align-items: center !important;
+        gap: 8px !important;
+        min-width: 0 !important;
+        height: 100% !important;
+      }
+
+      .sidebar .room-area-button .area-top-section {
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+        align-self: center !important;
+      }
+
+      .sidebar .room-area-button .area-name {
+        margin: 0 !important;
+        font-size: 15px !important;
+        line-height: 1.08 !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+      }
+
+      .sidebar .room-area-button .area-sensors {
+        margin-top: 5px !important;
+        font-size: 11.5px !important;
+        line-height: 1.05 !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+      }
+
+      .sidebar .room-area-button .area-info-badges {
+        position: relative !important;
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+        display: grid !important;
+        grid-template-columns: repeat(2, max-content) !important;
+        grid-auto-rows: 22px !important;
+        justify-content: end !important;
+        align-content: center !important;
+        gap: 4px !important;
+        width: auto !important;
+        max-width: none !important;
+        min-width: 0 !important;
+        overflow: visible !important;
+      }
+
+      .sidebar .room-area-button .info-badge {
+        min-width: 25px !important;
+        height: 22px !important;
+        padding: 0 7px !important;
+        gap: 3px !important;
+        font-size: 10.5px !important;
+        box-sizing: border-box !important;
+      }
+
+      .sidebar .room-area-button .info-badge ha-icon {
+        --mdc-icon-size: 13px !important;
+      }
+
+      .sidebar .room-area-button .badge-count {
+        font-size: 10.5px !important;
+      }
+
+      .sidebar .room-area-button .info-badge-overflow {
+        min-width: 22px !important;
+        width: 22px !important;
+        height: 22px !important;
+        font-size: 16px !important;
+      }
+
+      .sidebar .room-area-button .area-menu-chevron {
+        display: none !important;
+      }
+    }
+
   `;
 
   connectedCallback() {
@@ -18436,34 +18742,50 @@ export class DwainsLayoutCard extends LitElement {
 
     if (!primaryCards.length && !visibleDomains.length) return nothing;
 
+    const heading = html`
+      <div class="home-status-heading">
+        <ha-icon icon="mdi:view-dashboard-outline"></ha-icon>
+        <span>${this._t('home.house_information')}</span>
+      </div>
+      <div class="mobile-section-heading">
+        <div class="mobile-section-title">
+          <button
+            class="mobile-layout-toggle ${gridMode ? 'active' : ''}"
+            type="button"
+            title=${gridMode ? this._t('home.swipe_house_information') : this._t('home.show_all_house_information')}
+            aria-label=${gridMode ? this._t('home.switch_house_information_swipe') : this._t('home.show_all_house_information')}
+            @click=${this._toggleMobileHomeDevicesLayout}
+          >
+            <ha-icon icon=${gridMode ? 'mdi:view-carousel-outline' : 'mdi:view-grid-outline'}></ha-icon>
+          </button>
+          <span class="mobile-section-title-label">${this._t('home.house_information')}</span>
+        </div>
+        <button
+          class="mobile-section-action"
+          type="button"
+          @click=${this._openMobileDeviceSwitcher}
+        >
+          <span>${this._t('common.see_all')}</span>
+          <ha-icon icon="mdi:chevron-right"></ha-icon>
+        </button>
+      </div>
+    `;
+
+    if (this._isMobile) {
+      return html`
+        <div class="home-status-section layout-${this._mobileHomeDevicesLayout}">
+          ${heading}
+          <div class="home-status-grid">
+            ${primaryCards}
+            ${visibleDomains.map(renderStatusCard)}
+          </div>
+        </div>
+      `;
+    }
+
     return html`
       <div class="home-status-section layout-${this._mobileHomeDevicesLayout}">
-        <div class="home-status-heading">
-          <ha-icon icon="mdi:view-dashboard-outline"></ha-icon>
-          <span>${this._t('home.house_information')}</span>
-        </div>
-        <div class="mobile-section-heading">
-          <div class="mobile-section-title">
-            <button
-              class="mobile-layout-toggle ${gridMode ? 'active' : ''}"
-              type="button"
-              title=${gridMode ? this._t('home.swipe_house_information') : this._t('home.show_all_house_information')}
-              aria-label=${gridMode ? this._t('home.switch_house_information_swipe') : this._t('home.show_all_house_information')}
-              @click=${this._toggleMobileHomeDevicesLayout}
-            >
-              <ha-icon icon=${gridMode ? 'mdi:view-carousel-outline' : 'mdi:view-grid-outline'}></ha-icon>
-            </button>
-            <span class="mobile-section-title-label">${this._t('home.house_information')}</span>
-          </div>
-          <button
-            class="mobile-section-action"
-            type="button"
-            @click=${this._openMobileDeviceSwitcher}
-          >
-            <span>${this._t('common.see_all')}</span>
-            <ha-icon icon="mdi:chevron-right"></ha-icon>
-          </button>
-        </div>
+        ${heading}
 
         <div class="home-status-primary-grid">
           ${primaryCards}
