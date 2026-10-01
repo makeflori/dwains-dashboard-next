@@ -20221,7 +20221,17 @@ export class DwainsLayoutCard extends LitElement {
       `;
     }
 
-    return nothing;
+    return html`
+      <button
+        class="mobile-entity-action mobile-entity-more"
+        type="button"
+        title=${this._t('action.more_info')}
+        aria-label=${this._t('action.more_info')}
+        @click=${(event: Event) => this._handleMobileMoreInfo(event, state?.entity_id)}
+      >
+        <ha-icon icon="mdi:chevron-right"></ha-icon>
+      </button>
+    `;
   }
 
   private _renderMobileCoverActions(state: any) {
