@@ -15243,7 +15243,6 @@ export class DwainsLayoutCard extends LitElement {
         gap: 10px !important;
       }
 
-      /* Approx. 20% enlargement of the existing room-card proportions. */
       .room-ui-v2 .mobile-entity-card,
       .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-card {
         min-height: 72px !important;
@@ -15349,34 +15348,21 @@ export class DwainsLayoutCard extends LitElement {
         height: 16px !important;
       }
 
-      .room-ui-v2 .mobile-light-mode-buttons {
-        gap: 5px !important;
-      }
-
+      .room-ui-v2 .mobile-light-mode-buttons { gap: 5px !important; }
       .room-ui-v2 .mobile-light-mode-button {
         width: 34px !important;
         height: 34px !important;
         border-radius: 9px !important;
       }
-
-      .room-ui-v2 .mobile-light-mode-button ha-icon {
-        --mdc-icon-size: 20px !important;
-      }
+      .room-ui-v2 .mobile-light-mode-button ha-icon { --mdc-icon-size: 20px !important; }
 
       .room-ui-v2 .mobile-cover-actions {
         min-height: 36px !important;
         padding: 3px !important;
         gap: 3px !important;
       }
-
-      .room-ui-v2 .mobile-cover-action {
-        width: 31px !important;
-        height: 31px !important;
-      }
-
-      .room-ui-v2 .mobile-cover-action ha-icon {
-        --mdc-icon-size: 20px !important;
-      }
+      .room-ui-v2 .mobile-cover-action { width: 31px !important; height: 31px !important; }
+      .room-ui-v2 .mobile-cover-action ha-icon { --mdc-icon-size: 20px !important; }
 
       .room-ui-v2 .mobile-entity-card.has-inline-select {
         min-height: 123px !important;
@@ -15388,106 +15374,162 @@ export class DwainsLayoutCard extends LitElement {
         min-height: 46px !important;
         grid-template-columns: 46px minmax(0, 1fr) !important;
         gap: 11px !important;
+        align-items: center !important;
       }
 
       .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-icon {
+        position: static !important;
+        inset: auto !important;
+        left: auto !important;
+        right: auto !important;
+        top: auto !important;
+        bottom: auto !important;
+        grid-column: 1 !important;
+        grid-row: 1 !important;
         width: 46px !important;
         height: 46px !important;
         flex: 0 0 46px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transform: none !important;
+        color: var(--entity-color) !important;
       }
 
       .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-icon ha-icon {
         --mdc-icon-size: 24px !important;
       }
 
-      .room-ui-v2 .mobile-entity-select {
-        margin-top: 3px !important;
+      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-content {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+        margin: 0 !important;
+        align-self: center !important;
       }
 
+      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-right {
+        display: none !important;
+      }
+
+      .room-ui-v2 .mobile-entity-select { margin-top: 3px !important; }
       .room-ui-v2 .mobile-entity-select select {
         height: 42px !important;
         padding: 0 42px 0 15px !important;
         font-size: 14.4px !important;
         line-height: 42px !important;
       }
-
       .room-ui-v2 .mobile-entity-select .mobile-select-chevron {
         right: 12px !important;
         --mdc-icon-size: 20px !important;
       }
 
-      /* Sidebar room tiles: approx. 20% larger than the original desktop scale. */
-      .sidebar .area-list {
+      /* Sidebar room tiles: target the actual room tile class; do not override generic area buttons. */
+      .sidebar .room-area-button {
+        display: grid !important;
+        grid-template-columns: 89px minmax(0, 1fr) !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+        min-height: 110px !important;
+        height: 110px !important;
         padding: 10px !important;
+        box-sizing: border-box !important;
+        border-radius: 12px !important;
       }
 
-      .sidebar .floor-section {
-        margin-bottom: 12px !important;
+      .sidebar .room-area-button .area-media {
+        width: 89px !important;
+        height: 89px !important;
+        align-self: center !important;
+      }
+      .sidebar .room-area-button .area-media-icon {
+        width: 89px !important;
+        height: 89px !important;
+      }
+      .sidebar .room-area-button .area-media-icon ha-icon {
+        --mdc-icon-size: 41px !important;
       }
 
-      .sidebar .floor-header {
-        padding: 5px 8px 3px !important;
-        margin-bottom: 0 !important;
+      .sidebar .room-area-button .area-content {
+        min-width: 0 !important;
+        height: 100% !important;
+        justify-content: center !important;
+        gap: 8px !important;
       }
-
-      .sidebar .area-button:not(.home-button) {
-        grid-template-columns: 55px minmax(0, 1fr) auto 27px !important;
-        gap: 14px !important;
-        min-height: 81px !important;
-        height: auto !important;
-        padding: 12px 14px !important;
-        border-radius: 10px !important;
-      }
-
-      .sidebar .area-button:not(.home-button) .area-icon,
-      .sidebar .area-button:not(.home-button) .area-main-icon {
-        width: 55px !important;
-        height: 55px !important;
-        border-radius: 10px !important;
-      }
-
-      .sidebar .area-button:not(.home-button) .area-icon ha-icon,
-      .sidebar .area-button:not(.home-button) .area-main-icon ha-icon {
-        --mdc-icon-size: 29px !important;
-      }
-
-      .sidebar .area-button:not(.home-button) .area-name {
-        font-size: 18px !important;
+      .sidebar .room-area-button .area-name {
+        font-size: 16.8px !important;
         line-height: 1.1 !important;
-        margin: 0 !important;
       }
-
-      .sidebar .area-button:not(.home-button) .area-sensors {
+      .sidebar .room-area-button .area-sensors {
         margin-top: 4px !important;
-        font-size: 14.4px !important;
+        font-size: 13.2px !important;
         line-height: 1.1 !important;
       }
-
-      .sidebar .area-button:not(.home-button) .area-info-badges {
-        max-width: 124px !important;
+      .sidebar .room-area-button .area-info-badges {
         gap: 5px !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        overflow: hidden !important;
       }
-
-      .sidebar .area-button:not(.home-button) .info-badge {
-        min-width: 30px !important;
-        height: 28px !important;
+      .sidebar .room-area-button .info-badge {
+        min-width: 32px !important;
+        height: 25px !important;
         padding: 0 8px !important;
-        font-size: 13.5px !important;
+        font-size: 13px !important;
+        flex: 0 0 auto !important;
+      }
+      .sidebar .room-area-button .info-badge ha-icon { --mdc-icon-size: 15px !important; }
+      .sidebar .room-area-button .badge-count { font-size: 13px !important; }
+      .sidebar .room-area-button .info-badge-overflow {
+        min-width: 20px !important;
+        width: 20px !important;
+        padding: 0 !important;
+        border: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        color: var(--secondary-text-color) !important;
+        font-size: 16px !important;
+        font-weight: 900 !important;
+        letter-spacing: 1px !important;
       }
 
-      .sidebar .area-button:not(.home-button) .info-badge ha-icon {
-        --mdc-icon-size: 16px !important;
+      /* Room header status badges: about 30% larger, including their own tile height. */
+      .room-ui-v2 .room-header-summary {
+        min-height: 24px !important;
+        gap: 5px !important;
+        align-items: center !important;
+      }
+      .room-ui-v2 .room-summary-item.status {
+        min-height: 23px !important;
+        padding: 3px 8px !important;
+        gap: 4px !important;
+        box-sizing: border-box !important;
+        border-radius: 999px !important;
+        font-size: 13px !important;
+        line-height: 1 !important;
+      }
+      .room-ui-v2 .room-summary-item.status ha-icon { --mdc-icon-size: 18px !important; }
+      .room-ui-v2 .room-header-copy {
+        align-self: center !important;
+        justify-content: center !important;
       }
 
-      .sidebar .area-button:not(.home-button) .badge-count {
-        font-size: 13.5px !important;
+      /* Lower room sections must use exactly the same outer width as the room header/favorites. */
+      .room-ui-v2 .mobile-entities-section,
+      .room-ui-v2 .mobile-domain-group {
+        width: 100% !important;
+        align-self: stretch !important;
+        box-sizing: border-box !important;
       }
 
-      .sidebar .area-button:not(.home-button) .area-menu-chevron {
-        --mdc-icon-size: 27px !important;
+      /* Room-view time/weather: move the cluster slightly left and keep the Home weather treatment. */
+      .global-header.room-context { padding-right: 20px !important; }
+      .global-header.room-context .header-time-weather { gap: 6px !important; }
+      .global-header.room-context .weather-compact {
+        background: var(--secondary-background-color) !important;
+        color: var(--primary-text-color) !important;
       }
+      .global-header.room-context .weather-compact ha-icon { color: var(--primary-text-color) !important; }
     }
-
   `;
 
   connectedCallback() {
@@ -16709,7 +16751,10 @@ export class DwainsLayoutCard extends LitElement {
     const areaData = this._getCachedAreaData(area);
     const isSelected = this._selectedArea === area.area_id;
     const hasPicture = Boolean(area.picture);
-    const badges = this._getAreaStatusBadges(areaData).slice(0, this._sidebarAreaBadgeLimit());
+    const allBadges = this._getAreaStatusBadges(areaData);
+    const badgeLimit = this._sidebarAreaBadgeLimit();
+    const badges = allBadges.slice(0, badgeLimit);
+    const hasMoreBadges = allBadges.length > badgeLimit;
     const sensorSummary = [
       areaData.temperature,
       areaData.humidity,
@@ -16762,6 +16807,13 @@ export class DwainsLayoutCard extends LitElement {
                     </span>
                   `
             )}
+            ${hasMoreBadges ? html`
+              <span
+                class="info-badge info-badge-overflow"
+                title="Weitere aktive Status"
+                aria-label="Weitere aktive Status"
+              >…</span>
+            ` : nothing}
           </div>
         </div>
       </button>
@@ -20154,9 +20206,7 @@ export class DwainsLayoutCard extends LitElement {
     const replacementConfig = this._areaReplacementCardConfig(entity.entity_id);
     if (replacementConfig) return this._renderAreaReplacementCard(entity.entity_id, replacementConfig);
 
-    const icon = ['select', 'input_select'].includes(domain)
-      ? 'mdi:format-list-bulleted'
-      : this.hass.entities?.[entity.entity_id]?.icon || state.attributes?.icon || getDeviceClassIcon(domain, deviceClass) || getDomainIcon(domain);
+    const icon = this.hass.entities?.[entity.entity_id]?.icon || state.attributes?.icon || getDeviceClassIcon(domain, deviceClass) || getDomainIcon(domain);
     const name = state.attributes?.friendly_name || this.hass.entities?.[entity.entity_id]?.name || entity.entity_id;
     const active = this._isEntityActiveForUi(state, domain);
     const actionKind = this._mobileEntityActionKind(domain);
