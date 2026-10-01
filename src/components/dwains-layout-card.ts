@@ -15022,6 +15022,94 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
+
+    /* 2026-10-01: definitive room-grid/favorite spacing pass. */
+    @media (min-width: 769px) {
+      /*
+       * Slider geometry: use the original 5px track / 15px thumb geometry
+       * used by the first light-control implementation. Do not change the
+       * control layout here; only restore the slider proportions.
+       */
+      .room-ui-v2 .mobile-light-control-slider,
+      .room-ui-v2 .mobile-cover-position input[type="range"] {
+        height: 5px !important;
+      }
+
+      .room-ui-v2 .mobile-light-control-slider::-webkit-slider-runnable-track,
+      .room-ui-v2 .mobile-cover-position input[type="range"]::-webkit-slider-runnable-track {
+        height: 5px !important;
+        min-height: 5px !important;
+        max-height: 5px !important;
+        border-radius: 999px !important;
+      }
+
+      .room-ui-v2 .mobile-light-control-slider::-moz-range-track,
+      .room-ui-v2 .mobile-cover-position input[type="range"]::-moz-range-track {
+        height: 5px !important;
+        min-height: 5px !important;
+        max-height: 5px !important;
+        border-radius: 999px !important;
+      }
+
+      .room-ui-v2 .mobile-light-control-slider::-moz-range-progress {
+        height: 5px !important;
+        min-height: 5px !important;
+        max-height: 5px !important;
+        border-radius: 999px !important;
+      }
+
+      .room-ui-v2 .mobile-light-control-slider::-webkit-slider-thumb,
+      .room-ui-v2 .mobile-cover-position input[type="range"]::-webkit-slider-thumb {
+        width: 15px !important;
+        height: 15px !important;
+      }
+
+      .room-ui-v2 .mobile-light-control-slider::-moz-range-thumb,
+      .room-ui-v2 .mobile-cover-position input[type="range"]::-moz-range-thumb {
+        width: 13px !important;
+        height: 13px !important;
+      }
+
+      /*
+       * A tall card must not define the height of its siblings.
+       * Explicitly size grid rows to content and opt every entity card out
+       * of the grid's default stretch behaviour.
+       */
+      .room-ui-v2 .mobile-entity-rail,
+      .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-rail {
+        align-items: start !important;
+        grid-auto-rows: max-content !important;
+      }
+
+      .room-ui-v2 .mobile-entity-rail > .mobile-entity-card,
+      .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-rail > .mobile-entity-card {
+        align-self: start !important;
+        height: fit-content !important;
+      }
+
+      .room-ui-v2 .mobile-entity-card.has-light-controls,
+      .room-ui-v2 .mobile-entity-card.has-cover-position {
+        height: auto !important;
+      }
+
+      /*
+       * Favorites: the room header has its own 6px content padding, which
+       * doubled the intended header-to-card distance. Remove only that
+       * top padding; the other insets remain unchanged.
+       */
+      .room-favorites-content {
+        padding-top: 0 !important;
+      }
+
+      .room-favorites-content .favorites-grid {
+        padding-top: 0 !important;
+      }
+
+      .home-favorites-section .favorites-header {
+        margin-bottom: 6px !important;
+      }
+    }
+
   `;
 
   connectedCallback() {
