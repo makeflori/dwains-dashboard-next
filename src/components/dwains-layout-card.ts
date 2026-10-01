@@ -15845,20 +15845,6 @@ export class DwainsLayoutCard extends LitElement {
     }
   }
 
-  protected override updated(changedProps: PropertyValues): void {
-    super.updated(changedProps);
-
-    if (
-      changedProps.has('hass') ||
-      changedProps.has('config') ||
-      changedProps.has('_selectedView') ||
-      changedProps.has('_selectedArea') ||
-      changedProps.has('_isMobile')
-    ) {
-      this._scheduleHeaderStatusScrollState();
-    }
-  }
-
   private _scheduleHeaderStatusScrollState(): void {
     if (this._headerStatusScrollRaf !== undefined) {
       cancelAnimationFrame(this._headerStatusScrollRaf);
@@ -16597,6 +16583,8 @@ export class DwainsLayoutCard extends LitElement {
 
   protected override updated(changedProps: PropertyValues) {
     super.updated(changedProps);
+
+    this._scheduleHeaderStatusScrollState();
 
     // Handle hass updates for live entity state changes
     if (changedProps.has('hass') && this.hass) {
