@@ -15792,6 +15792,106 @@ export class DwainsLayoutCard extends LitElement {
       -webkit-overflow-scrolling: touch;
     }
 
+
+    /* 2026-10-01: responsive room-view follow-up. */
+    @media (min-width: 769px) {
+      /* Room header media grows with the actual room-view width instead of staying at 142px. */
+      .room-ui-v2 .room-header {
+        container-type: inline-size;
+        grid-template-columns: clamp(142px, 18cqw, 190px) minmax(0, 1fr) auto auto !important;
+        min-height: clamp(96px, 10cqw, 112px) !important;
+      }
+
+      .room-ui-v2 .room-header-media {
+        width: 100% !important;
+        height: clamp(76px, 8cqw, 100px) !important;
+        min-height: 76px !important;
+        max-height: 100px !important;
+      }
+
+      .room-ui-v2 .room-header-icon ha-icon {
+        --mdc-icon-size: clamp(38px, 4cqw, 48px) !important;
+      }
+
+      /* Room entity cards: exactly five columns on desktop. */
+      .room-ui-v2 .mobile-entity-rail,
+      .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-rail {
+        grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+      }
+
+      /* Room status pills: 30% larger than the previous 30px version. */
+      .room-ui-v2 .room-header-summary {
+        min-height: 39px !important;
+        gap: 7px !important;
+      }
+
+      .room-ui-v2 .room-summary-item.status {
+        min-height: 39px !important;
+        padding: 5px 10px !important;
+        gap: 5px !important;
+        font-size: 16.9px !important;
+        line-height: 1 !important;
+      }
+
+      .room-ui-v2 .room-summary-item.status ha-icon {
+        --mdc-icon-size: 23px !important;
+      }
+    }
+
+    /* Weather should use the dashboard accent instead of the neutral gray pill. */
+    .global-header .weather-compact {
+      background: color-mix(in srgb, var(--primary-color) 12%, var(--card-background-color)) !important;
+      color: var(--primary-color) !important;
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 16%, transparent) !important;
+    }
+
+    .global-header .weather-compact .weather-icon-compact ha-icon {
+      color: var(--primary-color) !important;
+    }
+
+    .global-header .weather-compact .weather-temp-compact {
+      color: var(--primary-text-color) !important;
+    }
+
+    /* Select/input_select cards: keep the entity icon explicitly in the leading slot. */
+    .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-main {
+      direction: ltr !important;
+      grid-template-columns: 46px minmax(0, 1fr) !important;
+    }
+
+    .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-icon {
+      grid-column: 1 !important;
+      grid-row: 1 !important;
+      order: 0 !important;
+      justify-self: start !important;
+      align-self: center !important;
+    }
+
+    .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-content {
+      grid-column: 2 !important;
+      grid-row: 1 !important;
+      order: 1 !important;
+      min-width: 0 !important;
+    }
+
+    .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-right {
+      display: none !important;
+    }
+
+    /* Sidebar room tiles: badge overflow follows the continuously calculated width. */
+    @media (min-width: 769px) {
+      .sidebar .room-area-button .area-info-badges {
+        width: 100% !important;
+        max-width: none !important;
+        display: flex !important;
+        grid-template-columns: none !important;
+        flex-wrap: nowrap !important;
+        justify-content: flex-start !important;
+        gap: 5px !important;
+        overflow: hidden !important;
+      }
+    }
+
   `;
 
   connectedCallback() {
@@ -17062,11 +17162,32 @@ export class DwainsLayoutCard extends LitElement {
   }
 
   private _sidebarAreaBadgeLimit(): number {
-    const extraColumns = Math.max(
-      0,
-      Math.floor((this._areaSidebarWidth - SIDEBAR_DEFAULT_WIDTH) / 72)
+    /*
+     * Calculate the badge capacity from the actual sidebar width. The previous
+     * implementation changed the limit only in 72px steps, so resizing the
+     * sidebar often left the overflow indicator at the wrong width.
+     *
+     * Keep these values aligned with the desktop room-tile geometry:
+     * 10px horizontal padding on each side, 89px media, 12px column gap,
+     * 32px minimum badge width, 5px badge gap and a 20px overflow marker.
+     */
+    const contentWidth = Math.max(0, this._areaSidebarWidth - 20 - 89 - 12);
+    const badgeWidth = 32;
+    const badgeGap = 5;
+    const overflowWidth = 20;
+
+    const capacity = Math.max(
+      1,
+      Math.floor((contentWidth + badgeGap) / (badgeWidth + badgeGap))
     );
-    return Math.min(8, 4 + extraColumns);
+
+    // If an overflow marker is needed, reserve its width as well.
+    const capacityWithOverflow = Math.max(
+      1,
+      Math.floor((Math.max(0, contentWidth - overflowWidth - badgeGap) + badgeGap) / (badgeWidth + badgeGap)) + 1
+    );
+
+    return Math.min(8, Math.max(capacity, capacityWithOverflow));
   }
 
   private _renderAreaButton(area: any) {
