@@ -19933,42 +19933,6 @@ export class DwainsLayoutCard extends LitElement {
     `;
   }
 
-  private _lightControlModesForState(state: any): LightControlMode[] {
-    const supported = Array.isArray(state?.attributes?.supported_color_modes)
-      ? state.attributes.supported_color_modes.map((value: unknown) => String(value).toLowerCase())
-      : [];
-    const supportedFeatures = Number(state?.attributes?.supported_features || 0);
-    const modes: LightControlMode[] = [];
-
-    const supportsBrightness =
-      typeof state?.attributes?.brightness === 'number' ||
-      (supportedFeatures & 1) !== 0 ||
-      supported.some((mode: string) => mode !== 'onoff');
-
-    if (supportsBrightness) modes.push('brightness');
-    if (supported.includes('color_temp')) modes.push('color_temp');
-    if (supported.some((mode: string) => ['hs', 'xy', 'rgb', 'rgbw', 'rgbww'].includes(mode))) modes.push('color');
-
-    return modes;
-  }
-
-  private _lightControlModeForState(
-    entityId: string,
-    _state: any,
-    modes: LightControlMode[]
-  ): LightControlMode | null {
-    if (!modes.length) return null;
-
-    const selected = this._lightControlModes[entityId];
-    if (selected && modes.includes(selected)) return selected;
-
-    // Keep the room card predictable: brightness is always the initial mode when available.
-    if (modes.includes('brightness')) return 'brightness';
-    if (modes.includes('color_temp')) return 'color_temp';
-    if (modes.includes('color')) return 'color';
-    return modes[0] || null;
-  }
-
   private _lightControlModeLabel(mode: LightControlMode): string {
     const de = String(this.hass?.language || '').toLowerCase().startsWith('de');
     if (mode === 'brightness') return de ? 'Helligkeit' : 'Brightness';
@@ -19980,23 +19944,6 @@ export class DwainsLayoutCard extends LitElement {
     if (mode === 'brightness') return 'mdi:brightness-6';
     if (mode === 'color_temp') return 'mdi:thermometer';
     return 'mdi:palette';
-  }
-
-  private _lightControlStatus(state: any, mode: LightControlMode): string {
-    const value = String(state?.state || '').toLowerCase();
-    if (value === 'off') return this._formatFavoriteState(state);
-
-    if (mode === 'brightness') {
-      const brightness = Number(state?.attributes?.brightness);
-      if (Number.isFinite(brightness)) return `${Math.round((brightness / 255) * 100)} %`;
-    }
-
-    if (mode === 'color_temp') {
-      const kelvin = Number(state?.attributes?.color_temp_kelvin);
-      if (Number.isFinite(kelvin) && kelvin > 0) return `${Math.round(kelvin).toLocaleString(ddLocale(this.hass))} K`;
-    }
-
-    return this._formatFavoriteState(state);
   }
 
   private _lightControlSliderConfig(state: any, mode: LightControlMode) {
@@ -20229,7 +20176,10 @@ export class DwainsLayoutCard extends LitElement {
         type="button"
         title=${this._t('action.more_info')}
         aria-label=${this._t('action.more_info')}
-        @click=${(event: Event) => this._handleMobileMoreInfo(event, state?.entity_id)}
+        @click=${(event: Event) => {
+          event.stopPropagation();
+          this._showMoreInfo(state?.entity_id);
+        }}
       >
         <ha-icon icon="mdi:chevron-right"></ha-icon>
       </button>
