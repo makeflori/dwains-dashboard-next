@@ -175,6 +175,8 @@ export class DwainsLayoutCard extends LitElement {
   @state() private _isMobile = false;
   @state() private _headerExpanded = false;
   @state() private _headerCompact = false;
+  @state() private _headerStatusCanScrollLeft = false;
+  @state() private _headerStatusCanScrollRight = false;
   private _favoritesRenderVersion = 0;
   @state() private _currentTime = '';
   @state() private _currentDate = '';
@@ -232,6 +234,7 @@ export class DwainsLayoutCard extends LitElement {
   private _favoriteSuggestionsLoaded = false;
   private _favoriteSuggestionsLoading = false;
   private _areaHeaderScrollRaf?: number;
+  private _headerStatusScrollRaf?: number;
   private _pendingAreaScrollTop = 0;
   private _optimisticCleanupTimer?: number;
   private _lastAreaScrollTop = 0;
@@ -10906,7 +10909,14 @@ export class DwainsLayoutCard extends LitElement {
       align-items: center;
       flex-wrap: nowrap;
       gap: 8px;
-      overflow: hidden;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: none;
+      overscroll-behavior-x: contain;
+    }
+
+    .room-header-summary::-webkit-scrollbar {
+      display: none;
     }
 
     .room-summary-item {
@@ -15709,6 +15719,79 @@ export class DwainsLayoutCard extends LitElement {
         color: var(--primary-text-color) !important;
       }
     }
+    /* 2026-10-01: header status carousel. */
+    .header-status-section {
+      position: relative;
+      min-width: 0;
+    }
+
+    .header-status-section .header-status-scroll {
+      min-width: 0;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: none;
+      scroll-behavior: smooth;
+      overscroll-behavior-x: contain;
+    }
+
+    .header-status-section .header-status-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .header-status-scroll-button {
+      position: absolute;
+      top: 50%;
+      z-index: 4;
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      transform: translateY(-50%);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid color-mix(in srgb, var(--primary-text-color) 10%, transparent);
+      border-radius: 999px;
+      background: var(--card-background-color);
+      color: var(--primary-text-color);
+      box-shadow: 0 2px 7px rgba(15, 23, 42, 0.12);
+      cursor: pointer;
+    }
+
+    .header-status-scroll-button:hover {
+      background: var(--secondary-background-color);
+    }
+
+    .header-status-scroll-button ha-icon {
+      --mdc-icon-size: 17px;
+    }
+
+    .header-status-scroll-button-left {
+      left: 2px;
+    }
+
+    .header-status-scroll-button-right {
+      right: 2px;
+    }
+
+    .header-status-section.can-scroll-left .header-status-scroll {
+      padding-left: 30px;
+    }
+
+    .header-status-section.can-scroll-right .header-status-scroll {
+      padding-right: 30px;
+    }
+
+    .header-status-section.can-scroll-left.can-scroll-right .header-status-scroll {
+      padding-left: 30px;
+      padding-right: 30px;
+    }
+
+    .room-ui-v2 .room-header-summary {
+      max-width: 100%;
+      cursor: default;
+      -webkit-overflow-scrolling: touch;
+    }
+
   `;
 
   connectedCallback() {
@@ -15762,6 +15845,74 @@ export class DwainsLayoutCard extends LitElement {
     }
   }
 
+  protected override updated(changedProps: PropertyValues): void {
+    super.updated(changedProps);
+
+    if (
+      changedProps.has('hass') ||
+      changedProps.has('config') ||
+      changedProps.has('_selectedView') ||
+      changedProps.has('_selectedArea') ||
+      changedProps.has('_isMobile')
+    ) {
+      this._scheduleHeaderStatusScrollState();
+    }
+  }
+
+  private _scheduleHeaderStatusScrollState(): void {
+    if (this._headerStatusScrollRaf !== undefined) {
+      cancelAnimationFrame(this._headerStatusScrollRaf);
+    }
+
+    this._headerStatusScrollRaf = requestAnimationFrame(() => {
+      this._headerStatusScrollRaf = undefined;
+      this._updateHeaderStatusScrollState();
+    });
+  }
+
+  private _updateHeaderStatusScrollState(): void {
+    const scrollContainer = this.shadowRoot?.querySelector('.header-status-scroll') as HTMLElement | null;
+    if (!scrollContainer) {
+      if (this._headerStatusCanScrollLeft || this._headerStatusCanScrollRight) {
+        this._headerStatusCanScrollLeft = false;
+        this._headerStatusCanScrollRight = false;
+      }
+      return;
+    }
+
+    const maxScrollLeft = Math.max(0, scrollContainer.scrollWidth - scrollContainer.clientWidth);
+    const canScrollLeft = scrollContainer.scrollLeft > 1;
+    const canScrollRight = scrollContainer.scrollLeft < maxScrollLeft - 1;
+
+    if (this._headerStatusCanScrollLeft !== canScrollLeft) {
+      this._headerStatusCanScrollLeft = canScrollLeft;
+    }
+    if (this._headerStatusCanScrollRight !== canScrollRight) {
+      this._headerStatusCanScrollRight = canScrollRight;
+    }
+  }
+
+  private _handleHeaderStatusScroll = (): void => {
+    this._scheduleHeaderStatusScrollState();
+  };
+
+  private _scrollHeaderStatus(direction: -1 | 1): void {
+    const scrollContainer = this.shadowRoot?.querySelector('.header-status-scroll') as HTMLElement | null;
+    if (!scrollContainer) return;
+
+    const firstCard = scrollContainer.querySelector('.status-card-compact') as HTMLElement | null;
+    if (!firstCard) return;
+
+    const styles = getComputedStyle(scrollContainer);
+    const gap = Number.parseFloat(styles.columnGap || styles.gap || '0') || 0;
+    const step = firstCard.getBoundingClientRect().width + gap;
+
+    scrollContainer.scrollBy({
+      left: direction * step,
+      behavior: 'smooth',
+    });
+  }
+
   disconnectedCallback() {
     super.disconnectedCallback();
     window.removeEventListener('dwains-dashboard-next-toggle-area-nav', this._handleAreaNavToggle);
@@ -15784,6 +15935,10 @@ export class DwainsLayoutCard extends LitElement {
     if (this._areaHeaderScrollRaf) {
       cancelAnimationFrame(this._areaHeaderScrollRaf);
       this._areaHeaderScrollRaf = undefined;
+    }
+    if (this._headerStatusScrollRaf !== undefined) {
+      cancelAnimationFrame(this._headerStatusScrollRaf);
+      this._headerStatusScrollRaf = undefined;
     }
     if (this._areaSidebarRestoreRaf !== undefined) {
       cancelAnimationFrame(this._areaSidebarRestoreRaf);
@@ -17085,10 +17240,30 @@ export class DwainsLayoutCard extends LitElement {
 
   private _renderHeaderStatusCards() {
     const domains = this._getStatusDomains();
+    const statusSectionClasses = [
+      'header-status-section',
+      this._headerStatusCanScrollLeft ? 'can-scroll-left' : '',
+      this._headerStatusCanScrollRight ? 'can-scroll-right' : '',
+    ].filter(Boolean).join(' ');
 
     return html`
-      <div class="header-status-section">
-        <div class="header-status-scroll">
+      <div class=${statusSectionClasses}>
+        ${this._headerStatusCanScrollLeft ? html`
+          <button
+            class="header-status-scroll-button header-status-scroll-button-left"
+            type="button"
+            title="Vorherige Status"
+            aria-label="Vorherige Status"
+            @click=${() => this._scrollHeaderStatus(-1)}
+          >
+            <ha-icon icon="mdi:chevron-left"></ha-icon>
+          </button>
+        ` : nothing}
+
+        <div
+          class="header-status-scroll"
+          @scroll=${this._handleHeaderStatusScroll}
+        >
           ${repeat(
             domains,
             d => `${d.domain}-${d.deviceClass || d.name}`,
@@ -17113,6 +17288,18 @@ export class DwainsLayoutCard extends LitElement {
             `
           )}
         </div>
+
+        ${this._headerStatusCanScrollRight ? html`
+          <button
+            class="header-status-scroll-button header-status-scroll-button-right"
+            type="button"
+            title="Weitere Status"
+            aria-label="Weitere Status"
+            @click=${() => this._scrollHeaderStatus(1)}
+          >
+            <ha-icon icon="mdi:chevron-right"></ha-icon>
+          </button>
+        ` : nothing}
       </div>
     `;
   }
@@ -18876,7 +19063,7 @@ export class DwainsLayoutCard extends LitElement {
     const hasPicture = Boolean(area.picture);
     const deviceCount = this._getAreaDeviceCount(area.area_id, visibleAreaEntities);
     const deviceLabel = this._tp('common.device', deviceCount);
-    const roomBadges = this._getAreaStatusBadges(areaData).slice(0, 4);
+    const roomBadges = this._getAreaStatusBadges(areaData);
 
     return html`
       <div class="area-view room-ui-v2">
