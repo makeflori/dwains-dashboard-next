@@ -14945,6 +14945,83 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
+
+    /* 2026-10-01: restore the 1.9.0 slider geometry and final room/home rhythm. */
+    @media (min-width: 769px) {
+      .mobile-light-control-slider,
+      .mobile-cover-position input[type="range"] {
+        height: 5px !important;
+      }
+
+      .mobile-light-control-slider::-webkit-slider-runnable-track,
+      .mobile-cover-position input[type="range"]::-webkit-slider-runnable-track {
+        height: 5px !important;
+        border-radius: 999px !important;
+      }
+
+      .mobile-light-control-slider::-moz-range-track,
+      .mobile-cover-position input[type="range"]::-moz-range-track {
+        height: 5px !important;
+        border-radius: 999px !important;
+      }
+
+      .mobile-light-control-slider::-moz-range-progress {
+        height: 5px !important;
+        border-radius: 999px !important;
+      }
+
+      .mobile-light-control-slider::-webkit-slider-thumb,
+      .mobile-cover-position input[type="range"]::-webkit-slider-thumb {
+        width: 15px !important;
+        height: 15px !important;
+      }
+
+      .mobile-light-control-slider::-moz-range-thumb,
+      .mobile-cover-position input[type="range"]::-moz-range-thumb {
+        width: 13px !important;
+        height: 13px !important;
+      }
+
+      /* One tall entity must not stretch its siblings; all cards stay top-aligned. */
+      .room-ui-v2 .mobile-entity-rail,
+      .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-rail {
+        align-items: start !important;
+      }
+
+      .room-ui-v2 .mobile-entity-card,
+      .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-card {
+        align-self: start !important;
+      }
+
+      /* Favorites sit close to their header, with the same compact rhythm as entity groups. */
+      .home-favorites-section {
+        overflow: visible !important;
+      }
+
+      .home-favorites-section .favorites-header {
+        margin-bottom: 6px !important;
+      }
+
+      .home-favorites-section .favorites-grid,
+      .room-favorites-content .favorites-grid {
+        padding-top: 0 !important;
+        overflow: visible !important;
+      }
+
+      .home-favorites-section .favorite-card-wrapper,
+      .room-favorites-content .favorite-card-wrapper {
+        overflow: visible !important;
+      }
+
+      /* One consistent light-orange cover color for blinds, shading and gates. */
+      .room-ui-v2 .mobile-entity-cover,
+      .home-favorites-section .favorite-card-wrapper.favorite-cover,
+      .room-favorites-content .favorite-card-wrapper.favorite-cover {
+        --entity-color: #E98A3B !important;
+        --favorite-color: #E98A3B !important;
+      }
+    }
+
   `;
 
   connectedCallback() {
@@ -18849,7 +18926,9 @@ export class DwainsLayoutCard extends LitElement {
           const groupDeviceClass = group.entities[0]
             ? this.hass.states[group.entities[0].entity_id]?.attributes?.device_class
             : undefined;
-          const groupColor = getDomainColor(groupDomain, groupDeviceClass);
+          const groupColor = groupDomain === 'cover'
+            ? '#E98A3B'
+            : getDomainColor(groupDomain, groupDeviceClass);
           const renderedEntities = this._isMobile && !this._editMode && !this._renderAllMobileAreaEntities && group.entities.length > MOBILE_INITIAL_ENTITY_CARDS
             ? group.entities.slice(0, MOBILE_INITIAL_ENTITY_CARDS)
             : group.entities;
@@ -20410,7 +20489,7 @@ export class DwainsLayoutCard extends LitElement {
   }
 
   private _mobileEntityColor(domain: string, deviceClass?: string): string {
-    if (domain === 'cover') return '#D66A1F';
+    if (domain === 'cover') return '#E98A3B';
     if (domain === 'sensor' && (deviceClass === 'temperature' || deviceClass === 'humidity')) {
       return getDomainColor(deviceClass, deviceClass);
     }
