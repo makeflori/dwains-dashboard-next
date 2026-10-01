@@ -19737,8 +19737,8 @@ export class DwainsLayoutCard extends LitElement {
     return ['select', 'input_select'].includes(domain) && Array.isArray(state?.attributes?.options);
   }
 
-  private _renderMobileEntitySelect(_state: any, domain: string) {
-    const options = this._mobileEntitySelectOptions(_state);
+  private _renderMobileEntitySelect(state: any, domain: string) {
+    const options = this._mobileEntitySelectOptions(state);
     const selected = String(state?.state || '');
     const unavailable = ['unavailable', 'unknown'].includes(selected.toLowerCase()) || options.length === 0;
 
