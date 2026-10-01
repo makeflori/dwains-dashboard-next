@@ -17161,11 +17161,12 @@ export class DwainsLayoutCard extends LitElement {
     });
   }
 
-  private _sidebarAreaBadgeLimit(): number {
+  private _sidebarAreaBadgeLimit(totalBadges = Number.MAX_SAFE_INTEGER): number {
     /*
-     * Calculate the badge capacity from the actual sidebar width. The previous
-     * implementation changed the limit only in 72px steps, so resizing the
-     * sidebar often left the overflow indicator at the wrong width.
+     * Calculate the number of badges that actually fit in the current
+     * sidebar width. The previous implementation changed the limit only in
+     * 72px steps, so resizing the sidebar often left the overflow indicator at
+     * the wrong width.
      *
      * Keep these values aligned with the desktop room-tile geometry:
      * 10px horizontal padding on each side, 89px media, 12px column gap,
@@ -17176,18 +17177,22 @@ export class DwainsLayoutCard extends LitElement {
     const badgeGap = 5;
     const overflowWidth = 20;
 
-    const capacity = Math.max(
+    const capacityWithoutOverflow = Math.max(
       1,
       Math.floor((contentWidth + badgeGap) / (badgeWidth + badgeGap))
     );
 
-    // If an overflow marker is needed, reserve its width as well.
+    if (totalBadges <= capacityWithoutOverflow) {
+      return totalBadges;
+    }
+
+    // More badges exist than fit: reserve space for the "…" marker.
     const capacityWithOverflow = Math.max(
       1,
-      Math.floor((Math.max(0, contentWidth - overflowWidth - badgeGap) + badgeGap) / (badgeWidth + badgeGap)) + 1
+      Math.floor(Math.max(0, contentWidth - overflowWidth) / (badgeWidth + badgeGap))
     );
 
-    return Math.min(8, Math.max(capacity, capacityWithOverflow));
+    return Math.min(8, capacityWithOverflow);
   }
 
   private _renderAreaButton(area: any) {
@@ -17195,9 +17200,9 @@ export class DwainsLayoutCard extends LitElement {
     const isSelected = this._selectedArea === area.area_id;
     const hasPicture = Boolean(area.picture);
     const allBadges = this._getAreaStatusBadges(areaData);
-    const badgeLimit = this._sidebarAreaBadgeLimit();
+    const badgeLimit = this._sidebarAreaBadgeLimit(allBadges.length);
     const hasMoreBadges = allBadges.length > badgeLimit;
-    const badges = allBadges.slice(0, hasMoreBadges ? Math.max(0, badgeLimit - 1) : badgeLimit);
+    const badges = allBadges.slice(0, badgeLimit);
     const sensorSummary = [
       areaData.temperature,
       areaData.humidity,
