@@ -3629,6 +3629,20 @@ export class DwainsLayoutCard extends LitElement {
       width: 100%;
     }
 
+    .room-ui-v2 .mobile-entity-replacement-card {
+      --dd-replacement-min-height: 62px;
+      --dd-replacement-padding: 8px 10px;
+      --dd-replacement-radius: 8px;
+    }
+
+    @media (min-width: 769px) {
+      .room-ui-v2 .mobile-entity-replacement-card {
+        --dd-replacement-min-height: 72px;
+        --dd-replacement-padding: 12px;
+        --dd-replacement-radius: 10px;
+      }
+    }
+
     .mobile-todo-list-card {
       box-sizing: border-box;
       flex: 0 0 min(100%, 520px);
@@ -20348,6 +20362,7 @@ export class DwainsLayoutCard extends LitElement {
     return html`
       <div class="mobile-entity-replacement-card" data-entity=${entityId}>
         <dwains-dashboard-next-card-host
+          framed
           .hass=${this.hass}
           .config=${cardConfig}
         ></dwains-dashboard-next-card-host>

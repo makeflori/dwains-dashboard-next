@@ -10,6 +10,18 @@ export class DwainsCardHost extends HTMLElement {
   private _observer?: IntersectionObserver;
   private _hasRendered = false;
   private _renderRequest = 0;
+  private _frameObserver?: MutationObserver;
+  private _frameStyle?: HTMLStyleElement;
+  private _frameRequest = 0;
+
+  static get observedAttributes() {
+    return ['framed'];
+  }
+
+  attributeChangedCallback() {
+    this._applyFrame();
+    if (this._child) void this._frameChild(this._child);
+  }
 
   set hass(value: any) {
     this._hass = value;
@@ -30,6 +42,7 @@ export class DwainsCardHost extends HTMLElement {
 
   connectedCallback() {
     this.style.display = 'block';
+    this._applyFrame();
     this.style.setProperty('content-visibility', 'auto');
     this.style.setProperty('contain-intrinsic-size', '120px');
     this._renderWhenVisible();
@@ -37,12 +50,73 @@ export class DwainsCardHost extends HTMLElement {
 
   disconnectedCallback() {
     this._renderRequest += 1;
+    this._clearFrameChild();
     this._observer?.disconnect();
     this._observer = undefined;
     this._hasRendered = false;
     this._renderedConfigKey = '';
     this._child = null;
     this.replaceChildren();
+  }
+
+  // Replacement blueprints provide the content; DD Next owns their outer tile.
+  private _applyFrame() {
+    const styles: Record<string, string> = {
+      'box-sizing': 'border-box',
+      'min-height': 'var(--dd-replacement-min-height, 60px)',
+      padding: 'var(--dd-replacement-padding, 14px)',
+      border: 'var(--dd-replacement-border, 1px solid color-mix(in srgb, var(--primary-text-color) 6%, transparent))',
+      'border-radius': 'var(--dd-replacement-radius, 10px)',
+      background: 'var(--card-background-color)',
+      'box-shadow': '0 3px 9px rgba(15, 23, 42, 0.035)',
+      '--ha-card-background': 'transparent',
+      '--ha-card-border-width': '0px',
+      '--ha-card-border-radius': '0px',
+      '--ha-card-box-shadow': 'none',
+    };
+    for (const [property, value] of Object.entries(styles)) {
+      if (this.hasAttribute('framed')) this.style.setProperty(property, value);
+      else this.style.removeProperty(property);
+    }
+  }
+
+  private _clearFrameChild() {
+    this._frameRequest += 1;
+    this._frameObserver?.disconnect();
+    this._frameObserver = undefined;
+    this._frameStyle?.remove();
+    this._frameStyle = undefined;
+  }
+
+  private async _frameChild(child: any) {
+    this._clearFrameChild();
+    const request = this._frameRequest;
+    if (!this.hasAttribute('framed')) return;
+    // Lit cards create their shadow content asynchronously after mounting.
+    await child.updateComplete;
+    if (request !== this._frameRequest || this._child !== child || !this.isConnected || !this.hasAttribute('framed')) return;
+    const root = child.shadowRoot as ShadowRoot | null;
+    if (!root) return;
+    const normalize = () => {
+      const surface = root.querySelector('ha-card');
+      if (!surface) return;
+      surface.setAttribute('data-dd-replacement-surface', '');
+      if (!this._frameStyle) {
+        this._frameStyle = document.createElement('style');
+        this._frameStyle.textContent = `
+          ha-card[data-dd-replacement-surface] {
+            background: transparent !important;
+            border: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+          }
+        `;
+      }
+      if (!root.contains(this._frameStyle)) root.appendChild(this._frameStyle);
+    };
+    this._frameObserver = new MutationObserver(normalize);
+    this._frameObserver.observe(root, { childList: true, subtree: true });
+    normalize();
   }
 
   private _renderWhenVisible() {
@@ -119,6 +193,7 @@ export class DwainsCardHost extends HTMLElement {
       this._child = child;
       this._renderedConfigKey = configKey;
       this.replaceChildren(child);
+      void this._frameChild(child);
     } catch (e) {
       if (request !== this._renderRequest || !this.isConnected) return;
       // eslint-disable-next-line no-console

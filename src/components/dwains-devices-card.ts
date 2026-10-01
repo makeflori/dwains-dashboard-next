@@ -12,7 +12,7 @@ import { ddLocale, ddLocalize, ddLocalizePlural } from '../utils/localize';
 import { sortAreas } from '../utils/area-entities';
 import { getDomainIcon, getDeviceClassIcon, getDomainColor } from '../utils/icons';
 import { getDomainName, getDeviceClassName } from '../utils/domain-names';
-import { resolveEntityCardConfig } from '../utils/blueprint-replacements';
+import { findReplacementAssignment, resolveEntityCardConfig } from '../utils/blueprint-replacements';
 import {
   NEW_DEVICE_WINDOW_HOURS,
   buildRecentDeviceSummaries,
@@ -1472,10 +1472,17 @@ export class DwainsDevicesCard extends LitElement {
   private _renderEntityCard(entity: EntityConfig) {
     const state = this._hass.states[entity.entity_id];
     if (!state) return nothing;
+    const replacement = findReplacementAssignment({
+      hass: this._hass,
+      config: this.config,
+      entity,
+      surface: 'devices_cards',
+    });
 
     return html`
       <div class="${this._entityWrapperClass(entity.entity_id)}">
         <dwains-dashboard-next-card-host
+          ?framed=${!!replacement && replacement.enabled !== false && !entity.entity_id.startsWith('todo.')}
           .hass=${this._hass}
           .config=${this._entityCardConfig(entity.entity_id)}
         ></dwains-dashboard-next-card-host>
