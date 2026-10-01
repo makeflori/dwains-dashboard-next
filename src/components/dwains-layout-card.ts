@@ -64,6 +64,21 @@ interface CachedAreaData {
   timestamp: number;
 }
 
+    @media (min-width: 769px) {
+      .room-favorites-block:not(.is-collapsed) .room-favorites-header {
+        margin-bottom: 2px !important;
+      }
+
+      .room-favorites-content {
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+      }
+
+      .room-favorites-content .favorites-grid {
+        padding-top: 0 !important;
+      }
+    }
+
 interface PersistentNotification {
   notification_id: string;
   title?: string | null;
@@ -15023,6 +15038,19 @@ export class DwainsLayoutCard extends LitElement {
     }
 
 
+    /* Home favorites: use the same unclipped card shadow as room favorites. */
+    @media (min-width: 769px) {
+      .home-view .home-favorites-section,
+      .home-view .home-favorites-section .favorites-grid {
+        overflow: visible !important;
+      }
+
+      .home-view .home-favorites-section .favorite-card-wrapper {
+        overflow: visible !important;
+        clip-path: none !important;
+      }
+    }
+
     /* 2026-10-01: definitive room-grid/favorite spacing pass. */
     @media (min-width: 769px) {
       /*
@@ -19785,24 +19813,8 @@ export class DwainsLayoutCard extends LitElement {
     const unavailable = ['unavailable', 'unknown'].includes(String(state.state).toLowerCase());
     const unknownIsNormal = domain === 'scene' || domain === 'event';
     const hasInlineSelect = this._mobileEntityHasInlineSelect(domain, state);
+    const statusText = this._mobileEntityStatusText(state, domain);
 
-    const lightModes = domain === 'light' ? this._lightControlModesForState(state) : [];
-    const lightMode = domain === 'light'
-      ? this._lightControlModeForState(entity.entity_id, state, lightModes)
-      : null;
-    const hasLightControls =
-      domain === 'light' &&
-      String(state.state || '').toLowerCase() === 'on' &&
-      lightModes.length > 0 &&
-      lightMode !== null;
-    const statusText = domain === 'light' && lightMode
-      ? this._lightControlStatus(state, lightMode)
-      : this._mobileEntityStatusText(state, domain);
-
-    const coverPosition = domain === 'cover' && typeof state.attributes?.current_position === 'number'
-      ? Math.max(0, Math.min(100, Math.round(Number(state.attributes.current_position))))
-      : null;
-    const hasCoverPosition = coverPosition !== null;
 
     const classes = [
       'mobile-entity-card',
@@ -19811,8 +19823,6 @@ export class DwainsLayoutCard extends LitElement {
       `action-${actionKind}`,
       active ? 'is-active' : 'is-off',
       hasInlineSelect ? 'has-inline-select' : '',
-      hasLightControls ? 'has-light-controls' : '',
-      hasCoverPosition ? 'has-cover-position' : '',
       unavailable && !unknownIsNormal ? 'is-unavailable' : '',
     ].join(' ');
 
@@ -19861,27 +19871,7 @@ export class DwainsLayoutCard extends LitElement {
           </div>
         </div>
 
-        ${hasLightControls && lightMode
-          ? this._renderMobileLightControls(state, lightMode, lightModes)
-          : nothing}
 
-        ${hasCoverPosition ? html`
-          <div
-            class="mobile-cover-position"
-            style=${`--cover-position: ${coverPosition}%;`}
-            @click=${(event: Event) => event.stopPropagation()}
-            @keydown=${(event: KeyboardEvent) => event.stopPropagation()}
-          >
-            <input
-              type="range"
-              min="0"
-              max="100"
-              .value=${String(coverPosition)}
-              aria-label=${`${coverPosition} %`}
-              @change=${(event: Event) => this._handleMobileCoverPosition(event, state)}
-            />
-          </div>
-        ` : nothing}
 
         ${hasInlineSelect ? this._renderMobileEntitySelect(state, domain) : nothing}
       </article>
