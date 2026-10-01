@@ -15530,6 +15530,171 @@ export class DwainsLayoutCard extends LitElement {
       }
       .global-header.room-context .weather-compact ha-icon { color: var(--primary-text-color) !important; }
     }
+    /* 2026-10-01: desktop room-view follow-up — final scoped overrides. */
+    @media (min-width: 769px) {
+      /* The room content must span exactly the same available width as the global room header. */
+      .area-view.room-ui-v2 {
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+      }
+      .area-view.room-ui-v2 > .mobile-entities-section,
+      .area-view.room-ui-v2 > .mobile-entities-section > .mobile-domain-group,
+      .area-view.room-ui-v2 > .mobile-entities-section > .mobile-domain-group > .mobile-entity-rail {
+        width: 100% !important;
+        max-width: none !important;
+        box-sizing: border-box !important;
+      }
+
+      /* Status badges: another ~30% increase over the previous room-view size. */
+      .room-ui-v2 .room-header-summary {
+        min-height: 30px !important;
+        gap: 6px !important;
+        align-items: center !important;
+      }
+      .room-ui-v2 .room-summary-item.status {
+        min-height: 30px !important;
+        padding: 5px 10px !important;
+        gap: 5px !important;
+        font-size: 14px !important;
+        line-height: 1 !important;
+        box-sizing: border-box !important;
+      }
+      .room-ui-v2 .room-summary-item.status ha-icon {
+        --mdc-icon-size: 21px !important;
+      }
+
+      /* Select/input_select: strict two-row layout. Row 1 = icon + name; row 2 = selector. */
+      .room-ui-v2 .mobile-entity-card.has-inline-select {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) !important;
+        grid-template-rows: 46px 42px !important;
+        align-content: center !important;
+        gap: 7px !important;
+        min-height: 123px !important;
+        height: auto !important;
+        padding: 9px 12px !important;
+        overflow: hidden !important;
+      }
+      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-main {
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        min-height: 46px !important;
+        height: 46px !important;
+        display: grid !important;
+        grid-template-columns: 46px minmax(0, 1fr) !important;
+        gap: 11px !important;
+        align-items: center !important;
+        position: relative !important;
+        z-index: 2 !important;
+      }
+      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-icon {
+        position: static !important;
+        inset: auto !important;
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+        width: 46px !important;
+        height: 46px !important;
+        min-width: 46px !important;
+        min-height: 46px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        align-self: center !important;
+        transform: none !important;
+        z-index: 3 !important;
+      }
+      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-icon ha-icon {
+        --mdc-icon-size: 24px !important;
+      }
+      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-content {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+        min-width: 0 !important;
+        height: 46px !important;
+        margin: 0 !important;
+        align-self: center !important;
+        justify-content: center !important;
+      }
+      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-right {
+        display: none !important;
+      }
+      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-select {
+        grid-column: 1 !important;
+        grid-row: 2 !important;
+        position: relative !important;
+        width: 100% !important;
+        height: 42px !important;
+        min-height: 42px !important;
+        margin: 0 !important;
+        z-index: 1 !important;
+      }
+      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-select select {
+        position: relative !important;
+        z-index: 1 !important;
+        width: 100% !important;
+        height: 42px !important;
+        box-sizing: border-box !important;
+      }
+      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-select-chevron {
+        position: absolute !important;
+        top: 50% !important;
+        right: 12px !important;
+        left: auto !important;
+        bottom: auto !important;
+        z-index: 2 !important;
+        transform: translateY(-50%) !important;
+      }
+
+      /* Sidebar: reserve one slot for the ellipsis whenever badges are hidden. */
+      .sidebar .room-area-button .area-info-badges {
+        min-width: 0 !important;
+        max-width: 100% !important;
+        overflow: visible !important;
+        flex-wrap: nowrap !important;
+      }
+      .sidebar .room-area-button .info-badge-overflow {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex: 0 0 18px !important;
+        width: 18px !important;
+        min-width: 18px !important;
+        height: 19px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        color: var(--secondary-text-color) !important;
+        font-size: 17px !important;
+        font-weight: 900 !important;
+        line-height: 1 !important;
+        letter-spacing: 1px !important;
+      }
+
+      /* Room header meta: move the whole time/weather cluster slightly left and tighten the gap. */
+      .global-header.room-context {
+        padding-right: 36px !important;
+      }
+      .global-header.room-context .header-time-weather {
+        gap: 5px !important;
+        transform: translateX(-2px) !important;
+      }
+      .global-header.room-context .weather-compact {
+        background: var(--secondary-background-color) !important;
+        color: var(--primary-text-color) !important;
+        box-shadow: none !important;
+      }
+      .global-header.room-context .weather-compact .weather-icon-compact ha-icon {
+        color: var(--primary-text-color) !important;
+      }
+    }
   `;
 
   connectedCallback() {
@@ -16753,8 +16918,8 @@ export class DwainsLayoutCard extends LitElement {
     const hasPicture = Boolean(area.picture);
     const allBadges = this._getAreaStatusBadges(areaData);
     const badgeLimit = this._sidebarAreaBadgeLimit();
-    const badges = allBadges.slice(0, badgeLimit);
     const hasMoreBadges = allBadges.length > badgeLimit;
+    const badges = allBadges.slice(0, hasMoreBadges ? Math.max(0, badgeLimit - 1) : badgeLimit);
     const sensorSummary = [
       areaData.temperature,
       areaData.humidity,
@@ -20206,7 +20371,9 @@ export class DwainsLayoutCard extends LitElement {
     const replacementConfig = this._areaReplacementCardConfig(entity.entity_id);
     if (replacementConfig) return this._renderAreaReplacementCard(entity.entity_id, replacementConfig);
 
-    const icon = this.hass.entities?.[entity.entity_id]?.icon || state.attributes?.icon || getDeviceClassIcon(domain, deviceClass) || getDomainIcon(domain);
+    const icon = ['select', 'input_select'].includes(domain)
+      ? getDomainIcon(domain)
+      : this.hass.entities?.[entity.entity_id]?.icon || state.attributes?.icon || getDeviceClassIcon(domain, deviceClass) || getDomainIcon(domain);
     const name = state.attributes?.friendly_name || this.hass.entities?.[entity.entity_id]?.name || entity.entity_id;
     const active = this._isEntityActiveForUi(state, domain);
     const actionKind = this._mobileEntityActionKind(domain);
@@ -20709,8 +20876,16 @@ export class DwainsLayoutCard extends LitElement {
       return this._eventLastTriggeredText(state);
     }
 
-    if (domain === 'light' && state.state === 'on' && typeof state.attributes?.brightness === 'number') {
-      return this._t('entity.brightness', { value: Math.round((state.attributes.brightness / 255) * 100) });
+    if (domain === 'light') {
+      const lightState = String(state.state || '').toLowerCase();
+      if (lightState === 'on' || lightState === 'off') {
+        const status = lightState === 'on' ? 'An' : 'Aus';
+        const brightness = state.attributes?.brightness;
+        if (typeof brightness === 'number' && Number.isFinite(brightness)) {
+          return `${status} · ${formatValueWithUnit(Math.round((brightness / 255) * 100), '%')}`;
+        }
+        return status;
+      }
     }
 
     if (domain === 'cover' && typeof state.attributes?.current_position === 'number') {
