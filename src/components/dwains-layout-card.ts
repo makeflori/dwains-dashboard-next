@@ -19737,8 +19737,8 @@ export class DwainsLayoutCard extends LitElement {
     return ['select', 'input_select'].includes(domain) && Array.isArray(state?.attributes?.options);
   }
 
-  private _renderMobileEntitySelect(state: any, domain: string) {
-    const options = this._mobileEntitySelectOptions(state);
+  private _renderMobileEntitySelect(_state: any, domain: string) {
+    const options = this._mobileEntitySelectOptions(_state);
     const selected = String(state?.state || '');
     const unavailable = ['unavailable', 'unknown'].includes(selected.toLowerCase()) || options.length === 0;
 
@@ -20924,15 +20924,6 @@ export class DwainsLayoutCard extends LitElement {
           )}
         </div>
       </div>
-    `;
-  }
-
-  private _renderFavoriteTile(entityId: string) {
-    const state = this.hass?.states[entityId];
-    if (!state) return nothing;
-
-    return html`
-      <dwains-dashboard-next-tile-host class="favorite-tile-wrapper" .hass=${this.hass} entity="${entityId}"></dwains-dashboard-next-tile-host>
     `;
   }
 
