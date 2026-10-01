@@ -15234,98 +15234,99 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
-    /* 2026-10-01: desktop room/entity scale — preserve internal proportions. */
+    /* 2026-10-01: desktop room/entity scale — 20% larger, four columns. */
     @media (min-width: 769px) {
-      /* Room entities: 4 → 3 columns and proportional internal scaling. */
+      /* Keep four columns. The available desktop width is used for wider cards. */
       .room-ui-v2 .mobile-entity-rail,
       .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-rail {
-        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
         gap: 10px !important;
       }
 
+      /* Approx. 20% enlargement of the existing room-card proportions. */
       .room-ui-v2 .mobile-entity-card,
       .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-card {
-        min-height: 78px !important;
-        padding: 13px !important;
+        min-height: 72px !important;
+        padding: 12px !important;
         border-radius: 10px !important;
         box-sizing: border-box !important;
       }
 
       .room-ui-v2 .mobile-entity-main {
-        min-height: 49px !important;
-        grid-template-columns: 49px minmax(0, 1fr) auto !important;
-        gap: 12px !important;
+        min-height: 46px !important;
+        grid-template-columns: 46px minmax(0, 1fr) auto !important;
+        gap: 11px !important;
       }
 
       .room-ui-v2 .mobile-entity-main.editing-inline {
-        grid-template-columns: 31px 49px minmax(0, 1fr) 44px !important;
-        gap: 9px !important;
+        grid-template-columns: 29px 46px minmax(0, 1fr) 42px !important;
+        gap: 8px !important;
       }
 
       .room-ui-v2 .mobile-entity-icon {
-        width: 49px !important;
-        height: 49px !important;
+        width: 46px !important;
+        height: 46px !important;
         border-radius: 10px !important;
       }
 
       .room-ui-v2 .mobile-entity-icon ha-icon {
-        --mdc-icon-size: 26px !important;
+        --mdc-icon-size: 24px !important;
       }
 
       .room-ui-v2 .mobile-entity-content {
-        height: 49px !important;
+        height: 46px !important;
         gap: 3px !important;
       }
 
       .room-ui-v2 .mobile-entity-name {
-        font-size: 15.6px !important;
+        font-size: 14.4px !important;
         line-height: 1.15 !important;
       }
 
       .room-ui-v2 .mobile-entity-state {
-        font-size: 13.7px !important;
+        font-size: 12.7px !important;
         line-height: 1.1 !important;
       }
 
       .room-ui-v2 .mobile-entity-right {
-        gap: 6px !important;
-        max-width: 112px !important;
+        gap: 5px !important;
+        max-width: 104px !important;
       }
 
       .room-ui-v2 .mobile-entity-toggle {
-        width: 49px !important;
-        height: 29px !important;
+        width: 46px !important;
+        height: 27px !important;
       }
 
       .room-ui-v2 .mobile-entity-toggle::before {
-        width: 23px !important;
-        height: 23px !important;
+        width: 21px !important;
+        height: 21px !important;
         margin-left: 3px !important;
       }
 
       .room-ui-v2 .mobile-entity-card.is-active .mobile-entity-toggle::before {
-        transform: translateX(20px) !important;
+        transform: translateX(19px) !important;
       }
 
       .room-ui-v2 .mobile-entity-card.has-light-controls,
       .room-ui-v2 .mobile-entity-card.has-cover-position {
-        min-height: 122px !important;
-        padding: 10px 13px !important;
+        min-height: 112px !important;
+        padding: 9px 12px !important;
       }
 
       .room-ui-v2 .mobile-entity-card.has-light-controls .mobile-entity-main,
       .room-ui-v2 .mobile-entity-card.has-cover-position .mobile-entity-main {
-        min-height: 49px !important;
+        min-height: 46px !important;
       }
 
       .room-ui-v2 .mobile-light-control-row {
-        margin-top: 10px !important;
-        min-height: 35px !important;
+        margin-top: 9px !important;
+        min-height: 32px !important;
       }
 
       .room-ui-v2 .mobile-light-control-slider,
       .room-ui-v2 .mobile-cover-position input[type="range"] {
-        height: 6.5px !important;
+        height: 6px !important;
       }
 
       .room-ui-v2 .mobile-light-control-slider::-webkit-slider-runnable-track,
@@ -15333,19 +15334,19 @@ export class DwainsLayoutCard extends LitElement {
       .room-ui-v2 .mobile-light-control-slider::-moz-range-track,
       .room-ui-v2 .mobile-cover-position input[type="range"]::-moz-range-track,
       .room-ui-v2 .mobile-light-control-slider::-moz-range-progress {
-        height: 6.5px !important;
+        height: 6px !important;
       }
 
       .room-ui-v2 .mobile-light-control-slider::-webkit-slider-thumb,
       .room-ui-v2 .mobile-cover-position input[type="range"]::-webkit-slider-thumb {
-        width: 19.5px !important;
-        height: 19.5px !important;
+        width: 18px !important;
+        height: 18px !important;
       }
 
       .room-ui-v2 .mobile-light-control-slider::-moz-range-thumb,
       .room-ui-v2 .mobile-cover-position input[type="range"]::-moz-range-thumb {
-        width: 17px !important;
-        height: 17px !important;
+        width: 16px !important;
+        height: 16px !important;
       }
 
       .room-ui-v2 .mobile-light-mode-buttons {
@@ -15353,50 +15354,50 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .room-ui-v2 .mobile-light-mode-button {
-        width: 36px !important;
-        height: 36px !important;
-        border-radius: 10px !important;
+        width: 34px !important;
+        height: 34px !important;
+        border-radius: 9px !important;
       }
 
       .room-ui-v2 .mobile-light-mode-button ha-icon {
-        --mdc-icon-size: 21px !important;
+        --mdc-icon-size: 20px !important;
       }
 
       .room-ui-v2 .mobile-cover-actions {
-        min-height: 39px !important;
+        min-height: 36px !important;
         padding: 3px !important;
         gap: 3px !important;
       }
 
       .room-ui-v2 .mobile-cover-action {
-        width: 33px !important;
-        height: 33px !important;
+        width: 31px !important;
+        height: 31px !important;
       }
 
       .room-ui-v2 .mobile-cover-action ha-icon {
-        --mdc-icon-size: 21px !important;
+        --mdc-icon-size: 20px !important;
       }
 
       .room-ui-v2 .mobile-entity-card.has-inline-select {
-        min-height: 133px !important;
-        padding: 10px 13px !important;
-        gap: 8px !important;
+        min-height: 123px !important;
+        padding: 9px 12px !important;
+        gap: 7px !important;
       }
 
       .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-main {
-        min-height: 49px !important;
-        grid-template-columns: 49px minmax(0, 1fr) !important;
-        gap: 12px !important;
+        min-height: 46px !important;
+        grid-template-columns: 46px minmax(0, 1fr) !important;
+        gap: 11px !important;
       }
 
       .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-icon {
-        width: 49px !important;
-        height: 49px !important;
-        flex: 0 0 49px !important;
+        width: 46px !important;
+        height: 46px !important;
+        flex: 0 0 46px !important;
       }
 
       .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-icon ha-icon {
-        --mdc-icon-size: 26px !important;
+        --mdc-icon-size: 24px !important;
       }
 
       .room-ui-v2 .mobile-entity-select {
@@ -15404,24 +15405,24 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .room-ui-v2 .mobile-entity-select select {
-        height: 44px !important;
-        padding: 0 44px 0 16px !important;
-        font-size: 15.6px !important;
-        line-height: 44px !important;
+        height: 42px !important;
+        padding: 0 42px 0 15px !important;
+        font-size: 14.4px !important;
+        line-height: 42px !important;
       }
 
       .room-ui-v2 .mobile-entity-select .mobile-select-chevron {
-        right: 13px !important;
-        --mdc-icon-size: 21px !important;
+        right: 12px !important;
+        --mdc-icon-size: 20px !important;
       }
 
-      /* Sidebar room tiles: proportional 30% desktop scale; Home stays unchanged. */
+      /* Sidebar room tiles: approx. 20% larger than the original desktop scale. */
       .sidebar .area-list {
         padding: 10px !important;
       }
 
       .sidebar .floor-section {
-        margin-bottom: 13px !important;
+        margin-bottom: 12px !important;
       }
 
       .sidebar .floor-header {
@@ -15430,60 +15431,60 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .sidebar .area-button:not(.home-button) {
-        grid-template-columns: 60px minmax(0, 1fr) auto 29px !important;
-        gap: 16px !important;
-        min-height: 88px !important;
+        grid-template-columns: 55px minmax(0, 1fr) auto 27px !important;
+        gap: 14px !important;
+        min-height: 81px !important;
         height: auto !important;
-        padding: 13px 16px !important;
+        padding: 12px 14px !important;
         border-radius: 10px !important;
       }
 
       .sidebar .area-button:not(.home-button) .area-icon,
       .sidebar .area-button:not(.home-button) .area-main-icon {
-        width: 60px !important;
-        height: 60px !important;
+        width: 55px !important;
+        height: 55px !important;
         border-radius: 10px !important;
       }
 
       .sidebar .area-button:not(.home-button) .area-icon ha-icon,
       .sidebar .area-button:not(.home-button) .area-main-icon ha-icon {
-        --mdc-icon-size: 31px !important;
+        --mdc-icon-size: 29px !important;
       }
 
       .sidebar .area-button:not(.home-button) .area-name {
-        font-size: 19.5px !important;
+        font-size: 18px !important;
         line-height: 1.1 !important;
         margin: 0 !important;
       }
 
       .sidebar .area-button:not(.home-button) .area-sensors {
-        margin-top: 5px !important;
-        font-size: 15.6px !important;
+        margin-top: 4px !important;
+        font-size: 14.4px !important;
         line-height: 1.1 !important;
       }
 
       .sidebar .area-button:not(.home-button) .area-info-badges {
-        max-width: 135px !important;
-        gap: 6px !important;
+        max-width: 124px !important;
+        gap: 5px !important;
       }
 
       .sidebar .area-button:not(.home-button) .info-badge {
-        min-width: 31px !important;
-        height: 29px !important;
-        padding: 0 9px !important;
-        font-size: 14.3px !important;
+        min-width: 30px !important;
+        height: 28px !important;
+        padding: 0 8px !important;
+        font-size: 13.5px !important;
       }
 
       .sidebar .area-button:not(.home-button) .info-badge ha-icon {
-        --mdc-icon-size: 17px !important;
+        --mdc-icon-size: 16px !important;
       }
 
       .sidebar .area-button:not(.home-button) .badge-count {
-        font-size: 14.3px !important;
+        font-size: 13.5px !important;
       }
 
       .sidebar .area-button:not(.home-button) .area-menu-chevron {
-        --mdc-icon-size: 29px !important;
+        --mdc-icon-size: 27px !important;
       }
     }
 
