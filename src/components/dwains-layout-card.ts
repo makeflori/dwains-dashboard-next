@@ -4079,10 +4079,211 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
+    /* Desktop sizing: scale area entities and sidebar room tiles by ~30%.
+       The mobile layout intentionally remains unchanged. */
+    @media (min-width: 769px) {
+      .area-view .mobile-entity-rail,
+      .area-view .mobile-entities-section.layout-grid .mobile-entity-rail {
+        grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
+        gap: 18px;
+      }
+
+      .area-view .mobile-entity-card,
+      .area-view .mobile-entities-section.layout-grid .mobile-entity-card {
+        min-height: 198px;
+        padding: 21px;
+        border-radius: 16px;
+      }
+
+      .area-view .mobile-entity-card.has-inline-select {
+        min-height: 231px;
+      }
+
+      .area-view .mobile-entity-icon,
+      .area-view .mobile-entities-section.layout-grid .mobile-entity-icon {
+        width: 49px;
+        height: 49px;
+        border-radius: 14px;
+      }
+
+      .area-view .mobile-entity-icon ha-icon {
+        --mdc-icon-size: 27px;
+      }
+
+      .area-view .mobile-entity-name {
+        font-size: 20px;
+      }
+
+      .area-view .mobile-entity-status {
+        font-size: 14px;
+      }
+
+      .area-view .mobile-entity-toggle {
+        width: 49px;
+        height: 29px;
+      }
+
+      .area-view .mobile-entity-toggle::before {
+        width: 23px;
+        height: 23px;
+        margin-left: 3px;
+      }
+
+      .area-view .mobile-entity-card.is-active .mobile-entity-toggle::before {
+        transform: translateX(20px);
+      }
+
+      .area-view .mobile-entity-more,
+      .area-view .mobile-scene-action,
+      .area-view .mobile-lock-action {
+        width: 39px;
+        height: 39px;
+      }
+
+      .area-view .mobile-entity-more ha-icon,
+      .area-view .mobile-scene-action ha-icon,
+      .area-view .mobile-lock-action ha-icon {
+        --mdc-icon-size: 22px;
+      }
+
+      .area-view .mobile-cover-actions,
+      .area-view .mobile-entities-section.layout-grid .mobile-cover-actions {
+        min-height: 42px;
+        padding: 4px;
+        gap: 4px;
+      }
+
+      .area-view .mobile-cover-action,
+      .area-view .mobile-entities-section.layout-grid .mobile-cover-action {
+        width: 34px;
+        height: 34px;
+      }
+
+      .area-view .mobile-cover-action ha-icon,
+      .area-view .mobile-entities-section.layout-grid .mobile-cover-action ha-icon {
+        --mdc-icon-size: 21px;
+      }
+
+      .area-view .mobile-entity-card.has-inline-select .mobile-entity-select select {
+        height: 44px;
+        padding: 0 44px 0 16px;
+        font-size: 16px;
+        line-height: 44px;
+      }
+
+      .area-view .mobile-entity-card.has-inline-select .mobile-entity-select ha-icon {
+        right: 13px;
+        --mdc-icon-size: 23px;
+      }
+
+      .area-view .mobile-domain-header {
+        gap: 10px;
+        margin-bottom: 16px;
+      }
+
+      .area-view .mobile-domain-title-copy {
+        gap: 9px;
+      }
+
+      .area-view .mobile-domain-title-label {
+        font-size: 26px;
+      }
+
+      .area-view .mobile-domain-count {
+        font-size: 16px;
+      }
+
+      .area-view .mobile-entities-section {
+        gap: 36px;
+      }
+
+      .area-view .dd-generated-card-wrap.editing {
+        flex-basis: 213px;
+      }
+
+      /* Sidebar room tiles */
+      .sidebar .area-list {
+        padding: 10px;
+      }
+
+      .sidebar .floor-section {
+        margin-bottom: 21px;
+      }
+
+      .sidebar .floor-header {
+        padding: 10px 21px;
+        margin-bottom: 10px;
+      }
+
+      .sidebar .area-button:not(.home-button) {
+        height: 163px;
+        min-height: 163px;
+        padding: 21px;
+        gap: 16px;
+        border-radius: 21px;
+      }
+
+      .sidebar .area-button:not(.home-button) .area-content {
+        gap: 10px;
+      }
+
+      .sidebar .area-button:not(.home-button) .area-top-section {
+        gap: 3px;
+        margin-top: 5px;
+      }
+
+      .sidebar .area-button:not(.home-button) .area-bottom-section {
+        gap: 10px;
+        margin-bottom: 5px;
+      }
+
+      .sidebar .area-button:not(.home-button) .area-main-icon {
+        left: -33px;
+        bottom: -33px;
+        width: 85px;
+        height: 85px;
+      }
+
+      .sidebar .area-button:not(.home-button) .area-main-icon ha-icon {
+        --mdc-icon-size: 52px;
+      }
+
+      .sidebar .area-button:not(.home-button) .area-info-badges {
+        top: 7px;
+        gap: 8px;
+        max-width: calc(59% - 31px);
+      }
+
+      .sidebar .area-button:not(.home-button) .area-name {
+        font-size: 21px;
+        margin-bottom: 3px;
+      }
+
+      .sidebar .area-button:not(.home-button) .area-sensors {
+        font-size: 17px;
+      }
+
+      .sidebar .area-button:not(.home-button) .info-badge {
+        min-width: 31px;
+        height: 29px;
+        padding: 0 8px;
+        border-radius: 16px;
+        font-size: 14px;
+      }
+
+      .sidebar .area-button:not(.home-button) .info-badge ha-icon {
+        --mdc-icon-size: 16px;
+      }
+
+      .sidebar .area-button:not(.home-button) .badge-count {
+        font-size: 14px;
+      }
+    }
+
     @media (min-width: 1200px) {
       .area-view .mobile-entity-rail,
       .area-view .mobile-entities-section.layout-grid .mobile-entity-rail {
-        grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(247px, 1fr));
       }
     }
 
