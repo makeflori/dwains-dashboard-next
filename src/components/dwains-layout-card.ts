@@ -15145,6 +15145,25 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
+    /* 2026-10-01: match the 1.9.0 favorite spacing and shadow behavior. */
+    @media (min-width: 769px) {
+      .room-ui-v2 .room-favorites-block:not(.is-collapsed) .room-favorites-header {
+        margin-bottom: 0 !important;
+      }
+
+      /* Home favorites must not use paint containment, otherwise their card shadows are clipped. */
+      .home-favorites-section {
+        content-visibility: visible !important;
+        contain: layout style !important;
+        overflow: visible !important;
+      }
+
+      .home-favorites-section .favorites-grid,
+      .home-favorites-section .favorite-card-wrapper {
+        overflow: visible !important;
+      }
+    }
+
   `;
 
   connectedCallback() {
@@ -19821,24 +19840,12 @@ export class DwainsLayoutCard extends LitElement {
     const unknownIsNormal = domain === 'scene' || domain === 'event';
     const hasInlineSelect = this._mobileEntityHasInlineSelect(domain, state);
 
-    const lightModes = domain === 'light' ? this._lightControlModesForState(state) : [];
-    const lightMode = domain === 'light'
-      ? this._lightControlModeForState(entity.entity_id, state, lightModes)
-      : null;
-    const hasLightControls =
-      false &&
-      domain === 'light' &&
-      String(state.state || '').toLowerCase() === 'on' &&
-      lightModes.length > 0 &&
-      lightMode !== null;
-    const statusText = domain === 'light' && lightMode
-      ? this._lightControlStatus(state, lightMode)
-      : this._mobileEntityStatusText(state, domain);
-
-    const coverPosition = domain === 'cover' && typeof state.attributes?.current_position === 'number'
-      ? Math.max(0, Math.min(100, Math.round(Number(state.attributes.current_position))))
-      : null;
-    const hasCoverPosition = false && coverPosition !== null;
+    // 1.9.0 interaction model: lights and covers use their normal action buttons,
+    // without inline sliders or light-mode buttons.
+    const hasLightControls = false;
+    const lightMode = null;
+    const statusText = this._mobileEntityStatusText(state, domain);
+    const hasCoverPosition = false;
 
     const classes = [
       'mobile-entity-card',
