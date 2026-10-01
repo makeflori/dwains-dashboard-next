@@ -14762,6 +14762,189 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
+
+    /* 2026-10-01 entity/favorites refinement: compact vertical rhythm and clean controls. */
+    @media (min-width: 769px) {
+      /* Room entity cards: slightly larger content with symmetric 10px inner spacing. */
+      .room-ui-v2 .mobile-entity-card,
+      .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-card {
+        min-height: 60px !important;
+        padding: 10px !important;
+        box-sizing: border-box !important;
+      }
+
+      .room-ui-v2 .mobile-entity-main {
+        min-height: 38px !important;
+        align-items: center !important;
+      }
+
+      .room-ui-v2 .mobile-entity-icon {
+        width: 38px !important;
+        height: 38px !important;
+      }
+
+      .room-ui-v2 .mobile-entity-content {
+        height: 38px !important;
+      }
+
+      /* Expanded control cards: vertical spacing above and below the control row is equal. */
+      .room-ui-v2 .mobile-entity-card.has-light-controls,
+      .room-ui-v2 .mobile-entity-card.has-cover-position {
+        min-height: 0 !important;
+        height: auto !important;
+        padding: 8px 10px !important;
+        justify-content: flex-start !important;
+      }
+
+      .room-ui-v2 .mobile-entity-card.has-light-controls .mobile-entity-main,
+      .room-ui-v2 .mobile-entity-card.has-cover-position .mobile-entity-main {
+        min-height: 38px !important;
+      }
+
+      .mobile-light-control-row {
+        margin-top: 8px !important;
+        margin-bottom: 0 !important;
+        min-height: 27px !important;
+        align-items: center !important;
+      }
+
+      .mobile-light-control-slider,
+      .mobile-cover-position input[type="range"] {
+        height: 8px !important;
+      }
+
+      .mobile-light-control-slider::-webkit-slider-runnable-track,
+      .mobile-cover-position input[type="range"]::-webkit-slider-runnable-track {
+        height: 8px !important;
+        border-radius: 999px !important;
+      }
+
+      .mobile-light-control-slider::-moz-range-track,
+      .mobile-cover-position input[type="range"]::-moz-range-track {
+        height: 8px !important;
+        border-radius: 999px !important;
+      }
+
+      .mobile-light-control-slider::-moz-range-progress {
+        height: 8px !important;
+        border-radius: 999px !important;
+      }
+
+      .mobile-cover-position {
+        margin-top: 8px !important;
+        margin-bottom: 0 !important;
+        min-height: 8px !important;
+      }
+
+      .mobile-cover-position input[type="range"] {
+        display: block !important;
+      }
+
+      /* Select cards: the entity icon stays in the same 38px icon container as every other entity. */
+      .room-ui-v2 .mobile-entity-card.has-inline-select {
+        min-height: 102px !important;
+        height: auto !important;
+        padding: 8px 10px !important;
+        gap: 6px !important;
+      }
+
+      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-main {
+        min-height: 38px !important;
+        grid-template-columns: 38px minmax(0, 1fr) !important;
+        gap: 9px !important;
+      }
+
+      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-icon {
+        width: 38px !important;
+        height: 38px !important;
+        flex: 0 0 38px !important;
+        position: static !important;
+        inset: auto !important;
+        transform: none !important;
+        align-self: center !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+
+      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-icon ha-icon {
+        --mdc-icon-size: 20px !important;
+      }
+
+      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-right {
+        display: none !important;
+      }
+
+      /* Favorites: same compact rhythm on Home and in rooms. */
+      .home-favorites-section .favorites-header {
+        margin-bottom: 8px !important;
+      }
+
+      .home-favorites-section .favorites-grid {
+        overflow: visible !important;
+        padding: 2px 0 4px !important;
+      }
+
+      .home-favorites-section .favorites-section,
+      .home-favorites-section .favorite-card-wrapper,
+      .room-favorites-content .favorites-section,
+      .room-favorites-content .favorite-card-wrapper {
+        overflow: visible !important;
+      }
+
+      .room-favorites-content {
+        padding-top: 2px !important;
+      }
+
+      .home-favorites-section .favorite-card-wrapper,
+      .room-favorites-content .favorite-card-wrapper {
+        overflow: visible !important;
+      }
+
+      /* A value-only favorite uses exactly the same visual slot as the light toggle. */
+      .home-favorites-section .favorite-status-pill,
+      .room-favorites-content .favorite-status-pill {
+        width: 38px !important;
+        height: 22px !important;
+        box-sizing: border-box !important;
+        flex: 0 0 38px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 999px !important;
+        color: var(--favorite-color) !important;
+        background: color-mix(in srgb, var(--favorite-color) 12%, var(--card-background-color)) !important;
+        font-size: 10px !important;
+        font-weight: 850 !important;
+        line-height: 1 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+      }
+
+      .home-favorites-section .favorite-end,
+      .room-favorites-content .favorite-end {
+        min-width: 38px !important;
+      }
+
+      /* With a toggle, the area line is the only secondary text; no duplicate state. */
+      .home-favorites-section .favorite-meta,
+      .room-favorites-content .favorite-meta {
+        gap: 0 !important;
+      }
+
+      /* Keep the same title-to-card distance as the other generated entity groups. */
+      .room-favorites-content .favorites-grid {
+        padding-top: 2px !important;
+      }
+
+      /* Preserve the shadow around the Home cards instead of clipping it at the card edge. */
+      .home-favorites-section .favorite-card-wrapper,
+      .room-favorites-content .favorite-card-wrapper {
+        clip-path: none !important;
+      }
+    }
+
   `;
 
   connectedCallback() {
@@ -17654,8 +17837,6 @@ export class DwainsLayoutCard extends LitElement {
           >${name}</div>
           <div class="favorite-meta">
             ${areaName ? html`<span class="favorite-area">${areaName}</span>` : nothing}
-            ${areaName && formattedState ? html`<span class="favorite-meta-separator">·</span>` : nothing}
-            ${formattedState ? html`<span class="favorite-inline-state">${formattedState}</span>` : nothing}
           </div>
         </div>
         <div class="favorite-end">
@@ -17670,6 +17851,8 @@ export class DwainsLayoutCard extends LitElement {
               >
                 <ha-icon icon=${this._favoriteQuickIcon(state, domain)}></ha-icon>
               </button>
+            ` : formattedState ? html`
+              <div class="favorite-status-pill" title=${formattedState}>${formattedState}</div>
             ` : nothing}
         </div>
       </article>
@@ -19426,7 +19609,9 @@ export class DwainsLayoutCard extends LitElement {
     const replacementConfig = this._areaReplacementCardConfig(entity.entity_id);
     if (replacementConfig) return this._renderAreaReplacementCard(entity.entity_id, replacementConfig);
 
-    const icon = this.hass.entities?.[entity.entity_id]?.icon || state.attributes?.icon || getDeviceClassIcon(domain, deviceClass) || getDomainIcon(domain);
+    const icon = ['select', 'input_select'].includes(domain)
+      ? 'mdi:format-list-bulleted'
+      : this.hass.entities?.[entity.entity_id]?.icon || state.attributes?.icon || getDeviceClassIcon(domain, deviceClass) || getDomainIcon(domain);
     const name = state.attributes?.friendly_name || this.hass.entities?.[entity.entity_id]?.name || entity.entity_id;
     const active = this._isEntityActiveForUi(state, domain);
     const actionKind = this._mobileEntityActionKind(domain);
