@@ -15164,14 +15164,8 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
-    /* 2026-10-01: v1.9.0 entity controls + Favorites spacing/shadow fix. */
+    /* 2026-10-01: Favorites spacing and Home card-shadow fix. */
     @media (min-width: 769px) {
-      /* Defensive: inline controls are no longer part of the v1.9.0 UI. */
-      .room-ui-v2 .mobile-light-control-row,
-      .room-ui-v2 .mobile-cover-position {
-        display: none !important;
-      }
-
       /* Cards directly follow the room Favorites header. */
       .room-favorites-block:not(.is-collapsed) .room-favorites-header {
         margin-bottom: 0 !important;
@@ -15181,7 +15175,7 @@ export class DwainsLayoutCard extends LitElement {
         padding-top: 0 !important;
       }
 
-      /* Home Favorites use the same visible per-card shadow as room Favorites. */
+      /* Home Favorites: keep individual card shadows visible, as on room pages. */
       .home-favorites-section,
       .home-favorites-section .favorites-grid,
       .home-favorites-section .favorites-section {
@@ -19871,7 +19865,12 @@ export class DwainsLayoutCard extends LitElement {
 
     // 1.9.0 interaction model: lights and covers use their normal action buttons,
     // without inline sliders or light-mode buttons.
+    const lightModes: LightControlMode[] = [];
+    const lightMode: LightControlMode | null = null;
+    const hasLightControls = false as boolean;
     const statusText = this._mobileEntityStatusText(state, domain);
+    const coverPosition: number | null = null;
+    const hasCoverPosition = false as boolean;
 
     const classes = [
       'mobile-entity-card',
@@ -19880,6 +19879,8 @@ export class DwainsLayoutCard extends LitElement {
       `action-${actionKind}`,
       active ? 'is-active' : 'is-off',
       hasInlineSelect ? 'has-inline-select' : '',
+      hasLightControls ? 'has-light-controls' : '',
+      hasCoverPosition ? 'has-cover-position' : '',
       unavailable && !unknownIsNormal ? 'is-unavailable' : '',
     ].join(' ');
 
@@ -19927,6 +19928,28 @@ export class DwainsLayoutCard extends LitElement {
             ` : (actionKind === 'more' ? nothing : this._renderMobileEntityActions(state, domain, active))}
           </div>
         </div>
+
+        ${hasLightControls && lightMode
+          ? this._renderMobileLightControls(state, lightMode, lightModes)
+          : nothing}
+
+        ${hasCoverPosition ? html`
+          <div
+            class="mobile-cover-position"
+            style=${`--cover-position: ${coverPosition}%;`}
+            @click=${(event: Event) => event.stopPropagation()}
+            @keydown=${(event: KeyboardEvent) => event.stopPropagation()}
+          >
+            <input
+              type="range"
+              min="0"
+              max="100"
+              .value=${String(coverPosition)}
+              aria-label=${`${coverPosition} %`}
+              @change=${(event: Event) => this._handleMobileCoverPosition(event, state)}
+            />
+          </div>
+        ` : nothing}
 
         ${hasInlineSelect ? this._renderMobileEntitySelect(state, domain) : nothing}
       </article>
