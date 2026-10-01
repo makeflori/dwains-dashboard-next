@@ -19842,10 +19842,12 @@ export class DwainsLayoutCard extends LitElement {
 
     // 1.9.0 interaction model: lights and covers use their normal action buttons,
     // without inline sliders or light-mode buttons.
-    const hasLightControls = false;
-    const lightMode = null;
+    const lightModes: LightControlMode[] = [];
+    const lightMode: LightControlMode | null = null;
+    const hasLightControls = false as boolean;
     const statusText = this._mobileEntityStatusText(state, domain);
-    const hasCoverPosition = false;
+    const coverPosition: number | null = null;
+    const hasCoverPosition = false as boolean;
 
     const classes = [
       'mobile-entity-card',
