@@ -15187,6 +15187,35 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
+
+    /* 2026-10-01: Home favorites should match the room-card shadow treatment. */
+    @media (min-width: 769px) {
+      .home-favorites-section .favorites-header {
+        margin-bottom: 0 !important;
+      }
+
+      .home-favorites-section .favorites-grid {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+      }
+
+      /* Do not let Home-section paint/content containment clip card shadows. */
+      .home-favorites-section {
+        content-visibility: visible !important;
+        contain: none !important;
+        overflow: visible !important;
+      }
+
+      .home-favorites-section .favorites-grid {
+        overflow: visible !important;
+      }
+
+      .home-favorites-section .favorite-card-wrapper {
+        contain: layout style !important;
+        overflow: visible !important;
+      }
+    }
+
   `;
 
   connectedCallback() {
@@ -19863,14 +19892,9 @@ export class DwainsLayoutCard extends LitElement {
     const unknownIsNormal = domain === 'scene' || domain === 'event';
     const hasInlineSelect = this._mobileEntityHasInlineSelect(domain, state);
 
-    // 1.9.0 interaction model: lights and covers use their normal action buttons,
-    // without inline sliders or light-mode buttons.
-    const lightModes: LightControlMode[] = [];
-    const lightMode: LightControlMode | null = null;
-    const hasLightControls = false as boolean;
+    // 1.9.0 interaction model: lights use their normal toggle;
+    // covers use their normal open/stop/close buttons.
     const statusText = this._mobileEntityStatusText(state, domain);
-    const coverPosition: number | null = null;
-    const hasCoverPosition = false as boolean;
 
     const classes = [
       'mobile-entity-card',
@@ -19879,8 +19903,6 @@ export class DwainsLayoutCard extends LitElement {
       `action-${actionKind}`,
       active ? 'is-active' : 'is-off',
       hasInlineSelect ? 'has-inline-select' : '',
-      hasLightControls ? 'has-light-controls' : '',
-      hasCoverPosition ? 'has-cover-position' : '',
       unavailable && !unknownIsNormal ? 'is-unavailable' : '',
     ].join(' ');
 
@@ -19929,27 +19951,6 @@ export class DwainsLayoutCard extends LitElement {
           </div>
         </div>
 
-        ${hasLightControls && lightMode
-          ? this._renderMobileLightControls(state, lightMode, lightModes)
-          : nothing}
-
-        ${hasCoverPosition ? html`
-          <div
-            class="mobile-cover-position"
-            style=${`--cover-position: ${coverPosition}%;`}
-            @click=${(event: Event) => event.stopPropagation()}
-            @keydown=${(event: KeyboardEvent) => event.stopPropagation()}
-          >
-            <input
-              type="range"
-              min="0"
-              max="100"
-              .value=${String(coverPosition)}
-              aria-label=${`${coverPosition} %`}
-              @change=${(event: Event) => this._handleMobileCoverPosition(event, state)}
-            />
-          </div>
-        ` : nothing}
 
         ${hasInlineSelect ? this._renderMobileEntitySelect(state, domain) : nothing}
       </article>
