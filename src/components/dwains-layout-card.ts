@@ -37,7 +37,6 @@ import {
 type DomainCount = StatusDomainCount;
 type DwainsSelectedView = 'home' | 'area' | 'settings';
 type PictureTextTone = 'light' | 'dark';
-type LightControlMode = 'brightness' | 'color_temp' | 'color';
 
 const SETTINGS_HISTORY_STATE_KEY = 'dwainsDashboardNextSettingsOpen';
 type PictureContrastCacheValue = PictureTextTone | 'pending';
@@ -233,7 +232,6 @@ export class DwainsLayoutCard extends LitElement {
   @state() private _settingsPageDescription = '';
   @state() private _confirmationDialog: ConfirmationDialogState | null = null;
   @state() private _housePowerDialogOpen = false;
-  @state() private _lightControlModes: Record<string, LightControlMode> = {};
 
   // Performance optimizations
   private _areaEntitiesCache = new Map<string, { entities: EntityConfig[], timestamp: number }>();
@@ -15051,6 +15049,34 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
+    /* 2026-10-01: final favorites spacing and shadow fix. */
+    @media (min-width: 769px) {
+      .room-favorites-block:not(.is-collapsed) .room-favorites-header {
+        margin-bottom: 2px !important;
+      }
+
+      .room-favorites-content,
+      .room-favorites-content .favorites-grid {
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+      }
+
+      /*
+       * The Home view has a more specific overflow-x rule than the room
+       * view. Override that rule so the individual card shadows are not
+       * clipped at the bottom.
+       */
+      .home-view .home-favorites-section,
+      .home-view .home-favorites-section .favorites-grid,
+      .home-view .home-favorites-section .favorite-card-wrapper {
+        overflow: visible !important;
+      }
+
+      .home-view .home-favorites-section .favorite-card-wrapper {
+        clip-path: none !important;
+      }
+    }
+
     /* 2026-10-01: definitive room-grid/favorite spacing pass. */
     @media (min-width: 769px) {
       /*
@@ -19876,183 +19902,6 @@ export class DwainsLayoutCard extends LitElement {
         ${hasInlineSelect ? this._renderMobileEntitySelect(state, domain) : nothing}
       </article>
     `;
-  }
-
-  private _lightControlModesForState(state: any): LightControlMode[] {
-    const supported = Array.isArray(state?.attributes?.supported_color_modes)
-      ? state.attributes.supported_color_modes.map((value: unknown) => String(value).toLowerCase())
-      : [];
-    const supportedFeatures = Number(state?.attributes?.supported_features || 0);
-    const modes: LightControlMode[] = [];
-
-    const supportsBrightness =
-      typeof state?.attributes?.brightness === 'number' ||
-      (supportedFeatures & 1) !== 0 ||
-      supported.some((mode: string) => mode !== 'onoff');
-
-    if (supportsBrightness) modes.push('brightness');
-    if (supported.includes('color_temp')) modes.push('color_temp');
-    if (supported.some((mode: string) => ['hs', 'xy', 'rgb', 'rgbw', 'rgbww'].includes(mode))) modes.push('color');
-
-    return modes;
-  }
-
-  private _lightControlModeForState(
-    entityId: string,
-    _state: any,
-    modes: LightControlMode[]
-  ): LightControlMode | null {
-    if (!modes.length) return null;
-
-    const selected = this._lightControlModes[entityId];
-    if (selected && modes.includes(selected)) return selected;
-
-    // Keep the room card predictable: brightness is always the initial mode when available.
-    if (modes.includes('brightness')) return 'brightness';
-    if (modes.includes('color_temp')) return 'color_temp';
-    if (modes.includes('color')) return 'color';
-    return modes[0] || null;
-  }
-
-  private _lightControlModeLabel(mode: LightControlMode): string {
-    const de = String(this.hass?.language || '').toLowerCase().startsWith('de');
-    if (mode === 'brightness') return de ? 'Helligkeit' : 'Brightness';
-    if (mode === 'color_temp') return de ? 'Farbtemperatur' : 'Color temperature';
-    return de ? 'Farbe' : 'Color';
-  }
-
-  private _lightControlModeIcon(mode: LightControlMode): string {
-    if (mode === 'brightness') return 'mdi:brightness-6';
-    if (mode === 'color_temp') return 'mdi:thermometer';
-    return 'mdi:palette';
-  }
-
-  private _lightControlStatus(state: any, mode: LightControlMode): string {
-    const value = String(state?.state || '').toLowerCase();
-    if (value === 'off') return this._formatFavoriteState(state);
-
-    if (mode === 'brightness') {
-      const brightness = Number(state?.attributes?.brightness);
-      if (Number.isFinite(brightness)) return `${Math.round((brightness / 255) * 100)} %`;
-    }
-
-    if (mode === 'color_temp') {
-      const kelvin = Number(state?.attributes?.color_temp_kelvin);
-      if (Number.isFinite(kelvin) && kelvin > 0) return `${Math.round(kelvin).toLocaleString(ddLocale(this.hass))} K`;
-    }
-
-    return this._formatFavoriteState(state);
-  }
-
-  private _lightControlSliderConfig(state: any, mode: LightControlMode) {
-    if (mode === 'brightness') {
-      const brightness = Number(state?.attributes?.brightness);
-      const value = Number.isFinite(brightness) ? Math.max(1, Math.min(100, Math.round((brightness / 255) * 100))) : 100;
-      return { min: 1, max: 100, value, step: 1 };
-    }
-
-    if (mode === 'color_temp') {
-      const min = Number(state?.attributes?.min_color_temp_kelvin) || 2000;
-      const max = Number(state?.attributes?.max_color_temp_kelvin) || 6500;
-      const current = Number(state?.attributes?.color_temp_kelvin);
-      const value = Number.isFinite(current) && current > 0 ? Math.max(min, Math.min(max, current)) : Math.round((min + max) / 2);
-      return { min, max, value, step: 50 };
-    }
-
-    const hs = Array.isArray(state?.attributes?.hs_color) ? state.attributes.hs_color : [];
-    const hue = Number(hs[0]);
-    return { min: 0, max: 360, value: Number.isFinite(hue) ? Math.max(0, Math.min(360, hue)) : 30, step: 1 };
-  }
-
-  private _renderMobileLightControls(state: any, mode: LightControlMode, modes: LightControlMode[]) {
-    const config = this._lightControlSliderConfig(state, mode);
-
-    return html`
-      <div
-        class="mobile-light-control-row mode-${mode}"
-        @click=${(event: Event) => event.stopPropagation()}
-        @keydown=${(event: KeyboardEvent) => event.stopPropagation()}
-      >
-        <input
-          class="mobile-light-control-slider"
-          type="range"
-          min=${String(config.min)}
-          max=${String(config.max)}
-          step=${String(config.step)}
-          .value=${String(config.value)}
-          aria-label=${this._lightControlModeLabel(mode)}
-          @change=${(event: Event) => this._handleMobileLightControlChange(event, state, mode)}
-        />
-        <div class="mobile-light-mode-buttons">
-          ${modes.map(candidate => html`
-            <button
-              class="mobile-light-mode-button ${candidate === mode ? 'active' : ''}"
-              type="button"
-              title=${this._lightControlModeLabel(candidate)}
-              aria-label=${this._lightControlModeLabel(candidate)}
-              aria-pressed=${candidate === mode ? 'true' : 'false'}
-              @click=${(event: Event) => this._setMobileLightControlMode(event, state.entity_id, candidate)}
-            >
-              <ha-icon icon=${this._lightControlModeIcon(candidate)}></ha-icon>
-            </button>
-          `)}
-        </div>
-      </div>
-    `;
-  }
-
-  private _setMobileLightControlMode(event: Event, entityId: string, mode: LightControlMode): void {
-    event.stopPropagation();
-    this._lightControlModes = {
-      ...this._lightControlModes,
-      [entityId]: mode,
-    };
-  }
-
-  private async _handleMobileLightControlChange(event: Event, state: any, mode: LightControlMode): Promise<void> {
-    event.stopPropagation();
-    const target = event.currentTarget as HTMLInputElement | null;
-    const entityId = state?.entity_id;
-    if (!target || !entityId) return;
-
-    const numericValue = Number(target.value);
-    if (!Number.isFinite(numericValue)) return;
-
-    const data: Record<string, unknown> = { entity_id: entityId };
-    if (mode === 'brightness') {
-      data.brightness_pct = Math.max(1, Math.min(100, Math.round(numericValue)));
-    } else if (mode === 'color_temp') {
-      data.color_temp_kelvin = Math.round(numericValue);
-    } else {
-      const hs = Array.isArray(state?.attributes?.hs_color) ? state.attributes.hs_color : [];
-      const saturation = Number(hs[1]);
-      data.hs_color = [Math.max(0, Math.min(360, numericValue)), Number.isFinite(saturation) && saturation > 0 ? saturation : 100];
-    }
-
-    try {
-      await this.hass.callService('light', 'turn_on', data);
-    } catch (err) {
-      console.warn(`Failed to update light control for ${entityId}:`, err);
-      this._showToast(this._t('entity.update_failed'));
-    }
-  }
-
-  private async _handleMobileCoverPosition(event: Event, state: any): Promise<void> {
-    event.stopPropagation();
-    const target = event.currentTarget as HTMLInputElement | null;
-    const entityId = state?.entity_id;
-    if (!target || !entityId) return;
-
-    const position = Math.max(0, Math.min(100, Math.round(Number(target.value) || 0)));
-    try {
-      await this.hass.callService('cover', 'set_cover_position', {
-        entity_id: entityId,
-        position,
-      });
-    } catch (err) {
-      console.warn(`Failed to set cover position for ${entityId}:`, err);
-      this._showToast(this._t('entity.update_failed'));
-    }
   }
 
   private _renderTodoListCard(entity: EntityConfig) {
