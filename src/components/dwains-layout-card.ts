@@ -19557,7 +19557,7 @@ export class DwainsLayoutCard extends LitElement {
 
   private _lightControlModeForState(
     entityId: string,
-    state: any,
+    _state: any,
     modes: LightControlMode[]
   ): LightControlMode | null {
     if (!modes.length) return null;
