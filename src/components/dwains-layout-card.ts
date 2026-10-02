@@ -16144,11 +16144,10 @@ export class DwainsLayoutCard extends LitElement {
     }
 
 
-    /* 2026-10-02: restore room layout and refine relative sizing. */
+    /* 2026-10-02: refine room tile proportions and unify weather styling. */
     @media (min-width: 769px) {
       /*
-       * Room-header metric pills: approximately 20% larger than the current
-       * compact version. These are temperature, humidity and power.
+       * Room-header metric pills: keep the larger, readable sizing.
        */
       .room-ui-v2 .room-header .area-header-metrics {
         gap: 8px !important;
@@ -16176,6 +16175,7 @@ export class DwainsLayoutCard extends LitElement {
 
       /*
        * Keep the room-header image at the original 142:76 geometry.
+       * The text stack next to it must fit inside the same 76px height.
        */
       .room-ui-v2 .room-header {
         grid-template-columns: 142px minmax(0, 1fr) auto auto !important;
@@ -16196,92 +16196,108 @@ export class DwainsLayoutCard extends LitElement {
         --mdc-icon-size: 38px !important;
       }
 
-      /*
-       * Room-header typography should stay visually subordinate to the room
-       * icon rather than becoming oversized.
-       */
+      .room-ui-v2 .room-header-copy {
+        height: 76px !important;
+        min-height: 0 !important;
+        justify-content: center !important;
+        gap: 2px !important;
+        overflow: hidden !important;
+      }
+
       .room-ui-v2 .room-header .area-title {
-        font-size: clamp(24px, 1.7vw, 30px) !important;
+        font-size: 26px !important;
+        line-height: 1 !important;
       }
 
       .room-ui-v2 .room-header-device-count {
         font-size: 10px !important;
+        line-height: 1 !important;
       }
 
       /*
-       * Status badges in the room header: about 20% smaller than the previous
-       * 39px version.
+       * Room-view status badges: 20% smaller while keeping icon and count
+       * centered as one unit. The complete name/count/badge stack stays
+       * inside the 76px media height.
        */
+      .room-ui-v2 .room-header-summary {
+        min-height: 29px !important;
+        height: 29px !important;
+        gap: 6px !important;
+        margin-top: 1px !important;
+        overflow: hidden !important;
+      }
+
       .room-ui-v2 .room-summary-item.status {
-        min-height: 36px !important;
-        padding: 4px 8px !important;
+        min-height: 29px !important;
+        height: 29px !important;
+        padding: 3px 7px !important;
         gap: 4px !important;
-        font-size: 15px !important;
+        justify-content: center !important;
+        font-size: 12px !important;
         line-height: 1 !important;
         box-sizing: border-box !important;
+        flex: 0 0 auto !important;
       }
 
       .room-ui-v2 .room-summary-item.status ha-icon {
-        --mdc-icon-size: 20px !important;
-      }
-
-      .room-ui-v2 .room-header-summary {
-        min-height: 36px !important;
-        gap: 6px !important;
+        --mdc-icon-size: 17px !important;
       }
 
       /*
-       * Sidebar room tiles: fixed media size, independent of sidebar width.
-       * The previous fluid cqw sizing is deliberately removed.
-       *
-       * Layout:
-       *   [ fixed room icon ] [ room name       ]
-       *                     [ temperature/...   ]
-       *                     [ status badges     ]
+       * Sidebar room tiles: make the card less cramped, but keep the media
+       * slot fixed so resizing the sidebar never changes the room icon size.
        */
       .sidebar .room-area-button {
         container-type: normal !important;
         display: grid !important;
-        grid-template-columns: 63px minmax(0, 1fr) !important;
+        grid-template-columns: 74px minmax(0, 1fr) !important;
         align-items: stretch !important;
-        gap: 8px !important;
-        min-height: 78px !important;
-        height: 78px !important;
+        gap: 9px !important;
+        min-height: 88px !important;
+        height: 88px !important;
         padding: 7px !important;
       }
 
       .sidebar .room-area-button .area-media {
         grid-column: 1 !important;
         grid-row: 1 !important;
-        width: 63px !important;
-        height: 63px !important;
-        min-width: 63px !important;
-        min-height: 63px !important;
-        max-width: 63px !important;
-        max-height: 63px !important;
+        width: 74px !important;
+        height: 74px !important;
+        min-width: 74px !important;
+        min-height: 74px !important;
+        max-width: 74px !important;
+        max-height: 74px !important;
         align-self: center !important;
       }
 
       .sidebar .room-area-button .area-media-icon {
-        width: 63px !important;
-        height: 63px !important;
+        width: 74px !important;
+        height: 74px !important;
       }
 
       .sidebar .room-area-button .area-media-icon ha-icon {
-        --mdc-icon-size: 30px !important;
+        --mdc-icon-size: 31px !important;
       }
 
+      /*
+       * Three rows next to the fixed icon:
+       * 1. room name
+       * 2. temperature / humidity / power
+       * 3. status badges
+       *
+       * Equal 4px gaps above and below the values row keep the stack balanced.
+       */
       .sidebar .room-area-button .area-content {
         grid-column: 2 !important;
         grid-row: 1 !important;
         min-width: 0 !important;
         width: 100% !important;
-        height: 63px !important;
+        height: 74px !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: center !important;
         align-items: stretch !important;
-        gap: 2px !important;
+        gap: 4px !important;
         overflow: hidden !important;
       }
 
@@ -16289,10 +16305,7 @@ export class DwainsLayoutCard extends LitElement {
         min-width: 0 !important;
         width: 100% !important;
         margin: 0 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: center !important;
-        gap: 2px !important;
+        display: contents !important;
       }
 
       .sidebar .room-area-button .area-name,
@@ -16304,7 +16317,7 @@ export class DwainsLayoutCard extends LitElement {
         text-shadow: none !important;
         font-size: 14px !important;
         font-weight: 850 !important;
-        line-height: 1.05 !important;
+        line-height: 1 !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
         white-space: nowrap !important;
@@ -16319,7 +16332,7 @@ export class DwainsLayoutCard extends LitElement {
         text-shadow: none !important;
         font-size: 11px !important;
         font-weight: 650 !important;
-        line-height: 1.05 !important;
+        line-height: 1 !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
         white-space: nowrap !important;
@@ -16339,17 +16352,22 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       /*
-       * Sidebar badges: approximately 20% smaller than the previous 27x21
-       * geometry.
+       * Sidebar badges: slightly larger than the previous version, with the
+       * icon and count centered together.
        */
       .sidebar .room-area-button .info-badge,
       .sidebar .room-area-button.has-picture .info-badge {
-        min-width: 22px !important;
-        height: 17px !important;
+        min-width: 24px !important;
+        height: 18px !important;
         padding: 0 5px !important;
-        font-size: 9px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 3px !important;
+        font-size: 9.5px !important;
         line-height: 1 !important;
         flex: 0 0 auto !important;
+        box-sizing: border-box !important;
       }
 
       .sidebar .room-area-button .info-badge ha-icon {
@@ -16357,7 +16375,8 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .sidebar .room-area-button .badge-count {
-        font-size: 9px !important;
+        font-size: 9.5px !important;
+        line-height: 1 !important;
       }
 
       .sidebar .room-area-button .info-badge-overflow {
@@ -16367,7 +16386,7 @@ export class DwainsLayoutCard extends LitElement {
         flex: 0 0 15px !important;
         width: 15px !important;
         min-width: 15px !important;
-        height: 17px !important;
+        height: 18px !important;
         padding: 0 !important;
         margin: 0 !important;
         border: 0 !important;
@@ -16380,8 +16399,37 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       /*
-       * Favorites: retain the corrected 41px icon column so text cannot
-       * overlap the icon.
+       * Startseite and room-view weather use the same compact blue-accent pill.
+       */
+      .global-header .weather-compact,
+      .global-header.room-context .weather-compact {
+        min-height: 38px !important;
+        height: 38px !important;
+        padding: 0 12px !important;
+        gap: 7px !important;
+        border-radius: 999px !important;
+        box-sizing: border-box !important;
+        background: color-mix(in srgb, var(--primary-color) 12%, var(--card-background-color)) !important;
+        color: var(--primary-color) !important;
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 16%, transparent) !important;
+      }
+
+      .global-header .weather-compact .weather-icon-compact ha-icon,
+      .global-header.room-context .weather-compact .weather-icon-compact ha-icon {
+        --mdc-icon-size: 18px !important;
+        color: var(--primary-color) !important;
+      }
+
+      .global-header .weather-compact .weather-temp-compact,
+      .global-header.room-context .weather-compact .weather-temp-compact {
+        font-size: 13px !important;
+        color: var(--primary-text-color) !important;
+        line-height: 1 !important;
+      }
+
+      /*
+       * Keep the corrected favorites icon column so favorite names cannot
+       * overlap their icons.
        */
       .room-favorites-content .favorites-grid {
         grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
@@ -18017,13 +18065,13 @@ export class DwainsLayoutCard extends LitElement {
      */
     const tileWidth = Math.max(0, this._areaSidebarWidth - 16);
 
-    // The room icon slot is fixed at 63px, independent of sidebar width.
-    const mediaWidth = 63;
-    const contentGap = 8;
+    // The room icon slot is fixed at 74px, independent of sidebar width.
+    const mediaWidth = 74;
+    const contentGap = 9;
     const contentWidth = Math.max(0, tileWidth - 14 - mediaWidth - contentGap);
 
-    // Approximate rendered width of the 20%-smaller badge geometry.
-    const badgeWidth = 41;
+    // Approximate rendered width of the slightly enlarged badge geometry.
+    const badgeWidth = 44;
     const badgeGap = 4;
     const overflowWidth = 15;
 
