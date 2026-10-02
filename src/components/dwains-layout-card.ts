@@ -16144,40 +16144,38 @@ export class DwainsLayoutCard extends LitElement {
     }
 
 
-    /* 2026-10-02: responsive readability and sizing correction. */
+    /* 2026-10-02: restore room layout and refine relative sizing. */
     @media (min-width: 769px) {
       /*
-       * Room header metrics: reduce the previous oversized pills by about 40%.
-       * Keep the original compact visual hierarchy and leave the header layout
-       * unchanged.
+       * Room-header metric pills: approximately 20% larger than the current
+       * compact version. These are temperature, humidity and power.
        */
       .room-ui-v2 .room-header .area-header-metrics {
-        gap: 7px !important;
+        gap: 8px !important;
       }
 
       .room-ui-v2 .room-header .area-header-metric {
-        min-width: 105px !important;
-        min-height: 34px !important;
-        padding: 4px 8px !important;
-        gap: 5px !important;
+        min-width: 126px !important;
+        min-height: 41px !important;
+        padding: 5px 9px !important;
+        gap: 6px !important;
       }
 
       .room-ui-v2 .room-header .area-header-metric .metric-ring {
-        width: 24px !important;
-        height: 24px !important;
+        width: 29px !important;
+        height: 29px !important;
       }
 
       .room-ui-v2 .room-header .area-header-metric .metric-label {
-        font-size: 8px !important;
+        font-size: 9px !important;
       }
 
       .room-ui-v2 .room-header .area-header-metric .metric-reading {
-        font-size: 11px !important;
+        font-size: 13px !important;
       }
 
       /*
-       * Keep the room-header image at the old 142:76 proportions and size.
-       * The previous fluid 20cqw rule made the image grow too wide.
+       * Keep the room-header image at the original 142:76 geometry.
        */
       .room-ui-v2 .room-header {
         grid-template-columns: 142px minmax(0, 1fr) auto auto !important;
@@ -16199,61 +16197,90 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       /*
-       * Sidebar room tiles: approximately 15% smaller overall. The top row
-       * contains icon + status/controls; the second row gets the full width
-       * for the room name and values, which prevents narrow text columns.
+       * Room-header typography should stay visually subordinate to the room
+       * icon rather than becoming oversized.
+       */
+      .room-ui-v2 .room-header .area-title {
+        font-size: clamp(24px, 1.7vw, 30px) !important;
+      }
+
+      .room-ui-v2 .room-header-device-count {
+        font-size: 10px !important;
+      }
+
+      /*
+       * Status badges in the room header: about 20% smaller than the previous
+       * 39px version.
+       */
+      .room-ui-v2 .room-summary-item.status {
+        min-height: 36px !important;
+        padding: 4px 8px !important;
+        gap: 4px !important;
+        font-size: 15px !important;
+        line-height: 1 !important;
+        box-sizing: border-box !important;
+      }
+
+      .room-ui-v2 .room-summary-item.status ha-icon {
+        --mdc-icon-size: 20px !important;
+      }
+
+      .room-ui-v2 .room-header-summary {
+        min-height: 36px !important;
+        gap: 6px !important;
+      }
+
+      /*
+       * Sidebar room tiles: fixed media size, independent of sidebar width.
+       * The previous fluid cqw sizing is deliberately removed.
+       *
+       * Layout:
+       *   [ fixed room icon ] [ room name       ]
+       *                     [ temperature/...   ]
+       *                     [ status badges     ]
        */
       .sidebar .room-area-button {
-        container-type: inline-size !important;
-        grid-template-columns: clamp(54px, 25.5cqw, 94px) minmax(0, 1fr) !important;
-        grid-template-rows: minmax(0, 1fr) auto !important;
-        grid-template-areas:
-          "media badges"
-          "label label" !important;
-        min-height: clamp(70px, 30.6cqw, 102px) !important;
-        height: clamp(70px, 30.6cqw, 102px) !important;
-        gap: clamp(6px, 2.5cqw, 9px) !important;
-        padding: 8px 10px !important;
+        container-type: normal !important;
+        display: grid !important;
+        grid-template-columns: 63px minmax(0, 1fr) !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+        min-height: 78px !important;
+        height: 78px !important;
+        padding: 7px !important;
       }
 
       .sidebar .room-area-button .area-media {
-        grid-area: media !important;
-        width: 100% !important;
-        height: 100% !important;
-        align-self: stretch !important;
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+        width: 63px !important;
+        height: 63px !important;
+        min-width: 63px !important;
+        min-height: 63px !important;
+        max-width: 63px !important;
+        max-height: 63px !important;
+        align-self: center !important;
       }
 
       .sidebar .room-area-button .area-media-icon {
-        width: 100% !important;
-        height: 100% !important;
+        width: 63px !important;
+        height: 63px !important;
       }
 
       .sidebar .room-area-button .area-media-icon ha-icon {
-        --mdc-icon-size: clamp(24px, 9.5cqw, 36px) !important;
-      }
-
-      .sidebar .room-area-button .area-info-badges {
-        grid-area: badges !important;
-        width: 100% !important;
-        max-width: none !important;
-        min-width: 0 !important;
-        display: flex !important;
-        flex-wrap: nowrap !important;
-        justify-content: flex-start !important;
-        align-items: center !important;
-        align-self: center !important;
-        gap: 5px !important;
-        overflow: hidden !important;
+        --mdc-icon-size: 30px !important;
       }
 
       .sidebar .room-area-button .area-content {
-        grid-area: label !important;
+        grid-column: 2 !important;
+        grid-row: 1 !important;
         min-width: 0 !important;
         width: 100% !important;
-        height: auto !important;
+        height: 63px !important;
         display: flex !important;
-        align-items: stretch !important;
+        flex-direction: column !important;
         justify-content: center !important;
+        align-items: stretch !important;
         gap: 2px !important;
         overflow: hidden !important;
       }
@@ -16261,73 +16288,100 @@ export class DwainsLayoutCard extends LitElement {
       .sidebar .room-area-button .area-top-section {
         min-width: 0 !important;
         width: 100% !important;
+        margin: 0 !important;
         display: flex !important;
         flex-direction: column !important;
-        align-items: flex-start !important;
         justify-content: center !important;
         gap: 2px !important;
       }
 
-      .sidebar .room-area-button .area-name {
+      .sidebar .room-area-button .area-name,
+      .sidebar .room-area-button.has-picture .area-name {
         min-width: 0 !important;
         max-width: 100% !important;
-        font-size: 14.3px !important;
+        margin: 0 !important;
+        color: var(--primary-text-color) !important;
+        text-shadow: none !important;
+        font-size: 14px !important;
+        font-weight: 850 !important;
         line-height: 1.05 !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
         white-space: nowrap !important;
       }
 
-      .sidebar .room-area-button .area-sensors {
-        flex: 0 1 auto !important;
+      .sidebar .room-area-button .area-sensors,
+      .sidebar .room-area-button.has-picture .area-sensors {
         min-width: 0 !important;
-        margin-top: 0 !important;
-        font-size: 11.2px !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        color: var(--secondary-text-color) !important;
+        text-shadow: none !important;
+        font-size: 11px !important;
+        font-weight: 650 !important;
         line-height: 1.05 !important;
-        white-space: nowrap !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
+        white-space: nowrap !important;
       }
 
-      .sidebar .room-area-button .info-badge {
-        min-width: 27px !important;
-        height: 21px !important;
-        padding: 0 7px !important;
-        font-size: 11px !important;
+      .sidebar .room-area-button .area-info-badges {
+        position: static !important;
+        width: 100% !important;
+        max-width: none !important;
+        min-width: 0 !important;
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 4px !important;
+        overflow: hidden !important;
+      }
+
+      /*
+       * Sidebar badges: approximately 20% smaller than the previous 27x21
+       * geometry.
+       */
+      .sidebar .room-area-button .info-badge,
+      .sidebar .room-area-button.has-picture .info-badge {
+        min-width: 22px !important;
+        height: 17px !important;
+        padding: 0 5px !important;
+        font-size: 9px !important;
+        line-height: 1 !important;
         flex: 0 0 auto !important;
       }
 
       .sidebar .room-area-button .info-badge ha-icon {
-        --mdc-icon-size: 13px !important;
+        --mdc-icon-size: 10px !important;
       }
 
       .sidebar .room-area-button .badge-count {
-        font-size: 11px !important;
+        font-size: 9px !important;
       }
 
       .sidebar .room-area-button .info-badge-overflow {
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        flex: 0 0 18px !important;
-        width: 18px !important;
-        min-width: 18px !important;
-        height: 19px !important;
+        flex: 0 0 15px !important;
+        width: 15px !important;
+        min-width: 15px !important;
+        height: 17px !important;
         padding: 0 !important;
         margin: 0 !important;
         border: 0 !important;
         background: transparent !important;
         box-shadow: none !important;
         color: var(--secondary-text-color) !important;
-        font-size: 16px !important;
+        font-size: 14px !important;
         font-weight: 900 !important;
         line-height: 1 !important;
-        letter-spacing: 1px !important;
       }
 
       /*
-       * Keep the already-correct five-column room favorites width. Only fix
-       * the internal grid so the enlarged 41px icon has its own 41px column.
+       * Favorites: retain the corrected 41px icon column so text cannot
+       * overlap the icon.
        */
       .room-favorites-content .favorites-grid {
         grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
@@ -16369,13 +16423,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .home-favorites-section .favorite-meta,
-      .room-favorites-content .favorite-meta {
-        min-width: 0 !important;
-        max-width: 100% !important;
-        font-size: 10.9px !important;
-        overflow: hidden !important;
-      }
-
+      .room-favorites-content .favorite-meta,
       .home-favorites-section .favorite-area,
       .room-favorites-content .favorite-area {
         min-width: 0 !important;
@@ -16384,53 +16432,6 @@ export class DwainsLayoutCard extends LitElement {
         overflow: hidden !important;
         text-overflow: ellipsis !important;
         white-space: nowrap !important;
-      }
-
-      .home-favorites-section .favorite-end,
-      .room-favorites-content .favorite-end {
-        height: 41px !important;
-      }
-
-      .home-favorites-section .favorite-quick-action,
-      .room-favorites-content .favorite-quick-action {
-        width: 44px !important;
-        height: 25px !important;
-      }
-
-      .home-favorites-section .favorite-quick-action::before,
-      .room-favorites-content .favorite-quick-action::before {
-        width: 21px !important;
-        height: 21px !important;
-      }
-
-      .home-favorites-section .favorite-card-wrapper.is-active .favorite-quick-action::before,
-      .room-favorites-content .favorite-card-wrapper.is-active .favorite-quick-action::before {
-        transform: translateX(19px) !important;
-      }
-
-      .home-favorites-section .favorite-status-pill,
-      .room-favorites-content .favorite-status-pill {
-        width: 44px !important;
-        height: 25px !important;
-        flex-basis: 44px !important;
-        font-size: 11.5px !important;
-      }
-
-      .home-favorites-section .favorite-info-state,
-      .room-favorites-content .favorite-info-state {
-        font-size: 17px !important;
-      }
-
-      .home-favorites-section .favorite-end-state,
-      .room-favorites-content .favorite-end-state {
-        font-size: 11.5px !important;
-      }
-
-      .room-ui-v2 .mobile-entity-name,
-      .room-ui-v2 .mobile-entity-state,
-      .mobile-entity-name,
-      .mobile-entity-state {
-        text-overflow: ellipsis !important;
       }
     }
 
@@ -18016,15 +18017,15 @@ export class DwainsLayoutCard extends LitElement {
      */
     const tileWidth = Math.max(0, this._areaSidebarWidth - 16);
 
-    // Keep these values aligned with the responsive room-tile geometry.
-    const mediaWidth = Math.min(94, Math.max(54, tileWidth * 0.255));
-    const contentGap = Math.min(10, Math.max(7, tileWidth * 0.025));
-    const contentWidth = Math.max(0, tileWidth - 20 - mediaWidth - contentGap);
+    // The room icon slot is fixed at 63px, independent of sidebar width.
+    const mediaWidth = 63;
+    const contentGap = 8;
+    const contentWidth = Math.max(0, tileWidth - 14 - mediaWidth - contentGap);
 
-    // Rendered badge width = icon + gap + count + horizontal padding + borders.
-    const badgeWidth = 51;
-    const badgeGap = 5;
-    const overflowWidth = 18;
+    // Approximate rendered width of the 20%-smaller badge geometry.
+    const badgeWidth = 41;
+    const badgeGap = 4;
+    const overflowWidth = 15;
 
     const capacityWithoutOverflow = Math.max(
       1,
@@ -18073,8 +18074,16 @@ export class DwainsLayoutCard extends LitElement {
               `}
         </div>
 
-        <div class="area-info-badges">
-          ${badges.map((badge) =>
+        <div class="area-content">
+          <div class="area-top-section">
+            <div class="area-name">${area.name}</div>
+            ${sensorSummary ? html`
+              <div class="area-sensors">${sensorSummary}</div>
+            ` : nothing}
+          </div>
+
+          <div class="area-info-badges">
+            ${badges.map((badge) =>
               badge.domain === 'light'
                 ? html`
                     <span
@@ -18096,20 +18105,12 @@ export class DwainsLayoutCard extends LitElement {
                     </span>
                   `
             )}
-          ${hasMoreBadges ? html`
-            <span
-              class="info-badge info-badge-overflow"
-              title="Weitere aktive Status"
-              aria-label="Weitere aktive Status"
-            >…</span>
-          ` : nothing}
-        </div>
-
-        <div class="area-content">
-          <div class="area-top-section">
-            <div class="area-name">${area.name}</div>
-            ${sensorSummary ? html`
-              <div class="area-sensors">${sensorSummary}</div>
+            ${hasMoreBadges ? html`
+              <span
+                class="info-badge info-badge-overflow"
+                title="Weitere aktive Status"
+                aria-label="Weitere aktive Status"
+              >…</span>
             ` : nothing}
           </div>
         </div>
