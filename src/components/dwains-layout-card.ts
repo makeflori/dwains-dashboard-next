@@ -16252,9 +16252,9 @@ export class DwainsLayoutCard extends LitElement {
         width: 100% !important;
         height: auto !important;
         display: flex !important;
-        align-items: baseline !important;
-        justify-content: flex-start !important;
-        gap: 5px !important;
+        align-items: stretch !important;
+        justify-content: center !important;
+        gap: 2px !important;
         overflow: hidden !important;
       }
 
@@ -16262,8 +16262,10 @@ export class DwainsLayoutCard extends LitElement {
         min-width: 0 !important;
         width: 100% !important;
         display: flex !important;
-        align-items: baseline !important;
-        gap: 5px !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        justify-content: center !important;
+        gap: 2px !important;
       }
 
       .sidebar .room-area-button .area-name {
