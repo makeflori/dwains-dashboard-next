@@ -16144,67 +16144,163 @@ export class DwainsLayoutCard extends LitElement {
     }
 
 
-    /* 2026-10-01: final responsive sidebar/entity/favorites pass. */
+    /* 2026-10-02: responsive readability and sizing correction. */
     @media (min-width: 769px) {
-      /* Room header metrics: exactly 30% larger without changing the header layout. */
+      /*
+       * Room header metrics: reduce the previous oversized pills by about 40%.
+       * Keep the original compact visual hierarchy and leave the header layout
+       * unchanged.
+       */
       .room-ui-v2 .room-header .area-header-metrics {
-        gap: 10px !important;
+        gap: 7px !important;
       }
 
       .room-ui-v2 .room-header .area-header-metric {
-        min-width: 159px !important;
-        min-height: 55px !important;
-        padding: 7px 12px !important;
-        gap: 9px !important;
+        min-width: 105px !important;
+        min-height: 34px !important;
+        padding: 4px 8px !important;
+        gap: 5px !important;
       }
 
       .room-ui-v2 .room-header .area-header-metric .metric-ring {
-        width: 39px !important;
-        height: 39px !important;
+        width: 24px !important;
+        height: 24px !important;
       }
 
       .room-ui-v2 .room-header .area-header-metric .metric-label {
-        font-size: 11.7px !important;
+        font-size: 8px !important;
       }
 
       .room-ui-v2 .room-header .area-header-metric .metric-reading {
-        font-size: 16.9px !important;
+        font-size: 11px !important;
       }
 
       /*
-       * Sidebar room tiles: slightly shorter, with a slightly larger media
-       * block. Both dimensions follow the actual tile width continuously.
+       * Keep the room-header image at the old 142:76 proportions and size.
+       * The previous fluid 20cqw rule made the image grow too wide.
        */
-      .sidebar .room-area-button {
-        grid-template-columns: clamp(68px, 44cqw, 94px) minmax(0, 1fr) !important;
-        min-height: clamp(82px, 52cqw, 106px) !important;
-        height: clamp(82px, 52cqw, 106px) !important;
-        gap: clamp(8px, 3cqw, 10px) !important;
+      .room-ui-v2 .room-header {
+        grid-template-columns: 142px minmax(0, 1fr) auto auto !important;
+        min-height: 96px !important;
       }
 
-      .sidebar .room-area-button .area-media,
+      .room-ui-v2 .room-header-media {
+        width: 142px !important;
+        height: 76px !important;
+        min-width: 142px !important;
+        min-height: 76px !important;
+        max-width: 142px !important;
+        max-height: 76px !important;
+        aspect-ratio: 142 / 76 !important;
+      }
+
+      .room-ui-v2 .room-header-icon ha-icon {
+        --mdc-icon-size: 38px !important;
+      }
+
+      /*
+       * Sidebar room tiles: approximately 15% smaller overall. The top row
+       * contains icon + status/controls; the second row gets the full width
+       * for the room name and values, which prevents narrow text columns.
+       */
+      .sidebar .room-area-button {
+        container-type: inline-size !important;
+        grid-template-columns: clamp(54px, 25.5cqw, 94px) minmax(0, 1fr) !important;
+        grid-template-rows: minmax(0, 1fr) auto !important;
+        grid-template-areas:
+          "media badges"
+          "label label" !important;
+        min-height: clamp(70px, 30.6cqw, 102px) !important;
+        height: clamp(70px, 30.6cqw, 102px) !important;
+        gap: clamp(6px, 2.5cqw, 9px) !important;
+        padding: 8px 10px !important;
+      }
+
+      .sidebar .room-area-button .area-media {
+        grid-area: media !important;
+        width: 100% !important;
+        height: 100% !important;
+        align-self: stretch !important;
+      }
+
       .sidebar .room-area-button .area-media-icon {
         width: 100% !important;
         height: 100% !important;
       }
 
       .sidebar .room-area-button .area-media-icon ha-icon {
-        --mdc-icon-size: clamp(30px, 16cqw, 42px) !important;
+        --mdc-icon-size: clamp(24px, 9.5cqw, 36px) !important;
       }
 
-      /*
-       * The overflow marker is part of the real badge row. The TypeScript
-       * calculation now uses the same per-tile geometry, so it remains visible
-       * while the sidebar is resized and never gets clipped by the row.
-       */
       .sidebar .room-area-button .area-info-badges {
+        grid-area: badges !important;
         width: 100% !important;
         max-width: none !important;
+        min-width: 0 !important;
         display: flex !important;
         flex-wrap: nowrap !important;
         justify-content: flex-start !important;
+        align-items: center !important;
+        align-self: center !important;
         gap: 5px !important;
         overflow: hidden !important;
+      }
+
+      .sidebar .room-area-button .area-content {
+        grid-area: label !important;
+        min-width: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        display: flex !important;
+        align-items: baseline !important;
+        justify-content: flex-start !important;
+        gap: 5px !important;
+        overflow: hidden !important;
+      }
+
+      .sidebar .room-area-button .area-top-section {
+        min-width: 0 !important;
+        width: 100% !important;
+        display: flex !important;
+        align-items: baseline !important;
+        gap: 5px !important;
+      }
+
+      .sidebar .room-area-button .area-name {
+        min-width: 0 !important;
+        max-width: 100% !important;
+        font-size: 14.3px !important;
+        line-height: 1.05 !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+      }
+
+      .sidebar .room-area-button .area-sensors {
+        flex: 0 1 auto !important;
+        min-width: 0 !important;
+        margin-top: 0 !important;
+        font-size: 11.2px !important;
+        line-height: 1.05 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+      }
+
+      .sidebar .room-area-button .info-badge {
+        min-width: 27px !important;
+        height: 21px !important;
+        padding: 0 7px !important;
+        font-size: 11px !important;
+        flex: 0 0 auto !important;
+      }
+
+      .sidebar .room-area-button .info-badge ha-icon {
+        --mdc-icon-size: 13px !important;
+      }
+
+      .sidebar .room-area-button .badge-count {
+        font-size: 11px !important;
       }
 
       .sidebar .room-area-button .info-badge-overflow {
@@ -16221,23 +16317,27 @@ export class DwainsLayoutCard extends LitElement {
         background: transparent !important;
         box-shadow: none !important;
         color: var(--secondary-text-color) !important;
-        font-size: 17px !important;
+        font-size: 16px !important;
         font-weight: 900 !important;
         line-height: 1 !important;
         letter-spacing: 1px !important;
       }
 
-      /* Room view uses the same five-column rhythm as the entity cards below. */
+      /*
+       * Keep the already-correct five-column room favorites width. Only fix
+       * the internal grid so the enlarged 41px icon has its own 41px column.
+       */
       .room-favorites-content .favorites-grid {
         grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
         gap: 8px !important;
         width: 100% !important;
       }
 
-      /*
-       * Favorites cards keep their existing height/width. Only their internal
-       * content is enlarged by about 15%.
-       */
+      .home-favorites-section .favorite-card-wrapper,
+      .room-favorites-content .favorite-card-wrapper {
+        grid-template-columns: 41px minmax(0, 1fr) auto !important;
+      }
+
       .home-favorites-section .favorite-icon,
       .room-favorites-content .favorite-icon {
         width: 41px !important;
@@ -16252,23 +16352,36 @@ export class DwainsLayoutCard extends LitElement {
       .home-favorites-section .favorite-body,
       .room-favorites-content .favorite-body {
         height: 41px !important;
+        min-width: 0 !important;
+        overflow: hidden !important;
       }
 
       .home-favorites-section .favorite-name,
       .room-favorites-content .favorite-name {
+        min-width: 0 !important;
+        max-width: 100% !important;
         font-size: 12.1px !important;
+        overflow: hidden !important;
         text-overflow: ellipsis !important;
+        white-space: nowrap !important;
       }
 
       .home-favorites-section .favorite-meta,
       .room-favorites-content .favorite-meta {
+        min-width: 0 !important;
+        max-width: 100% !important;
         font-size: 10.9px !important;
+        overflow: hidden !important;
       }
 
       .home-favorites-section .favorite-area,
       .room-favorites-content .favorite-area {
+        min-width: 0 !important;
+        max-width: 100% !important;
         font-size: 10.9px !important;
+        overflow: hidden !important;
         text-overflow: ellipsis !important;
+        white-space: nowrap !important;
       }
 
       .home-favorites-section .favorite-end,
@@ -16311,7 +16424,6 @@ export class DwainsLayoutCard extends LitElement {
         font-size: 11.5px !important;
       }
 
-      /* Entity names/states must truncate with an actual ellipsis. */
       .room-ui-v2 .mobile-entity-name,
       .room-ui-v2 .mobile-entity-state,
       .mobile-entity-name,
@@ -16319,7 +16431,6 @@ export class DwainsLayoutCard extends LitElement {
         text-overflow: ellipsis !important;
       }
     }
-
 
     /*
      * 2026-10-01 mobile Home parity pass.
@@ -17897,30 +18008,18 @@ export class DwainsLayoutCard extends LitElement {
 
   private _sidebarAreaBadgeLimit(totalBadges = Number.MAX_SAFE_INTEGER): number {
     /*
-     * Calculate capacity from the actual room-tile width, not the complete
-     * sidebar width. The sidebar switches between one and multiple grid
-     * columns, so using the sidebar width overestimates the available badge
-     * space and lets the final badge get clipped instead of showing "…".
+     * The sidebar area list is deliberately a single-column list. Calculate
+     * badge capacity from that actual tile width so the result grows
+     * monotonically as the sidebar is widened.
      */
-    const sidebarContentWidth = Math.max(0, this._areaSidebarWidth - 16);
-    const tileGap = 8;
-    const minTileWidth = 178;
-    const columns = Math.max(
-      1,
-      Math.floor((sidebarContentWidth + tileGap) / (minTileWidth + tileGap))
-    );
-    const tileWidth = Math.max(
-      minTileWidth,
-      (sidebarContentWidth - (columns - 1) * tileGap) / columns
-    );
+    const tileWidth = Math.max(0, this._areaSidebarWidth - 16);
 
-    // Keep these values in sync with the responsive sidebar tile geometry.
-    const mediaWidth = Math.min(94, Math.max(68, tileWidth * 0.44));
-    const contentGap = Math.min(10, Math.max(8, tileWidth * 0.03));
+    // Keep these values aligned with the responsive room-tile geometry.
+    const mediaWidth = Math.min(94, Math.max(54, tileWidth * 0.255));
+    const contentGap = Math.min(10, Math.max(7, tileWidth * 0.025));
     const contentWidth = Math.max(0, tileWidth - 20 - mediaWidth - contentGap);
 
-    // Actual rendered badge width at the current desktop typography:
-    // icon + gap + count + horizontal padding + borders.
+    // Rendered badge width = icon + gap + count + horizontal padding + borders.
     const badgeWidth = 51;
     const badgeGap = 5;
     const overflowWidth = 18;
@@ -17934,7 +18033,7 @@ export class DwainsLayoutCard extends LitElement {
       return Math.min(8, totalBadges);
     }
 
-    // More badges exist than fit: reserve space for the "…" marker.
+    // Reserve room for the visible "…" marker whenever more badges exist.
     const capacityWithOverflow = Math.max(
       1,
       Math.floor(Math.max(0, contentWidth - overflowWidth - badgeGap) / (badgeWidth + badgeGap))
@@ -17972,16 +18071,8 @@ export class DwainsLayoutCard extends LitElement {
               `}
         </div>
 
-        <div class="area-content">
-          <div class="area-top-section">
-            <div class="area-name">${area.name}</div>
-            ${sensorSummary ? html`
-              <div class="area-sensors">${sensorSummary}</div>
-            ` : nothing}
-          </div>
-
-          <div class="area-info-badges">
-            ${badges.map((badge) =>
+        <div class="area-info-badges">
+          ${badges.map((badge) =>
               badge.domain === 'light'
                 ? html`
                     <span
@@ -18003,12 +18094,20 @@ export class DwainsLayoutCard extends LitElement {
                     </span>
                   `
             )}
-            ${hasMoreBadges ? html`
-              <span
-                class="info-badge info-badge-overflow"
-                title="Weitere aktive Status"
-                aria-label="Weitere aktive Status"
-              >…</span>
+          ${hasMoreBadges ? html`
+            <span
+              class="info-badge info-badge-overflow"
+              title="Weitere aktive Status"
+              aria-label="Weitere aktive Status"
+            >…</span>
+          ` : nothing}
+        </div>
+
+        <div class="area-content">
+          <div class="area-top-section">
+            <div class="area-name">${area.name}</div>
+            ${sensorSummary ? html`
+              <div class="area-sensors">${sensorSummary}</div>
             ` : nothing}
           </div>
         </div>
