@@ -16996,6 +16996,7 @@ export class DwainsLayoutCard extends LitElement {
         margin: 0 !important;
         align-self: center !important;
       }
+    }
 
   `;
 
