@@ -11795,6 +11795,99 @@ export class DwainsLayoutCard extends LitElement {
       display: none;
     }
 
+    /* Desktop room header alignment: keep the identity block as tall as two metric pills.
+       The action column starts on the same top line as the room title. */
+    @media (min-width: 769px) {
+      .room-ui-v2 .room-header-media {
+        width: 180px !important;
+        height: 112px !important;
+        align-self: center !important;
+        border-radius: 10px;
+      }
+
+      .room-ui-v2 .room-header-icon ha-icon {
+        --mdc-icon-size: 44px;
+      }
+
+      .room-ui-v2 .room-header-copy {
+        height: 112px !important;
+        align-self: center !important;
+        justify-content: flex-start !important;
+        gap: 5px !important;
+        overflow: visible;
+      }
+
+      .room-ui-v2 .room-header .area-title {
+        font-size: clamp(29px, 2vw, 35px);
+        line-height: 1.05;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .room-header-title-row {
+        min-height: 38px;
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        gap: 7px;
+      }
+
+      .room-header-title-row .room-header-home-link {
+        flex: 0 0 30px;
+        width: 30px;
+        height: 30px;
+      }
+
+      .room-header-title-row .room-header-home-link ha-icon {
+        --mdc-icon-size: 20px;
+      }
+
+      .room-header-title-row .room-header-home-chevron {
+        flex: 0 0 auto;
+      }
+
+      .room-header-device-count {
+        font-size: 13px;
+        line-height: 1.15;
+      }
+
+      .room-header-summary {
+        min-height: 32px;
+        margin-top: 2px;
+        gap: 7px;
+      }
+
+      .room-summary-item {
+        min-height: 32px;
+        font-size: 12px;
+      }
+
+      button.room-summary-item {
+        min-width: 48px;
+        padding: 6px 10px;
+      }
+
+      .room-summary-item ha-icon {
+        --mdc-icon-size: 18px;
+      }
+
+      .room-header-actions {
+        height: 112px !important;
+        align-self: center !important;
+        justify-content: flex-start !important;
+        gap: 8px !important;
+        padding: 0 !important;
+      }
+
+      .room-header-actions .dd-edit-toggle,
+      .room-header-actions .unavailable-entities-icon {
+        width: 38px;
+        height: 38px;
+        margin: 0 !important;
+      }
+    }
+
     .room-header-title-row {
       min-width: 0;
       display: flex;
