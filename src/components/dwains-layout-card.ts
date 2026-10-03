@@ -17024,10 +17024,10 @@ export class DwainsLayoutCard extends LitElement {
         min-height: 0 !important;
       }
 
-      /* Five entity cards per row on every desktop width. */
+      /* Four entity cards per row on every desktop width. */
       .room-ui-v2 .mobile-entity-rail,
       .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-rail {
-        grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
       }
 
       /* Sidebar room content should nearly fill the height of the media tile. */
@@ -17099,6 +17099,37 @@ export class DwainsLayoutCard extends LitElement {
 
       .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-right {
         display: none !important;
+      }
+    }
+
+
+    @media (min-width: 769px) {
+      /*
+       * Select/input_select: the wrapper was already in the correct left slot,
+       * but the HA icon itself could still be displaced by competing ha-icon
+       * rules. Pin the actual icon element inside its wrapper.
+       */
+      .room-ui-v2 .mobile-entity-card.has-inline-select
+      .mobile-entity-icon > .mobile-entity-leading-select-icon {
+        position: static !important;
+        inset: auto !important;
+        top: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        left: auto !important;
+        display: block !important;
+        width: 24px !important;
+        height: 24px !important;
+        min-width: 24px !important;
+        min-height: 24px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        transform: none !important;
+        translate: none !important;
+        align-self: auto !important;
+        justify-self: auto !important;
+        pointer-events: none !important;
+        --mdc-icon-size: 24px !important;
       }
     }
 
@@ -21961,7 +21992,7 @@ export class DwainsLayoutCard extends LitElement {
               <ha-icon icon="mdi:drag"></ha-icon>
             </button>
           ` : nothing}
-          <div class="mobile-entity-icon"><ha-icon icon=${icon}></ha-icon></div>
+          <div class="mobile-entity-icon"><ha-icon class=${hasInlineSelect ? 'mobile-entity-leading-select-icon' : ''} icon=${icon}></ha-icon></div>
           <div class="mobile-entity-content">
             <div class="mobile-entity-name" title=${name}>${name}</div>
             ${statusText ? html`
