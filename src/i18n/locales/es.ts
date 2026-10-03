@@ -505,6 +505,8 @@ export const es = {
   'settings.restrict_editing_description': 'Impide cambios en la configuración y el contenido del panel.',
   'settings.hide_unavailable_areas': 'Ocultar entidades no disponibles',
   'settings.hide_unavailable_areas_description': 'Oculta entidades no disponibles o desconocidas en las tarjetas de habitación.',
+  'settings.hide_area_name_in_entity_names': 'Ocultar nombres de áreas en los nombres de entidades',
+  'settings.hide_area_name_in_entity_names_description': 'Elimina el área asignada cuando se repite al principio o al final del nombre de una entidad.',
   'settings.no_weather_fallback': 'No se seleccionó ninguna entidad meteorológica. Se utilizará la primera entidad meteorológica disponible.',
   'settings.move_up': 'Mover arriba',
   'settings.move_down': 'Mover abajo',

@@ -505,6 +505,8 @@ export const nl = {
   'settings.restrict_editing_description': 'Voorkomt wijzigingen aan dashboardinstellingen en -inhoud.',
   'settings.hide_unavailable_areas': 'Niet-beschikbare entiteiten verbergen',
   'settings.hide_unavailable_areas_description': 'Verbergt niet-beschikbare en onbekende entiteiten in ruimtekaarten.',
+  'settings.hide_area_name_in_entity_names': 'Gebiedsnaam uit entiteitsnamen verbergen',
+  'settings.hide_area_name_in_entity_names_description': 'Verwijdert het toegewezen gebied wanneer dit aan het begin of einde van een entiteitsnaam wordt herhaald.',
   'settings.no_weather_fallback': 'Geen weerentiteit geselecteerd. De eerste beschikbare weerentiteit wordt gebruikt.',
   'settings.move_up': 'Omhoog verplaatsen',
   'settings.move_down': 'Omlaag verplaatsen',

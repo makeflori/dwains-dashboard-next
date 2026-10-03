@@ -505,6 +505,8 @@ export const fr = {
   'settings.restrict_editing_description': 'Empêche les modifications des paramètres et du contenu du tableau de bord.',
   'settings.hide_unavailable_areas': 'Masquer les entités indisponibles',
   'settings.hide_unavailable_areas_description': 'Masque les entités indisponibles ou inconnues dans les cartes de pièce.',
+  'settings.hide_area_name_in_entity_names': 'Masquer le nom de la zone dans les noms d’entités',
+  'settings.hide_area_name_in_entity_names_description': 'Supprime la zone attribuée lorsqu’elle est répétée au début ou à la fin du nom d’une entité.',
   'settings.no_weather_fallback': 'Aucune entité météo sélectionnée. La première entité météo disponible sera utilisée.',
   'settings.move_up': 'Déplacer vers le haut',
   'settings.move_down': 'Déplacer vers le bas',

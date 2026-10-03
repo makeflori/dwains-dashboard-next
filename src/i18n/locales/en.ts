@@ -522,6 +522,8 @@ export const en = {
   'settings.restrict_editing_description': 'Prevents changes to dashboard settings and content.',
   'settings.hide_unavailable_areas': 'Hide unavailable entities',
   'settings.hide_unavailable_areas_description': 'Hides unavailable and unknown entities in room cards.',
+  'settings.hide_area_name_in_entity_names': 'Hide area names in entity names',
+  'settings.hide_area_name_in_entity_names_description': 'Removes the assigned area when it is repeated at the beginning or end of an entity name.',
   'settings.no_weather_fallback': 'No weather entity selected. The first available weather entity will be used.',
   'settings.move_up': 'Move up',
   'settings.move_down': 'Move down',

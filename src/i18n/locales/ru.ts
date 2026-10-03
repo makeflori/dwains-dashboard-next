@@ -524,6 +524,8 @@ export const ru = {
   'settings.restrict_editing_description': 'Запрещает изменять настройки и содержимое панели.',
   'settings.hide_unavailable_areas': 'Скрывать недоступные сущности',
   'settings.hide_unavailable_areas_description': 'Скрывает недоступные и неизвестные сущности в карточках комнат.',
+  'settings.hide_area_name_in_entity_names': 'Скрывать название зоны в именах сущностей',
+  'settings.hide_area_name_in_entity_names_description': 'Удаляет назначенную зону, если она повторяется в начале или конце имени сущности.',
   'settings.no_weather_fallback': 'Сущность погоды не выбрана. Будет использована первая доступная сущность погоды.',
   'settings.move_up': 'Переместить вверх',
   'settings.move_down': 'Переместить вниз',

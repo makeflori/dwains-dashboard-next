@@ -505,6 +505,8 @@ export const zhHant = {
   'settings.restrict_editing_description': '阻止變更儀表板設定和內容。',
   'settings.hide_unavailable_areas': '隱藏無法使用的實體',
   'settings.hide_unavailable_areas_description': '在房間卡片中隱藏無法使用和未知的實體。',
+  'settings.hide_area_name_in_entity_names': '隱藏實體名稱中的區域名稱',
+  'settings.hide_area_name_in_entity_names_description': '當實體名稱開頭或結尾重複所屬區域名稱時將其移除。',
   'settings.no_weather_fallback': '未選擇天氣實體。將使用第一個可用的天氣實體。',
   'settings.move_up': '上移',
   'settings.move_down': '下移',

@@ -58,6 +58,8 @@ export interface DwainsDashboardSettings {
   show_suggested_favorites?: boolean;
   hidden_persons?: string[];
   hide_unavailable_entities?: boolean;
+  /** Hide the assigned area name when it appears at the start or end of generated entity names. */
+  hide_area_name_in_entity_names?: boolean;
   hide_unavailable_entities_on_devices?: boolean;
   show_recent_devices_panel?: boolean;
   restrict_non_admin_ha_sidebar?: boolean;

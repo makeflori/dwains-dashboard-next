@@ -19,6 +19,7 @@ import { isHassDarkTheme } from '../utils/theme';
 import { normalizeHiddenHomeInformationCards, normalizeHiddenHomeSections, normalizeHomeSectionsOrder } from '../utils/home-sections';
 import { buildHousePowerUsage } from '../utils/power-usage';
 import { formatEntityStateWithUnit, formatValueWithUnit } from '../utils/unit-format';
+import { stripAreaNameFromEntityName } from '../utils/entity-names';
 import { showDomainEntitiesDialog } from './utils/show-domain-entities-dialog';
 import { showCardEditorDialog } from './utils/show-card-editor-dialog';
 import { ensureBottomNav } from './dwains-bottom-nav';
@@ -21931,7 +21932,7 @@ export class DwainsLayoutCard extends LitElement {
   }
 
   private _renderMobileEntityCard(
-    _area: AreaConfig,
+    area: AreaConfig,
     entity: EntityConfig,
     editControls?: { areaId: string; hidden: boolean }
   ) {
@@ -21949,7 +21950,10 @@ export class DwainsLayoutCard extends LitElement {
     const icon = ['select', 'input_select'].includes(domain)
       ? getDomainIcon(domain)
       : this.hass.entities?.[entity.entity_id]?.icon || state.attributes?.icon || getDeviceClassIcon(domain, deviceClass) || getDomainIcon(domain);
-    const name = state.attributes?.friendly_name || this.hass.entities?.[entity.entity_id]?.name || entity.entity_id;
+    const rawName = state.attributes?.friendly_name || this.hass.entities?.[entity.entity_id]?.name || entity.entity_id;
+    const name = this.config?.settings?.hide_area_name_in_entity_names === true
+      ? stripAreaNameFromEntityName(rawName, area.name)
+      : rawName;
     const active = this._isEntityActiveForUi(state, domain);
     const actionKind = this._mobileEntityActionKind(domain);
     const unavailable = ['unavailable', 'unknown'].includes(String(state.state).toLowerCase());

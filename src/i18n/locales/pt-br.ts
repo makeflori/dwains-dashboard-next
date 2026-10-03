@@ -501,6 +501,8 @@ export const ptBR = {
   'settings.restrict_editing_description': 'Quando ativado, usuários não administradores não podem abrir as configurações do Dwains Dashboard nem alterar o conteúdo do painel, como cartões personalizados de área e páginas de blueprint.',
   'settings.hide_unavailable_areas': 'Ocultar entidades indisponíveis/desconhecidas nas visualizações de área',
   'settings.hide_unavailable_areas_description': "Ativado por padrão. Entidades com estado 'indisponível' ou 'desconhecido' ficam ocultas nos cartões dos cômodos. Quando há entidades ocultas, o Dwains Dashboard mostra um indicador de atenção no cabeçalho do cômodo.",
+  'settings.hide_area_name_in_entity_names': 'Ocultar o nome da área nos nomes das entidades',
+  'settings.hide_area_name_in_entity_names_description': 'Remove a área atribuída quando ela se repete no início ou no fim do nome de uma entidade.',
   'settings.no_weather_fallback': 'Nenhuma entidade de previsão do tempo selecionada. A primeira entidade de previsão do tempo disponível será usada.',
   'settings.move_up': 'Mover para cima',
   'settings.move_down': 'Mover para baixo',

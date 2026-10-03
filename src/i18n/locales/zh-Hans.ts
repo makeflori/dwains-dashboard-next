@@ -505,6 +505,8 @@ export const zhHans = {
   'settings.restrict_editing_description': '阻止更改仪表板设置和内容。',
   'settings.hide_unavailable_areas': '隐藏不可用实体',
   'settings.hide_unavailable_areas_description': '在房间卡片中隐藏不可用和未知实体。',
+  'settings.hide_area_name_in_entity_names': '隐藏实体名称中的区域名称',
+  'settings.hide_area_name_in_entity_names_description': '当实体名称开头或结尾重复所属区域名称时将其移除。',
   'settings.no_weather_fallback': '未选择天气实体。将使用第一个可用的天气实体。',
   'settings.move_up': '上移',
   'settings.move_down': '下移',

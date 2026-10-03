@@ -10,6 +10,7 @@ import { getDeviceClassIcon, getDomainColor, getDomainIcon } from '../utils/icon
 import { ddLocalize, ddLocalizePlural } from '../utils/localize';
 import { fireEvent } from './utils/fire-event';
 import { formatEntityStateWithUnit, formatValueWithUnit } from '../utils/unit-format';
+import { stripAreaNameFromEntityName } from '../utils/entity-names';
 import './utils/dd-card-host';
 
 export interface DomainEntitiesDialogParams {
@@ -1447,7 +1448,11 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       state.attributes?.icon ||
       getDeviceClassIcon(domain, deviceClass) ||
       getDomainIcon(domain);
-    const name = state.attributes?.friendly_name || this.hass.entities?.[entity.entity_id]?.name || entity.entity_id;
+    const rawName = state.attributes?.friendly_name || this.hass.entities?.[entity.entity_id]?.name || entity.entity_id;
+    const areaName = this._entityAreaName(entity);
+    const name = this._params?.config.settings?.hide_area_name_in_entity_names === true && Boolean(this._params?.areaId)
+      ? stripAreaNameFromEntityName(rawName, areaName)
+      : rawName;
     const active = this._isEntityActiveForUi(state, domain);
     const unavailable = this._isUnavailable(state);
     const classes = [
@@ -1474,7 +1479,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
           ${this._renderEntityActions(state, domain, active)}
         </div>
         <div class="domain-entity-copy">
-          <div class="domain-entity-meta">${fallbackMeta || this._entityAreaName(entity) || this._t('dialog.no_area')}</div>
+          <div class="domain-entity-meta">${fallbackMeta || areaName || this._t('dialog.no_area')}</div>
           <div class="domain-entity-name">${name}</div>
           <div class="domain-entity-status">${this._entityStatusText(state, domain)}</div>
         </div>

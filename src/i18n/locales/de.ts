@@ -505,6 +505,8 @@ export const de = {
   'settings.restrict_editing_description': 'Verhindert Änderungen an Dashboard-Einstellungen und -Inhalten.',
   'settings.hide_unavailable_areas': 'Nicht verfügbare Entitäten ausblenden',
   'settings.hide_unavailable_areas_description': 'Blendet nicht verfügbare und unbekannte Entitäten in Raumkarten aus.',
+  'settings.hide_area_name_in_entity_names': 'Bereichsnamen aus Entitätsnamen ausblenden',
+  'settings.hide_area_name_in_entity_names_description': 'Entfernt den zugeordneten Bereich am Anfang oder Ende eines Entitätsnamens. Beispiel: „Deckenlampe Wohnzimmer“ wird zu „Deckenlampe“.',
   'settings.no_weather_fallback': 'Keine Wetterentität ausgewählt. Die erste verfügbare Wetterentität wird verwendet.',
   'settings.move_up': 'Nach oben',
   'settings.move_down': 'Nach unten',

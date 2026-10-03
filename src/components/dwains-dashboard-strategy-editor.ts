@@ -34,6 +34,7 @@ import { countReplacementRules } from "../utils/blueprint-replacements";
 import { getDeviceClassName, getDomainName } from "../utils/domain-names";
 import { getDeviceClassIcon, getDomainColor, getDomainIcon } from "../utils/icons";
 import { ddLocale, ddLocalize, ddLocalizePlural } from "../utils/localize";
+import { stripAreaNameFromEntityName } from "../utils/entity-names";
 import {
   DEFAULT_HOME_INFORMATION_CARDS,
   HOME_INFORMATION_CARD_META,
@@ -1370,6 +1371,13 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         <div class="entity-display-section">
           <div class="dd-settings-list dd-settings-list-spaced">
             ${this._renderToggleSetting(
+              "mdi:form-textbox",
+              this._t('settings.hide_area_name_in_entity_names'),
+              this._t('settings.hide_area_name_in_entity_names_description'),
+              this._config?.settings?.hide_area_name_in_entity_names === true,
+              this._toggleHideAreaNameInEntityNames
+            )}
+            ${this._renderToggleSetting(
               "mdi:eye-off-outline",
               this._t('settings.hide_unavailable_areas'),
               this._t('settings.hide_unavailable_areas_description'),
@@ -1493,6 +1501,21 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         ${this._t('settings.reset_layout')}
       </button>
     `;
+  }
+
+  private _areaEntityDisplayName(entityId: string): string {
+    const rawName = this.hass?.states?.[entityId]?.attributes?.friendly_name
+      || (this.hass?.entities?.[entityId] as any)?.name
+      || entityId;
+
+    if (this._config?.settings?.hide_area_name_in_entity_names !== true || !this._area) {
+      return rawName;
+    }
+
+    const areaName = this.hass?.areas?.[this._area]?.name
+      || this._config?.areas?.find(area => area.area_id === this._area)?.name;
+
+    return stripAreaNameFromEntityName(rawName, areaName);
   }
 
   private _getAreaEditorCustomCards(): AreaCustomCard[] {
@@ -1821,7 +1844,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                         <div class="handle"><ha-svg-icon .path=${mdiDrag}></ha-svg-icon></div>
                         <ha-state-icon .stateObj=${state} class="entity-icon"></ha-state-icon>
                         <span class="entity-name">
-                          ${state?.attributes?.friendly_name || entityId}
+                          ${this._areaEntityDisplayName(entityId)}
                           <small>${this._getGroupTitle(entityGroup)}</small>
                         </span>
                         <button
@@ -1955,7 +1978,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                             class="entity-icon"
                           ></ha-state-icon>
                           <span class="entity-name">
-                            ${state?.attributes?.friendly_name || entityId}
+                            ${this._areaEntityDisplayName(entityId)}
                           </span>
                           <button
                             class="dd-visibility-button ${isHidden ? 'hidden' : ''}"
@@ -4456,6 +4479,20 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       settings: {
         ...this._config!.settings,
         hide_unavailable_entities_on_devices: hideUnavailable
+      }
+    };
+
+    this._fireConfigChanged(newConfig);
+  }
+
+  private _toggleHideAreaNameInEntityNames(e: Event): void {
+    const target = e.target as any;
+
+    const newConfig: DwainsDashboardConfig = {
+      ...this._config!,
+      settings: {
+        ...this._config!.settings,
+        hide_area_name_in_entity_names: Boolean(target.checked)
       }
     };
 
