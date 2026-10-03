@@ -550,6 +550,8 @@ export const en = {
   'settings.search': 'Search…',
   'settings.no_person_entities': 'No person entities found in your Home Assistant configuration.',
   'settings.hidden_unavailable_count': 'Show {count} hidden unavailable/unknown entities',
+  'settings.hidden_unavailable_title': 'Hidden unavailable entities',
+  'settings.hidden_unavailable_description': "These entities are currently hidden because their state is 'unavailable' or 'unknown'. You can disable this filtering in the dashboard configuration.",
   'settings.edit_room': 'Edit the room',
   'settings.area_sensor_help_before': 'To show temperature and humidity sensors in the overview, link a sensor to this room in Home Assistant via ',
   'settings.area_sensor_help_after': '.',

@@ -533,6 +533,8 @@ export const zhHans = {
   'settings.search': '搜索...',
   'settings.no_person_entities': '在你的 Home Assistant 设置中找不到任何个人实体。',
   'settings.hidden_unavailable_count': '显示 {count} 个隐藏的无法使用/未知实体',
+  'settings.hidden_unavailable_title': '隐藏的不可用实体',
+  'settings.hidden_unavailable_description': '这些实体当前处于隐藏状态，因为其状态为“不可用”或“未知”。你可以在仪表盘配置中停用此过滤。'
   'settings.edit_room': '编辑房间',
   'settings.area_sensor_help_before': '要在概览中显示温度和湿度传感器，请在 Home Assistant 中通过',
   'settings.area_sensor_help_after': '将传感器关联到此房间。',

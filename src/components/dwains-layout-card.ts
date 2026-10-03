@@ -16998,6 +16998,110 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
+    
+    /* 2026-10-03: restore stable desktop room geometry and final responsive overrides. */
+    @media (min-width: 769px) {
+      /* Keep the room header media fixed; the grid column must use the same width
+         so the image cannot become narrow inside a wider empty column. */
+      .room-ui-v2 .room-header {
+        grid-template-columns: 142px minmax(0, 1fr) auto auto !important;
+        min-height: 96px !important;
+        gap: 16px !important;
+      }
+
+      .room-ui-v2 .room-header-media {
+        width: 142px !important;
+        height: 76px !important;
+        min-width: 142px !important;
+        min-height: 76px !important;
+        max-width: 142px !important;
+        max-height: 76px !important;
+        aspect-ratio: 142 / 76 !important;
+      }
+
+      .room-ui-v2 .room-header-copy {
+        height: 76px !important;
+        min-height: 0 !important;
+      }
+
+      /* Five entity cards per row on every desktop width. */
+      .room-ui-v2 .mobile-entity-rail,
+      .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-rail {
+        grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+      }
+
+      /* Sidebar room content should nearly fill the height of the media tile. */
+      .sidebar .room-area-button .area-name,
+      .sidebar .room-area-button.has-picture .area-name {
+        font-size: 16px !important;
+        line-height: 1.08 !important;
+      }
+
+      .sidebar .room-area-button .area-sensors,
+      .sidebar .room-area-button.has-picture .area-sensors {
+        font-size: 13px !important;
+        line-height: 1.12 !important;
+        margin-top: 2px !important;
+      }
+
+      .sidebar .room-area-button .info-badge,
+      .sidebar .room-area-button.has-picture .info-badge {
+        min-width: 29px !important;
+        height: 22px !important;
+        padding: 0 6px !important;
+        gap: 3px !important;
+        font-size: 11px !important;
+      }
+
+      .sidebar .room-area-button .info-badge ha-icon {
+        --mdc-icon-size: 12px !important;
+      }
+
+      .sidebar .room-area-button .badge-count {
+        font-size: 11px !important;
+      }
+
+      /* Make the select/input_select icon physically first, independent of
+         earlier grid overrides. */
+      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-main {
+        display: flex !important;
+        flex-direction: row !important;
+        direction: ltr !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        height: 46px !important;
+        min-height: 46px !important;
+        gap: 11px !important;
+      }
+
+      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-icon {
+        order: 0 !important;
+        flex: 0 0 46px !important;
+        width: 46px !important;
+        min-width: 46px !important;
+        height: 46px !important;
+        min-height: 46px !important;
+        margin: 0 !important;
+        position: static !important;
+        inset: auto !important;
+        transform: none !important;
+      }
+
+      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-content {
+        order: 1 !important;
+        flex: 1 1 auto !important;
+        width: auto !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+      }
+
+      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-right {
+        display: none !important;
+      }
+    }
+
   `;
 
   connectedCallback() {
@@ -23776,8 +23880,6 @@ export class DwainsLayoutCard extends LitElement {
   private _showUnavailableEntitiesModal(areaId: string) {
     const unavailableEntities = this._getUnavailableAreaEntities(areaId);
     const area = this.config?.areas?.find(a => a.area_id === areaId);
-    const areaName = area?.name || areaId;
-
     // Combine unavailable and unknown entities
     const allProblematicEntities = [
       ...unavailableEntities.unavailable,
@@ -23789,9 +23891,9 @@ export class DwainsLayoutCard extends LitElement {
       domain: 'unavailable',
       areaId: areaId,
       config: this.config,
-      customTitle: `Hidden Unavailable Entities - ${areaName}`,
+      customTitle: this._t('settings.hidden_unavailable_title'),
       customEntities: allProblematicEntities,
-      customDescription: `These entities are currently hidden because they have 'unavailable' or 'unknown' states. You can disable this filtering in the dashboard configuration.`
+      customDescription: this._t('settings.hidden_unavailable_description')
     });
   }
 

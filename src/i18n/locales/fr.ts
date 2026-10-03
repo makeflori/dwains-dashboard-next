@@ -533,6 +533,8 @@ export const fr = {
   'settings.search': 'Rechercher…',
   'settings.no_person_entities': 'Aucune entité de personne trouvée dans votre configuration Home Assistant.',
   'settings.hidden_unavailable_count': 'Afficher {count} entités indisponibles/inconnues masquées',
+  'settings.hidden_unavailable_title': 'Entités indisponibles masquées',
+  'settings.hidden_unavailable_description': "Ces entités sont actuellement masquées car leur état est 'indisponible' ou 'inconnu'. Vous pouvez désactiver ce filtrage dans la configuration du tableau de bord.",
   'settings.edit_room': 'Modifier la pièce',
   'settings.area_sensor_help_before': 'Pour afficher les capteurs de température et d’humidité dans l’aperçu, associez un capteur à cette pièce dans Home Assistant via ',
   'settings.area_sensor_help_after': '.',

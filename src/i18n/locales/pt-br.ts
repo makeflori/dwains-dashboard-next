@@ -529,6 +529,8 @@ export const ptBR = {
   'settings.search': 'Pesquisar…',
   'settings.no_person_entities': 'Nenhuma entidade de pessoa encontrada na sua configuração do Home Assistant.',
   'settings.hidden_unavailable_count': 'Mostrar {count} entidades indisponíveis/desconhecidas ocultas',
+  'settings.hidden_unavailable_title': 'Entidades indisponíveis ocultas',
+  'settings.hidden_unavailable_description': "Estas entidades estão ocultas porque seu estado é 'indisponível' ou 'desconhecido'. Você pode desativar esse filtro na configuração do painel.",
   'settings.edit_room': 'Editar o cômodo',
   'settings.area_sensor_help_before': 'Para mostrar sensores de temperatura e umidade na visão geral, vincule um sensor a este cômodo no Home Assistant em ',
   'settings.area_sensor_help_after': '.',

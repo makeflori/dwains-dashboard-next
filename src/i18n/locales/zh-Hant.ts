@@ -533,6 +533,8 @@ export const zhHant = {
   'settings.search': '搜尋…',
   'settings.no_person_entities': '在你的 Home Assistant 設定中找不到任何個人實體。',
   'settings.hidden_unavailable_count': '顯示 {count} 個隱藏的無法使用/未知實體',
+  'settings.hidden_unavailable_title': '隱藏的不可用實體',
+  'settings.hidden_unavailable_description': '這些實體目前已隱藏，因為其狀態為「不可用」或「未知」。你可以在儀表板設定中停用此篩選。'
   'settings.edit_room': '編輯房間',
   'settings.area_sensor_help_before': '若要在概覽中顯示溫度與濕度感測器，請在 Home Assistant 中透過',
   'settings.area_sensor_help_after': '將感測器連結到此房間。',

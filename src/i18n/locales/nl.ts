@@ -533,6 +533,8 @@ export const nl = {
   'settings.search': 'Zoeken…',
   'settings.no_person_entities': 'Geen persoonsentiteiten gevonden in uw Home Assistant-configuratie.',
   'settings.hidden_unavailable_count': '{count} verborgen niet-beschikbare/onbekende entiteiten tonen',
+  'settings.hidden_unavailable_title': 'Verborgen niet-beschikbare entiteiten',
+  'settings.hidden_unavailable_description': "Deze entiteiten zijn momenteel verborgen omdat hun status 'niet beschikbaar' of 'onbekend' is. Je kunt deze filtering uitschakelen in de dashboardconfiguratie.",
   'settings.edit_room': 'Ruimte bewerken',
   'settings.area_sensor_help_before': 'Om temperatuur- en luchtvochtigheidssensoren in het overzicht te tonen, koppel je in Home Assistant via ',
   'settings.area_sensor_help_after': ' een sensor aan deze ruimte.',

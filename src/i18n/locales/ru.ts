@@ -552,6 +552,8 @@ export const ru = {
   'settings.search': 'Поиск…',
   'settings.no_person_entities': 'В конфигурации Home Assistant нет сущностей людей.',
   'settings.hidden_unavailable_count': 'Показать скрытые недоступные/неизвестные сущности: {count}',
+  'settings.hidden_unavailable_title': 'Скрытые недоступные сущности',
+  'settings.hidden_unavailable_description': "Эти сущности сейчас скрыты, потому что их состояние — «недоступно» или «неизвестно». Вы можете отключить эту фильтрацию в настройках панели.",
   'settings.edit_room': 'Изменить комнату',
   'settings.area_sensor_help_before': 'Чтобы отображать датчики температуры и влажности в обзоре, привяжите датчик к этой комнате в Home Assistant через ',
   'settings.area_sensor_help_after': '.',

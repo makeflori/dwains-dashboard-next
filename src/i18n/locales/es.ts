@@ -533,6 +533,8 @@ export const es = {
   'settings.search': 'Buscar…',
   'settings.no_person_entities': 'No se encontraron entidades de persona en tu configuración de Home Assistant.',
   'settings.hidden_unavailable_count': 'Mostrar {count} entidades no disponibles/desconocidas ocultas',
+  'settings.hidden_unavailable_title': 'Entidades no disponibles ocultas',
+  'settings.hidden_unavailable_description': "Estas entidades están ocultas porque su estado es 'no disponible' o 'desconocido'. Puedes desactivar este filtro en la configuración del panel.",
   'settings.edit_room': 'Editar habitación',
   'settings.area_sensor_help_before': 'Para mostrar sensores de temperatura y humedad en la vista general, vincula un sensor a esta habitación en Home Assistant mediante ',
   'settings.area_sensor_help_after': '.',
