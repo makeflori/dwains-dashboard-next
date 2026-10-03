@@ -23879,14 +23879,13 @@ export class DwainsLayoutCard extends LitElement {
 
   private _showUnavailableEntitiesModal(areaId: string) {
     const unavailableEntities = this._getUnavailableAreaEntities(areaId);
-    const area = this.config?.areas?.find(a => a.area_id === areaId);
     // Combine unavailable and unknown entities
     const allProblematicEntities = [
       ...unavailableEntities.unavailable,
       ...unavailableEntities.unknown
     ];
 
-    // Create a fake dialog to show the unavailable entities
+    // Show the unavailable entities in the shared domain dialog.
     showDomainEntitiesDialog(this, {
       domain: 'unavailable',
       areaId: areaId,
