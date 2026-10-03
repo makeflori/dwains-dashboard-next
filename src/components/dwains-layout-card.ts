@@ -10797,31 +10797,36 @@ export class DwainsLayoutCard extends LitElement {
     .room-ui-v2 .room-header {
       position: relative;
       width: 100%;
-      min-height: 96px;
+      min-height: 210px;
       margin: 0;
-      padding: 10px 12px;
+      padding: 14px 16px;
       box-sizing: border-box;
       display: grid;
-      grid-template-columns: 142px minmax(220px, 1fr) auto auto;
-      grid-template-areas: "media copy metrics actions";
+      grid-template-columns: 220px minmax(250px, 1fr) minmax(250px, 320px) minmax(220px, 250px) 42px;
+      grid-template-areas: "media copy camera metrics actions";
       align-items: center;
-      gap: 16px;
+      gap: 18px;
       overflow: hidden;
       border: 1px solid color-mix(in srgb, var(--primary-text-color) 7%, transparent);
-      border-radius: 8px;
+      border-radius: 10px;
       background: var(--card-background-color);
       color: var(--primary-text-color);
-      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.045);
+      box-shadow: 0 5px 18px rgba(15, 23, 42, 0.05);
+    }
+
+    .room-ui-v2 .room-header.no-camera {
+      grid-template-columns: 220px minmax(280px, 1fr) minmax(220px, 250px) 42px;
+      grid-template-areas: "media copy metrics actions";
     }
 
     .room-header-media {
       grid-area: media;
       position: relative;
-      width: 142px;
-      height: 76px;
+      width: 220px;
+      height: 176px;
       align-self: center;
       overflow: hidden;
-      border-radius: 8px;
+      border-radius: 12px;
       background: color-mix(in srgb, var(--primary-color) 8%, var(--card-background-color));
     }
 
@@ -10843,7 +10848,7 @@ export class DwainsLayoutCard extends LitElement {
       background: color-mix(in srgb, var(--primary-color) 9%, var(--card-background-color));
     }
 
-    .room-header-icon ha-icon { --mdc-icon-size: 38px; }
+    .room-header-icon ha-icon { --mdc-icon-size: 52px; }
 
     .room-header-copy {
       grid-area: copy;
@@ -10852,13 +10857,13 @@ export class DwainsLayoutCard extends LitElement {
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: 2px;
+      gap: 6px;
     }
 
     .room-ui-v2 .room-header .area-title {
       margin: 0;
-      font-size: clamp(25px, 2vw, 34px);
-      line-height: 1;
+      font-size: clamp(27px, 2.15vw, 36px);
+      line-height: 1.02;
       font-weight: 850;
     }
 
@@ -10900,20 +10905,17 @@ export class DwainsLayoutCard extends LitElement {
 
     .room-header-device-count {
       color: var(--secondary-text-color);
-      font-size: 11px;
+      font-size: 13px;
       font-weight: 750;
     }
 
     .room-header-summary {
-      margin-top: 3px;
+      margin-top: 6px;
       display: flex;
       align-items: center;
-      flex-wrap: nowrap;
-      gap: 8px;
-      overflow-x: auto;
-      overflow-y: hidden;
-      scrollbar-width: none;
-      overscroll-behavior-x: contain;
+      flex-wrap: wrap;
+      gap: 7px;
+      overflow: visible;
     }
 
     .room-header-summary::-webkit-scrollbar {
@@ -10921,27 +10923,133 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .room-summary-item {
-      min-height: 18px;
+      min-height: 28px;
       display: inline-flex;
       align-items: center;
-      gap: 3px;
+      justify-content: center;
+      gap: 5px;
       color: var(--secondary-text-color);
-      font-size: 10px;
-      font-weight: 750;
+      font-size: 12px;
+      font-weight: 800;
       line-height: 1;
       white-space: nowrap;
     }
 
-    .room-summary-item ha-icon { --mdc-icon-size: 14px; }
+    button.room-summary-item {
+      min-width: 46px;
+      padding: 5px 10px;
+      border: 0;
+      font: inherit;
+      cursor: pointer;
+      box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--room-summary-color) 12%, transparent),
+        0 5px 12px rgba(15, 23, 42, 0.035);
+      transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
+    }
+
+    button.room-summary-item:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.03);
+      box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--room-summary-color) 18%, transparent),
+        0 8px 16px rgba(15, 23, 42, 0.06);
+    }
+
+    button.room-summary-item:active {
+      transform: translateY(0) scale(0.97);
+    }
+
+    .room-summary-item ha-icon { --mdc-icon-size: 17px; }
     .room-summary-item.temperature ha-icon { color: #7567d8; }
     .room-summary-item.humidity ha-icon { color: #35a9dc; }
     .room-summary-item.power ha-icon { color: #d99600; }
 
     .room-summary-item.status {
-      padding: 2px 6px;
       border-radius: 999px;
       color: var(--room-summary-color);
       background: color-mix(in srgb, var(--room-summary-color) 10%, var(--card-background-color));
+    }
+
+    .room-header-camera-preview {
+      grid-area: camera;
+      position: relative;
+      width: 100%;
+      height: 176px;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      border: 0;
+      border-radius: 12px;
+      background: color-mix(in srgb, var(--primary-text-color) 6%, var(--card-background-color));
+      color: #fff;
+      cursor: pointer;
+      box-shadow:
+        inset 0 0 0 1px rgba(15, 23, 42, 0.06),
+        0 7px 18px rgba(15, 23, 42, 0.07);
+      transition: transform 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    .room-header-camera-preview:hover {
+      transform: translateY(-1px);
+      box-shadow:
+        inset 0 0 0 1px rgba(15, 23, 42, 0.08),
+        0 10px 22px rgba(15, 23, 42, 0.1);
+    }
+
+    .room-header-camera-image,
+    .room-header-camera-stream {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    .room-header-camera-image {
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+    }
+
+    .room-header-camera-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--secondary-text-color);
+    }
+
+    .room-header-camera-placeholder ha-icon {
+      --mdc-icon-size: 38px;
+    }
+
+    .room-header-camera-live {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 2;
+      min-height: 26px;
+      padding: 0 9px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      color: #fff;
+      background: rgba(15, 23, 42, 0.78);
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1;
+      backdrop-filter: blur(8px);
+    }
+
+    .room-header-camera-live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #20c77a;
+      box-shadow: 0 0 0 3px rgba(32, 199, 122, 0.14);
     }
 
     .room-ui-v2 .room-header .area-header-metrics {
@@ -10950,34 +11058,62 @@ export class DwainsLayoutCard extends LitElement {
       grid-row: auto !important;
       position: static !important;
       inset: auto !important;
+      width: 100%;
       min-width: 0;
       max-width: none;
       margin: 0 !important;
       padding: 0 !important;
       display: flex !important;
-      align-items: center;
-      justify-content: flex-end;
-      flex-wrap: nowrap;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: center;
       gap: 8px;
       transform: none !important;
     }
 
     .room-ui-v2 .room-header .area-header-metric {
-      min-width: 122px;
-      min-height: 42px;
-      padding: 5px 9px;
+      width: 100%;
+      min-width: 0;
+      min-height: 52px;
+      padding: 6px 12px;
       box-sizing: border-box;
-      gap: 7px;
+      gap: 9px;
+      border: 0;
       border-radius: 999px;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
+    }
+
+    .room-ui-v2 .room-header .area-header-metric:hover {
+      transform: translateX(2px);
+      filter: brightness(1.025);
+      box-shadow: 0 7px 16px rgba(15, 23, 42, 0.055);
+    }
+
+    .room-ui-v2 .room-header .area-header-metric:active {
+      transform: translateX(1px) scale(0.985);
     }
 
     .room-ui-v2 .room-header .area-header-metric .metric-ring {
-      width: 30px;
-      height: 30px;
+      width: 34px;
+      height: 34px;
+    }
+
+    .room-ui-v2 .room-header .area-header-metric .metric-copy {
+      min-width: 0;
+      flex: 1;
     }
 
     .room-ui-v2 .room-header .area-header-metric .metric-label { font-size: 9px; }
-    .room-ui-v2 .room-header .area-header-metric .metric-reading { font-size: 13px; }
+    .room-ui-v2 .room-header .area-header-metric .metric-reading { font-size: 15px; }
+
+    .room-ui-v2 .room-header .area-header-metric .metric-chevron {
+      --mdc-icon-size: 18px;
+      flex: 0 0 auto;
+      opacity: 0.55;
+    }
 
     .room-header-actions {
       grid-area: actions;
@@ -10985,23 +11121,25 @@ export class DwainsLayoutCard extends LitElement {
       grid-row: auto;
       position: static !important;
       inset: auto !important;
-      min-width: max-content;
+      min-width: 42px;
+      height: 100%;
       margin: 0 !important;
-      display: inline-flex;
+      display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: flex-end;
-      gap: 7px;
-      margin-left: 7px !important;
+      justify-content: flex-start;
+      align-self: stretch;
+      gap: 10px;
       transform: none !important;
     }
 
     .room-header-actions .unavailable-entities-icon,
-    .room-header-actions .area-mobile-camera,
     .room-header-actions .dd-edit-toggle {
       width: 38px;
       height: 38px;
       margin: 0;
       border-radius: 999px;
+      flex: 0 0 auto;
     }
 
     .room-header-back { display: none; }
@@ -11416,17 +11554,31 @@ export class DwainsLayoutCard extends LitElement {
 
     @media (max-width: 1180px) and (min-width: 769px) {
       .room-ui-v2 .room-header {
-        grid-template-columns: 112px minmax(170px, 1fr) auto auto;
+        min-height: 188px;
+        padding: 12px;
+        grid-template-columns: 170px minmax(180px, 1fr) minmax(180px, 230px) minmax(184px, 210px) 38px;
+        grid-template-areas: "media copy camera metrics actions";
+        gap: 12px;
+      }
+
+      .room-ui-v2 .room-header.no-camera {
+        grid-template-columns: 170px minmax(220px, 1fr) minmax(184px, 210px) 38px;
         grid-template-areas: "media copy metrics actions";
       }
 
       .room-header-media {
-        width: 112px;
-        height: 68px;
+        width: 170px;
+        height: 148px;
+      }
+
+      .room-header-camera-preview {
+        height: 148px;
       }
 
       .room-ui-v2 .room-header .area-header-metric {
-        min-width: 108px;
+        min-width: 0;
+        min-height: 44px;
+        padding: 5px 9px;
       }
 
       .room-ui-v2 .mobile-entity-rail,
@@ -11442,18 +11594,27 @@ export class DwainsLayoutCard extends LitElement {
 
       .room-ui-v2 { gap: 7px; }
 
-      .room-ui-v2 .room-header {
+      .room-ui-v2 .room-header,
+      .room-ui-v2 .room-header.no-camera {
         min-height: 0;
         padding: 10px;
-        grid-template-columns: 42px 64px minmax(0, 1fr) auto;
-        grid-template-rows: auto auto;
+        grid-template-columns: 42px 64px minmax(0, 1fr) 36px;
+        grid-template-rows: auto auto auto;
         grid-template-areas:
           "back media copy actions"
+          "camera camera camera camera"
           "metrics metrics metrics metrics";
         column-gap: 9px;
         row-gap: 10px;
         align-items: center;
         border-radius: 10px;
+      }
+
+      .room-ui-v2 .room-header.no-camera {
+        grid-template-rows: auto auto;
+        grid-template-areas:
+          "back media copy actions"
+          "metrics metrics metrics metrics";
       }
 
       .room-header-back {
@@ -11487,23 +11648,28 @@ export class DwainsLayoutCard extends LitElement {
 
       .room-summary-item { font-size: 10px; }
 
+      .room-header-camera-preview {
+        width: 100%;
+        height: 148px;
+        border-radius: 10px;
+      }
+
       .room-ui-v2 .room-header .area-header-metrics {
         grid-area: metrics !important;
         grid-column: auto !important;
         grid-row: auto !important;
         width: 100%;
-        display: grid !important;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        justify-content: stretch;
-        align-items: center;
-        gap: 8px;
+        display: flex !important;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 7px;
       }
 
       .room-ui-v2 .room-header .area-header-metric {
         width: 100%;
         min-width: 0;
-        min-height: 34px;
-        padding: 4px 8px;
+        min-height: 38px;
+        padding: 4px 9px;
         justify-content: flex-start;
       }
 
@@ -11519,13 +11685,14 @@ export class DwainsLayoutCard extends LitElement {
         grid-area: actions;
         grid-column: auto;
         grid-row: auto;
-        align-self: center;
-        gap: 5px;
+        height: auto;
+        align-self: start;
+        flex-direction: column;
+        gap: 6px;
         margin-left: 0 !important;
       }
 
       .room-header-actions .unavailable-entities-icon,
-      .room-header-actions .area-mobile-camera,
       .room-header-actions .dd-edit-toggle {
         width: 34px;
         height: 34px;
@@ -20438,12 +20605,13 @@ export class DwainsLayoutCard extends LitElement {
     const deviceCount = this._getAreaDeviceCount(area.area_id, visibleAreaEntities);
     const deviceLabel = this._tp('common.device', deviceCount);
     const roomBadges = this._getAreaStatusBadges(areaData);
+    const headerCamera = this._getAreaHeaderCamera(area, visibleAreaEntities);
 
     return html`
       <div class="area-view room-ui-v2">
         ${this._isMobile ? this._renderRoomFavoritesBlock() : nothing}
 
-        <div class="room-header">
+        <div class="room-header ${headerCamera ? 'has-camera' : 'no-camera'}">
           ${this._isMobile ? html`
             <button
               class="room-header-back"
@@ -20483,22 +20651,25 @@ export class DwainsLayoutCard extends LitElement {
             <div class="room-header-device-count">${deviceLabel}</div>
             <div class="room-header-summary ${roomBadges.length ? '' : 'is-empty'}" aria-hidden=${roomBadges.length ? 'false' : 'true'}>
               ${roomBadges.map(badge => html`
-                <span
+                <button
                   class="room-summary-item status"
+                  type="button"
                   style=${`--room-summary-color: ${badge.color};`}
+                  title=${badge.deviceClass ? getDeviceClassName(this.hass, badge.deviceClass) : getDomainName(this.hass, badge.domain)}
+                  aria-label=${badge.deviceClass ? getDeviceClassName(this.hass, badge.deviceClass) : getDomainName(this.hass, badge.domain)}
+                  @click=${() => this._showAreaStatusBadgeDialog(area.area_id, badge)}
                 >
                   <ha-icon icon=${badge.icon}></ha-icon>
                   <span>${badge.count}</span>
-                </span>
+                </button>
               `)}
             </div>
           </div>
 
-          ${this._renderAreaHeaderMetrics(areaData)}
+          ${this._renderAreaHeaderCamera(headerCamera)}
+          ${this._renderAreaHeaderMetrics(areaData, area.area_id, visibleAreaEntities)}
 
           <div class="room-header-actions">
-            ${this._renderAreaMobileCameraAction(visibleAreaEntities)}
-            ${this._renderUnavailableEntitiesIcon(area.area_id)}
             ${this._canManageDashboard() ? html`
               <button
                 class="dd-edit-toggle ${this._editMode ? 'active' : ''}"
@@ -20508,6 +20679,7 @@ export class DwainsLayoutCard extends LitElement {
                 <ha-icon icon=${this._editMode ? 'mdi:check' : 'mdi:pencil'}></ha-icon>
               </button>
             ` : nothing}
+            ${this._renderUnavailableEntitiesIcon(area.area_id)}
           </div>
         </div>
 
@@ -21083,31 +21255,181 @@ export class DwainsLayoutCard extends LitElement {
     }
   }
 
-  private _renderAreaMobileCameraAction(entities: EntityConfig[]) {
+  private _getAreaStatusBadgeEntityIds(areaId: string, badge: AreaStatusBadge): string[] {
+    return this._getFilteredAreaEntities(areaId)
+      .filter((entity) => {
+        const state = this.hass?.states?.[entity.entity_id];
+        if (!state || state.state === 'unavailable' || state.state === 'unknown') return false;
+
+        const domain = entity.entity_id.split('.')[0] || '';
+        if (domain !== badge.domain) return false;
+
+        if (badge.domain === 'binary_sensor') {
+          if (badge.deviceClass && state.attributes?.device_class !== badge.deviceClass) return false;
+          return state.state === 'on';
+        }
+
+        if (badge.domain === 'climate') {
+          const hvacAction = state.attributes?.hvac_action;
+          return hvacAction
+            ? hvacAction !== 'idle' && hvacAction !== 'off'
+            : state.state !== 'off';
+        }
+
+        return !['off', 'closed', 'locked'].includes(state.state);
+      })
+      .map((entity) => entity.entity_id);
+  }
+
+  private _showAreaStatusBadgeDialog(areaId: string, badge: AreaStatusBadge) {
+    const entityIds = this._getAreaStatusBadgeEntityIds(areaId, badge);
+    if (!entityIds.length) return;
+
+    showDomainEntitiesDialog(this, {
+      domain: badge.domain,
+      config: this.config,
+      deviceClass: badge.deviceClass,
+      entityIds,
+      customTitle: badge.deviceClass
+        ? getDeviceClassName(this.hass, badge.deviceClass)
+        : getDomainName(this.hass, badge.domain),
+    });
+  }
+
+  private _showAreaMetricDialog(
+    areaId: string,
+    kind: 'temperature' | 'humidity' | 'power',
+    entities: EntityConfig[]
+  ) {
+    let entityIds: string[] = [];
+    let title = '';
+
+    if (kind === 'temperature' || kind === 'humidity') {
+      const areaRegistry = this.hass?.areas?.[areaId] as any;
+      const entityId = kind === 'temperature'
+        ? areaRegistry?.temperature_entity_id
+        : areaRegistry?.humidity_entity_id;
+      if (entityId && this.hass?.states?.[entityId]) entityIds = [entityId];
+      title = kind === 'temperature' ? this._t('home.temperature') : this._t('home.humidity');
+    } else {
+      entityIds = entities
+        .map((entity) => entity.entity_id)
+        .filter((entityId) => {
+          const state = this.hass?.states?.[entityId];
+          return Boolean(
+            state &&
+            entityId.startsWith('sensor.') &&
+            state.attributes?.unit_of_measurement === 'W' &&
+            state.state !== 'unavailable' &&
+            state.state !== 'unknown'
+          );
+        });
+      title = this._t('entity.power_usage');
+    }
+
+    if (!entityIds.length) return;
+
+    showDomainEntitiesDialog(this, {
+      domain: 'sensor',
+      config: this.config,
+      entityIds,
+      customTitle: title,
+    });
+  }
+
+  private _getAreaHeaderCamera(area: AreaConfig, entities: EntityConfig[]): HomeAreaCamera | undefined {
     const camera = entities.find(entity => {
       if (!entity.entity_id.startsWith('camera.')) return false;
       const state = this.hass?.states?.[entity.entity_id]?.state;
       return Boolean(state && state !== 'unavailable' && state !== 'unknown');
     });
+    if (!camera) return undefined;
+
+    const stateObj = this.hass.states[camera.entity_id];
+    const result: HomeAreaCamera = {
+      areaId: area.area_id,
+      areaName: area.name,
+      areaIcon: getAreaIcon(area),
+      entityId: camera.entity_id,
+      name: stateObj?.attributes?.friendly_name || camera.entity_id,
+      state: stateObj ? this.hass.formatEntityState(stateObj) : this._t('common.unknown'),
+    };
+    const imageUrl = this._getCameraImageUrl(camera.entity_id);
+    if (imageUrl) result.imageUrl = imageUrl;
+    return result;
+  }
+
+  private _renderAreaHeaderCamera(camera?: HomeAreaCamera) {
     if (!camera) return nothing;
+    const stateObj = this.hass?.states?.[camera.entityId];
 
     return html`
       <button
-        class="area-mobile-round area-mobile-camera"
-        title=${this._t('domain.camera')}
-        aria-label=${this._t('action.open_camera')}
-        @click=${() => this._showMoreInfo(camera.entity_id)}
+        class="room-header-camera-preview"
+        type="button"
+        title=${camera.name}
+        aria-label=${`${this._t('action.open_camera')}: ${camera.name}`}
+        @click=${() => this._showMoreInfo(camera.entityId)}
       >
-        <ha-icon icon="mdi:video-outline"></ha-icon>
+        ${camera.imageUrl
+          ? html`<div class="room-header-camera-image" style=${`background-image: url('${camera.imageUrl}');`}></div>`
+          : html`
+              <div class="room-header-camera-placeholder">
+                <ha-icon icon="mdi:cctv"></ha-icon>
+              </div>
+            `}
+        ${stateObj ? html`
+          <ha-camera-stream
+            class="room-header-camera-stream"
+            .hass=${this.hass}
+            .stateObj=${stateObj}
+            .controls=${false}
+            .muted=${true}
+          ></ha-camera-stream>
+        ` : nothing}
+        <span class="room-header-camera-live" aria-hidden="true">
+          <span class="room-header-camera-live-dot"></span>
+          <span>Live</span>
+        </span>
       </button>
     `;
   }
 
-  private _renderAreaHeaderMetrics(areaData: AreaData) {
+  private _renderAreaHeaderMetrics(areaData: AreaData, areaId: string, entities: EntityConfig[]) {
     const metrics = [
-      areaData.temperature ? this._renderMobileAreaMetric('temperature', this._t('home.temperature'), areaData.temperature, 0, 30, 'area-header-metric') : nothing,
-      areaData.humidity ? this._renderMobileAreaMetric('humidity', this._t('home.humidity'), areaData.humidity, 20, 90, 'area-header-metric') : nothing,
-      areaData.wattage ? this._renderMobileAreaMetric('power', this._t('entity.power_usage'), areaData.wattage, undefined, undefined, 'area-header-metric') : nothing,
+      areaData.temperature
+        ? this._renderMobileAreaMetric(
+            'temperature',
+            this._t('home.temperature'),
+            areaData.temperature,
+            0,
+            30,
+            'area-header-metric',
+            () => this._showAreaMetricDialog(areaId, 'temperature', entities)
+          )
+        : nothing,
+      areaData.humidity
+        ? this._renderMobileAreaMetric(
+            'humidity',
+            this._t('home.humidity'),
+            areaData.humidity,
+            20,
+            90,
+            'area-header-metric',
+            () => this._showAreaMetricDialog(areaId, 'humidity', entities)
+          )
+        : nothing,
+      areaData.wattage
+        ? this._renderMobileAreaMetric(
+            'power',
+            this._t('entity.power_usage'),
+            areaData.wattage,
+            undefined,
+            undefined,
+            'area-header-metric',
+            () => this._showAreaMetricDialog(areaId, 'power', entities)
+          )
+        : nothing,
     ].filter((item) => item !== nothing);
 
     if (!metrics.length) return nothing;
@@ -21125,7 +21447,8 @@ export class DwainsLayoutCard extends LitElement {
     value: string,
     min?: number,
     max?: number,
-    className = 'mobile-area-metric'
+    className = 'mobile-area-metric',
+    onClick?: () => void
   ) {
     const hasRange = typeof min === 'number' && typeof max === 'number';
     const numeric = this._numericValue(value);
@@ -21143,7 +21466,13 @@ export class DwainsLayoutCard extends LitElement {
             : 'mdi:gauge';
 
     return html`
-      <div class="${className} ${kind}">
+      <button
+        class="${className} ${kind}"
+        type="button"
+        title=${label}
+        aria-label=${`${label}: ${value}`}
+        @click=${onClick}
+      >
         <div class="metric-ring ${!hasRange || isHeaderMetric ? 'metric-icon' : ''}" style=${`--metric-angle: ${angle}deg;`}>
           ${hasRange && !isHeaderMetric
             ? html`<span class="metric-value">${value}</span>`
@@ -21155,7 +21484,8 @@ export class DwainsLayoutCard extends LitElement {
             ? html`<div class="metric-range">${min} - ${max}</div>`
             : html`<div class="metric-reading">${value}</div>`}
         </div>
-      </div>
+        ${isHeaderMetric ? html`<ha-icon class="metric-chevron" icon="mdi:chevron-right" aria-hidden="true"></ha-icon>` : nothing}
+      </button>
     `;
   }
 
