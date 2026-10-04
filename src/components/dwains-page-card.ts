@@ -188,9 +188,11 @@ export class DwainsPageCard extends LitElement {
       display: block;
     }
     .page-wrap {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 8px 12px 24px;
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      padding: 8px 16px 24px;
+      box-sizing: border-box;
     }
     .page-toolbar {
       display: flex;
@@ -239,6 +241,9 @@ export class DwainsPageCard extends LitElement {
     }
     dwains-dashboard-next-card-host {
       display: block;
+      width: 100%;
+      max-width: none;
+      min-width: 0;
     }
     .add-wrap {
       max-width: 520px;
