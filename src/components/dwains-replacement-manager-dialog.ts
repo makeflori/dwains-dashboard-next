@@ -131,34 +131,29 @@ export class DwainsReplacementManagerDialog extends LitElement {
   }
 
   private _renderBuilder() {
-    const domainGallery = this._galleryForDomain();
-    const showSearch = domainGallery.length > 8;
     const inputKeys = this._editableInputKeys();
 
     return html`
       <section class="builder">
         ${this._error ? html`<div class="error">${this._error}</div>` : nothing}
-        <div class="builder-grid">
+        <div class="builder-controls">
           <div class="control-block domain-control">
             <label>${this._t('replacement.domain')}</label>
             ${this._renderDomainControl()}
           </div>
+          <div class="control-block search-control">
+            <label>${this._t('replacement.search')}</label>
+            <input
+              class="search"
+              type="search"
+              placeholder=${this._t('replacement.search')}
+              .value=${this._search}
+              @input=${(e: Event) => (this._search = (e.target as HTMLInputElement).value)}
+            />
+          </div>
         </div>
 
-        ${showSearch || this._galleryLoading ? html`
-          <div class="gallery-toolbar">
-            ${showSearch ? html`
-              <input
-                class="search"
-                type="search"
-                placeholder=${this._t('replacement.search')}
-                .value=${this._search}
-                @input=${(e: Event) => (this._search = (e.target as HTMLInputElement).value)}
-              />
-            ` : nothing}
-            ${this._galleryLoading ? html`<span class="loading">${this._t('common.loading')}</span>` : nothing}
-          </div>
-        ` : nothing}
+        ${this._galleryLoading ? html`<div class="loading toolbar-loading">${this._t('common.loading')}</div>` : nothing}
         ${this._galleryError ? html`<div class="error">${this._galleryError}</div>` : nothing}
 
         <div class="gallery">
@@ -261,6 +256,13 @@ export class DwainsReplacementManagerDialog extends LitElement {
       this._galleryError = String(e?.message || e);
     } finally {
       this._galleryLoading = false;
+      const options = this._domainOptions().filter((option) => option.value);
+      if (this._domain && !options.some((option) => option.value === this._domain)) {
+        this._domain = '';
+        this._selected = undefined;
+        this._parsed = undefined;
+        this._inputs = {};
+      }
     }
   }
 
@@ -301,6 +303,14 @@ export class DwainsReplacementManagerDialog extends LitElement {
   private _applyAssignment = (): void => {
     if (!this._selected || !this._parsed || !this._canApply()) return;
     const target = this._domain;
+    const alreadyAssigned = REPLACEMENT_SURFACES.some(
+      (surface) => Boolean(this._replacements[surface]?.by_domain?.[target])
+    );
+    if (alreadyAssigned && target !== this._params?.initialDomain) {
+      this._error = `${getDomainName(this.hass, target)} – ${this._t('common.active')}`;
+      return;
+    }
+
     const assignment: BlueprintReplacementAssignment = {
       id: this._slug(`${this._selected.name}-${target}`),
       name: this._selected.name,
@@ -345,17 +355,33 @@ export class DwainsReplacementManagerDialog extends LitElement {
   }
 
   private _domainOptions(): Array<{ value: string; label: string }> {
-    const domains = new Set<string>();
-    Object.keys(this.hass?.states || {}).forEach((entityId) => domains.add(entityId.split('.')[0] || ''));
-    ['light', 'switch', 'climate', 'cover', 'fan', 'media_player', 'person', 'sensor', 'binary_sensor'].forEach(
-      (domain) => domains.add(domain)
-    );
+    const assigned = new Set<string>();
+    for (const surface of REPLACEMENT_SURFACES) {
+      Object.keys(this._replacements[surface]?.by_domain || {}).forEach((domain) => assigned.add(domain));
+    }
+
+    const available = new Set<string>();
+    this._gallery.forEach((item) => {
+      const domain = inferBlueprintDomain(item);
+      if (domain) available.add(domain);
+    });
+
+    // Before the gallery arrives, use only known replacement domains instead of every HA domain.
+    if (!available.size && this._galleryLoading) {
+      DOMAIN_HINTS.forEach(([domain]) => available.add(domain));
+    }
+
+    const initialDomain = this._params?.initialDomain;
+    if (initialDomain) available.add(initialDomain);
+
+    const options = Array.from(available)
+      .filter((domain) => !assigned.has(domain) || domain === initialDomain)
+      .map((domain) => ({ value: domain, label: getDomainName(this.hass, domain) }))
+      .sort((a, b) => a.label.localeCompare(b.label, this.hass?.language || undefined));
+
     return [
       { value: '', label: this._t('replacement.all_domains') },
-      ...Array.from(domains)
-        .filter(Boolean)
-        .sort()
-        .map((domain) => ({ value: domain, label: getDomainName(this.hass, domain) })),
+      ...options,
     ];
   }
 
@@ -436,10 +462,11 @@ export class DwainsReplacementManagerDialog extends LitElement {
     .builder {
       margin-top: 14px;
     }
-    .builder-grid {
+    .builder-controls {
       display: grid;
-      grid-template-columns: minmax(220px, 360px);
+      grid-template-columns: minmax(180px, 240px) minmax(240px, 1fr);
       gap: 12px;
+      align-items: end;
     }
     .control-block {
       display: flex;
@@ -464,11 +491,8 @@ export class DwainsReplacementManagerDialog extends LitElement {
       color: var(--primary-text-color);
       font-size: 14px;
     }
-    .gallery-toolbar {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin: 14px 0 8px;
+    .toolbar-loading {
+      margin: 10px 0 0;
     }
     .gallery {
       display: grid;
@@ -479,8 +503,8 @@ export class DwainsReplacementManagerDialog extends LitElement {
       padding-right: 2px;
       margin-top: 12px;
     }
-    .gallery-toolbar + .gallery {
-      margin-top: 0;
+    .builder-controls + .gallery {
+      margin-top: 12px;
     }
     .blueprint-choice {
       text-align: left;
@@ -560,7 +584,7 @@ export class DwainsReplacementManagerDialog extends LitElement {
       :host {
         --mdc-dialog-min-width: 96vw;
       }
-      .builder-grid,
+      .builder-controls,
       .gallery,
       .input-grid {
         grid-template-columns: 1fr;
