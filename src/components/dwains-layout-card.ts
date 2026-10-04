@@ -17652,6 +17652,175 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
+
+    /*
+     * FINAL room-header balance correction.
+     * This intentionally sits last so legacy desktop overrides cannot win.
+     */
+    @media (min-width: 769px) {
+      .room-ui-v2 .room-header {
+        min-height: 162px !important;
+        padding: 6px 12px !important;
+        gap: 10px !important;
+        align-items: center !important;
+      }
+
+      .room-ui-v2 .room-header.has-camera {
+        grid-template-columns: 190px minmax(300px, 1fr) 230px 180px 42px !important;
+        grid-template-areas: "media copy camera metrics actions" !important;
+      }
+
+      .room-ui-v2 .room-header.no-camera {
+        grid-template-columns: 190px minmax(340px, 1fr) 180px 42px !important;
+        grid-template-areas: "media copy metrics actions" !important;
+      }
+
+      .room-ui-v2 .room-header-media {
+        width: 190px !important;
+        min-width: 190px !important;
+        max-width: 190px !important;
+        height: 150px !important;
+        min-height: 150px !important;
+        max-height: 150px !important;
+      }
+
+      /* Use the full height next to the room image instead of bunching all text at the top. */
+      .room-ui-v2 .room-header-copy {
+        height: 150px !important;
+        min-height: 150px !important;
+        max-height: 150px !important;
+        padding: 0 !important;
+        display: grid !important;
+        grid-template-rows: auto auto 1fr !important;
+        align-content: stretch !important;
+        justify-content: stretch !important;
+        gap: 0 !important;
+        overflow: visible !important;
+      }
+
+      .room-ui-v2 .room-header-title-row {
+        align-self: start !important;
+        min-height: 40px !important;
+        margin: 0 !important;
+      }
+
+      .room-ui-v2 .room-header-device-count {
+        align-self: center !important;
+        margin: 0 !important;
+        font-size: 13px !important;
+        line-height: 1.1 !important;
+      }
+
+      .room-ui-v2 .room-header-summary {
+        align-self: end !important;
+        min-height: 34px !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 2px 0 3px !important;
+        overflow: visible !important;
+      }
+
+      .room-ui-v2 .room-summary-item.status {
+        min-height: 30px !important;
+        height: 30px !important;
+        padding: 5px 9px !important;
+      }
+
+      /* Smaller camera preview; exactly one visual layer. */
+      .room-ui-v2 .room-header-camera-preview {
+        width: 230px !important;
+        min-width: 230px !important;
+        max-width: 230px !important;
+        height: 130px !important;
+        min-height: 130px !important;
+        max-height: 130px !important;
+        align-self: center !important;
+        border-radius: 10px !important;
+      }
+
+      .room-ui-v2 .room-header-camera-image {
+        position: absolute !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        background-position: center !important;
+        background-size: cover !important;
+        background-repeat: no-repeat !important;
+      }
+
+      .room-ui-v2 .room-header-camera-stream {
+        display: none !important;
+      }
+
+      .room-ui-v2 .room-header-camera-placeholder {
+        position: absolute !important;
+        inset: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 6px !important;
+        color: var(--secondary-text-color) !important;
+        background: color-mix(in srgb, var(--secondary-background-color) 65%, var(--card-background-color)) !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
+      }
+
+      .room-ui-v2 .room-header-camera-placeholder ha-icon {
+        --mdc-icon-size: 28px !important;
+      }
+
+      /* Smaller and narrower metrics than before. */
+      .room-ui-v2 .room-header .area-header-metrics {
+        width: 180px !important;
+        min-width: 180px !important;
+        max-width: 180px !important;
+        height: auto !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        gap: 2px !important;
+        align-self: center !important;
+        justify-content: center !important;
+      }
+
+      .room-ui-v2 .room-header .area-header-metric {
+        width: 180px !important;
+        min-width: 180px !important;
+        max-width: 180px !important;
+        min-height: 42px !important;
+        height: 42px !important;
+        padding: 3px 9px !important;
+        gap: 6px !important;
+      }
+
+      .room-ui-v2 .room-header .area-header-metric .metric-ring {
+        width: 26px !important;
+        height: 26px !important;
+      }
+
+      .room-ui-v2 .room-header .area-header-metric .metric-label {
+        font-size: 7px !important;
+        line-height: 1 !important;
+      }
+
+      .room-ui-v2 .room-header .area-header-metric .metric-reading {
+        font-size: 13px !important;
+        line-height: 1.02 !important;
+      }
+
+      .room-ui-v2 .room-header .area-header-metric .metric-chevron {
+        display: none !important;
+      }
+
+      .room-ui-v2 .room-header-actions {
+        height: 150px !important;
+        align-self: center !important;
+        justify-content: flex-start !important;
+        gap: 6px !important;
+      }
+    }
+
   `;
 
   connectedCallback() {
@@ -21712,36 +21881,32 @@ export class DwainsLayoutCard extends LitElement {
 
   private _renderAreaHeaderCamera(camera?: HomeAreaCamera) {
     if (!camera) return nothing;
-    const stateObj = this.hass?.states?.[camera.entityId];
 
     return html`
       <button
-        class="room-header-camera-preview"
+        class="room-header-camera-preview ${camera.imageUrl ? 'has-preview' : 'no-preview'}"
         type="button"
         title=${camera.name}
         aria-label=${`${this._t('action.open_camera')}: ${camera.name}`}
         @click=${() => this._showMoreInfo(camera.entityId)}
       >
         ${camera.imageUrl
-          ? html`<div class="room-header-camera-image" style=${`background-image: url('${camera.imageUrl}');`}></div>`
+          ? html`
+              <div
+                class="room-header-camera-image"
+                style=${`background-image: url('${camera.imageUrl}');`}
+              ></div>
+              <span class="room-header-camera-live" aria-hidden="true">
+                <span class="room-header-camera-live-dot"></span>
+                <span>Kamera</span>
+              </span>
+            `
           : html`
               <div class="room-header-camera-placeholder">
-                <ha-icon icon="mdi:cctv"></ha-icon>
+                <ha-icon icon="mdi:cctv-off"></ha-icon>
+                <span>Keine Vorschau</span>
               </div>
             `}
-        ${stateObj ? html`
-          <ha-camera-stream
-            class="room-header-camera-stream"
-            .hass=${this.hass}
-            .stateObj=${stateObj}
-            .controls=${false}
-            .muted=${true}
-          ></ha-camera-stream>
-        ` : nothing}
-        <span class="room-header-camera-live" aria-hidden="true">
-          <span class="room-header-camera-live-dot"></span>
-          <span>Live</span>
-        </span>
       </button>
     `;
   }
