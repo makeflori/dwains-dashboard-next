@@ -933,6 +933,126 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       }
     }
 
+
+    /* Room-header status dialogs use the same compact card language as room views. */
+    .content.room-context {
+      padding: 14px 16px 28px !important;
+      overflow: auto !important;
+    }
+
+    .content.room-context .area-section {
+      margin-bottom: 8px !important;
+      overflow: visible !important;
+      border-radius: 10px !important;
+      background: var(--card-background-color) !important;
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 7%, transparent) !important;
+    }
+
+    .content.room-context .area-header {
+      min-height: 42px !important;
+      padding: 7px 10px 0 !important;
+      gap: 8px !important;
+    }
+
+    .content.room-context .area-icon {
+      width: 30px !important;
+      height: 30px !important;
+      border-radius: 8px !important;
+    }
+
+    .content.room-context .area-name {
+      font-size: 14px !important;
+      font-weight: 850 !important;
+    }
+
+    .content.room-context .entities-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+      gap: 8px !important;
+      padding: 8px 10px 12px !important;
+      overflow: visible !important;
+    }
+
+    .content.room-context .domain-entity-card {
+      min-height: 62px !important;
+      height: 62px !important;
+      padding: 7px 9px !important;
+      display: grid !important;
+      grid-template-columns: 36px minmax(0, 1fr) auto !important;
+      grid-template-rows: 1fr !important;
+      align-items: center !important;
+      gap: 8px !important;
+      overflow: visible !important;
+      border-radius: 9px !important;
+      background: var(--card-background-color) !important;
+      box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 7%, transparent),
+        0 4px 10px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    .content.room-context .domain-entity-top {
+      display: contents !important;
+    }
+
+    .content.room-context .domain-entity-icon {
+      grid-column: 1 !important;
+      grid-row: 1 !important;
+      width: 36px !important;
+      height: 36px !important;
+      border-radius: 8px !important;
+    }
+
+    .content.room-context .domain-entity-copy {
+      grid-column: 2 !important;
+      grid-row: 1 !important;
+      min-width: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      gap: 2px !important;
+    }
+
+    .content.room-context .domain-entity-top > :not(.domain-entity-icon) {
+      grid-column: 3 !important;
+      grid-row: 1 !important;
+      align-self: center !important;
+      justify-self: end !important;
+    }
+
+    .content.room-context .domain-entity-name {
+      overflow: hidden !important;
+      font-size: 12px !important;
+      font-weight: 850 !important;
+      line-height: 1.15 !important;
+      text-overflow: ellipsis !important;
+      white-space: nowrap !important;
+    }
+
+    .content.room-context .domain-entity-status {
+      overflow: hidden !important;
+      font-size: 10px !important;
+      font-weight: 650 !important;
+      line-height: 1.1 !important;
+      text-overflow: ellipsis !important;
+      white-space: nowrap !important;
+    }
+
+    @media (max-width: 1000px) and (min-width: 601px) {
+      .content.room-context .entities-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .content.room-context .entities-grid {
+        grid-template-columns: 1fr !important;
+      }
+
+      .content.room-context .domain-entity-card {
+        min-height: 58px !important;
+        height: 58px !important;
+      }
+    }
+
   `;
 
   public async showDialog(params: DomainEntitiesDialogParams): Promise<void> {
@@ -1253,7 +1373,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
           ></ha-icon-button>
         </ha-dialog-header>
 
-        <div class="content">
+        <div class="content ${this._params?.areaId ? 'room-context' : ''}">
           ${this._loading
             ? html`<div class="loading">${this._t('common.loading')}</div>`
             : this._renderContent()
@@ -1450,9 +1570,11 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       getDomainIcon(domain);
     const rawName = state.attributes?.friendly_name || this.hass.entities?.[entity.entity_id]?.name || entity.entity_id;
     const areaName = this._entityAreaName(entity);
-    const name = this._params?.config.settings?.hide_area_name_in_entity_names === true && Boolean(this._params?.areaId)
+    const name = this._params?.areaId
       ? stripAreaNameFromEntityName(rawName, areaName)
-      : rawName;
+      : this._params?.config.settings?.hide_area_name_in_entity_names === true
+        ? stripAreaNameFromEntityName(rawName, areaName)
+        : rawName;
     const active = this._isEntityActiveForUi(state, domain);
     const unavailable = this._isUnavailable(state);
     const classes = [
@@ -1479,7 +1601,9 @@ export class DwainsDomainEntitiesDialog extends LitElement {
           ${this._renderEntityActions(state, domain, active)}
         </div>
         <div class="domain-entity-copy">
-          <div class="domain-entity-meta">${fallbackMeta || areaName || this._t('dialog.no_area')}</div>
+          ${this._params?.areaId
+            ? nothing
+            : html`<div class="domain-entity-meta">${fallbackMeta || areaName || this._t('dialog.no_area')}</div>`}
           <div class="domain-entity-name">${name}</div>
           <div class="domain-entity-status">${this._entityStatusText(state, domain)}</div>
         </div>
