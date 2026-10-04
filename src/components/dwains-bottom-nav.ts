@@ -463,7 +463,7 @@ export class DwainsBottomNav extends LitElement {
       this._areaContext.view === 'settings'
     ) {
       return {
-        icon: this._areaContext.icon || 'mdi:cog-outline',
+        icon: this._areaContext.icon || 'mdi:tune-variant',
         label: this._areaContext.name || ddLocalize(this._hass, 'settings.title'),
       };
     }
@@ -1665,7 +1665,7 @@ function _buildSidebarSection(
 
   if (!dashboardEditingRestricted) {
     wrap.appendChild(
-      mkItem('mdi:cog', t('sidebar.dashboard_settings'), () => {
+      mkItem('mdi:tune-variant', t('sidebar.dashboard_settings'), () => {
         _closeSidebar();
         _openDashboardSettingsPage();
       })
