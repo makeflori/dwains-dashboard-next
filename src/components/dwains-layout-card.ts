@@ -17655,7 +17655,7 @@ export class DwainsLayoutCard extends LitElement {
 
     /*
      * FINAL compact desktop room-header geometry.
-     * Keep last in the stylesheet so earlier room-header overrides cannot win.
+     * One 132px band: image, camera and complete metric stack align exactly.
      */
     @media (min-width: 769px) {
       .room-ui-v2 .room-header {
@@ -17677,12 +17677,8 @@ export class DwainsLayoutCard extends LitElement {
         grid-template-areas: "media copy metrics actions" !important;
       }
 
-      /* Room image / icon, room information and camera share one common height. */
-      .room-ui-v2 .room-header-media {
-        grid-area: media !important;
-        width: 190px !important;
-        min-width: 190px !important;
-        max-width: 190px !important;
+      .room-ui-v2 .room-header-media,
+      .room-ui-v2 .room-header-camera-preview {
         height: 132px !important;
         min-height: 132px !important;
         max-height: 132px !important;
@@ -17690,9 +17686,21 @@ export class DwainsLayoutCard extends LitElement {
         border-radius: 10px !important;
       }
 
-      .room-ui-v2 .room-header-icon ha-icon {
-        --mdc-icon-size: 42px !important;
+      .room-ui-v2 .room-header-media {
+        grid-area: media !important;
+        width: 190px !important;
+        min-width: 190px !important;
+        max-width: 190px !important;
       }
+
+      .room-ui-v2 .room-header-camera-preview {
+        grid-area: camera !important;
+        width: 210px !important;
+        min-width: 210px !important;
+        max-width: 210px !important;
+      }
+
+      .room-ui-v2 .room-header-icon ha-icon { --mdc-icon-size: 42px !important; }
 
       .room-ui-v2 .room-header-copy {
         grid-area: copy !important;
@@ -17700,19 +17708,19 @@ export class DwainsLayoutCard extends LitElement {
         min-height: 132px !important;
         max-height: 132px !important;
         padding: 0 !important;
-        display: grid !important;
-        grid-template-rows: 38px 1fr 32px !important;
-        align-content: stretch !important;
-        justify-content: stretch !important;
-        gap: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: stretch !important;
+        gap: 6px !important;
         overflow: visible !important;
       }
 
       .room-ui-v2 .room-header-title-row {
-        align-self: start !important;
-        min-height: 38px !important;
+        min-height: 34px !important;
         margin: 0 !important;
         gap: 6px !important;
+        align-items: center !important;
       }
 
       .room-ui-v2 .room-header-title-row .room-header-home-link {
@@ -17732,18 +17740,16 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .room-ui-v2 .room-header-device-count {
-        align-self: center !important;
         margin: 0 !important;
         font-size: 12px !important;
         line-height: 1.1 !important;
       }
 
       .room-ui-v2 .room-header-summary {
-        align-self: end !important;
-        min-height: 32px !important;
-        height: 32px !important;
-        margin: 0 !important;
-        padding: 1px 0 !important;
+        min-height: 30px !important;
+        height: 30px !important;
+        margin: 1px 0 0 !important;
+        padding: 0 !important;
         display: flex !important;
         align-items: center !important;
         justify-content: flex-start !important;
@@ -17758,23 +17764,8 @@ export class DwainsLayoutCard extends LitElement {
         padding: 5px 9px !important;
       }
 
-      .room-ui-v2 .room-header-camera-preview {
-        grid-area: camera !important;
-        width: 210px !important;
-        min-width: 210px !important;
-        max-width: 210px !important;
-        height: 132px !important;
-        min-height: 132px !important;
-        max-height: 132px !important;
-        align-self: center !important;
-        border-radius: 10px !important;
-      }
+      .room-ui-v2 .room-header-camera-stream { display: none !important; }
 
-      .room-ui-v2 .room-header-camera-stream {
-        display: none !important;
-      }
-
-      /* Compact metric stack: same overall height as the room image/camera, but with smaller pills. */
       .room-ui-v2 .room-header .area-header-metrics {
         grid-area: metrics !important;
         width: 145px !important;
@@ -17782,13 +17773,14 @@ export class DwainsLayoutCard extends LitElement {
         max-width: 145px !important;
         height: 132px !important;
         min-height: 132px !important;
+        max-height: 132px !important;
         margin: 0 !important;
         padding: 0 !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: stretch !important;
-        justify-content: center !important;
-        gap: 9px !important;
+        justify-content: flex-start !important;
+        gap: 12px !important;
         align-self: center !important;
       }
 
@@ -17796,8 +17788,8 @@ export class DwainsLayoutCard extends LitElement {
         width: 145px !important;
         min-width: 145px !important;
         max-width: 145px !important;
-        min-height: 34px !important;
-        height: 34px !important;
+        min-height: 36px !important;
+        height: 36px !important;
         padding: 3px 8px !important;
         gap: 6px !important;
         box-sizing: border-box !important;
@@ -17818,9 +17810,7 @@ export class DwainsLayoutCard extends LitElement {
         line-height: 1.02 !important;
       }
 
-      .room-ui-v2 .room-header .area-header-metric .metric-chevron {
-        display: none !important;
-      }
+      .room-ui-v2 .room-header .area-header-metric .metric-chevron { display: none !important; }
 
       .room-ui-v2 .room-header-actions {
         grid-area: actions !important;
@@ -17845,6 +17835,15 @@ export class DwainsLayoutCard extends LitElement {
         min-height: 38px !important;
         margin: 0 !important;
         flex: 0 0 38px !important;
+      }
+
+      .dd-page-card,
+      .dd-page-card > *,
+      .dd-page-card dwains-dashboard-next-card-host {
+        width: 100% !important;
+        max-width: none !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
       }
     }
 
@@ -19377,10 +19376,7 @@ export class DwainsLayoutCard extends LitElement {
   }
 
   private _domainStatusStyle(domain: string, deviceClass?: string): string {
-    const color = domain === 'binary_sensor'
-      ? this._binarySensorBadgeColor(deviceClass)
-      : getDomainColor(domain, deviceClass);
-    return `--status-color: ${color};`;
+    return `--status-color: ${this._statusColor(domain, deviceClass)};`;
   }
 
   private _isAlarmActive(): boolean {
@@ -19398,10 +19394,25 @@ export class DwainsLayoutCard extends LitElement {
   }
 
   private _binarySensorBadgeColor(deviceClass?: string): string {
+    if (deviceClass === 'motion') {
+      return this._isAlarmActive()
+        ? getDomainColor('alarm_control_panel')
+        : getDomainColor('binary_sensor', 'window');
+    }
     if (deviceClass === 'window' && this._isAlarmActive()) {
       return getDomainColor('alarm_control_panel');
     }
     return getDomainColor('binary_sensor', deviceClass);
+  }
+
+  private _statusColor(domain: string, deviceClass?: string): string {
+    return domain === 'binary_sensor'
+      ? this._binarySensorBadgeColor(deviceClass)
+      : getDomainColor(domain, deviceClass);
+  }
+
+  private _isUrgentStatus(domain: string, deviceClass?: string): boolean {
+    return this._statusColor(domain, deviceClass) === getDomainColor('alarm_control_panel');
   }
 
   private _getAreaStatusBadges(areaData: AreaData): AreaStatusBadge[] {
@@ -19437,7 +19448,7 @@ export class DwainsLayoutCard extends LitElement {
         deviceClass: 'motion',
         icon: getDeviceClassIcon('binary_sensor', 'motion'),
         count: motionCount,
-        color: getDomainColor('binary_sensor', 'motion'),
+        color: this._binarySensorBadgeColor('motion'),
       });
     }
 
@@ -19469,10 +19480,19 @@ export class DwainsLayoutCard extends LitElement {
         });
       });
 
-    return badges;
+    return badges
+      .map((badge, index) => ({ badge, index }))
+      .sort((a, b) => {
+        const urgentA = this._isUrgentStatus(a.badge.domain, a.badge.deviceClass);
+        const urgentB = this._isUrgentStatus(b.badge.domain, b.badge.deviceClass);
+        if (urgentA !== urgentB) return urgentA ? -1 : 1;
+        return a.index - b.index;
+      })
+      .map(({ badge }) => badge);
   }
 
   private _statusCardTitle(domain: DomainCount): string {
+    if (domain.domain === 'cover') return domain.name;
     const activeLabel = this._statusCardActiveLabel(domain);
     if (activeLabel) {
       return domain.count === 1 ? activeLabel.singular : activeLabel.plural;
@@ -19877,7 +19897,7 @@ export class DwainsLayoutCard extends LitElement {
                     title=${this._t('sidebar.dashboard_settings')}
                     @click=${this._openDashboardSettings}
                   >
-                    <ha-icon icon="mdi:cog-outline"></ha-icon>
+                    <ha-icon icon="mdi:tune-variant"></ha-icon>
                   </button>
                 ` : nothing}
               </div>
@@ -21223,7 +21243,7 @@ export class DwainsLayoutCard extends LitElement {
                 title=${this._editMode ? this._t('layout.done_editing') : this._t('layout.edit_custom_cards')}
                 @click=${this._toggleEditMode}
               >
-                <ha-icon icon=${this._editMode ? 'mdi:check' : 'mdi:pencil'}></ha-icon>
+                <ha-icon icon=${this._editMode ? 'mdi:check' : 'mdi:view-dashboard-edit-outline'}></ha-icon>
               </button>
             ` : nothing}
             ${this._renderUnavailableEntitiesIcon(area.area_id)}
@@ -21834,6 +21854,7 @@ export class DwainsLayoutCard extends LitElement {
 
     showDomainEntitiesDialog(this, {
       domain: badge.domain,
+      areaId,
       config: this.config,
       deviceClass: badge.deviceClass,
       entityIds,
@@ -21878,6 +21899,7 @@ export class DwainsLayoutCard extends LitElement {
 
     showDomainEntitiesDialog(this, {
       domain: 'sensor',
+      areaId,
       config: this.config,
       entityIds,
       customTitle: title,
@@ -22462,6 +22484,21 @@ export class DwainsLayoutCard extends LitElement {
 
       const nameA = this.hass.states[a.entity_id]?.attributes?.friendly_name || a.entity_id;
       const nameB = this.hass.states[b.entity_id]?.attributes?.friendly_name || b.entity_id;
+
+      const deviceIdA = a.device_id || (this.hass.entities?.[a.entity_id] as any)?.device_id || '';
+      const deviceIdB = b.device_id || (this.hass.entities?.[b.entity_id] as any)?.device_id || '';
+      if (deviceIdA !== deviceIdB) {
+        const deviceName = (deviceId: string, fallback: string) => {
+          if (!deviceId) return fallback;
+          return this.config?.devices?.find(item => item.device_id === deviceId)?.name || deviceId;
+        };
+        const byDevice = deviceName(deviceIdA, nameA).localeCompare(
+          deviceName(deviceIdB, nameB),
+          ddLocale(this.hass)
+        );
+        if (byDevice !== 0) return byDevice;
+      }
+
       return nameA.localeCompare(nameB, ddLocale(this.hass));
     });
   }
@@ -23587,6 +23624,12 @@ export class DwainsLayoutCard extends LitElement {
         icon: 'mdi:flash'
       });
     }
+
+    result.sort((a, b) => {
+      const urgentA = this._isUrgentStatus(a.domain, a.deviceClass);
+      const urgentB = this._isUrgentStatus(b.domain, b.deviceClass);
+      return urgentA === urgentB ? 0 : urgentA ? -1 : 1;
+    });
 
     // Add timestamp for cache
     const timestamp = Date.now();
