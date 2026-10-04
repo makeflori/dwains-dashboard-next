@@ -11795,26 +11795,38 @@ export class DwainsLayoutCard extends LitElement {
       display: none;
     }
 
-    /* Desktop room header alignment: keep the identity block as tall as two metric pills.
-       The action column starts on the same top line as the room title. */
+    /* Desktop room header follow-up:
+       - left identity block matches the full height of all three metric pills
+       - metric pills are about 10% smaller and tightly stacked
+       - status badges stay fully visible
+       - actions stay aligned with the room title */
     @media (min-width: 769px) {
+      .room-ui-v2 .room-header {
+        min-height: 176px !important;
+        padding-top: 8px !important;
+        padding-bottom: 8px !important;
+        align-items: center !important;
+      }
+
       .room-ui-v2 .room-header-media {
-        width: 180px !important;
-        height: 112px !important;
+        width: 190px !important;
+        height: 150px !important;
         align-self: center !important;
         border-radius: 10px;
       }
 
       .room-ui-v2 .room-header-icon ha-icon {
-        --mdc-icon-size: 44px;
+        --mdc-icon-size: 46px;
       }
 
       .room-ui-v2 .room-header-copy {
-        height: 112px !important;
+        height: 150px !important;
+        min-height: 150px !important;
         align-self: center !important;
         justify-content: flex-start !important;
-        gap: 5px !important;
-        overflow: visible;
+        gap: 4px !important;
+        padding: 0 !important;
+        overflow: visible !important;
       }
 
       .room-ui-v2 .room-header .area-title {
@@ -11850,30 +11862,71 @@ export class DwainsLayoutCard extends LitElement {
       .room-header-device-count {
         font-size: 13px;
         line-height: 1.15;
+        margin: 0 !important;
       }
 
       .room-header-summary {
-        min-height: 32px;
-        margin-top: 2px;
-        gap: 7px;
+        min-height: 34px !important;
+        margin-top: 2px !important;
+        margin-bottom: 0 !important;
+        padding: 2px 0 !important;
+        align-items: center !important;
+        gap: 7px !important;
+        overflow: visible !important;
+      }
+
+      .room-header-summary.is-empty {
+        min-height: 0 !important;
+        padding: 0 !important;
       }
 
       .room-summary-item {
-        min-height: 32px;
+        min-height: 30px !important;
         font-size: 12px;
+        line-height: 1 !important;
       }
 
       button.room-summary-item {
-        min-width: 48px;
-        padding: 6px 10px;
+        min-width: 46px !important;
+        padding: 6px 10px !important;
       }
 
       .room-summary-item ha-icon {
-        --mdc-icon-size: 18px;
+        --mdc-icon-size: 17px !important;
+      }
+
+      .room-ui-v2 .room-header .area-header-metrics {
+        align-self: center !important;
+        justify-content: center !important;
+        gap: 4px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      .room-ui-v2 .room-header .area-header-metric {
+        min-height: 47px !important;
+        height: 47px !important;
+        padding: 4px 10px !important;
+        gap: 7px !important;
+      }
+
+      .room-ui-v2 .room-header .area-header-metric .metric-ring {
+        width: 30px !important;
+        height: 30px !important;
+      }
+
+      .room-ui-v2 .room-header .area-header-metric .metric-label {
+        font-size: 8px !important;
+        line-height: 1 !important;
+      }
+
+      .room-ui-v2 .room-header .area-header-metric .metric-reading {
+        font-size: 14px !important;
+        line-height: 1.05 !important;
       }
 
       .room-header-actions {
-        height: 112px !important;
+        height: 150px !important;
         align-self: center !important;
         justify-content: flex-start !important;
         gap: 8px !important;
@@ -21577,7 +21630,6 @@ export class DwainsLayoutCard extends LitElement {
             ? html`<div class="metric-range">${min} - ${max}</div>`
             : html`<div class="metric-reading">${value}</div>`}
         </div>
-        ${isHeaderMetric ? html`<ha-icon class="metric-chevron" icon="mdi:chevron-right" aria-hidden="true"></ha-icon>` : nothing}
       </button>
     `;
   }
