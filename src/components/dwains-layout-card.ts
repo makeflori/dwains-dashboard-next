@@ -332,7 +332,7 @@ export class DwainsLayoutCard extends LitElement {
     window.dispatchEvent(new CustomEvent('dwains-dashboard-next-area-context-changed', {
       detail: {
         areaId: this._selectedView === 'area' ? this._selectedArea : null,
-        icon: settingsSelected ? 'mdi:cog-outline' : area ? getAreaIcon(area) : 'mdi:home',
+        icon: settingsSelected ? 'mdi:tune-variant' : area ? getAreaIcon(area) : 'mdi:home',
         name: settingsSelected ? this._t('sidebar.dashboard_settings') : area?.name || this._t('sidebar.home'),
         view: this._selectedView || 'home',
       },
