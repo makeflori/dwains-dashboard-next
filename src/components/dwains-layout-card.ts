@@ -19394,12 +19394,12 @@ export class DwainsLayoutCard extends LitElement {
   }
 
   private _binarySensorBadgeColor(deviceClass?: string): string {
-    if (deviceClass === 'motion') {
-      return this._isAlarmActive()
-        ? getDomainColor('alarm_control_panel')
-        : getDomainColor('binary_sensor', 'window');
-    }
-    if (deviceClass === 'window' && this._isAlarmActive()) {
+    // Status badges normally use the exact colour of their type.
+    // Only alarm-relevant active states are allowed to override that colour with red.
+    const alarmRelevant = ['motion', 'window', 'door', 'opening', 'garage_door'].includes(
+      String(deviceClass || '')
+    );
+    if (alarmRelevant && this._isAlarmActive()) {
       return getDomainColor('alarm_control_panel');
     }
     return getDomainColor('binary_sensor', deviceClass);
