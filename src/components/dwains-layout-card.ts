@@ -17447,6 +17447,211 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
+
+    /*
+     * FINAL desktop room-header geometry.
+     * Keep this block at the end of the stylesheet so older room-header
+     * experiments above cannot override the current design again.
+     */
+    @media (min-width: 769px) {
+      .room-ui-v2 .room-header {
+        min-height: 162px !important;
+        padding: 6px 12px !important;
+        gap: 12px !important;
+        align-items: center !important;
+        overflow: visible !important;
+      }
+
+      .room-ui-v2 .room-header.has-camera {
+        grid-template-columns: 190px minmax(260px, 1fr) minmax(240px, 300px) 205px 42px !important;
+        grid-template-areas: "media copy camera metrics actions" !important;
+      }
+
+      .room-ui-v2 .room-header.no-camera {
+        grid-template-columns: 190px minmax(300px, 1fr) 205px 42px !important;
+        grid-template-areas: "media copy metrics actions" !important;
+      }
+
+      /* Left block: same visual height as the complete three-pill stack. */
+      .room-ui-v2 .room-header-media {
+        grid-area: media !important;
+        width: 190px !important;
+        min-width: 190px !important;
+        max-width: 190px !important;
+        height: 150px !important;
+        min-height: 150px !important;
+        max-height: 150px !important;
+        aspect-ratio: auto !important;
+        align-self: center !important;
+        border-radius: 10px !important;
+      }
+
+      .room-ui-v2 .room-header-icon ha-icon {
+        --mdc-icon-size: 46px !important;
+      }
+
+      .room-ui-v2 .room-header-copy {
+        grid-area: copy !important;
+        height: 150px !important;
+        min-height: 150px !important;
+        max-height: 150px !important;
+        padding: 0 !important;
+        align-self: center !important;
+        justify-content: flex-start !important;
+        gap: 4px !important;
+        overflow: visible !important;
+      }
+
+      .room-ui-v2 .room-header-title-row {
+        min-height: 38px !important;
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        gap: 6px !important;
+      }
+
+      .room-ui-v2 .room-header-title-row .room-header-home-link {
+        flex: 0 0 30px !important;
+        width: 30px !important;
+        height: 30px !important;
+      }
+
+      .room-ui-v2 .room-header-title-row .room-header-home-link ha-icon {
+        --mdc-icon-size: 20px !important;
+      }
+
+      .room-ui-v2 .room-header .area-title {
+        margin: 0 !important;
+        font-size: clamp(29px, 2vw, 35px) !important;
+        line-height: 1.05 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+      }
+
+      .room-ui-v2 .room-header-device-count {
+        margin: 0 !important;
+        font-size: 13px !important;
+        line-height: 1.15 !important;
+      }
+
+      /* Status badges must never be clipped at the lower edge. */
+      .room-ui-v2 .room-header-summary {
+        width: 100% !important;
+        min-height: 34px !important;
+        height: auto !important;
+        margin: 2px 0 0 !important;
+        padding: 2px 0 3px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        flex-wrap: wrap !important;
+        gap: 7px !important;
+        overflow: visible !important;
+      }
+
+      .room-ui-v2 .room-header-summary.is-empty {
+        min-height: 0 !important;
+        padding: 0 !important;
+      }
+
+      .room-ui-v2 .room-summary-item.status {
+        min-height: 30px !important;
+        height: 30px !important;
+        padding: 5px 9px !important;
+        gap: 4px !important;
+        box-sizing: border-box !important;
+        font-size: 12px !important;
+        line-height: 1 !important;
+      }
+
+      .room-ui-v2 .room-summary-item.status ha-icon {
+        --mdc-icon-size: 17px !important;
+      }
+
+      /* Camera fills the same vertical band as the left identity block. */
+      .room-ui-v2 .room-header-camera-preview {
+        grid-area: camera !important;
+        width: 100% !important;
+        height: 150px !important;
+        min-height: 150px !important;
+        max-height: 150px !important;
+        align-self: center !important;
+        border-radius: 10px !important;
+      }
+
+      /* Three compact pills: ~10% smaller, almost no vertical dead space. */
+      .room-ui-v2 .room-header .area-header-metrics {
+        grid-area: metrics !important;
+        width: 205px !important;
+        min-width: 205px !important;
+        height: 150px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        justify-content: center !important;
+        gap: 3px !important;
+        align-self: center !important;
+      }
+
+      .room-ui-v2 .room-header .area-header-metric {
+        width: 100% !important;
+        min-width: 0 !important;
+        min-height: 46px !important;
+        height: 46px !important;
+        padding: 4px 10px !important;
+        gap: 7px !important;
+        box-sizing: border-box !important;
+      }
+
+      .room-ui-v2 .room-header .area-header-metric .metric-ring {
+        width: 30px !important;
+        height: 30px !important;
+      }
+
+      .room-ui-v2 .room-header .area-header-metric .metric-label {
+        font-size: 8px !important;
+        line-height: 1 !important;
+      }
+
+      .room-ui-v2 .room-header .area-header-metric .metric-reading {
+        font-size: 14px !important;
+        line-height: 1.05 !important;
+      }
+
+      .room-ui-v2 .room-header .area-header-metric .metric-chevron {
+        display: none !important;
+      }
+
+      /* Edit + unavailable aligned with the title at the top of the 150px band. */
+      .room-ui-v2 .room-header-actions {
+        grid-area: actions !important;
+        width: 42px !important;
+        min-width: 42px !important;
+        height: 150px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        align-self: center !important;
+        gap: 8px !important;
+      }
+
+      .room-ui-v2 .room-header-actions .dd-edit-toggle,
+      .room-ui-v2 .room-header-actions .unavailable-entities-icon {
+        width: 38px !important;
+        height: 38px !important;
+        min-width: 38px !important;
+        min-height: 38px !important;
+        margin: 0 !important;
+        flex: 0 0 38px !important;
+      }
+    }
+
   `;
 
   connectedCallback() {
