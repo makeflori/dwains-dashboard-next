@@ -17654,13 +17654,13 @@ export class DwainsLayoutCard extends LitElement {
 
 
     /*
-     * FINAL room-header spacing + metric sizing.
-     * Keep last in the stylesheet so earlier desktop overrides cannot win.
+     * FINAL compact desktop room-header geometry.
+     * Keep last in the stylesheet so earlier room-header overrides cannot win.
      */
     @media (min-width: 769px) {
       .room-ui-v2 .room-header {
-        min-height: 186px !important;
-        padding: 18px 20px !important;
+        min-height: 160px !important;
+        padding: 14px 20px !important;
         gap: 14px !important;
         align-items: center !important;
         overflow: visible !important;
@@ -17668,34 +17668,40 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .room-ui-v2 .room-header.has-camera {
-        grid-template-columns: 190px minmax(300px, 1fr) 210px 152px 42px !important;
+        grid-template-columns: 190px minmax(300px, 1fr) 210px 145px 42px !important;
         grid-template-areas: "media copy camera metrics actions" !important;
       }
 
       .room-ui-v2 .room-header.no-camera {
-        grid-template-columns: 190px minmax(340px, 1fr) 152px 42px !important;
+        grid-template-columns: 190px minmax(340px, 1fr) 145px 42px !important;
         grid-template-areas: "media copy metrics actions" !important;
       }
 
+      /* Room image / icon, room information and camera share one common height. */
       .room-ui-v2 .room-header-media {
         grid-area: media !important;
         width: 190px !important;
         min-width: 190px !important;
         max-width: 190px !important;
-        height: 150px !important;
-        min-height: 150px !important;
-        max-height: 150px !important;
+        height: 132px !important;
+        min-height: 132px !important;
+        max-height: 132px !important;
         align-self: center !important;
+        border-radius: 10px !important;
+      }
+
+      .room-ui-v2 .room-header-icon ha-icon {
+        --mdc-icon-size: 42px !important;
       }
 
       .room-ui-v2 .room-header-copy {
         grid-area: copy !important;
-        height: 150px !important;
-        min-height: 150px !important;
-        max-height: 150px !important;
+        height: 132px !important;
+        min-height: 132px !important;
+        max-height: 132px !important;
         padding: 0 !important;
         display: grid !important;
-        grid-template-rows: 40px 1fr 36px !important;
+        grid-template-rows: 38px 1fr 32px !important;
         align-content: stretch !important;
         justify-content: stretch !important;
         gap: 0 !important;
@@ -17704,27 +17710,44 @@ export class DwainsLayoutCard extends LitElement {
 
       .room-ui-v2 .room-header-title-row {
         align-self: start !important;
-        min-height: 40px !important;
+        min-height: 38px !important;
         margin: 0 !important;
+        gap: 6px !important;
+      }
+
+      .room-ui-v2 .room-header-title-row .room-header-home-link {
+        flex: 0 0 28px !important;
+        width: 28px !important;
+        height: 28px !important;
+      }
+
+      .room-ui-v2 .room-header-title-row .room-header-home-link ha-icon {
+        --mdc-icon-size: 19px !important;
+      }
+
+      .room-ui-v2 .room-header .area-title {
+        margin: 0 !important;
+        font-size: clamp(28px, 1.9vw, 33px) !important;
+        line-height: 1.05 !important;
       }
 
       .room-ui-v2 .room-header-device-count {
         align-self: center !important;
         margin: 0 !important;
-        font-size: 13px !important;
+        font-size: 12px !important;
         line-height: 1.1 !important;
       }
 
       .room-ui-v2 .room-header-summary {
         align-self: end !important;
-        min-height: 36px !important;
-        height: 36px !important;
+        min-height: 32px !important;
+        height: 32px !important;
         margin: 0 !important;
-        padding: 3px 0 !important;
+        padding: 1px 0 !important;
         display: flex !important;
         align-items: center !important;
         justify-content: flex-start !important;
-        flex-wrap: wrap !important;
+        flex-wrap: nowrap !important;
         gap: 7px !important;
         overflow: visible !important;
       }
@@ -17740,9 +17763,9 @@ export class DwainsLayoutCard extends LitElement {
         width: 210px !important;
         min-width: 210px !important;
         max-width: 210px !important;
-        height: 125px !important;
-        min-height: 125px !important;
-        max-height: 125px !important;
+        height: 132px !important;
+        min-height: 132px !important;
+        max-height: 132px !important;
         align-self: center !important;
         border-radius: 10px !important;
       }
@@ -17751,37 +17774,38 @@ export class DwainsLayoutCard extends LitElement {
         display: none !important;
       }
 
+      /* Compact metric stack: same overall height as the room image/camera, but with smaller pills. */
       .room-ui-v2 .room-header .area-header-metrics {
         grid-area: metrics !important;
-        width: 152px !important;
-        min-width: 152px !important;
-        max-width: 152px !important;
-        height: 136px !important;
-        min-height: 136px !important;
+        width: 145px !important;
+        min-width: 145px !important;
+        max-width: 145px !important;
+        height: 132px !important;
+        min-height: 132px !important;
         margin: 0 !important;
         padding: 0 !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: stretch !important;
         justify-content: center !important;
-        gap: 8px !important;
+        gap: 9px !important;
         align-self: center !important;
       }
 
       .room-ui-v2 .room-header .area-header-metric {
-        width: 152px !important;
-        min-width: 152px !important;
-        max-width: 152px !important;
-        min-height: 40px !important;
-        height: 40px !important;
+        width: 145px !important;
+        min-width: 145px !important;
+        max-width: 145px !important;
+        min-height: 34px !important;
+        height: 34px !important;
         padding: 3px 8px !important;
         gap: 6px !important;
         box-sizing: border-box !important;
       }
 
       .room-ui-v2 .room-header .area-header-metric .metric-ring {
-        width: 24px !important;
-        height: 24px !important;
+        width: 22px !important;
+        height: 22px !important;
       }
 
       .room-ui-v2 .room-header .area-header-metric .metric-label {
@@ -17790,7 +17814,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .room-ui-v2 .room-header .area-header-metric .metric-reading {
-        font-size: 13px !important;
+        font-size: 12px !important;
         line-height: 1.02 !important;
       }
 
@@ -17802,7 +17826,7 @@ export class DwainsLayoutCard extends LitElement {
         grid-area: actions !important;
         width: 42px !important;
         min-width: 42px !important;
-        height: 150px !important;
+        height: 132px !important;
         margin: 0 !important;
         padding: 0 !important;
         display: flex !important;
