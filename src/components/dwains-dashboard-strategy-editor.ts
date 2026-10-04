@@ -611,15 +611,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         summary: this._tp('common.person', visiblePersonCount),
       },
       {
-        page: "areas",
-        group: "content",
-        icon: "mdi:floor-plan",
-        color: "#8b5cf6",
-        title: this._t('settings.areas'),
-        description: this._t('settings.areas_description'),
-        summary: this._tp('common.area', areaCount),
-      },
-      {
         page: "favorites",
         group: "content",
         icon: "mdi:star-outline",
@@ -627,6 +618,15 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         title: this._t('favorites.title'),
         description: this._t('settings.favorites_global_description'),
         summary: this._tp('common.favorite', favoriteCount),
+      },
+      {
+        page: "areas",
+        group: "content",
+        icon: "mdi:floor-plan",
+        color: "#8b5cf6",
+        title: this._t('settings.areas'),
+        description: this._t('settings.areas_description'),
+        summary: this._tp('common.area', areaCount),
       },
       {
         page: "devices",
@@ -1143,7 +1143,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                 const enabled = assignment.enabled !== false;
                 return html`
                   <div class="dd-replacement-row ${enabled ? '' : 'disabled'}">
-                    <span class="dd-replacement-domain-icon" style=${`--replacement-color: ${getDomainColor(target)};`}>
+                    <span class="dd-replacement-domain-icon">
                       <ha-icon icon=${getDomainIcon(target)}></ha-icon>
                     </span>
                     <span class="dd-replacement-copy">
@@ -1151,15 +1151,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                       <small>${assignment.name}${assignment.version ? ` · v${assignment.version}` : ''}</small>
                     </span>
                     <span class="dd-replacement-actions">
-                      <button class="dd-inline-text-button" type="button" @click=${() => this._openReplacementManagerForDomain(target)}>
-                        ${this._t('common.edit')}
-                      </button>
-                      ${this._renderVisibilityButton(
-                        enabled,
-                        false,
-                        enabled ? this._t('common.disable') : this._t('common.enable'),
-                        () => this._setReplacementEnabled(target, !enabled)
-                      )}
+                      <label class="dd-replacement-enabled" title=${enabled ? this._t('common.disable') : this._t('common.enable')}>
+                        <ha-switch
+                          .checked=${enabled}
+                          @change=${() => this._setReplacementEnabled(target, !enabled)}
+                        ></ha-switch>
+                      </label>
                       <button
                         class="dd-icon-text-button danger"
                         type="button"
@@ -4677,14 +4674,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       this._fireConfigChanged(config);
       this.requestUpdate();
     });
-  }
-
-  private _openReplacementManagerForDomain(target: string): void {
-    if (!this.hass || !this._config) return;
-    openReplacementManager(this.hass, this._config, (config) => {
-      this._fireConfigChanged(config);
-      this.requestUpdate();
-    }, target);
   }
 
   private _replacementCount(): number {
@@ -8313,15 +8302,18 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .dd-replacement-domain-icon {
-        width: 40px;
-        height: 40px;
+        width: 36px;
+        height: 36px;
         display: grid;
         place-items: center;
-        color: var(--replacement-color, var(--primary-color));
+        border-radius: 9px;
+        color: var(--primary-color);
+        background: color-mix(in srgb, var(--primary-color) 10%, var(--card-background-color));
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 10%, transparent);
       }
 
       .dd-replacement-domain-icon ha-icon {
-        --mdc-icon-size: 23px;
+        --mdc-icon-size: 20px;
       }
 
       .dd-replacement-copy {
@@ -8345,7 +8337,13 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .dd-replacement-actions {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
+        gap: 10px;
+      }
+
+      .dd-replacement-enabled {
+        display: inline-flex;
+        align-items: center;
+        margin: 0;
       }
 
       .dd-replacement-empty {
