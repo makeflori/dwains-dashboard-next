@@ -49,19 +49,48 @@ export const getDomainIcon = (domain: string): string => {
 };
 
 export const getDomainColor = (domain: string, deviceClass?: string): string => {
+  // DD Next semantic colour families:
+  // amber = light/energy, blue = controls, orange = openings/mechanics,
+  // cyan = climate/air, violet = media, slate = neutral information,
+  // red = genuine hazards/alarms.
   if (domain === 'binary_sensor') {
     const deviceClassColors: Record<string, string> = {
-      window: '#D66A1F',
-      door: '#D66A1F',
-      opening: '#D66A1F',
-      moisture: '#df5b63',
-      smoke: '#df5b63',
-      gas: '#df5b63',
-      problem: '#df5b63',
-      safety: '#df5b63',
-      motion: '#df5b63',
-      occupancy: '#df5b63',
-      presence: '#df5b63',
+      // Openings / mechanics
+      window: '#D98928',
+      door: '#D98928',
+      opening: '#D98928',
+      garage_door: '#D98928',
+
+      // Neutral presence / activity
+      motion: '#6D7891',
+      occupancy: '#6D7891',
+      presence: '#6D7891',
+      vibration: '#6D7891',
+      sound: '#6D7891',
+      connectivity: '#6D7891',
+
+      // Controls / electrical states
+      lock: '#2F6FD6',
+      plug: '#2F6FD6',
+      power: '#2F6FD6',
+      light: '#E1A129',
+
+      // Genuine warning / hazard states
+      moisture: '#DF5B63',
+      smoke: '#DF5B63',
+      gas: '#DF5B63',
+      carbon_monoxide: '#DF5B63',
+      problem: '#DF5B63',
+      safety: '#DF5B63',
+      tamper: '#DF5B63',
+      heat: '#DF5B63',
+      cold: '#DF5B63',
+
+      // Informational states
+      battery: '#4F79A7',
+      battery_charging: '#4F79A7',
+      update: '#4F79A7',
+      running: '#4F79A7',
     };
     if (deviceClass && deviceClassColors[deviceClass]) {
       return deviceClassColors[deviceClass]!;
@@ -69,29 +98,44 @@ export const getDomainColor = (domain: string, deviceClass?: string): string => 
   }
 
   const colors: Record<string, string> = {
-    light: '#e1a129',
-    switch: '#2f6fd6',
-    cover: '#1494aa',
-    camera: '#0ea5c6',
-    climate: '#34a6d8',
-    fan: '#2b8fcb',
-    lock: '#2f6fd6',
-    media_player: '#7c67c7',
-    person: '#6d7891',
-    binary_sensor: '#6d7891',
-    sensor: '#4f79a7',
-    wattage: '#d88e20',
-    energy: '#d88e20',
-    temperature: '#7c67c7',
-    humidity: '#34a6d8',
-    vacuum: '#7c67c7',
-    alarm_control_panel: '#df5b63',
-    button: '#7c67c7',
-    event: '#7c67c7',
-    select: '#6d7891',
+    // Light / warmth / energy
+    light: '#E1A129',
+    wattage: '#D88E20',
+    energy: '#D88E20',
+    temperature: '#D98928',
+
+    // Controls
+    switch: '#2F6FD6',
+    lock: '#2F6FD6',
+    select: '#2F6FD6',
+    button: '#2F6FD6',
+    remote: '#2F6FD6',
+
+    // Openings / mechanics
+    cover: '#D98928',
+
+    // Climate / air / water
+    climate: '#34A6D8',
+    humidity: '#34A6D8',
+    fan: '#16A6B6',
+    camera: '#0EA5C6',
+
+    // Media / entertainment
+    media_player: '#7C67C7',
+
+    // Neutral information / devices
+    person: '#6D7891',
+    binary_sensor: '#6D7891',
+    sensor: '#4F79A7',
+    vacuum: '#4F79A7',
+    event: '#6D7891',
+    update: '#4F79A7',
+
+    // Alarm / danger
+    alarm_control_panel: '#DF5B63',
   };
 
-  return colors[domain] || '#7c67c7';
+  return colors[domain] || '#6D7891';
 };
 
 export const getAlertIcon = (deviceClass?: string): string => {
