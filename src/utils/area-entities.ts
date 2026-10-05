@@ -230,6 +230,25 @@ export function stripAreaFromEntityName(entityName: string, areaName: string): s
   return entityName;
 }
 
+export function areaEntityDeviceLabel(
+  displayName: string,
+  deviceName: string | null | undefined,
+  areaName: string
+): string | undefined {
+  const device = String(deviceName ?? '').trim();
+  if (!device) return undefined;
+  const label = stripAreaFromEntityName(device, areaName);
+  const normalizedLabel = label.toLocaleLowerCase();
+  const normalizedDevice = device.toLocaleLowerCase();
+  const normalizedArea = String(areaName ?? '').trim().toLocaleLowerCase();
+  const normalizedName = String(displayName ?? '').trim().toLocaleLowerCase();
+  if (!normalizedName) return label;
+  if (normalizedLabel === normalizedArea || normalizedDevice === normalizedArea) return undefined;
+  if (normalizedName === normalizedLabel || normalizedName.startsWith(`${normalizedLabel} `)) return undefined;
+  if (normalizedName === normalizedDevice || normalizedName.startsWith(`${normalizedDevice} `)) return undefined;
+  return label;
+}
+
 export function resolveAreaSortMode(areasDisplay?: AreasDisplay): AreaSortMode {
   if (areasDisplay?.sort_mode) return areasDisplay.sort_mode;
   return areasDisplay?.order?.length ? 'custom' : 'alphabetical';

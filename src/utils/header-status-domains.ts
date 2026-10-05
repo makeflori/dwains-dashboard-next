@@ -1,4 +1,4 @@
-import type { HomeAssistant } from '../types/home-assistant';
+import type { HassEntity, HomeAssistant } from '../types/home-assistant';
 import { getDeviceClassName, getDomainName, prettifyDomain } from './domain-names';
 import { ddLocalize } from './localize';
 import { isEntityFromHiddenDevice } from './device-admission';
@@ -13,6 +13,11 @@ export interface DomainCount {
   value?: string;
   deviceClass?: string;
   entities?: string[]; // de 'aan'-entiteiten van dit domein
+}
+
+function entityDomain(entityId: string): string {
+  const dot = entityId.indexOf('.');
+  return dot === -1 ? entityId : entityId.slice(0, dot);
 }
 
 // Constants for state checks
@@ -52,6 +57,27 @@ const BINARY_SENSOR_CONFIG: Record<string, { icon: string }> = {
   tamper: { icon: 'mdi:lock-alert' },
   vibration: { icon: getDeviceClassIcon('binary_sensor', 'vibration') }
 };
+
+/**
+ * Members of a group entity, limited to the group's own domain.
+ */
+export function getGroupMemberIds(state: HassEntity | undefined): string[] {
+  const members = state?.attributes?.entity_id;
+  if (!Array.isArray(members)) return [];
+  const domain = entityDomain(state!.entity_id);
+  return members.filter((member): member is string =>
+    typeof member === 'string' && member !== state!.entity_id && entityDomain(member) === domain
+  );
+}
+
+/** Skip a group when at least one of its members is counted on its own. */
+export function shouldSkipGroupEntity(
+  state: HassEntity,
+  isMemberCounted: (memberId: string) => boolean
+): boolean {
+  const members = getGroupMemberIds(state);
+  return members.length > 0 && members.some(isMemberCounted);
+}
 
 export function getStatusDomains(hass: HomeAssistant, config: any): DomainCount[] {
   if (!hass?.states) return [];

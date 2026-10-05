@@ -1,6 +1,9 @@
 import {
+  mdiArrowDown,
+  mdiArrowUp,
   mdiCardAccountDetailsStarOutline,
   mdiChevronRight,
+  mdiDelete,
   mdiDrag,
   mdiFloorPlan,
   mdiFormatListBulletedType,
@@ -31,6 +34,9 @@ import {
   type AreaStrategyGroup
 } from "../utils/area-entities";
 import { countReplacementRules } from "../utils/blueprint-replacements";
+import { isHiddenAsUnavailable } from "../utils/entity-availability";
+import { resolveStatusEntityAreaId } from "../utils/entity-lookups";
+import { normalizeNowPlayingMode, type NowPlayingMode } from "../utils/now-playing";
 import { getDeviceClassName, getDomainName } from "../utils/domain-names";
 import { getDeviceClassIcon, getDomainColor, getDomainIcon } from "../utils/icons";
 import { ddLocale, ddLocalize, ddLocalizePlural } from "../utils/localize";
@@ -43,6 +49,19 @@ import {
   normalizeHiddenHomeSections,
   normalizeHomeSectionsOrder,
 } from "../utils/home-sections";
+import {
+  addHomeScene,
+  filterHomeSceneCandidates,
+  homeSceneDomain,
+  moveHomeScene,
+  normalizeHomeScenes,
+  pickableHomeSceneIds,
+  removeHomeScene,
+  type HomeSceneCandidate,
+} from "../utils/home-scenes";
+import { getEntityRegistry } from "../utils/entity-registry";
+import { dashboardSegmentFromPath, readWallTabletPrefs } from "../utils/wall-tablet";
+import "./dwains-wall-tablet-settings";
 import { DD_NEXT_VERSION } from "../version";
 import {
   MASTER_ACTION_CONFIRMATION_DOMAINS,
@@ -63,7 +82,8 @@ type SettingsPageKey =
   | "favorites"
   | "replacements"
   | "permissions"
-  | "support";
+  | "support"
+  | "wall_tablet";
 
 interface SettingsPageItem {
   page: Exclude<SettingsPageKey, "overview">;
@@ -252,10 +272,16 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _alarmSearchFilter = '';
 
   @state()
+  private _showHomeScenePicker = false;
+
+  @state()
+  private _homeSceneSearch = '';
+
+  @state()
   private _settingsPage: SettingsPageKey = "overview";
 
   @state()
-  private _homeSettingsDetail: 'overview' | 'house_information' | 'climate' | 'outdoor_climate' | 'cameras' | 'custom_cards' = 'overview';
+  private _homeSettingsDetail: 'overview' | 'house_information' | 'climate' | 'outdoor_climate' | 'cameras' | 'custom_cards' | 'scenes' = 'overview';
 
   // Dashboard-eigenschappen (naam + sidebar-icoon)
   @state() private _dashboardId?: string;
@@ -658,6 +684,17 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           : this._t('settings.default_access'),
       },
       {
+        page: "wall_tablet",
+        group: "behavior",
+        icon: "mdi:tablet-dashboard",
+        color: "#64748b",
+        title: this._t('kiosk.title'),
+        description: this._t('kiosk.description'),
+        summary: readWallTabletPrefs(dashboardSegmentFromPath(window.location.pathname)).enabled
+          ? this._t('kiosk.summary_on')
+          : this._t('kiosk.summary_off'),
+      },
+      {
         page: "support",
         group: "support",
         icon: "mdi:heart",
@@ -919,6 +956,13 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         return this._renderPermissionsSettingsPanel();
       case "support":
         return this._renderSupportSection();
+      case "wall_tablet":
+        return this._renderSettingsPanel(
+          "mdi:tablet-dashboard",
+          this._t('kiosk.title'),
+          this._t('kiosk.panel_description'),
+          html`<dwains-dashboard-next-wall-tablet-settings .hass=${this.hass}></dwains-dashboard-next-wall-tablet-settings>`
+        );
       default:
         return nothing;
     }
@@ -937,6 +981,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       case "replacements": return this._t('settings.blueprint_replacements');
       case "permissions": return this._t('settings.user_permissions');
       case "support": return this._t('settings.support');
+      case "wall_tablet": return this._t('kiosk.title');
       default: return "";
     }
   }
@@ -1079,6 +1124,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     if (section === 'devices') return 'house_information';
     if (section === 'cameras') return 'cameras';
     if (section === 'custom_cards') return 'custom_cards';
+    if (section === 'scenes') return 'scenes';
     return undefined;
   }
 
@@ -1285,6 +1331,40 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           </div>
           ${this._showAlarmPicker ? this._renderAlarmPicker() : nothing}
         </div>
+        ${this._renderNowPlayingSettings()}
+      </div>
+    `;
+  }
+
+  private _renderNowPlayingSettings() {
+    const mode = normalizeNowPlayingMode(this._config?.settings?.now_playing_bar);
+    const modes: Array<{ value: NowPlayingMode; icon: string; label: string }> = [
+      { value: 'off', icon: 'mdi:music-off', label: this._t('now_playing.mode_off') },
+      { value: 'home', icon: 'mdi:home-outline', label: this._t('now_playing.mode_home') },
+      { value: 'all', icon: 'mdi:view-dashboard-outline', label: this._t('now_playing.mode_all') },
+    ];
+    return html`
+      <div class="dd-header-feature">
+        <div class="dd-header-feature-row">
+          <span class="dd-setting-row-icon"><ha-icon icon="mdi:music-circle-outline"></ha-icon></span>
+          <span class="dd-setting-row-copy">
+            <strong>${this._t('now_playing.setting_title')}</strong>
+            <small>${this._t('now_playing.setting_description')}</small>
+          </span>
+        </div>
+        <div class="area-sort-segmented" role="radiogroup" aria-label=${this._t('now_playing.setting_title')}>
+          ${modes.map(item => html`
+            <button
+              type="button"
+              class="area-sort-segment ${mode === item.value ? 'selected' : ''}"
+              role="radio"
+              aria-checked=${mode === item.value ? 'true' : 'false'}
+              @click=${() => this._setNowPlayingMode(item.value)}
+            >
+              <ha-icon icon=${item.icon}></ha-icon><span>${item.label}</span>
+            </button>
+          `)}
+        </div>
       </div>
     `;
   }
@@ -1381,6 +1461,13 @@ export class DwainsDashboardStrategyEditor extends LitElement {
               this._config?.settings?.hide_unavailable_entities !== false,
               this._toggleHideUnavailableAreaEntities
             )}
+            ${this._renderToggleSetting(
+              "mdi:thermostat",
+              this._t('thermostat.setting_label'),
+              this._t('thermostat.setting_description'),
+              this._config?.settings?.show_area_thermostat !== false,
+              this._toggleAreaThermostat
+            )}
           </div>
           ${this._renderAreasConfiguration()}
         </div>
@@ -1388,6 +1475,21 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     );
   }
 
+  private _toggleAreaThermostat = (event: Event): void => {
+    if (!this._config) return;
+    this._fireConfigChanged({
+      ...this._config,
+      settings: { ...this._config.settings, show_area_thermostat: (event.target as any).checked },
+    });
+  };
+
+  private _setNowPlayingMode(mode: NowPlayingMode): void {
+    if (!this._config) return;
+    this._fireConfigChanged({
+      ...this._config,
+      settings: { ...this._config.settings, now_playing_bar: mode },
+    });
+  }
   private _renderAreasConfiguration() {
     if (!this.hass || !this._config) return nothing;
 
@@ -2221,6 +2323,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       if (!sectionIsOpen(section)) return nothing;
       if (section === 'cameras') return this._renderHomeCameraSettings();
       if (section === 'custom_cards') return this._renderHomeCustomCardsSettings();
+      if (section === 'scenes') return this._renderHomeScenesSettings();
       if (section === 'devices') {
         return html`<div class="dd-home-house-information">${this._renderHomeInformationCardSettings()}</div>`;
       }
@@ -2305,6 +2408,123 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     `;
   }
 
+  private _getHomeScenes(): string[] {
+    return normalizeHomeScenes(this._config?.settings?.home_scenes);
+  }
+
+  private _setHomeScenes(ids: string[]): void {
+    if (!this._config) return;
+    this._fireConfigChanged({
+      ...this._config,
+      settings: { ...this._config.settings, home_scenes: ids },
+    });
+  }
+
+  private _homeSceneName(entityId: string): string {
+    return this.hass?.states[entityId]?.attributes?.friendly_name ||
+      getEntityRegistry(this.hass)[entityId]?.name ||
+      entityId;
+  }
+
+  private _homeSceneAreaName(entityId: string): string | undefined {
+    if (!this.hass || !this._config) return undefined;
+    const areaId = resolveStatusEntityAreaId(this.hass, this._config, entityId);
+    if (!areaId) return undefined;
+    return (this._config.areas || []).find(area => area.area_id === areaId)?.name || this.hass.areas?.[areaId]?.name || undefined;
+  }
+
+  private _homeSceneIcon(entityId: string): string {
+    const domain = homeSceneDomain(entityId) || 'scene';
+    return getEntityRegistry(this.hass)[entityId]?.icon ||
+      this.hass?.states[entityId]?.attributes?.icon ||
+      getDomainIcon(domain);
+  }
+
+  private _homeSceneTypeLabel(entityId: string): string {
+    return this._t(homeSceneDomain(entityId) === 'script' ? 'scenes.type_script' : 'scenes.type_scene');
+  }
+
+  private _renderHomeScenesSettings() {
+    const picked = this._getHomeScenes();
+    return html`
+      <div class="dd-inline-section">
+        <div class="dd-inline-action-row dd-inline-action-only">
+          <button class="home-custom-card-add" type="button" @click=${() => { this._homeSceneSearch = ''; this._showHomeScenePicker = true; }}>
+            <ha-icon icon="mdi:plus"></ha-icon>
+            ${this._t('scenes.add')}
+          </button>
+        </div>
+        ${picked.length ? html`
+          <div class="dd-flat-sublist">
+            ${picked.map((entityId, index) => {
+              const state = this.hass?.states[entityId];
+              const unavailable = Boolean(state && isHiddenAsUnavailable(state));
+              const name = this._homeSceneName(entityId);
+              const meta = !state
+                ? this._t('scenes.missing')
+                : [this._homeSceneTypeLabel(entityId), this._homeSceneAreaName(entityId), unavailable ? this._t('common.unavailable') : ''].filter(Boolean).join(' · ');
+              return html`
+                <div class="dd-flat-subitem-row ${!state || unavailable ? 'disabled' : ''}">
+                  <div class="home-section-icon"><ha-icon icon=${state ? this._homeSceneIcon(entityId) : "mdi:help-circle-outline"}></ha-icon></div>
+                  <div class="home-section-copy">
+                    <div class="home-section-title">${name}</div>
+                    <div class="home-section-description">${meta}</div>
+                  </div>
+                  <div class="home-section-actions">
+                    <ha-icon-button .label=${this._t('settings.move_up')} .path=${mdiArrowUp} .disabled=${index === 0}
+                      @click=${() => this._setHomeScenes(moveHomeScene(picked, entityId, -1))}></ha-icon-button>
+                    <ha-icon-button .label=${this._t('settings.move_down')} .path=${mdiArrowDown} .disabled=${index === picked.length - 1}
+                      @click=${() => this._setHomeScenes(moveHomeScene(picked, entityId, 1))}></ha-icon-button>
+                    <ha-icon-button .label=${this._t('common.delete')} .path=${mdiDelete}
+                      @click=${() => this._setHomeScenes(removeHomeScene(picked, entityId))}></ha-icon-button>
+                  </div>
+                </div>
+              `;
+            })}
+          </div>
+        ` : html`<div class="dd-empty-state">${this._t('scenes.settings_empty')}</div>`}
+        ${this._showHomeScenePicker ? this._renderHomeScenePicker(picked) : nothing}
+      </div>
+    `;
+  }
+
+  private _renderHomeScenePicker(picked: string[]) {
+    const registry = getEntityRegistry(this.hass);
+    const candidates = pickableHomeSceneIds(this.hass?.states || {}, registry).map(entityId => {
+      const candidate: HomeSceneCandidate = { entityId, name: this._homeSceneName(entityId) };
+      const areaName = this._homeSceneAreaName(entityId);
+      if (areaName) candidate.areaName = areaName;
+      return candidate;
+    });
+    const options = filterHomeSceneCandidates(candidates, picked, this._homeSceneSearch, ddLocale(this.hass));
+    return html`
+      <div class="entity-picker-modal" @click=${(event: Event) => { if (event.target === event.currentTarget) this._showHomeScenePicker = false; }}>
+        <div class="entity-picker-content" role="dialog" aria-modal="true" aria-label=${this._t('scenes.picker_title')}>
+          <div class="entity-picker-header">
+            <h4>${this._t('scenes.picker_title')}</h4>
+            <button class="close-button" type="button" title=${this._t('common.close')} @click=${() => this._showHomeScenePicker = false}>×</button>
+          </div>
+          <div class="entity-search">
+            <input class="entity-search-input" type="search" placeholder=${this._t('scenes.search')} .value=${this._homeSceneSearch}
+              @input=${(event: Event) => this._homeSceneSearch = (event.target as HTMLInputElement).value} />
+          </div>
+          <div class="entity-list">
+            ${options.map(option => html`
+              <button type="button" class="entity-option" @click=${() => {
+                this._setHomeScenes(addHomeScene(picked, option.entityId));
+                this._showHomeScenePicker = false;
+              }}>
+                <ha-icon class="entity-icon" icon=${this._homeSceneIcon(option.entityId)}></ha-icon>
+                <span class="entity-name">${option.name}</span>
+                <span class="entity-id">${[this._homeSceneTypeLabel(option.entityId), option.areaName].filter(Boolean).join(' · ')}</span>
+              </button>
+            `)}
+            ${options.length ? nothing : html`<div class="entity-picker-hint empty">${this._t('scenes.no_results')}</div>`}
+          </div>
+        </div>
+      </div>
+    `;
+  }
   private _getHomeCustomCards(): HomeCustomCard[] {
     const cards = this._config?.home_custom_cards;
     if (!Array.isArray(cards)) return [];

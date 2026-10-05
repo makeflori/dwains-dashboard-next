@@ -38,7 +38,7 @@ export interface LovelaceCardConfig {
   [key: string]: any;
 }
 
-export type HomeSectionKey = 'summaries' | 'cameras' | 'areas' | 'devices' | 'todos' | 'custom_cards' | 'favorites';
+export type HomeSectionKey = 'summaries' | 'cameras' | 'areas' | 'devices' | 'todos' | 'custom_cards' | 'favorites' | 'scenes';
 export type HomeInformationCardKey = 'people' | 'climate' | 'outdoor_climate' | 'power' | 'device_groups';
 export type MasterActionConfirmationDomain = 'light' | 'switch' | 'fan' | 'cover' | 'lock';
 export type MasterActionConfirmationSettings = Partial<Record<MasterActionConfirmationDomain, boolean>>;
@@ -75,6 +75,12 @@ export interface DwainsDashboardSettings {
   home_cameras_hidden?: string[];
   hidden_device_types?: string[];
   master_action_confirmations?: MasterActionConfirmationSettings;
+  /** Scenes and scripts shown in the Home "Scenes & scripts" row, in order. */
+  home_scenes?: string[];
+  /** Thermostat in the room header for rooms with one climate entity. Default on. */
+  show_area_thermostat?: boolean;
+  /** Where the Now playing bar is shown. Default 'home'. */
+  now_playing_bar?: 'off' | 'home' | 'all';
 }
 
 // New interfaces for areas configuration like Home Assistant

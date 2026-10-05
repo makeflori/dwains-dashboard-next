@@ -1,15 +1,17 @@
 {
   "name": "dwains-dashboard-next",
-  "version": "1.9.43",
+  "version": "1.11.0",
   "description": "Dwains Dashboard Next for Home Assistant",
   "main": "dist/dwains-dashboard-next.js",
   "type": "module",
   "scripts": {
-    "build": "rollup -c",
-    "watch": "rollup -c -w",
+    "build": "rm -rf dist/chunks && rollup -c",
+    "watch": "rm -rf dist/chunks && rollup -c -w",
     "clean": "rm -rf dist",
     "type-check": "tsc --noEmit",
     "i18n:check": "node scripts/check-translations.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "build:release": "npm run clean && npm run build",
     "screenshots": "node scripts/screenshot-dashboard.mjs",
     "screenshots:install": "playwright install chromium",
@@ -26,16 +28,16 @@
   "author": "Dwain Scheeren",
   "license": "MIT",
   "devDependencies": {
-    "@mdi/js": "^7.4.47",
-    "@playwright/test": "^1.61.1",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.5",
+    "@playwright/test": "^1.61.1",
     "@types/node": "^20.10.5",
     "rollup": "^4.9.1",
     "tslib": "^2.6.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vitest": "^4.1.11"
   },
   "dependencies": {
     "@mdi/js": "^7.4.47",

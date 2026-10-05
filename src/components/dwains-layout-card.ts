@@ -3,6 +3,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import memoizeOne from 'memoize-one';
 
 import type { HomeAssistant } from '../types/home-assistant';
 import type { DwainsDashboardConfig, AreaConfig, EntityConfig, AreaData, AreaCustomCard, EntitiesDisplay, HomeCustomCard, HomeInformationCardKey, HomeSectionKey, MasterActionConfirmationDomain } from '../types/strategy';
@@ -16,8 +17,22 @@ import { restrictNonAdminDashboardSettings } from '../utils/security';
 import { AREA_STRATEGY_GROUPS, getAreaEntityGroupKey, getLegacyAreaGroupKey, sortAreas, type AreaStrategyGroup } from '../utils/area-entities';
 import { navigateHomeAssistant } from '../utils/navigation';
 import { isHassDarkTheme } from '../utils/theme';
-import { normalizeHiddenHomeInformationCards, normalizeHiddenHomeSections, normalizeHomeSectionsOrder } from '../utils/home-sections';
+import { HOME_SECTION_META, normalizeHiddenHomeInformationCards, normalizeHiddenHomeSections, normalizeHomeSectionsOrder } from '../utils/home-sections';
 import { buildHousePowerUsage } from '../utils/power-usage';
+import { normalizeHomeScenes, resolveHomeSceneItems, type HomeSceneItem } from '../utils/home-scenes';
+import { getEntityRegistry } from '../utils/entity-registry';
+import { getDomainStates } from '../utils/state-index';
+import { pickAreaThermostatEntityId } from '../utils/thermostat';
+import './dwains-area-thermostat';
+import {
+  isNowPlayingPlayerVisible,
+  isNowPlayingShownOn,
+  normalizeNowPlayingMode,
+  nowPlayingRoomName,
+  pickNowPlayingEntityIds,
+} from '../utils/now-playing';
+import type { NowPlayingPlayer } from './dwains-now-playing-bar';
+import './dwains-now-playing-bar';
 import { formatEntityStateWithUnit, formatValueWithUnit } from '../utils/unit-format';
 import { stripAreaNameFromEntityName } from '../utils/entity-names';
 import { showDomainEntitiesDialog } from './utils/show-domain-entities-dialog';
@@ -497,6 +512,34 @@ export class DwainsLayoutCard extends LitElement {
   }
 
   static override styles = css`
+    dwains-dashboard-next-now-playing.inline {
+      display: block;
+      margin: 0 0 18px;
+    }
+    .room-header dwains-dashboard-next-area-thermostat {
+      flex: 0 1 320px;
+      min-width: 220px;
+    }
+    @media (max-width: 768px) {
+      dwains-dashboard-next-now-playing.floating {
+        position: fixed;
+        left: max(12px, env(safe-area-inset-left, 0px));
+        right: max(12px, env(safe-area-inset-right, 0px));
+        bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+        z-index: 140;
+        max-width: 560px;
+        margin: 0 auto;
+      }
+      .layout-container.has-floating-now-playing .home-view,
+      .layout-container.has-floating-now-playing .content-area.area-content-area {
+        padding-bottom: calc(190px + env(safe-area-inset-bottom, 0px));
+      }
+      .room-header dwains-dashboard-next-area-thermostat {
+        width: 100%;
+        min-width: 0;
+        flex-basis: 100%;
+      }
+    }
     :host {
       display: block;
       height: 100%;
@@ -18769,8 +18812,10 @@ export class DwainsLayoutCard extends LitElement {
       return html`<div class="loading">${this._t('common.loading')}</div>`;
     }
 
+    const floatingNowPlaying = this._isMobile && this._getNowPlayingPlayers().length > 0;
     const layoutClasses = {
       'layout-container': true,
+      'has-floating-now-playing': floatingNowPlaying,
       'sidebar-resizing': this._isResizingSidebar,
       'sidebar-collapsed': this._isDesktopAreaSidebarCollapsed(),
     };
@@ -18799,6 +18844,7 @@ export class DwainsLayoutCard extends LitElement {
           </div>
         </div>
       </div>
+      ${floatingNowPlaying ? this._renderNowPlayingBar(true) : nothing}
       ${this._renderToast()}
       ${this._renderConfirmationDialog()}
       ${this._renderHousePowerDialog()}
@@ -18848,6 +18894,33 @@ export class DwainsLayoutCard extends LitElement {
     `;
   }
 
+  private _nowPlayingShown(): boolean {
+    return isNowPlayingShownOn(normalizeNowPlayingMode(this.config?.settings?.now_playing_bar), this._selectedView);
+  }
+
+  private _getNowPlayingPlayers(): NowPlayingPlayer[] {
+    if (!this.hass || !this._nowPlayingShown()) return [];
+    return this._nowPlayingPlayers(this.hass, this.hass.states, this.config, getEntityRegistry(this.hass), this._currentTime);
+  }
+
+  private _nowPlayingPlayers = memoizeOne((
+    hass: HomeAssistant,
+    states: HomeAssistant['states'],
+    config: DwainsDashboardConfig,
+    _registry: unknown,
+    _clock: string
+  ): NowPlayingPlayer[] => pickNowPlayingEntityIds(getDomainStates(states, 'media_player'), {
+    now: Date.now(),
+    isVisible: (entityId) => isNowPlayingPlayerVisible(hass, config, entityId),
+  }).map((entityId) => ({ entityId, roomName: nowPlayingRoomName(hass, config, entityId) })));
+
+  private _renderNowPlayingBar(floating: boolean) {
+    const players = this._getNowPlayingPlayers();
+    if (!players.length) return nothing;
+    return html`
+      <dwains-dashboard-next-now-playing class=${floating ? 'floating' : 'inline'} .hass=${this.hass} .players=${players} .floating=${floating}></dwains-dashboard-next-now-playing>
+    `;
+  }
   private _renderNotificationsPanel() {
     if (!this._showNotificationsUi()) return nothing;
 
@@ -19562,6 +19635,7 @@ export class DwainsLayoutCard extends LitElement {
     return html`
       <div class="home-view">
         ${this._renderHomeWelcome()}
+        ${!this._isMobile ? this._renderNowPlayingBar(false) : nothing}
         ${sections.map(section => this._renderHomeSection(section))}
       </div>
     `;
@@ -19598,11 +19672,90 @@ export class DwainsLayoutCard extends LitElement {
         return this._renderHomeCustomCards();
       case 'favorites':
         return this._renderFavorites();
+      case 'scenes':
+        return this._renderHomeScenes();
       default:
         return nothing;
     }
   }
 
+  private _getHomeSceneItems(): HomeSceneItem[] {
+    return resolveHomeSceneItems(
+      normalizeHomeScenes(this.config?.settings?.home_scenes),
+      this.hass?.states || {},
+      getEntityRegistry(this.hass),
+      this.config?.settings?.hide_unavailable_entities !== false
+    );
+  }
+
+  private _homeSceneName(entityId: string): string {
+    return this.hass?.states[entityId]?.attributes?.friendly_name ||
+      getEntityRegistry(this.hass)[entityId]?.name || entityId;
+  }
+
+  private _scriptLastRunText(state: any): string {
+    const timestamp = Date.parse(state?.attributes?.last_triggered || '');
+    return Number.isFinite(timestamp) ? this._formatRelativeTime(timestamp) : this._t('scenes.not_run');
+  }
+
+  private _renderHomeScenes() {
+    const items = this._getHomeSceneItems();
+    if (!items.length) return nothing;
+    const title = this._t('home_section.scenes.label');
+    return html`
+      <section class="home-summaries-section home-scenes-section">
+        <div class="home-status-heading">
+          <ha-icon icon=${HOME_SECTION_META.scenes.icon}></ha-icon>
+          <span>${title}</span>
+        </div>
+        <div class="mobile-section-heading">
+          <div class="mobile-section-title">
+            <span class="mobile-layout-toggle active static"><ha-icon icon=${HOME_SECTION_META.scenes.icon}></ha-icon></span>
+            <span class="mobile-section-title-label">${title}</span>
+          </div>
+        </div>
+        <div class="home-summary-list">
+          ${items.map(item => {
+            const state = this.hass.states[item.entityId];
+            if (!state) return nothing;
+            const name = this._homeSceneName(item.entityId);
+            const meta = item.unavailable
+              ? this._t('common.unavailable')
+              : item.domain === 'scene'
+                ? this._sceneLastActivatedText(state)
+                : this._scriptLastRunText(state);
+            return html`
+              <button
+                class="home-summary-card ${item.domain}"
+                type="button"
+                ?disabled=${item.unavailable}
+                @click=${() => this._runHomeScene(item)}
+              >
+                <span class="home-summary-icon"><ha-icon icon=${getDomainIcon(item.domain)}></ha-icon></span>
+                <span class="home-summary-copy">
+                  <span class="home-summary-title">${name}</span>
+                  <span class="home-summary-subtitle">${meta}</span>
+                </span>
+                <span class="home-summary-chevron"><ha-icon icon="mdi:play"></ha-icon></span>
+              </button>
+            `;
+          })}
+        </div>
+      </section>
+    `;
+  }
+
+  private async _runHomeScene(item: HomeSceneItem): Promise<void> {
+    if (item.unavailable) return;
+    const name = this._homeSceneName(item.entityId);
+    try {
+      await this.hass.callService(item.domain, 'turn_on', { entity_id: item.entityId });
+      this._showToast(this._t(item.domain === 'scene' ? 'scenes.activated_named' : 'scenes.started_named', { name }));
+    } catch (err) {
+      console.warn(`Failed to run ${item.entityId}:`, err);
+      this._showToast(this._t(item.domain === 'scene' ? 'scenes.scene_failed' : 'scenes.script_failed', { name }));
+    }
+  }
   private _renderHomeSummaries() {
     const summaries = this._getHomeSummaryCards();
     if (!summaries.length) return nothing;
@@ -21173,6 +21326,7 @@ export class DwainsLayoutCard extends LitElement {
     const deviceLabel = this._tp('common.device', deviceCount);
     const roomBadges = this._getAreaStatusBadges(areaData);
     const headerCamera = this._getAreaHeaderCamera(area, visibleAreaEntities);
+    const thermostatEntityId = this._areaThermostatEntityId(visibleAreaEntities);
 
     return html`
       <div class="area-view room-ui-v2">
@@ -21235,6 +21389,13 @@ export class DwainsLayoutCard extends LitElement {
 
           ${this._renderAreaHeaderCamera(headerCamera)}
           ${this._renderAreaHeaderMetrics(areaData, area.area_id, visibleAreaEntities)}
+          ${thermostatEntityId ? html`
+            <dwains-dashboard-next-area-thermostat
+              .hass=${this.hass}
+              .entityId=${thermostatEntityId}
+              .roomName=${area.name}
+            ></dwains-dashboard-next-area-thermostat>
+          ` : nothing}
 
           <div class="room-header-actions">
             ${this._canManageDashboard() ? html`
@@ -21250,6 +21411,7 @@ export class DwainsLayoutCard extends LitElement {
           </div>
         </div>
 
+        ${!this._isMobile ? this._renderNowPlayingBar(false) : nothing}
         ${this._renderCustomCardSlot(area.area_id, 'top', this._t('layout.custom_cards_top'))}
         ${this._renderMobileEntitiesSection(area, areaEntities)}
         ${this._renderCustomCardSlot(area.area_id, 'bottom', this._t('layout.custom_cards_bottom'))}
@@ -24846,6 +25008,10 @@ export class DwainsLayoutCard extends LitElement {
     });
   }
 
+  private _areaThermostatEntityId(entities: EntityConfig[]): string | undefined {
+    if (this.config?.settings?.show_area_thermostat === false) return undefined;
+    return pickAreaThermostatEntityId(entities.map(entity => entity.entity_id), this.hass.states);
+  }
   private async _toggleAreaLights(areaId: string) {
     const entities = this._getFilteredAreaEntities(areaId);
     const lights = entities.filter(e => e.entity_id.startsWith('light.'));
