@@ -15864,13 +15864,13 @@ copy{
     }
 
     .dd-page-header-title-row .dd-page-header-home {
-      width: 20px;
-      height: 20px;
-      min-width: 20px;
+      width: 26px;
+      height: 26px;
+      min-width: 26px;
       padding: 0;
-      border-radius: 5px;
+      border-radius: 6px;
       background: transparent;
-      color: var(--ph-muted);
+      color: var(--primary-color);
     }
 
     .dd-page-header-title-row .dd-page-header-home:hover {
@@ -15879,16 +15879,16 @@ copy{
     }
 
     .dd-page-header-title-row .dd-page-header-home ha-icon {
-      --mdc-icon-size: 14px;
-      width: 14px;
-      height: 14px;
+      --mdc-icon-size: 21px;
+      width: 21px;
+      height: 21px;
     }
 
     .dd-page-header-title-chevron {
-      --mdc-icon-size: 12px;
-      width: 12px;
-      height: 12px;
-      flex: 0 0 12px;
+      --mdc-icon-size: 16px;
+      width: 16px;
+      height: 16px;
+      flex: 0 0 16px;
       color: var(--ph-muted);
       opacity: 0.72;
     }
@@ -17674,13 +17674,23 @@ copy{
   }
 
   private _statusCardTitle(domain: DomainCount): string {
-    if (domain.domain === 'cover' && domain.deviceClass === 'window') {
+    if (domain.domain === 'cover' && domain.statusKind === 'window') {
       const label = this._statusPair('status.window_open');
       return domain.count === 1 ? label.singular : label.plural;
     }
-    if (domain.domain === 'cover' && domain.deviceClass === 'door') {
+    if (domain.domain === 'cover' && domain.statusKind === 'door') {
       const label = this._statusPair('status.door_open');
       return domain.count === 1 ? label.singular : label.plural;
+    }
+    if (domain.domain === 'cover' && domain.statusKind === 'gate') {
+      const german = String(this.hass?.language || this.hass?.locale?.language || '').toLowerCase().startsWith('de');
+      return german
+        ? (domain.count === 1 ? 'Tor offen' : 'Tore offen')
+        : (domain.count === 1 ? 'Gate open' : 'Gates open');
+    }
+    if (domain.domain === 'cover' && domain.statusKind === 'shading') {
+      const german = String(this.hass?.language || this.hass?.locale?.language || '').toLowerCase().startsWith('de');
+      return german ? 'Beschattung ausgefahren' : 'Shading deployed';
     }
     if (domain.domain === 'cover') return domain.name;
     const activeLabel = this._statusCardActiveLabel(domain);
@@ -18232,10 +18242,11 @@ copy{
       this._homeInformationCardVisible('power') ? this._renderHousePowerStatusCard() : nothing,
     ].filter(card => card !== nothing);
 
-    const openPrimarySlots = Math.max(0, 3 - primaryCards.length);
-    const promotedStatusCount = primaryCards.length > 0
-      ? Math.min(visibleDomains.length, openPrimarySlots * 2)
+    const primaryRemainder = primaryCards.length % 3;
+    const openPrimarySlots = primaryCards.length > 0 && primaryRemainder !== 0
+      ? 3 - primaryRemainder
       : 0;
+    const promotedStatusCount = Math.min(visibleDomains.length, openPrimarySlots * 2);
     const promotedStatuses = visibleDomains.slice(0, promotedStatusCount);
     const remainingStatuses = visibleDomains.slice(promotedStatusCount);
     const promotedStacks = Array.from({ length: Math.ceil(promotedStatuses.length / 2) }, (_, index) =>
@@ -21194,8 +21205,8 @@ copy{
     }
     if (key === 'cover_shading') {
       return String(this.hass?.language || this.hass?.locale?.language || '').toLowerCase().startsWith('de')
-        ? 'Beschattung'
-        : 'Shading';
+        ? 'Beschattung & Tore'
+        : 'Shading & gates';
     }
     return getDomainName(this.hass, key);
   }
