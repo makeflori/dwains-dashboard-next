@@ -1,4 +1,4 @@
-import type { HomeAssistant } from '../types/home-assistant';
+import type { HassEntity, HomeAssistant } from '../types/home-assistant';
 import { getDeviceClassName, getDomainName, prettifyDomain } from './domain-names';
 import { ddLocalize } from './localize';
 import { isEntityFromHiddenDevice } from './device-admission';
@@ -13,6 +13,11 @@ export interface DomainCount {
   value?: string;
   deviceClass?: string;
   entities?: string[]; // de 'aan'-entiteiten van dit domein
+}
+
+function entityDomain(entityId: string): string {
+  const dot = entityId.indexOf('.');
+  return dot === -1 ? entityId : entityId.slice(0, dot);
 }
 
 // Constants for state checks
