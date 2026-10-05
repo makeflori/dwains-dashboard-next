@@ -53,6 +53,27 @@ const BINARY_SENSOR_CONFIG: Record<string, { icon: string }> = {
   vibration: { icon: getDeviceClassIcon('binary_sensor', 'vibration') }
 };
 
+/**
+ * Members of a group entity, limited to the group's own domain.
+ */
+export function getGroupMemberIds(state: HassEntity | undefined): string[] {
+  const members = state?.attributes?.entity_id;
+  if (!Array.isArray(members)) return [];
+  const domain = entityDomain(state!.entity_id);
+  return members.filter((member): member is string =>
+    typeof member === 'string' && member !== state!.entity_id && entityDomain(member) === domain
+  );
+}
+
+/** Skip a group when at least one of its members is counted on its own. */
+export function shouldSkipGroupEntity(
+  state: HassEntity,
+  isMemberCounted: (memberId: string) => boolean
+): boolean {
+  const members = getGroupMemberIds(state);
+  return members.length > 0 && members.some(isMemberCounted);
+}
+
 export function getStatusDomains(hass: HomeAssistant, config: any): DomainCount[] {
   if (!hass?.states) return [];
 
