@@ -192,7 +192,7 @@ export function getStatusDomains(hass: HomeAssistant, config: any): DomainCount[
         entities: [],
         deviceClass: groupKey === 'shading' || groupKey === 'cover' ? undefined : rawDeviceClass,
         name: groupKey === 'shading'
-          ? ddLocalize(hass, 'domain.cover_shading')
+          ? (String(hass?.language || hass?.locale?.language || '').toLowerCase().startsWith('de') ? 'Beschattung' : 'Shading')
           : groupKey === 'cover'
             ? getDomainName(hass, 'cover')
             : getDeviceClassName(hass, rawDeviceClass),
