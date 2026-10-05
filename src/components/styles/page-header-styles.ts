@@ -125,6 +125,10 @@ export const pageHeaderStyles = css`
 
     .dd-page-header-reading ha-icon {
       --mdc-icon-size: 17px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
       color: var(--reading-color);
     }
 
@@ -134,6 +138,10 @@ export const pageHeaderStyles = css`
 
     .dd-page-header-reading.humidity {
       --reading-color: #34a6d8;
+    }
+
+    .dd-page-header-reading.wattage {
+      --reading-color: #d99600;
     }
 
     /* Round buttons: back, camera, hidden entities, edit */
