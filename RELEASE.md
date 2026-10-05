@@ -48,3 +48,4 @@ Dwains Dashboard Next follows semantic versioning.
 - The generated entry must retain the v1.11.0-style static bootstrap chunk (`./chunks/index-*.js`) rather than directly dynamically importing all runtime strategy/UI chunks from the entry file.
 
 - Keep `src/index.ts` as the thin bootstrap loader and keep runtime bootstrap logic in `src/bootstrap.ts` so the built entry preserves the v1.11.0 single static bootstrap-chunk shape.
+- Hotfix: scope legacy room tile styles to entity/type sections so the v1.11 header layout remains intact.
