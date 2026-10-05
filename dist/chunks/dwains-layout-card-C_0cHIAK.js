@@ -1360,21 +1360,21 @@ import{_ as t,n as e,r as i,t as a}from"./state-DfsJqMnn.js";import{E as o,a as 
       <div class="area-view">
         ${this._isMobile?this._renderAreaCompactBar(t,a,p,g,u,m):c}
 
-        <header class="dd-page-header dd-room-header-v111">
-          <div class="dd-room-header-layout">
-            <div class="dd-room-header-media" aria-hidden="true">
-              ${o?s`<div class="dd-room-header-picture" style=${`background-image: url('${t.picture}');`}></div>`:s`
-                    <div class="dd-room-header-icon">
+        <header class="dd-page-header room-header">
+          <div class="dd-page-header-with-media">
+            <div class="dd-page-header-media-tile" aria-hidden="true">
+              ${o?s`<div class="dd-page-header-room-picture" style=${`background-image: url('${t.picture}');`}></div>`:s`
+                    <div class="dd-page-header-room-icon">
                       <ha-icon icon=${l(t)}></ha-icon>
                     </div>
                   `}
             </div>
 
-            <div class="dd-room-header-content">
+            <div class="dd-page-header-main">
               <div class="dd-page-header-top">
                 <div class="dd-page-header-identity">
                   <div class="dd-page-header-copy">
-                    <div class="dd-room-header-title-row">
+                    <div class="dd-page-header-title-row">
                       ${g}
                       <h1 class="dd-page-header-title">${t.name}</h1>
                     </div>
@@ -19310,12 +19310,8 @@ import{_ as t,n as e,r as i,t as a}from"./state-DfsJqMnn.js";import{E as o,a as 
 
     ${Jt}
 
-    /* v1.11 room header, with the dev media tile kept separate from the card background. */
-    .dd-room-header-v111 {
-      overflow: visible;
-    }
-
-    .dd-room-header-layout {
+    /* Room header: exact v1.11.0 header styling with only the two requested structural deviations. */
+    .dd-page-header-with-media {
       display: grid;
       grid-template-columns: 220px minmax(0, 1fr);
       gap: 18px;
@@ -19323,16 +19319,16 @@ import{_ as t,n as e,r as i,t as a}from"./state-DfsJqMnn.js";import{E as o,a as 
       min-width: 0;
     }
 
-    .dd-room-header-media {
+    .dd-page-header-media-tile {
       position: relative;
       width: 220px;
       min-height: 176px;
       overflow: hidden;
       border-radius: 14px;
-      background: color-mix(in srgb, var(--primary-color) 8%, var(--ph-surface));
+      background: color-mix(in srgb, var(--ph-accent) 10%, var(--ph-surface));
     }
 
-    .dd-room-header-picture {
+    .dd-page-header-room-picture {
       position: absolute;
       inset: 0;
       background-position: center;
@@ -19340,22 +19336,22 @@ import{_ as t,n as e,r as i,t as a}from"./state-DfsJqMnn.js";import{E as o,a as 
       background-repeat: no-repeat;
     }
 
-    .dd-room-header-icon {
+    .dd-page-header-room-icon {
       width: 100%;
       height: 100%;
       min-height: 176px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: color-mix(in srgb, var(--primary-color) 86%, var(--primary-text-color));
-      background: color-mix(in srgb, var(--primary-color) 9%, var(--ph-surface));
+      background: color-mix(in srgb, var(--ph-accent) 14%, var(--ph-surface));
+      color: var(--ph-accent);
     }
 
-    .dd-room-header-icon ha-icon {
+    .dd-page-header-room-icon ha-icon {
       --mdc-icon-size: 52px;
     }
 
-    .dd-room-header-content {
+    .dd-page-header-main {
       min-width: 0;
       display: flex;
       flex-direction: column;
@@ -19363,14 +19359,14 @@ import{_ as t,n as e,r as i,t as a}from"./state-DfsJqMnn.js";import{E as o,a as 
       gap: 16px;
     }
 
-    .dd-room-header-title-row {
+    .dd-page-header-title-row {
       min-width: 0;
       display: flex;
       align-items: center;
       gap: 10px;
     }
 
-    .dd-room-header-title-row .dd-page-header-title {
+    .dd-page-header-title-row .dd-page-header-title {
       min-width: 0;
     }
 
@@ -19384,64 +19380,53 @@ import{_ as t,n as e,r as i,t as a}from"./state-DfsJqMnn.js";import{E as o,a as 
     }
 
     @media (max-width: 768px) {
-      .dd-room-header-v111 {
-        margin-left: -10px;
-        margin-right: -10px;
-      }
-
-      .dd-room-header-layout {
+      .dd-page-header-with-media {
         grid-template-columns: 78px minmax(0, 1fr);
         gap: 12px;
         align-items: start;
       }
 
-      .dd-room-header-media {
+      .dd-page-header-media-tile {
         width: 78px;
         min-height: 78px;
         height: 78px;
         border-radius: 14px;
       }
 
-      .dd-room-header-icon {
+      .dd-page-header-room-icon {
         min-height: 78px;
       }
 
-      .dd-room-header-icon ha-icon {
+      .dd-page-header-room-icon ha-icon {
         --mdc-icon-size: 34px;
       }
 
-      .dd-room-header-content {
+      .dd-page-header-main {
         gap: 12px;
       }
 
-      .dd-room-header-content .dd-page-header-top {
+      .dd-page-header-main .dd-page-header-top {
         flex-wrap: wrap;
-        gap: 10px;
+        row-gap: 14px;
       }
 
-      .dd-room-header-content .dd-page-header-identity {
+      .dd-page-header-main .dd-page-header-identity {
         order: 1;
         flex: 1 1 auto;
         flex-basis: auto;
       }
 
-      .dd-room-header-content .dd-page-header-actions {
+      .dd-page-header-main .dd-page-header-actions {
         order: 2;
         margin-left: auto;
       }
 
-      .dd-room-header-content .dd-page-header-strip {
+      .dd-page-header-main .dd-page-header-strip {
         margin-left: calc(-78px - 12px);
       }
 
-      .dd-room-header-title-row {
+      .dd-page-header-title-row {
         gap: 7px;
-      }
-
-      .dd-room-header-title-row .dd-page-header-title {
-        font-size: 24px;
-        line-height: 1.1;
-        -webkit-line-clamp: 2;
       }
 
       .dd-page-header-home {
