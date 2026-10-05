@@ -72,7 +72,6 @@ const MOBILE_INITIAL_HOME_AREAS = 12;
 const MOBILE_INITIAL_ENTITY_GROUPS = 4;
 const MOBILE_INITIAL_ENTITY_CARDS = 12;
 const UNGROUPED_AREA_EDIT_GROUP = '__ungrouped__';
-const ICON_ARROW_LEFT = 'M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z';
 
 interface CachedAreaData {
   data: AreaData;
@@ -21397,14 +21396,6 @@ export class DwainsLayoutCard extends LitElement {
     return ['light', 'switch', 'fan', 'input_boolean', 'cover', 'lock'].includes(domain);
   }
 
-  private _renderStaticIcon(path: string): TemplateResult {
-    return html`
-      <svg class="dd-static-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <path d=${path}></path>
-      </svg>
-    `;
-  }
-
   private _favoriteQuickIcon(state: any, domain: string): string {
     const value = String(state?.state || '').toLowerCase();
     if (domain === 'cover') return ['open', 'opening'].includes(value) ? 'mdi:arrow-down' : 'mdi:arrow-up';
@@ -22458,22 +22449,6 @@ export class DwainsLayoutCard extends LitElement {
       .map((entity) => entity.entity_id);
   }
 
-  private _showAreaStatusBadgeDialog(areaId: string, badge: AreaStatusBadge) {
-    const entityIds = this._getAreaStatusBadgeEntityIds(areaId, badge);
-    if (!entityIds.length) return;
-
-    showDomainEntitiesDialog(this, {
-      domain: badge.domain,
-      areaId,
-      config: this.config,
-      deviceClass: badge.deviceClass,
-      entityIds,
-      customTitle: badge.deviceClass
-        ? getDeviceClassName(this.hass, badge.deviceClass)
-        : getDomainName(this.hass, badge.domain),
-    });
-  }
-
   private _showAreaMetricDialog(
     areaId: string,
     kind: 'temperature' | 'humidity' | 'power',
@@ -22514,106 +22489,6 @@ export class DwainsLayoutCard extends LitElement {
       entityIds,
       customTitle: title,
     });
-  }
-
-  private _getAreaHeaderCamera(area: AreaConfig, entities: EntityConfig[]): HomeAreaCamera | undefined {
-    const camera = entities.find(entity => {
-      if (!entity.entity_id.startsWith('camera.')) return false;
-      const state = this.hass?.states?.[entity.entity_id]?.state;
-      return Boolean(state && state !== 'unavailable' && state !== 'unknown');
-    });
-    if (!camera) return undefined;
-
-    const stateObj = this.hass.states[camera.entity_id];
-    const result: HomeAreaCamera = {
-      areaId: area.area_id,
-      areaName: area.name,
-      areaIcon: getAreaIcon(area),
-      entityId: camera.entity_id,
-      name: stateObj?.attributes?.friendly_name || camera.entity_id,
-      state: stateObj ? this.hass.formatEntityState(stateObj) : this._t('common.unknown'),
-    };
-    const imageUrl = this._getCameraImageUrl(camera.entity_id);
-    if (imageUrl) result.imageUrl = imageUrl;
-    return result;
-  }
-
-  private _renderAreaHeaderCamera(camera?: HomeAreaCamera) {
-    if (!camera) return nothing;
-
-    return html`
-      <button
-        class="room-header-camera-preview ${camera.imageUrl ? 'has-preview' : 'no-preview'}"
-        type="button"
-        title=${camera.name}
-        aria-label=${`${this._t('action.open_camera')}: ${camera.name}`}
-        @click=${() => this._showMoreInfo(camera.entityId)}
-      >
-        ${camera.imageUrl
-          ? html`
-              <div
-                class="room-header-camera-image"
-                style=${`background-image: url('${camera.imageUrl}');`}
-              ></div>
-              <span class="room-header-camera-live" aria-hidden="true">
-                <span class="room-header-camera-live-dot"></span>
-                <span>Kamera</span>
-              </span>
-            `
-          : html`
-              <div class="room-header-camera-placeholder">
-                <ha-icon icon="mdi:cctv-off"></ha-icon>
-                <span>Keine Vorschau</span>
-              </div>
-            `}
-      </button>
-    `;
-  }
-
-  private _renderAreaHeaderMetrics(areaData: AreaData, areaId: string, entities: EntityConfig[]) {
-    const metrics = [
-      areaData.temperature
-        ? this._renderMobileAreaMetric(
-            'temperature',
-            this._t('home.temperature'),
-            areaData.temperature,
-            0,
-            30,
-            'area-header-metric',
-            () => this._showAreaMetricDialog(areaId, 'temperature', entities)
-          )
-        : nothing,
-      areaData.humidity
-        ? this._renderMobileAreaMetric(
-            'humidity',
-            this._t('home.humidity'),
-            areaData.humidity,
-            20,
-            90,
-            'area-header-metric',
-            () => this._showAreaMetricDialog(areaId, 'humidity', entities)
-          )
-        : nothing,
-      areaData.wattage
-        ? this._renderMobileAreaMetric(
-            'power',
-            this._t('entity.power_usage'),
-            areaData.wattage,
-            undefined,
-            undefined,
-            'area-header-metric',
-            () => this._showAreaMetricDialog(areaId, 'power', entities)
-          )
-        : nothing,
-    ].filter((item) => item !== nothing);
-
-    if (!metrics.length) return nothing;
-
-    return html`
-      <div class="area-header-metrics">
-        ${metrics}
-      </div>
-    `;
   }
 
   private _renderMobileAreaMetric(
