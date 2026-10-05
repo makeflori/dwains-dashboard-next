@@ -20,6 +20,7 @@ Dwains Dashboard Next follows semantic versioning.
 - Preserve the v1.11.0 code-splitting/lazy-loading architecture. For HACS compatibility, generated chunks are emitted directly into `dist/` beside `dwains-dashboard-next.js`, because HACS dashboard-plugin downloads do not recurse into `dist/chunks/`.
 - Chunked HACS builds must keep all runtime-imported files at the top level of `dist/`.
 - Do not attach a ZIP asset: HACS treats release assets as downloadable plugin files. Attach the main JS file and all chunk JS files individually.
+- HACS split releases must publish every generated `dist/*.js` file as an individual asset.
 - The HACS manifest must continue to point to `dwains-dashboard-next.js`.
 - Use a minor release when user-facing features are added, even if bug fixes are included in the same release.
 - Use a patch release only when there are no new user-facing features.
