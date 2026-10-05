@@ -107,6 +107,19 @@ export const getDomainColor = (domain: string, deviceClass?: string): string => 
     }
   }
 
+  if (domain === 'sensor') {
+    const sensorDeviceClassColors: Record<string, string> = {
+      temperature: '#34A6D8',
+      humidity: '#16A6B6',
+      power: '#D88E20',
+      energy: '#D88E20',
+      battery: '#4F79A7',
+    };
+    if (deviceClass && sensorDeviceClassColors[deviceClass]) {
+      return sensorDeviceClassColors[deviceClass]!;
+    }
+  }
+
   const colors: Record<string, string> = {
     // Red — alarm / danger
     alarm_control_panel: '#DF5B63',
@@ -133,10 +146,8 @@ export const getDomainColor = (domain: string, deviceClass?: string): string => 
     sensor: '#4F79A7',
     update: '#4F79A7',
 
-    // Green — people / presence
-    person: '#3F9B6D',
-
-    // Slate — neutral device/activity
+    // Slate — neutral people/device/activity
+    person: '#6D7891',
     binary_sensor: '#6D7891',
     vacuum: '#6D7891',
 

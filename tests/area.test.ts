@@ -253,9 +253,27 @@ describe('area entity grouping', () => {
   registry['light.hidden'].hidden_by = 'user';
   const hass = hassWithStates(states, { entities: registry });
 
-  it('maps input_boolean helpers into the single switch group', () => {
-    expect(getAreaEntityGroupKey('input_boolean.helper_switch', hass)).toBe('switch');
+  it('keeps input_boolean helpers separate from physical switches', () => {
+    expect(getAreaEntityGroupKey('input_boolean.helper_switch', hass)).toBe('input_boolean');
     expect(getAreaEntityGroupKey('switch.plug', hass)).toBe('switch');
+  });
+
+  it('groups binary sensors by user-facing meaning', () => {
+    const semanticHass = hassWithStates([
+      entityState('binary_sensor.window', 'off', { device_class: 'window' }),
+      entityState('binary_sensor.motion', 'off', { device_class: 'motion' }),
+      entityState('binary_sensor.presence', 'off', { device_class: 'presence' }),
+      entityState('binary_sensor.smoke', 'off', { device_class: 'smoke' }),
+      entityState('binary_sensor.leak', 'off', { device_class: 'moisture' }),
+      entityState('binary_sensor.generic', 'off'),
+    ]);
+
+    expect(getAreaEntityGroupKey('binary_sensor.window', semanticHass)).toBe('cover_openings');
+    expect(getAreaEntityGroupKey('binary_sensor.motion', semanticHass)).toBe('motion');
+    expect(getAreaEntityGroupKey('binary_sensor.presence', semanticHass)).toBe('motion');
+    expect(getAreaEntityGroupKey('binary_sensor.smoke', semanticHass)).toBe('safety');
+    expect(getAreaEntityGroupKey('binary_sensor.leak', semanticHass)).toBe('safety');
+    expect(getAreaEntityGroupKey('binary_sensor.generic', semanticHass)).toBe('binary_sensor');
   });
 
   it('keeps diagnostic battery entities hidden like v1.11.0', () => {

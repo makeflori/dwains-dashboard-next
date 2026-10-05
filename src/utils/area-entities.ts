@@ -13,6 +13,7 @@ export const AREA_STRATEGY_GROUPS = [
   'scene',
   'event',
   'motion',
+  'safety',
   'binary_sensor',
   'sensor',
   'media_player',
@@ -46,6 +47,7 @@ export const AREA_STRATEGY_GROUP_ICONS: Record<AreaStrategyGroup, string> = {
   scene: 'mdi:palette-outline',
   event: 'mdi:gesture-tap',
   motion: 'mdi:motion-sensor',
+  safety: 'mdi:shield-alert-outline',
   binary_sensor: 'mdi:radiobox-marked',
   sensor: 'mdi:eye-outline',
   media_player: 'mdi:multimedia',
@@ -78,7 +80,8 @@ export const AREA_STRATEGY_GROUP_TITLES: Record<AreaStrategyGroup, string> = {
   todo: 'To-do lists',
   scene: 'Scenes',
   event: 'Events',
-  motion: 'Motion',
+  motion: 'Motion & presence',
+  safety: 'Safety & alarms',
   binary_sensor: 'Binary sensors',
   sensor: 'Sensors',
   media_player: 'Media players',
@@ -124,10 +127,12 @@ export function getAreaEntityGroupKey(entityId: string, hass: HomeAssistant): Ar
     return openingClasses.has(deviceClass) ? 'cover_openings' : 'cover_shading';
   }
   if (domain === 'input_select') return 'select';
-  if (domain === 'input_boolean') return 'switch';
+  if (domain === 'input_boolean') return 'input_boolean';
   if (domain === 'binary_sensor') {
-    const deviceClass = String(hass.states[entityId]?.attributes?.device_class || '');
-    if (['motion', 'occupancy', 'presence'].includes(deviceClass)) return 'motion';
+    const deviceClass = String(hass.states[entityId]?.attributes?.device_class || '').toLowerCase();
+    if (['door', 'window', 'opening', 'garage_door'].includes(deviceClass)) return 'cover_openings';
+    if (['motion', 'moving', 'occupancy', 'presence'].includes(deviceClass)) return 'motion';
+    if (['smoke', 'gas', 'carbon_monoxide', 'moisture', 'safety', 'tamper', 'problem', 'heat', 'cold'].includes(deviceClass)) return 'safety';
     return 'binary_sensor';
   }
   return (AREA_STRATEGY_GROUPS as readonly string[]).includes(domain)
@@ -142,7 +147,7 @@ export function getLegacyAreaGroupKey(group: AreaStrategyGroup): string {
   if (['climate', 'humidifier', 'water_heater', 'fan'].includes(group)) return 'climate';
   if (group === 'cover_openings' || group === 'cover_shading') return 'covers';
   if (group === 'media_player') return 'media_players';
-  if (['alarm_control_panel', 'lock', 'camera', 'binary_sensor'].includes(group)) return 'security';
+  if (['alarm_control_panel', 'lock', 'camera', 'binary_sensor', 'safety'].includes(group)) return 'security';
   if (group === 'motion') return 'motion';
   if (['script', 'scene', 'automation', 'todo', 'event'].includes(group)) return 'actions';
   return 'others';
@@ -164,18 +169,6 @@ function optionsForGroup(
     }
     if (direct) return direct;
     if (legacyInputSelect) return legacyInputSelect;
-  }
-  if (group === 'switch') {
-    const legacyInputBoolean = displayOptions?.input_boolean;
-    if (direct && legacyInputBoolean) {
-      return {
-        ...direct,
-        hidden: Array.from(new Set([...(direct.hidden || []), ...(legacyInputBoolean.hidden || [])])),
-        order: [...(direct.order || []), ...(legacyInputBoolean.order || []).filter(id => !(direct.order || []).includes(id))],
-      };
-    }
-    if (direct) return direct;
-    if (legacyInputBoolean) return legacyInputBoolean;
   }
   if (direct) return direct;
   if (group === 'cover_openings' || group === 'cover_shading') {
