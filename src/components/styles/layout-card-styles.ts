@@ -7265,7 +7265,7 @@ export const roomAreaStyles = css`
       --dd-replacement-radius: 8px;
     }
 
-@media (min-width: 769px) {
+@media (min-width: 769px){
 .area-view .mobile-entity-replacement-card{
         --dd-replacement-min-height: 72px;
         --dd-replacement-padding: 12px;
@@ -7505,7 +7505,7 @@ export const roomAreaStyles = css`
 
 .area-view .mobile-entity-more{ display: none !important; }
 
-@media (max-width: 1180px) and (min-width: 769px) {
+@media (max-width: 1180px) and (min-width: 769px){
 .area-view .mobile-entity-rail,
 .area-view .mobile-entities-section.layout-grid .mobile-entity-rail{
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -7513,7 +7513,7 @@ export const roomAreaStyles = css`
 
 }
 
-@media (max-width: 768px) {
+@media (max-width: 768px){
 .area-view .mobile-domain-group{
         padding: 0;
         border-radius: 9px;
@@ -7646,7 +7646,7 @@ consistent leading chevron. */
       display: none !important;
     }
 
-@media (max-width: 768px) {
+@media (max-width: 768px){
 .area-view .mobile-domain-header.expandable-header{
         width: 100%;
         padding: 6px 7px;
@@ -7700,7 +7700,7 @@ which also swallowed pointer events for the new handle. */
       --mdc-icon-size: 16px;
     }
 
-@media (min-width: 769px) {
+@media (min-width: 769px){
 .area-view .mobile-entity-rail,
 .area-view .mobile-entities-section.layout-grid .mobile-entity-rail{
         grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
@@ -7782,7 +7782,7 @@ which also swallowed pointer events for the new handle. */
 
 }
 
-@media (min-width: 769px) {
+@media (min-width: 769px){
 /* Light controls: only rendered while ON. Keep cards compact and place icons after slider. */
       .area-view .mobile-entity-card.has-light-controls,
 .area-view .mobile-entity-card.has-cover-position{
@@ -7790,52 +7790,9 @@ which also swallowed pointer events for the new handle. */
         padding-bottom: 6px !important;
       }
 
-/* Select/input-select: keep the entity icon in its normal slot and the chevron inside the select. */
-      .area-view .mobile-entity-card.has-inline-select{
-        min-height: 102px !important;
-        padding: 8px 10px 7px !important;
-        justify-content: flex-start !important;
-        gap: 6px !important;
-      }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-main{
-        width: 100% !important;
-        align-items: center !important;
-      }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-icon{
-        position: static !important;
-        inset: auto !important;
-        transform: none !important;
-        align-self: center !important;
-      }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-content{
-        margin-top: 0 !important;
-        align-self: center !important;
-      }
-
-.area-view .mobile-entity-select{
-        position: relative !important;
-        width: 100% !important;
-        margin-top: 2px !important;
-      }
-
-.area-view .mobile-entity-select .mobile-select-chevron{
-        position: absolute !important;
-        top: 50% !important;
-        right: 11px !important;
-        left: auto !important;
-        bottom: auto !important;
-        margin: 0 !important;
-        transform: translateY(-50%) !important;
-        --mdc-icon-size: 16px !important;
-        pointer-events: none !important;
-      }
-
 }
 
-@media (min-width: 769px) {
+@media (min-width: 769px){
 /* Room entity cards: slightly larger content with symmetric 10px inner spacing. */
       .area-view .mobile-entity-card,
 .area-view .mobile-entities-section.layout-grid .mobile-entity-card{
@@ -7872,44 +7829,9 @@ which also swallowed pointer events for the new handle. */
         min-height: 38px !important;
       }
 
-/* Select cards: the entity icon stays in the same 38px icon container as every other entity. */
-      .area-view .mobile-entity-card.has-inline-select{
-        min-height: 102px !important;
-        height: auto !important;
-        padding: 8px 10px !important;
-        gap: 6px !important;
-      }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-main{
-        min-height: 38px !important;
-        grid-template-columns: 38px minmax(0, 1fr) !important;
-        gap: 9px !important;
-      }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-icon{
-        width: 38px !important;
-        height: 38px !important;
-        flex: 0 0 38px !important;
-        position: static !important;
-        inset: auto !important;
-        transform: none !important;
-        align-self: center !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-      }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-icon ha-icon{
-        --mdc-icon-size: 20px !important;
-      }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-right{
-        display: none !important;
-      }
-
 }
 
-@media (min-width: 769px) {
+@media (min-width: 769px){
 /* One tall entity must not stretch its siblings; all cards stay top-aligned. */
       .area-view .mobile-entity-rail,
 .area-view .mobile-entities-section.layout-grid .mobile-entity-rail{
@@ -7929,7 +7851,7 @@ shading and gates. */
 
 }
 
-@media (min-width: 769px) {
+@media (min-width: 769px){
 /*
        * Slider geometry: use the original 5px track / 15px thumb geometry
        * used by the first light-control implementation. Do not change the
@@ -7999,14 +7921,14 @@ shading and gates. */
 
 }
 
-@media (min-width: 769px) {
+@media (min-width: 769px){
 .area-view .room-favorites-block:not(.is-collapsed) .room-favorites-header{
         margin-bottom: 0 !important;
       }
 
 }
 
-@media (min-width: 769px) {
+@media (min-width: 769px){
 /* Keep four columns. The available desktop width is used for wider cards. */
       .area-view .mobile-entity-rail,
 .area-view .mobile-entities-section.layout-grid .mobile-entity-rail{
@@ -8139,67 +8061,6 @@ shading and gates. */
 
 .area-view .mobile-cover-action ha-icon{ --mdc-icon-size: 20px !important; }
 
-.area-view .mobile-entity-card.has-inline-select{
-        min-height: 123px !important;
-        padding: 9px 12px !important;
-        gap: 7px !important;
-      }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-main{
-        min-height: 46px !important;
-        grid-template-columns: 46px minmax(0, 1fr) !important;
-        gap: 11px !important;
-        align-items: center !important;
-      }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-icon{
-        position: static !important;
-        inset: auto !important;
-        left: auto !important;
-        right: auto !important;
-        top: auto !important;
-        bottom: auto !important;
-        grid-column: 1 !important;
-        grid-row: 1 !important;
-        width: 46px !important;
-        height: 46px !important;
-        flex: 0 0 46px !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        transform: none !important;
-        color: var(--entity-color) !important;
-      }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-icon ha-icon{
-        --mdc-icon-size: 24px !important;
-      }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-content{
-        grid-column: 2 !important;
-        grid-row: 1 !important;
-        margin: 0 !important;
-        align-self: center !important;
-      }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-right{
-        display: none !important;
-      }
-
-.area-view .mobile-entity-select{ margin-top: 3px !important; }
-
-.area-view .mobile-entity-select select{
-        height: 42px !important;
-        padding: 0 42px 0 15px !important;
-        font-size: 14.4px !important;
-        line-height: 42px !important;
-      }
-
-.area-view .mobile-entity-select .mobile-select-chevron{
-        right: 12px !important;
-        --mdc-icon-size: 20px !important;
-      }
-
 /* Lower room sections must use exactly the same outer width as the room header/favorites. */
       .area-view .mobile-entities-section,
 .area-view .mobile-domain-group{
@@ -8210,7 +8071,7 @@ shading and gates. */
 
 }
 
-@media (min-width: 769px) {
+@media (min-width: 769px){
 /* The room content must span exactly the same available width as the global room header. */
       .area-view{
         width: 100% !important;
@@ -8227,103 +8088,9 @@ shading and gates. */
         box-sizing: border-box !important;
       }
 
-/* Select/input_select: strict two-row layout. Row 1 = icon + name; row 2 = selector. */
-      .area-view .mobile-entity-card.has-inline-select{
-        display: grid !important;
-        grid-template-columns: minmax(0, 1fr) !important;
-        grid-template-rows: 46px 42px !important;
-        align-content: center !important;
-        gap: 7px !important;
-        min-height: 123px !important;
-        height: auto !important;
-        padding: 9px 12px !important;
-        overflow: hidden !important;
-      }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-main{
-        grid-column: 1 !important;
-        grid-row: 1 !important;
-        width: 100% !important;
-        min-width: 0 !important;
-        min-height: 46px !important;
-        height: 46px !important;
-        display: grid !important;
-        grid-template-columns: 46px minmax(0, 1fr) !important;
-        gap: 11px !important;
-        align-items: center !important;
-        position: relative !important;
-        z-index: 2 !important;
-      }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-icon{
-        position: static !important;
-        inset: auto !important;
-        grid-column: 1 !important;
-        grid-row: 1 !important;
-        width: 46px !important;
-        height: 46px !important;
-        min-width: 46px !important;
-        min-height: 46px !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        align-self: center !important;
-        transform: none !important;
-        z-index: 3 !important;
-      }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-icon ha-icon{
-        --mdc-icon-size: 24px !important;
-      }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-content{
-        grid-column: 2 !important;
-        grid-row: 1 !important;
-        min-width: 0 !important;
-        height: 46px !important;
-        margin: 0 !important;
-        align-self: center !important;
-        justify-content: center !important;
-      }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-right{
-        display: none !important;
-      }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-select{
-        grid-column: 1 !important;
-        grid-row: 2 !important;
-        position: relative !important;
-        width: 100% !important;
-        height: 42px !important;
-        min-height: 42px !important;
-        margin: 0 !important;
-        z-index: 1 !important;
-      }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-select select{
-        position: relative !important;
-        z-index: 1 !important;
-        width: 100% !important;
-        height: 42px !important;
-        box-sizing: border-box !important;
-      }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-select-chevron{
-        position: absolute !important;
-        top: 50% !important;
-        right: 12px !important;
-        left: auto !important;
-        bottom: auto !important;
-        z-index: 2 !important;
-        transform: translateY(-50%) !important;
-      }
-
 }
 
-@media (min-width: 769px) {
+@media (min-width: 769px){
 /* Exactly five entity columns in the desktop room view. */
       .area-view .mobile-entity-rail,
 .area-view .mobile-entities-section.layout-grid .mobile-entity-rail{
@@ -8332,28 +8099,7 @@ shading and gates. */
 
 }
 
-on the left. */
-    .area-view .mobile-entity-card.has-inline-select .mobile-entity-main{
-      direction: ltr !important;
-      display: grid !important;
-      grid-template-columns: 46px minmax(0, 1fr) !important;
-      grid-template-areas: "icon content" !important;
-      align-items: center !important;
-    }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-icon{
-      grid-area: icon !important;
-      justify-self: start !important;
-      order: 0 !important;
-    }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-content{
-      grid-area: content !important;
-      min-width: 0 !important;
-      order: 1 !important;
-    }
-
-@media (min-width: 769px) {
+@media (min-width: 769px){
 /* Room entity cards: exactly five columns on desktop. */
       .area-view .mobile-entity-rail,
 .area-view .mobile-entities-section.layout-grid .mobile-entity-rail{
@@ -8362,32 +8108,7 @@ on the left. */
 
 }
 
-/* Select/input_select cards: keep the entity icon explicitly in the leading slot. */
-    .area-view .mobile-entity-card.has-inline-select .mobile-entity-main{
-      direction: ltr !important;
-      grid-template-columns: 46px minmax(0, 1fr) !important;
-    }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-icon{
-      grid-column: 1 !important;
-      grid-row: 1 !important;
-      order: 0 !important;
-      justify-self: start !important;
-      align-self: center !important;
-    }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-content{
-      grid-column: 2 !important;
-      grid-row: 1 !important;
-      order: 1 !important;
-      min-width: 0 !important;
-    }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-right{
-      display: none !important;
-    }
-
-@media (min-width: 769px) {
+@media (min-width: 769px){
 /* Exactly five columns in the desktop room view. */
       .area-view .mobile-entity-rail,
 .area-view .mobile-entities-section.layout-grid .mobile-entity-rail{
@@ -8396,155 +8117,122 @@ on the left. */
 
 }
 
-/* Selection-list icon is always the leading element on the left. */
-    .area-view .mobile-entity-card.has-inline-select .mobile-entity-main{
-      direction: ltr !important;
-      display: grid !important;
-      grid-template-columns: 46px minmax(0, 1fr) !important;
-      grid-template-areas: "icon content" !important;
-      align-items: center !important;
-    }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-icon{
-      grid-area: icon !important;
-      justify-self: start !important;
-      order: 0 !important;
-    }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-content{
-      grid-area: content !important;
-      min-width: 0 !important;
-      order: 1 !important;
-    }
-
-@media (min-width: 769px) {
-/*
-       * Select/input_select: use flex for the first row rather than the
-       * repeatedly overridden grid. The icon is therefore physically the
-       * first item and cannot jump into the content/right column.
-       */
-      .area-view .mobile-entity-card.has-inline-select .mobile-entity-main{
-        display: flex !important;
-        flex-direction: row !important;
-        align-items: center !important;
-        justify-content: flex-start !important;
-        width: 100% !important;
-        min-width: 0 !important;
-        height: 46px !important;
-        min-height: 46px !important;
-        gap: 11px !important;
-        direction: ltr !important;
-      }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-icon{
-        position: static !important;
-        inset: auto !important;
-        order: 0 !important;
-        flex: 0 0 46px !important;
-        width: 46px !important;
-        min-width: 46px !important;
-        height: 46px !important;
-        min-height: 46px !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        align-self: center !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        transform: none !important;
-      }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-icon ha-icon{
-        --mdc-icon-size: 24px !important;
-      }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-content{
-        order: 1 !important;
-        flex: 1 1 auto !important;
-        width: auto !important;
-        min-width: 0 !important;
-        height: 46px !important;
-        margin: 0 !important;
-        align-self: center !important;
-      }
-
-}
-
-@media (min-width: 769px) {
+@media (min-width: 769px){
 /* Four entity cards per row on every desktop width. */
       .area-view .mobile-entity-rail,
 .area-view .mobile-entities-section.layout-grid .mobile-entity-rail{
         grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
       }
 
-independent of
-         earlier grid overrides. */
-      .area-view .mobile-entity-card.has-inline-select .mobile-entity-main{
-        display: flex !important;
-        flex-direction: row !important;
-        direction: ltr !important;
-        align-items: center !important;
-        justify-content: flex-start !important;
-        width: 100% !important;
-        min-width: 0 !important;
-        height: 46px !important;
-        min-height: 46px !important;
-        gap: 11px !important;
-      }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-icon{
-        order: 0 !important;
-        flex: 0 0 46px !important;
-        width: 46px !important;
-        min-width: 46px !important;
-        height: 46px !important;
-        min-height: 46px !important;
-        margin: 0 !important;
-        position: static !important;
-        inset: auto !important;
-        transform: none !important;
-      }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-content{
-        order: 1 !important;
-        flex: 1 1 auto !important;
-        width: auto !important;
-        min-width: 0 !important;
-        margin: 0 !important;
-      }
-
-.area-view .mobile-entity-card.has-inline-select .mobile-entity-right{
-        display: none !important;
-      }
-
 }
 
+/* Select/input_select cards: one authoritative layout. The entity icon stays
+   in the normal leading icon tile; only the select chevron is on the right. */
 @media (min-width: 769px) {
-* but the HA icon itself could still be displaced by competing ha-icon
-       * rules. Pin the actual icon element inside its wrapper.
-       */
-      .area-view .mobile-entity-card.has-inline-select
-      .mobile-entity-icon > .mobile-entity-leading-select-icon{
-        position: static !important;
-        inset: auto !important;
-        top: auto !important;
-        right: auto !important;
-        bottom: auto !important;
-        left: auto !important;
-        display: block !important;
-        width: 24px !important;
-        height: 24px !important;
-        min-width: 24px !important;
-        min-height: 24px !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        transform: none !important;
-        translate: none !important;
-        align-self: auto !important;
-        justify-self: auto !important;
-        pointer-events: none !important;
-        --mdc-icon-size: 24px !important;
-      }
+  .area-view .mobile-entity-card.has-inline-select {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: 46px 42px !important;
+    align-content: center !important;
+    gap: 7px !important;
+    min-height: 123px !important;
+    height: auto !important;
+    padding: 9px 12px !important;
+    overflow: hidden !important;
+  }
 
+  .area-view .mobile-entity-card.has-inline-select .mobile-entity-main {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 46px !important;
+    min-height: 46px !important;
+    display: grid !important;
+    grid-template-columns: 46px minmax(0, 1fr) !important;
+    grid-template-areas: "icon content" !important;
+    align-items: center !important;
+    gap: 11px !important;
+    direction: ltr !important;
+  }
+
+  .area-view .mobile-entity-card.has-inline-select .mobile-entity-icon {
+    grid-area: icon !important;
+    position: static !important;
+    inset: auto !important;
+    width: 46px !important;
+    min-width: 46px !important;
+    height: 46px !important;
+    min-height: 46px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    justify-self: start !important;
+    align-self: center !important;
+    transform: none !important;
+  }
+
+  .area-view .mobile-entity-card.has-inline-select
+  .mobile-entity-icon > .mobile-entity-leading-select-icon {
+    position: static !important;
+    inset: auto !important;
+    display: block !important;
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    min-height: 24px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+    --mdc-icon-size: 24px !important;
+    pointer-events: none !important;
+  }
+
+  .area-view .mobile-entity-card.has-inline-select .mobile-entity-content {
+    grid-area: content !important;
+    min-width: 0 !important;
+    height: 46px !important;
+    margin: 0 !important;
+    align-self: center !important;
+    justify-content: center !important;
+  }
+
+  .area-view .mobile-entity-card.has-inline-select .mobile-entity-right {
+    display: none !important;
+  }
+
+  .area-view .mobile-entity-card.has-inline-select .mobile-entity-select {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    position: relative !important;
+    width: 100% !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    margin: 0 !important;
+  }
+
+  .area-view .mobile-entity-card.has-inline-select .mobile-entity-select select {
+    width: 100% !important;
+    height: 42px !important;
+    box-sizing: border-box !important;
+    padding: 0 42px 0 15px !important;
+    font-size: 14.4px !important;
+    line-height: 42px !important;
+  }
+
+  .area-view .mobile-entity-card.has-inline-select .mobile-select-chevron {
+    position: absolute !important;
+    top: 50% !important;
+    right: 12px !important;
+    left: auto !important;
+    bottom: auto !important;
+    margin: 0 !important;
+    transform: translateY(-50%) !important;
+    --mdc-icon-size: 20px !important;
+    pointer-events: none !important;
+  }
 }
+
 `;
