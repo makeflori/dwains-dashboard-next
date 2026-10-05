@@ -62,11 +62,12 @@ const production = !process.env.ROLLUP_WATCH;
 export default {
   input: 'src/index.ts',
   output: {
-    // HACS plugin installs reliably provide a single frontend file. Inline
-    // dynamic imports so the dashboard never depends on separately installed chunks.
+    // Keep the v1.11.0 code-splitting architecture. HACS only downloads files
+    // directly inside dist for dashboard plugins, so chunks must live beside
+    // the entry file instead of in a nested dist/chunks directory.
     dir: 'dist',
     entryFileNames: 'dwains-dashboard-next.js',
-    inlineDynamicImports: true,
+    chunkFileNames: '[name]-[hash].js',
     format: 'es',
     sourcemap: !production
   },
