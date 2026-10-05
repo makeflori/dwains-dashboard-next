@@ -1,7 +1,7 @@
 export const getDomainIcon = (domain: string): string => {
   const icons: Record<string, string> = {
     light: 'mdi:lightbulb',
-    switch: 'mdi:flash',
+    switch: 'mdi:toggle-switch',
     sensor: 'mdi:eye',
     energy: 'mdi:flash',
     binary_sensor: 'mdi:radiobox-blank',
@@ -215,6 +215,10 @@ export const getDeviceClassIcon = (domain: string, deviceClass?: string): string
       voltage: 'mdi:flash-triangle',
       carbon_dioxide: 'mdi:molecule-co2',
       carbon_monoxide: 'mdi:molecule-co'
+    },
+    switch: {
+      outlet: 'mdi:power-plug',
+      switch: 'mdi:toggle-switch'
     },
     cover: {
       garage: 'mdi:garage',
