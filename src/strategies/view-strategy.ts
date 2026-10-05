@@ -1,4 +1,6 @@
 import type { HomeAssistant } from '../types/home-assistant';
+import { loadTranslations } from '../i18n';
+import { ddLang } from '../utils/localize';
 import type {
   LovelaceViewStrategy,
   LovelaceViewConfig,
@@ -7,8 +9,8 @@ import type {
 } from '../types/strategy';
 
 export class DwainsViewStrategy implements LovelaceViewStrategy {
-  async generate(config: LovelaceViewStrategyConfig & DwainsDashboardConfig, _hass: HomeAssistant): Promise<LovelaceViewConfig> {
-    console.log('Dwains View Strategy generate called', config);
+  async generate(config: LovelaceViewStrategyConfig & DwainsDashboardConfig, hass: HomeAssistant): Promise<LovelaceViewConfig> {
+    await loadTranslations(ddLang(hass));
 
     return {
       panel: true,
@@ -24,6 +26,7 @@ export class DwainsViewStrategy implements LovelaceViewStrategy {
           floors_display: config.floors_display,
           areas_options: config.areas_options,
           favorites: config.favorites || [],
+          home_custom_cards: config.home_custom_cards || [],
           pages: config.pages || [],
           blueprint_replacements: config.blueprint_replacements || {},
           device_admission: config.device_admission || {}
