@@ -31,7 +31,6 @@ export const AREA_STRATEGY_GROUPS = [
   'valve',
   'select',
   'number',
-  'input_select',
   'input_number',
   'counter',
   'timer',
@@ -39,7 +38,7 @@ export const AREA_STRATEGY_GROUPS = [
 
 export const AREA_STRATEGY_GROUP_ICONS: Record<AreaStrategyGroup, string> = {
   light: 'mdi:lightbulb',
-  switch: 'mdi:toggle-switch',
+  switch: 'mdi:power-plug',
   cover_openings: 'mdi:door-open',
   cover_shading: 'mdi:blinds-horizontal',
   climate: 'mdi:thermostat',
@@ -65,7 +64,6 @@ export const AREA_STRATEGY_GROUP_ICONS: Record<AreaStrategyGroup, string> = {
   valve: 'mdi:valve',
   select: 'mdi:form-dropdown',
   number: 'mdi:numeric',
-  input_select: 'mdi:form-dropdown',
   input_number: 'mdi:numeric',
   counter: 'mdi:counter',
   timer: 'mdi:timer-outline',
@@ -75,7 +73,7 @@ export const AREA_STRATEGY_GROUP_TITLES: Record<AreaStrategyGroup, string> = {
   light: 'Lights',
   switch: 'Switches',
   cover_openings: 'Windows & doors',
-  cover_shading: 'Shading',
+  cover_shading: 'Shading & gates',
   climate: 'Climate',
   todo: 'To-do lists',
   scene: 'Scenes',
@@ -99,7 +97,6 @@ export const AREA_STRATEGY_GROUP_TITLES: Record<AreaStrategyGroup, string> = {
   valve: 'Valves',
   select: 'Selectors',
   number: 'Numbers',
-  input_select: 'Selectors',
   input_number: 'Numbers',
   counter: 'Counters',
   timer: 'Timers',
@@ -123,9 +120,10 @@ export function getAreaEntityGroupKey(entityId: string, hass: HomeAssistant): Ar
   const domain = entityId.split('.')[0] || '';
   if (domain === 'cover') {
     const deviceClass = String(hass.states[entityId]?.attributes?.device_class || '').toLowerCase();
-    const openingClasses = new Set(['door', 'garage', 'garage_door', 'gate', 'window']);
+    const openingClasses = new Set(['door', 'window']);
     return openingClasses.has(deviceClass) ? 'cover_openings' : 'cover_shading';
   }
+  if (domain === 'input_select') return 'select';
   if (domain === 'binary_sensor') {
     const deviceClass = String(hass.states[entityId]?.attributes?.device_class || '');
     if (['motion', 'occupancy', 'presence'].includes(deviceClass)) return 'motion';
@@ -154,6 +152,18 @@ function optionsForGroup(
   group: AreaStrategyGroup
 ): EntitiesDisplay | undefined {
   const direct = displayOptions?.[group];
+  if (group === 'select') {
+    const legacyInputSelect = displayOptions?.input_select;
+    if (direct && legacyInputSelect) {
+      return {
+        ...direct,
+        hidden: Array.from(new Set([...(direct.hidden || []), ...(legacyInputSelect.hidden || [])])),
+        order: [...(direct.order || []), ...(legacyInputSelect.order || []).filter(id => !(direct.order || []).includes(id))],
+      };
+    }
+    if (direct) return direct;
+    if (legacyInputSelect) return legacyInputSelect;
+  }
   if (direct) return direct;
   if (group === 'cover_openings' || group === 'cover_shading') {
     const formerCover = displayOptions?.cover;
