@@ -51,3 +51,4 @@ Dwains Dashboard Next follows semantic versioning.
 - Hotfix: scope legacy room tile styles to entity/type sections so the v1.11 header layout remains intact.
 - Refactor room styling: remove room-ui-v2, keep the v1.11 header isolated, and move room entity/type styles into layout-card-styles.ts.
 - Room/Home UX: keep favorite labels stable, apply area-name hiding to favorites, top-align room headers, split cover grouping/statuses, keep battery diagnostics visible, restore the room breadcrumb, center header icons, replace switch lightning icons, compact imported cards, adapt status rows, and keep room favorites at six columns.
+- House information and room UI: keep status cards in the active primary row, restore the blue home breadcrumb icon, use plug icons for switches, consolidate select/input_select cards, merge selector groups, and separate cover status semantics with deployed shading alerts.
