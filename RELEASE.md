@@ -36,3 +36,5 @@ Dwains Dashboard Next follows semantic versioning.
 9. Push the commit and tag.
 10. Create the GitHub release with English release notes and no attached assets.
 11. Verify the built entry file and all generated chunks are present in `dist/chunks/` before testing through HACS.
+
+- The HACS distribution layout must remain identical to upstream v1.11.0 unless an upstream release changes it.
