@@ -18,6 +18,7 @@ Dwains Dashboard Next follows semantic versioning.
 - HACS users receive published GitHub releases, so every release must contain a complete standalone `dist/dwains-dashboard-next.js`.
 - For this fork, every dev change intended for HACS testing is published as a new release.
 - Do not ship runtime chunk dependencies for the HACS plugin build; Rollup must inline dynamic imports into `dwains-dashboard-next.js`.
+- The HACS manifest must continue to point to `dwains-dashboard-next.js`.
 - Use a minor release when user-facing features are added, even if bug fixes are included in the same release.
 - Use a patch release only when there are no new user-facing features.
 
