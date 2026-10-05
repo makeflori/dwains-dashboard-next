@@ -348,7 +348,7 @@ export class DwainsLayoutCard extends LitElement {
     window.dispatchEvent(new CustomEvent('dwains-dashboard-next-area-context-changed', {
       detail: {
         areaId: this._selectedView === 'area' ? this._selectedArea : null,
-        icon: settingsSelected ? 'mdi:tune-variant' : area ? getAreaIcon(area) : 'mdi:home',
+        icon: settingsSelected ? 'mdi:pencil' : area ? getAreaIcon(area) : 'mdi:home',
         name: settingsSelected ? this._t('sidebar.dashboard_settings') : area?.name || this._t('sidebar.home'),
         view: this._selectedView || 'home',
       },
@@ -12622,8 +12622,8 @@ typography and interaction. */
       }
 
       /* Climate card uses exactly the same temperature/humidity colors as the room view. */
-      .house-climate-metric.temperature{ --metric-color: #7c67c7 !important; }
-      .house-climate-metric.humidity{ --metric-color: #34a6d8 !important; }
+      .house-climate-metric.temperature{ --metric-color: #34a6d8 !important; }
+      .house-climate-metric.humidity{ --metric-color: #16a6b6 !important; }
 
       /* Climate metric icons are direct,
 slightly larger icons without a second circle. */
@@ -15848,8 +15848,22 @@ copy{
       }
 
       .global-header.room-context .header-time-weather{
-        gap: 3px !important;
+        gap: 2px !important;
         transform: none !important;
+      }
+
+      .global-header.room-context .header-time-section{
+        width: auto !important;
+        min-width: 0 !important;
+      }
+
+      .global-header.room-context .header-content,
+      .global-header.room-context .room-favorites-block{
+        width: 100% !important;
+        max-width: 1400px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        box-sizing: border-box !important;
       }
 
       .global-header.room-context .room-favorites-block,
@@ -18226,7 +18240,7 @@ copy{
                     title=${this._t('sidebar.dashboard_settings')}
                     @click=${this._openDashboardSettings}
                   >
-                    <ha-icon icon="mdi:tune-variant"></ha-icon>
+                    <ha-icon icon="mdi:pencil"></ha-icon>
                   </button>
                 ` : nothing}
               </div>
