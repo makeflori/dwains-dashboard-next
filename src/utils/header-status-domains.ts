@@ -162,6 +162,9 @@ export function getStatusDomains(hass: HomeAssistant, config: any): DomainCount[
     binarySensorCounts[deviceClass] = { total: 0, on: 0, entities: [] };
   });
 
+  const coverStatusCounts: Record<string, { total: number; on: number; entities: string[]; deviceClass?: string; name: string; icon: string }> = {};
+  const shadingCoverClasses = new Set(['awning', 'blind', 'curtain', 'damper', 'shade', 'shutter']);
+
   const addOn = (bucket: { on: number; entities: string[] }, id: string) => {
     bucket.on++;
     bucket.entities.push(id);
@@ -177,6 +180,35 @@ export function getStatusDomains(hass: HomeAssistant, config: any): DomainCount[
     if (UNAVAILABLE_STATES.includes((entityState as any).state)) return;
 
 
+
+    if (domain === 'cover') {
+      const rawDeviceClass = String((entityState as any).attributes?.device_class || '').toLowerCase();
+      const groupKey = shadingCoverClasses.has(rawDeviceClass)
+        ? 'shading'
+        : rawDeviceClass || 'cover';
+      const bucket = coverStatusCounts[groupKey] || {
+        total: 0,
+        on: 0,
+        entities: [],
+        deviceClass: groupKey === 'shading' || groupKey === 'cover' ? undefined : rawDeviceClass,
+        name: groupKey === 'shading'
+          ? ddLocalize(hass, 'domain.cover_shading')
+          : groupKey === 'cover'
+            ? getDomainName(hass, 'cover')
+            : getDeviceClassName(hass, rawDeviceClass),
+        icon: groupKey === 'shading'
+          ? 'mdi:blinds-horizontal'
+          : rawDeviceClass
+            ? getDeviceClassIcon('cover', rawDeviceClass)
+            : getDomainIcon('cover'),
+      };
+      bucket.total++;
+      const coverState = String((entityState as any).state || '').toLowerCase();
+      if (coverState === 'open' || coverState === 'opening') {
+        addOn(bucket, entityId);
+      }
+      coverStatusCounts[groupKey] = bucket;
+    }
 
     // Handle regular domains
     if (domain in domainCounts) {
@@ -288,7 +320,7 @@ export function getStatusDomains(hass: HomeAssistant, config: any): DomainCount[
 
   // Add other domain cards - only show if something is on (excluding person)
   Object.entries(domainCounts).forEach(([domain, data]) => {
-    if (domain === 'person') return; // Already handled above
+    if (domain === 'person' || domain === 'cover') return; // Person handled above; covers are split by purpose/device class below.
     if (data.total > 0 && data.on > 0) {
       const config = DOMAIN_CONFIG[domain];
       if (config) {
@@ -300,6 +332,21 @@ export function getStatusDomains(hass: HomeAssistant, config: any): DomainCount[
           entities: data.entities
         });
       }
+    }
+  });
+
+  // Covers are presented as separate status types. Windows and doors stay
+  // distinct, while all shading devices share one concise "Shading" status.
+  Object.values(coverStatusCounts).forEach((data) => {
+    if (data.total > 0 && data.on > 0) {
+      result.push({
+        domain: 'cover',
+        deviceClass: data.deviceClass,
+        count: data.on,
+        name: data.name,
+        icon: data.icon,
+        entities: data.entities,
+      });
     }
   });
 
