@@ -163,4 +163,5 @@ jobs:
           gh release create "$TAG" \
             --target "$RELEASE_SHA" \
             --title "$TAG" \
-            --notes-file "$NOTES_FILE"
+            --notes-file "$NOTES_FILE" \
+            dist/*.js
