@@ -1,16 +1,8 @@
 import { LitElement, PropertyValues, css, html, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import {
-  mdiFan,
-  mdiFire,
   mdiMinus,
   mdiPlus,
-  mdiPower,
-  mdiSnowflake,
-  mdiThermometer,
-  mdiThermostat,
-  mdiThermostatAuto,
-  mdiWaterPercent,
 } from '@mdi/js';
 
 import type { HassEntity, HomeAssistant } from '../types/home-assistant';
@@ -35,13 +27,13 @@ const COMMIT_DELAY_MS = 800;
 const CONFIRM_TIMEOUT_MS = 8000;
 
 const ACTIVITY_ICONS: Record<ThermostatActivity, string> = {
-  heat: mdiFire,
-  cool: mdiSnowflake,
-  dry: mdiWaterPercent,
-  fan: mdiFan,
-  auto: mdiThermostatAuto,
-  idle: mdiThermostat,
-  off: mdiPower,
+  heat: 'mdi:fire',
+  cool: 'mdi:snowflake',
+  dry: 'mdi:water-percent',
+  fan: 'mdi:fan',
+  auto: 'mdi:thermostat-auto',
+  idle: 'mdi:thermostat',
+  off: 'mdi:power',
 };
 
 /**
@@ -217,31 +209,28 @@ export class DwainsAreaThermostat extends LitElement {
     const name = this.roomName || stateObj.attributes?.friendly_name || this.entityId;
     const activity = getThermostatActivity(stateObj);
     const activityLabel = this._activityLabel(stateObj);
-    const current = this._formatCurrent(stateObj, model);
     const decimals = stepDecimals(model.step);
     const target = this._displayTarget(model);
     const detailsLabel = this._t('thermostat.details', { name, state: activityLabel });
 
     return html`
       <div class="thermostat activity-${activity}">
-        ${current ? html`
-          <button
-            class="segment current"
-            type="button"
-            title=${detailsLabel}
-            aria-label=${`${this._t('thermostat.current')}: ${current}. ${detailsLabel}`}
-            @click=${this._openMoreInfo}
-          >
-            <span class="segment-icon">${this._icon(mdiThermometer)}</span>
-            <span class="copy">
-              <span class="label">${this._t('thermostat.current')}</span>
-              <span class="value">${current}</span>
-            </span>
-          </button>
-        ` : nothing}
+        <button
+          class="type-icon"
+          type="button"
+          title=${detailsLabel}
+          aria-label=${detailsLabel}
+          @click=${this._openMoreInfo}
+        >
+          <ha-icon icon="mdi:thermostat"></ha-icon>
+        </button>
 
         ${model.mode === 'single' && target !== undefined ? html`
           <div class="target" role="group" aria-label=${this._t('thermostat.target_label', { name })}>
+            <span class="copy target-copy">
+              <span class="label">${this._t('thermostat.target')}</span>
+              <span class="value" aria-live="polite">${this._formatValue(target, decimals, model.unit)}</span>
+            </span>
             <button
               class="step"
               type="button"
@@ -252,10 +241,6 @@ export class DwainsAreaThermostat extends LitElement {
             >
               ${this._icon(mdiMinus)}
             </button>
-            <span class="copy target-copy">
-              <span class="label">${this._t('thermostat.target')}</span>
-              <span class="value" aria-live="polite">${this._formatValue(target, decimals, model.unit)}</span>
-            </span>
             <button
               class="step"
               type="button"
@@ -269,7 +254,7 @@ export class DwainsAreaThermostat extends LitElement {
           </div>
         ` : model.mode === 'range' && model.targetLow !== undefined && model.targetHigh !== undefined ? html`
           <button
-            class="segment target-range"
+            class="target-range"
             type="button"
             title=${detailsLabel}
             aria-label=${`${this._t('thermostat.target')}: ${this._formatValue(model.targetLow, decimals, model.unit)} - ${this._formatValue(model.targetHigh, decimals, model.unit)}. ${detailsLabel}`}
@@ -293,7 +278,7 @@ export class DwainsAreaThermostat extends LitElement {
           aria-label=${detailsLabel}
           @click=${this._openMoreInfo}
         >
-          ${this._icon(ACTIVITY_ICONS[activity])}
+          <ha-icon icon=${ACTIVITY_ICONS[activity]}></ha-icon>
           <span class="mode-label">${activityLabel}</span>
         </button>
       </div>
@@ -311,14 +296,17 @@ export class DwainsAreaThermostat extends LitElement {
        from the page header, so the thermostat also follows a room picture. */
     .thermostat {
       --thermostat-color: var(--secondary-text-color, #6b7280);
+      --climate-color: #34a6d8;
       --tile-text: var(--ph-text, var(--primary-text-color));
       --tile-muted: var(--ph-muted, var(--secondary-text-color));
       box-sizing: border-box;
       min-height: 52px;
       padding: 6px;
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
+      width: max-content;
+      max-width: 100%;
       min-width: 0;
       border-radius: 14px;
       background: var(--ph-control, color-mix(in srgb, var(--primary-text-color) 6%, transparent));
@@ -357,24 +345,32 @@ export class DwainsAreaThermostat extends LitElement {
       fill: currentColor;
     }
 
-    .segment {
-      min-width: 0;
-      min-height: 40px;
-      padding: 0 10px 0 0;
+    .type-icon {
+      width: 40px;
+      height: 40px;
       display: inline-flex;
       align-items: center;
-      gap: 10px;
-      flex: 0 1 auto;
+      justify-content: center;
+      flex: 0 0 auto;
       border-radius: 11px;
-      text-align: left;
-      transition: background-color 0.18s ease;
+      background: color-mix(in srgb, var(--climate-color) 16%, transparent);
+      color: var(--climate-color);
+    }
+
+    .type-icon ha-icon {
+      --mdc-icon-size: 22px;
     }
 
     .target-range {
-      padding-left: 10px;
+      min-height: 40px;
+      padding: 0 8px;
+      display: inline-flex;
+      align-items: center;
+      border-radius: 11px;
+      transition: background-color 0.18s ease;
     }
 
-    .segment:hover {
+    .target-range:hover {
       background: color-mix(in srgb, var(--tile-text) 7%, transparent);
     }
 
@@ -426,21 +422,21 @@ export class DwainsAreaThermostat extends LitElement {
     .target {
       display: inline-flex;
       align-items: center;
-      gap: 2px;
+      gap: 4px;
       flex: 0 0 auto;
-      padding: 0;
+      padding: 0 2px 0 4px;
       border-radius: 11px;
     }
 
     .target-copy {
-      min-width: 56px;
-      align-items: center;
-      text-align: center;
+      min-width: 58px;
+      align-items: flex-start;
+      text-align: left;
     }
 
     .step {
-      width: 36px;
-      height: 36px;
+      width: 32px;
+      height: 32px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -466,25 +462,26 @@ export class DwainsAreaThermostat extends LitElement {
 
     .mode {
       min-width: 36px;
-      max-width: 150px;
-      min-height: 40px;
-      margin-left: auto;
-      padding: 0 12px 0 10px;
+      max-width: 132px;
+      min-height: 36px;
+      margin-left: 1px;
+      padding: 0 9px 0 8px;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       flex: 0 1 auto;
-      border-radius: 11px;
+      border-radius: 10px;
       background: color-mix(in srgb, var(--thermostat-color) 15%, transparent);
-      color: color-mix(in srgb, var(--thermostat-color) 70%, var(--tile-text));
-      font-size: 13px;
+      color: color-mix(in srgb, var(--thermostat-color) 78%, var(--tile-text));
+      font-size: 12px;
       font-weight: 650;
       transition: background-color 0.18s ease;
     }
 
-    .mode svg {
-      width: 16px;
-      height: 16px;
+    .mode ha-icon {
+      --mdc-icon-size: 17px;
+      width: 17px;
+      height: 17px;
     }
 
     .mode-label {
@@ -496,29 +493,24 @@ export class DwainsAreaThermostat extends LitElement {
 
     @media (pointer: coarse) {
 
-      .segment,
       .mode {
         min-height: 40px;
       }
 
       .step {
-        width: 40px;
-        height: 40px;
+        width: 36px;
+        height: 36px;
       }
     }
 
     @media (max-width: 380px) {
-      .segment {
-        padding: 0 6px 0 8px;
-      }
-
-      .segment-icon {
+      .type-icon {
         display: none;
       }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .segment,
+      .target-range,
       .mode,
       .step {
         transition: none;
