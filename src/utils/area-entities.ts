@@ -174,7 +174,12 @@ function groupEntities(
     if (!state) return;
 
     const entityRegistry = hass.entities?.[entityId];
-    if (entityRegistry?.hidden_by || entityRegistry?.entity_category === 'diagnostic' || entityRegistry?.entity_category === 'config') {
+    const deviceClass = String(state.attributes?.device_class || '').toLowerCase();
+    const allowedDiagnostic = entityRegistry?.entity_category === 'diagnostic' &&
+      ['battery', 'battery_charging'].includes(deviceClass);
+    if (entityRegistry?.hidden_by ||
+        entityRegistry?.entity_category === 'config' ||
+        (entityRegistry?.entity_category === 'diagnostic' && !allowedDiagnostic)) {
       return;
     }
 
