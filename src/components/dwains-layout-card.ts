@@ -35,6 +35,7 @@ import type { NowPlayingPlayer } from './dwains-now-playing-bar';
 import './dwains-now-playing-bar';
 import { formatEntityStateWithUnit, formatValueWithUnit } from '../utils/unit-format';
 import { stripAreaNameFromEntityName } from '../utils/entity-names';
+import { pageHeaderStyles } from './styles/page-header-styles';
 import { showDomainEntitiesDialog } from './utils/show-domain-entities-dialog';
 import { showCardEditorDialog } from './utils/show-card-editor-dialog';
 import { ensureBottomNav } from './dwains-bottom-nav';
@@ -17890,6 +17891,153 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
+    ${pageHeaderStyles}
+
+    /* v1.11 room header, with the dev media tile kept separate from the card background. */
+    .dd-room-header-v111 {
+      overflow: visible;
+    }
+
+    .dd-room-header-layout {
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+      gap: 18px;
+      align-items: stretch;
+      min-width: 0;
+    }
+
+    .dd-room-header-media {
+      position: relative;
+      width: 220px;
+      min-height: 176px;
+      overflow: hidden;
+      border-radius: 14px;
+      background: color-mix(in srgb, var(--primary-color) 8%, var(--ph-surface));
+    }
+
+    .dd-room-header-picture {
+      position: absolute;
+      inset: 0;
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+    }
+
+    .dd-room-header-icon {
+      width: 100%;
+      height: 100%;
+      min-height: 176px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: color-mix(in srgb, var(--primary-color) 86%, var(--primary-text-color));
+      background: color-mix(in srgb, var(--primary-color) 9%, var(--ph-surface));
+    }
+
+    .dd-room-header-icon ha-icon {
+      --mdc-icon-size: 52px;
+    }
+
+    .dd-room-header-content {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .dd-room-header-title-row {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .dd-room-header-title-row .dd-page-header-title {
+      min-width: 0;
+    }
+
+    .dd-page-header-home {
+      width: 36px;
+      height: 36px;
+    }
+
+    .dd-page-header-home ha-icon {
+      --mdc-icon-size: 21px;
+    }
+
+    @media (max-width: 768px) {
+      .dd-room-header-v111 {
+        margin-left: -10px;
+        margin-right: -10px;
+      }
+
+      .dd-room-header-layout {
+        grid-template-columns: 78px minmax(0, 1fr);
+        gap: 12px;
+        align-items: start;
+      }
+
+      .dd-room-header-media {
+        width: 78px;
+        min-height: 78px;
+        height: 78px;
+        border-radius: 14px;
+      }
+
+      .dd-room-header-icon {
+        min-height: 78px;
+      }
+
+      .dd-room-header-icon ha-icon {
+        --mdc-icon-size: 34px;
+      }
+
+      .dd-room-header-content {
+        gap: 12px;
+      }
+
+      .dd-room-header-content .dd-page-header-top {
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .dd-room-header-content .dd-page-header-identity {
+        order: 1;
+        flex: 1 1 auto;
+        flex-basis: auto;
+      }
+
+      .dd-room-header-content .dd-page-header-actions {
+        order: 2;
+        margin-left: auto;
+      }
+
+      .dd-room-header-content .dd-page-header-strip {
+        margin-left: calc(-78px - 12px);
+      }
+
+      .dd-room-header-title-row {
+        gap: 7px;
+      }
+
+      .dd-room-header-title-row .dd-page-header-title {
+        font-size: 24px;
+        line-height: 1.1;
+        -webkit-line-clamp: 2;
+      }
+
+      .dd-page-header-home {
+        width: 32px;
+        height: 32px;
+      }
+
+      .dd-room-compact .dd-page-header-home {
+        width: 38px;
+        height: 38px;
+      }
+    }
+
   `;
 
   connectedCallback() {
@@ -21310,6 +21458,308 @@ export class DwainsLayoutCard extends LitElement {
 
 
 
+
+
+  private _areaTileState(active: number, total: number, kind: 'on' | 'open'): string {
+    if (kind === 'open') {
+      if (total === 1) return this._t(active ? 'common.open' : 'common.closed');
+      return active ? this._t('area_header.open_count', { active, total }) : this._t('common.closed');
+    }
+    if (total === 1) return this._t(active ? 'common.on' : 'common.off');
+    return active ? this._t('area_header.on_count', { active, total }) : this._t('common.off');
+  }
+
+  private _renderAreaQuickTiles(areaId: string, entities: EntityConfig[]) {
+    const lights = entities.filter(e => e.entity_id.startsWith('light.'));
+    const switches = entities.filter(e => e.entity_id.startsWith('switch.'));
+    const covers = entities.filter(e => e.entity_id.startsWith('cover.'));
+    const fans = entities.filter(e => e.entity_id.startsWith('fan.'));
+    const climates = entities.filter(e => e.entity_id.startsWith('climate.'));
+
+    if (!lights.length && !switches.length && !covers.length && !fans.length && !climates.length) {
+      return nothing;
+    }
+
+    const toggleTile = (
+      kind: 'light' | 'switch' | 'fan',
+      total: number,
+      active: number,
+      icons: [string, string],
+      actionKey: [string, string],
+      onClick: () => void
+    ) => {
+      const isOn = active > 0;
+      const label = this._t(`domain.${kind}`);
+      const state = this._areaTileState(active, total, 'on');
+      const action = this._t(isOn ? actionKey[1] : actionKey[0], { active, total });
+      return html`
+        <button
+          class="dd-room-tile ${kind} ${isOn ? 'is-on' : ''}"
+          type="button"
+          aria-pressed=${isOn ? 'true' : 'false'}
+          title=${action}
+          aria-label=${`${label}: ${state}. ${action}`}
+          @click=${onClick}
+        >
+          <span class="dd-room-tile-icon">
+            <ha-icon icon=${isOn ? icons[1] : icons[0]}></ha-icon>
+          </span>
+          <span class="dd-room-tile-copy">
+            <span class="dd-room-tile-label">${label}</span>
+            <span class="dd-room-tile-state">${state}</span>
+          </span>
+          <span class="dd-room-tile-switch" aria-hidden="true"></span>
+        </button>
+      `;
+    };
+
+    const openCovers = this._countActiveEntities(covers, 'cover');
+    const activeClimates = this._countActiveEntities(climates, 'climate');
+    const singleClimateState = climates.length === 1 ? this.hass.states[climates[0]!.entity_id] : undefined;
+    const currentTemperature = singleClimateState?.attributes?.current_temperature;
+    const temperatureUnit = (this.hass.config as any)?.unit_system?.temperature || '°';
+    const climateValue = currentTemperature !== undefined && currentTemperature !== null
+      ? formatValueWithUnit(currentTemperature, temperatureUnit)
+      : this._tp('common.entity', climates.length);
+
+    return html`
+      <div class="dd-room-tiles">
+        ${lights.length ? toggleTile(
+          'light',
+          lights.length,
+          this._countActiveEntities(lights, 'light'),
+          ['mdi:lightbulb-outline', 'mdi:lightbulb'],
+          ['action.lights_on_summary', 'action.lights_off_summary'],
+          () => this._toggleAreaLights(areaId)
+        ) : nothing}
+        ${switches.length ? toggleTile(
+          'switch',
+          switches.length,
+          this._countActiveEntities(switches, 'switch'),
+          ['mdi:power-plug-off-outline', 'mdi:power-plug'],
+          ['action.switches_on_summary', 'action.switches_off_summary'],
+          () => this._toggleAreaSwitches(areaId)
+        ) : nothing}
+        ${covers.length ? html`
+          <div class="dd-room-tile cover has-actions ${openCovers > 0 ? 'is-on' : ''}">
+            <span class="dd-room-tile-icon">
+              <ha-icon icon=${openCovers > 0 ? 'mdi:window-shutter-open' : 'mdi:window-shutter'}></ha-icon>
+            </span>
+            <span class="dd-room-tile-copy">
+              <span class="dd-room-tile-label">${this._t('domain.cover')}</span>
+              <span class="dd-room-tile-state">${this._areaTileState(openCovers, covers.length, 'open')}</span>
+            </span>
+            <span class="dd-room-tile-actions">
+              <button
+                class="dd-room-tile-action"
+                type="button"
+                title=${this._t('action.open_all')}
+                aria-label=${this._t('action.open_all')}
+                @click=${() => void this._setAreaCoverState(areaId, true)}
+              >
+                <ha-icon icon="mdi:arrow-up"></ha-icon>
+              </button>
+              <button
+                class="dd-room-tile-action"
+                type="button"
+                title=${this._t('action.close_all')}
+                aria-label=${this._t('action.close_all')}
+                @click=${() => void this._setAreaCoverState(areaId, false)}
+              >
+                <ha-icon icon="mdi:arrow-down"></ha-icon>
+              </button>
+            </span>
+          </div>
+        ` : nothing}
+        ${fans.length ? toggleTile(
+          'fan',
+          fans.length,
+          this._countActiveEntities(fans, 'fan'),
+          ['mdi:fan-off', 'mdi:fan'],
+          ['action.fans_on_summary', 'action.fans_off_summary'],
+          () => this._toggleAreaFans(areaId)
+        ) : nothing}
+        ${climates.length ? html`
+          <button
+            class="dd-room-tile climate ${activeClimates > 0 ? 'is-on' : ''}"
+            type="button"
+            title=${this._t('action.open_climate_controls')}
+            aria-label=${`${this._t('domain.climate')}: ${climateValue}. ${this._t('action.open_climate_controls')}`}
+            @click=${() => this._openAreaClimateControls(areaId, climates)}
+          >
+            <span class="dd-room-tile-icon">
+              <ha-icon icon=${getDomainIcon('climate')}></ha-icon>
+            </span>
+            <span class="dd-room-tile-copy">
+              <span class="dd-room-tile-label">${this._t('domain.climate')}</span>
+              <span class="dd-room-tile-state">${climateValue}</span>
+            </span>
+            <ha-icon class="dd-room-tile-chevron" icon="mdi:chevron-right" aria-hidden="true"></ha-icon>
+          </button>
+        ` : nothing}
+      </div>
+    `;
+  }
+
+  private _renderAreaCompactBar(
+    area: AreaConfig,
+    areaData: AreaData,
+    deviceLabel: string,
+    backButton: unknown,
+    actions: unknown,
+    tiles: unknown
+  ) {
+    const visible = this._areaHeaderStuck;
+    const readings = [areaData.temperature, areaData.humidity].filter(Boolean).join(' · ');
+    return html`
+      <div class="dd-room-compact ${visible ? 'is-visible' : ''}" ?inert=${!visible} aria-hidden=${visible ? 'false' : 'true'}>
+        <div class="dd-room-compact-panel">
+          <div class="dd-room-compact-bar">
+            ${backButton}
+            <div class="dd-room-compact-title">
+              <strong>${area.name}</strong>
+              <span>${readings || deviceLabel}</span>
+            </div>
+            <div class="dd-page-header-actions">${actions}</div>
+          </div>
+          ${visible && this._areaHeaderRevealed ? tiles : nothing}
+        </div>
+      </div>
+    `;
+  }
+
+  private _renderAreaHeaderReadings(areaData: AreaData) {
+    return [
+      areaData.temperature ? html`
+        <span class="dd-page-header-reading temperature" title=${this._t('home.temperature')}>
+          <ha-icon icon="mdi:thermometer" aria-hidden="true"></ha-icon>
+          <span class="dd-visually-hidden">${this._t('home.temperature')}</span>
+          ${areaData.temperature}
+        </span>
+      ` : nothing,
+      areaData.humidity ? html`
+        <span class="dd-page-header-reading humidity" title=${this._t('home.humidity')}>
+          <ha-icon icon="mdi:water-percent" aria-hidden="true"></ha-icon>
+          <span class="dd-visually-hidden">${this._t('home.humidity')}</span>
+          ${areaData.humidity}
+        </span>
+      ` : nothing,
+    ];
+  }
+
+  private _renderAreaMobileCameraAction(entities: EntityConfig[]) {
+    const camera = entities.find(entity => {
+      if (!entity.entity_id.startsWith('camera.')) return false;
+      const state = this.hass?.states?.[entity.entity_id]?.state;
+      return Boolean(state && state !== 'unavailable' && state !== 'unknown');
+    });
+    if (!camera) return nothing;
+
+    return html`
+      <button
+        class="dd-page-header-button"
+        type="button"
+        title=${this._t('action.open_camera')}
+        aria-label=${this._t('action.open_camera')}
+        @click=${() => this._showMoreInfo(camera.entity_id)}
+      >
+        <ha-icon icon="mdi:video-outline"></ha-icon>
+      </button>
+    `;
+  }
+
+  private _openAreaClimateControls(areaId: string, climates: EntityConfig[]): void {
+    if (climates.length === 0) return;
+    if (climates.length === 1) {
+      this._showMoreInfo(climates[0]!.entity_id);
+      return;
+    }
+
+    showDomainEntitiesDialog(this, {
+      domain: 'climate',
+      areaId,
+      config: this.config,
+      customTitle: getDomainName(this.hass, 'climate'),
+      customEntities: climates.map(entity => entity.entity_id),
+    });
+  }
+
+  private async _toggleAreaSwitches(areaId: string) {
+    const entities = this._getFilteredAreaEntities(areaId);
+    const switches = entities.filter(e => e.entity_id.startsWith('switch.'));
+    if (switches.length === 0) return;
+
+    const allOff = this._areAllEntitiesOff(switches, 'switch');
+    const confirmed = await this._confirmMasterActionIfNeeded('switch', allOff, switches.length, areaId);
+    if (!confirmed) return;
+
+    const service = allOff ? 'turn_on' : 'turn_off';
+    const entityIds = switches.map(e => e.entity_id);
+
+    this._setOptimisticEntityStates(entityIds, allOff ? 'on' : 'off');
+
+    try {
+      await this.hass.callService('switch', service, {
+        entity_id: entityIds
+      });
+
+      this._showToast(this._t(allOff ? 'action.all_switches_on' : 'action.all_switches_off'));
+    } catch (err) {
+      this._clearOptimisticEntityStates(entityIds);
+      console.warn(`Failed to toggle switches in area ${areaId}:`, err);
+      this._showToast(this._t('entity.switches_failed'));
+    }
+  }
+
+  private async _toggleAreaFans(areaId: string) {
+    const entities = this._getFilteredAreaEntities(areaId);
+    const fans = entities.filter(entity => entity.entity_id.startsWith('fan.'));
+    if (fans.length === 0) return;
+
+    const allOff = this._areAllEntitiesOff(fans, 'fan');
+    const confirmed = await this._confirmMasterActionIfNeeded('fan', allOff, fans.length, areaId);
+    if (!confirmed) return;
+    const service = allOff ? 'turn_on' : 'turn_off';
+    const entityIds = fans.map(entity => entity.entity_id);
+
+    this._setOptimisticEntityStates(entityIds, allOff ? 'on' : 'off');
+
+    try {
+      await this.hass.callService('fan', service, { entity_id: entityIds });
+      this._showToast(this._t(allOff ? 'action.all_fans_on' : 'action.all_fans_off'));
+    } catch (err) {
+      this._clearOptimisticEntityStates(entityIds);
+      console.warn(`Failed to toggle fans in area ${areaId}:`, err);
+      this._showToast(this._t('entity.fans_failed'));
+    }
+  }
+
+  private async _setAreaCoverState(areaId: string, open: boolean) {
+    const entities = this._getFilteredAreaEntities(areaId);
+    const covers = entities.filter(e => e.entity_id.startsWith('cover.'));
+    if (covers.length === 0) return;
+
+    const confirmed = await this._confirmMasterActionIfNeeded('cover', open, covers.length, areaId);
+    if (!confirmed) return;
+
+    const service = open ? 'open_cover' : 'close_cover';
+    const entityIds = covers.map(e => e.entity_id);
+
+    this._setOptimisticEntityStates(entityIds, open ? 'open' : 'closed');
+
+    try {
+      await this.hass.callService('cover', service, {
+        entity_id: entityIds
+      });
+
+      this._showToast(this._t(open ? 'action.open_all' : 'action.close_all'));
+    } catch (err) {
+      this._clearOptimisticEntityStates(entityIds);
+      console.warn(`Failed to ${open ? 'open' : 'close'} covers in area ${areaId}:`, err);
+      this._showToast(this._t('entity.covers_failed'));
+    }
+  }
+
   private _renderAreaView() {
     if (!this._selectedArea) return nothing;
 
@@ -21323,93 +21773,91 @@ export class DwainsLayoutCard extends LitElement {
     const areaData = this._getCachedAreaData(area);
     const hasPicture = Boolean(area.picture);
     const deviceCount = this._getAreaDeviceCount(area.area_id, visibleAreaEntities);
-    const deviceLabel = this._tp('common.device', deviceCount);
-    const roomBadges = this._getAreaStatusBadges(areaData);
-    const headerCamera = this._getAreaHeaderCamera(area, visibleAreaEntities);
     const thermostatEntityId = this._areaThermostatEntityId(visibleAreaEntities);
+    const quickControlEntities = thermostatEntityId
+      ? visibleAreaEntities.filter(entity => entity.entity_id !== thermostatEntityId)
+      : visibleAreaEntities;
+    const deviceLabel = this._tp('common.device', deviceCount);
+    const tiles = this._renderAreaQuickTiles(area.area_id, quickControlEntities);
+    const hasStrip = tiles !== nothing || Boolean(thermostatEntityId);
+    const homeButton = html`
+      <button
+        class="dd-page-header-button dd-page-header-home"
+        type="button"
+        title=${this._t('sidebar.home')}
+        aria-label=${this._t('navigation.back_home')}
+        @click=${() => this._selectView('home')}
+      >
+        <ha-icon icon="mdi:home"></ha-icon>
+      </button>
+    `;
+    const actions = html`
+      ${this._renderAreaMobileCameraAction(visibleAreaEntities)}
+      ${this._renderUnavailableEntitiesIcon(area.area_id)}
+      ${this._canManageDashboard() ? html`
+        <button
+          class="dd-page-header-button ${this._editMode ? 'is-active' : ''}"
+          type="button"
+          aria-pressed=${this._editMode ? 'true' : 'false'}
+          title=${this._editMode ? this._t('layout.done_editing') : this._t('layout.edit_custom_cards')}
+          aria-label=${this._editMode ? this._t('layout.done_editing') : this._t('layout.edit_custom_cards')}
+          @click=${this._toggleEditMode}
+        >
+          <ha-icon icon=${this._editMode ? 'mdi:check' : 'mdi:pencil'}></ha-icon>
+        </button>
+      ` : nothing}
+    `;
 
     return html`
-      <div class="area-view room-ui-v2">
-        ${this._isMobile ? this._renderRoomFavoritesBlock() : nothing}
+      <div class="area-view">
+        ${this._isMobile
+          ? this._renderAreaCompactBar(area, areaData, deviceLabel, homeButton, actions, tiles)
+          : nothing}
 
-        <div class="room-header ${headerCamera ? 'has-camera' : 'no-camera'}">
-          ${this._isMobile ? html`
-            <button
-              class="room-header-back"
-              type="button"
-              title=${this._t('navigation.back_home')}
-              aria-label=${this._t('navigation.back_home')}
-              @click=${() => this._selectView('home')}
-            >
-              ${this._renderStaticIcon(ICON_ARROW_LEFT)}
-            </button>
-          ` : nothing}
+        <header class="dd-page-header dd-room-header-v111">
+          <div class="dd-room-header-layout">
+            <div class="dd-room-header-media" aria-hidden="true">
+              ${hasPicture
+                ? html`<div class="dd-room-header-picture" style=${`background-image: url('${area.picture}');`}></div>`
+                : html`
+                    <div class="dd-room-header-icon">
+                      <ha-icon icon=${getAreaIcon(area)}></ha-icon>
+                    </div>
+                  `}
+            </div>
 
-          <div class="room-header-media" aria-hidden="true">
-            ${hasPicture
-              ? html`<div class="room-header-picture" style=${`background-image: url('${area.picture}');`}></div>`
-              : html`
-                  <div class="room-header-icon">
-                    <ha-icon icon=${getAreaIcon(area)}></ha-icon>
+            <div class="dd-room-header-content">
+              <div class="dd-page-header-top">
+                <div class="dd-page-header-identity">
+                  <div class="dd-page-header-copy">
+                    <div class="dd-room-header-title-row">
+                      ${homeButton}
+                      <h1 class="dd-page-header-title">${area.name}</h1>
+                    </div>
+                    <div class="dd-page-header-subtitle">
+                      <span>${deviceLabel}</span>
+                      ${this._renderAreaHeaderReadings(areaData)}
+                    </div>
                   </div>
-                `}
-          </div>
+                </div>
+                <div class="dd-page-header-actions">${actions}</div>
+              </div>
 
-          <div class="room-header-copy">
-            <div class="room-header-title-row">
-              <button
-                class="room-header-home-link"
-                type="button"
-                title=${this._t('sidebar.home')}
-                aria-label=${this._t('navigation.back_home')}
-                @click=${() => this._selectView('home')}
-              >
-                <ha-icon icon="mdi:home"></ha-icon>
-              </button>
-              <ha-icon class="room-header-home-chevron" icon="mdi:chevron-right" aria-hidden="true"></ha-icon>
-              <h1 class="area-title">${area.name}</h1>
-            </div>
-            <div class="room-header-device-count">${deviceLabel}</div>
-            <div class="room-header-summary ${roomBadges.length ? '' : 'is-empty'}" aria-hidden=${roomBadges.length ? 'false' : 'true'}>
-              ${roomBadges.map(badge => html`
-                <button
-                  class="room-summary-item status"
-                  type="button"
-                  style=${`--room-summary-color: ${badge.color};`}
-                  title=${badge.deviceClass ? getDeviceClassName(this.hass, badge.deviceClass) : getDomainName(this.hass, badge.domain)}
-                  aria-label=${badge.deviceClass ? getDeviceClassName(this.hass, badge.deviceClass) : getDomainName(this.hass, badge.domain)}
-                  @click=${() => this._showAreaStatusBadgeDialog(area.area_id, badge)}
-                >
-                  <ha-icon icon=${badge.icon}></ha-icon>
-                  <span>${badge.count}</span>
-                </button>
-              `)}
+              ${hasStrip ? html`
+                <div class="dd-page-header-strip">
+                  ${tiles}
+                  ${thermostatEntityId ? html`
+                    <dwains-dashboard-next-area-thermostat
+                      .hass=${this.hass}
+                      .entityId=${thermostatEntityId}
+                      .roomName=${area.name}
+                    ></dwains-dashboard-next-area-thermostat>
+                  ` : nothing}
+                </div>
+              ` : nothing}
             </div>
           </div>
-
-          ${this._renderAreaHeaderCamera(headerCamera)}
-          ${this._renderAreaHeaderMetrics(areaData, area.area_id, visibleAreaEntities)}
-          ${thermostatEntityId ? html`
-            <dwains-dashboard-next-area-thermostat
-              .hass=${this.hass}
-              .entityId=${thermostatEntityId}
-              .roomName=${area.name}
-            ></dwains-dashboard-next-area-thermostat>
-          ` : nothing}
-
-          <div class="room-header-actions">
-            ${this._canManageDashboard() ? html`
-              <button
-                class="dd-edit-toggle ${this._editMode ? 'active' : ''}"
-                title=${this._editMode ? this._t('layout.done_editing') : this._t('layout.edit_custom_cards')}
-                @click=${this._toggleEditMode}
-              >
-                <ha-icon icon=${this._editMode ? 'mdi:check' : 'mdi:view-dashboard-edit-outline'}></ha-icon>
-              </button>
-            ` : nothing}
-            ${this._renderUnavailableEntitiesIcon(area.area_id)}
-          </div>
-        </div>
+        </header>
 
         ${!this._isMobile ? this._renderNowPlayingBar(false) : nothing}
         ${this._renderCustomCardSlot(area.area_id, 'top', this._t('layout.custom_cards_top'))}
