@@ -21796,7 +21796,7 @@ export class DwainsLayoutCard extends LitElement {
     `;
 
     return html`
-      <div class="area-view room-ui-v2">
+      <div class="area-view">
         ${this._isMobile
           ? this._renderAreaCompactBar(area, areaData, deviceLabel, homeButton, actions, tiles)
           : nothing}
@@ -21848,7 +21848,9 @@ export class DwainsLayoutCard extends LitElement {
 
         ${!this._isMobile ? this._renderNowPlayingBar(false) : nothing}
         ${this._renderCustomCardSlot(area.area_id, 'top', this._t('layout.custom_cards_top'))}
-        ${this._renderMobileEntitiesSection(area, areaEntities)}
+        <div class="room-ui-v2 room-entities-legacy">
+          ${this._renderMobileEntitiesSection(area, areaEntities)}
+        </div>
         ${this._renderCustomCardSlot(area.area_id, 'bottom', this._t('layout.custom_cards_bottom'))}
       </div>
     `;
