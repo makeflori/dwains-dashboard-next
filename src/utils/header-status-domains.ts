@@ -163,7 +163,8 @@ export function getStatusDomains(hass: HomeAssistant, config: any): DomainCount[
   });
 
   const coverStatusCounts: Record<string, { total: number; on: number; entities: string[]; deviceClass?: string; name: string; icon: string }> = {};
-  const shadingCoverClasses = new Set(['awning', 'blind', 'curtain', 'damper', 'shade', 'shutter']);
+  const shadingCoverClasses = new Set(['awning', 'blind', 'curtain', 'shade', 'shutter']);
+  const gateCoverClasses = new Set(['garage', 'garage_door', 'gate']);
 
   const addOn = (bucket: { on: number; entities: string[] }, id: string) => {
     bucket.on++;
@@ -183,31 +184,58 @@ export function getStatusDomains(hass: HomeAssistant, config: any): DomainCount[
 
     if (domain === 'cover') {
       const rawDeviceClass = String((entityState as any).attributes?.device_class || '').toLowerCase();
-      const groupKey = shadingCoverClasses.has(rawDeviceClass)
-        ? 'shading'
-        : rawDeviceClass || 'cover';
-      const bucket = coverStatusCounts[groupKey] || {
-        total: 0,
-        on: 0,
-        entities: [],
-        deviceClass: groupKey === 'shading' || groupKey === 'cover' ? undefined : rawDeviceClass,
-        name: groupKey === 'shading'
-          ? (String(hass?.language || hass?.locale?.language || '').toLowerCase().startsWith('de') ? 'Beschattung' : 'Shading')
-          : groupKey === 'cover'
-            ? getDomainName(hass, 'cover')
-            : getDeviceClassName(hass, rawDeviceClass),
-        icon: groupKey === 'shading'
-          ? 'mdi:blinds-horizontal'
-          : rawDeviceClass
-            ? getDeviceClassIcon('cover', rawDeviceClass)
-            : getDomainIcon('cover'),
-      };
-      bucket.total++;
       const coverState = String((entityState as any).state || '').toLowerCase();
-      if (coverState === 'open' || coverState === 'opening') {
-        addOn(bucket, entityId);
+      const currentPositionRaw = Number((entityState as any).attributes?.current_position);
+      const hasPosition = Number.isFinite(currentPositionRaw);
+      let groupKey: string | undefined;
+      let active = false;
+      let deviceClass: string | undefined;
+      let name = '';
+      let icon = '';
+
+      if (rawDeviceClass === 'window') {
+        groupKey = 'window';
+        deviceClass = 'window';
+        name = getDeviceClassName(hass, 'window');
+        icon = getDeviceClassIcon('cover', 'window');
+        active = coverState === 'open' || coverState === 'opening' || (hasPosition && currentPositionRaw > 0);
+      } else if (rawDeviceClass === 'door') {
+        groupKey = 'door';
+        deviceClass = 'door';
+        name = getDeviceClassName(hass, 'door');
+        icon = getDeviceClassIcon('cover', 'door');
+        active = coverState === 'open' || coverState === 'opening' || (hasPosition && currentPositionRaw > 0);
+      } else if (gateCoverClasses.has(rawDeviceClass)) {
+        groupKey = 'gate';
+        deviceClass = rawDeviceClass;
+        name = String(hass?.language || hass?.locale?.language || '').toLowerCase().startsWith('de') ? 'Tore' : 'Gates';
+        icon = rawDeviceClass ? getDeviceClassIcon('cover', rawDeviceClass) : 'mdi:gate';
+        active = coverState === 'open' || coverState === 'opening' || (hasPosition && currentPositionRaw > 0);
+      } else if (shadingCoverClasses.has(rawDeviceClass)) {
+        groupKey = 'shading';
+        name = String(hass?.language || hass?.locale?.language || '').toLowerCase().startsWith('de') ? 'Beschattung' : 'Shading';
+        icon = 'mdi:blinds-horizontal';
+        // "Deployed" means the shading is providing cover. For awnings HA's
+        // open direction normally extends the awning; blinds/shutters/curtains
+        // are deployed when they are not fully open/retracted.
+        active = rawDeviceClass === 'awning'
+          ? (coverState === 'open' || coverState === 'opening' || (hasPosition && currentPositionRaw > 0))
+          : (coverState === 'closed' || coverState === 'closing' || (hasPosition && currentPositionRaw < 100));
       }
-      coverStatusCounts[groupKey] = bucket;
+
+      if (groupKey) {
+        const bucket = coverStatusCounts[groupKey] || {
+          total: 0,
+          on: 0,
+          entities: [],
+          deviceClass,
+          name,
+          icon,
+        };
+        bucket.total++;
+        if (active) addOn(bucket, entityId);
+        coverStatusCounts[groupKey] = bucket;
+      }
     }
 
     // Handle regular domains
@@ -335,8 +363,9 @@ export function getStatusDomains(hass: HomeAssistant, config: any): DomainCount[
     }
   });
 
-  // Covers are presented as separate status types. Windows and doors stay
-  // distinct, while all shading devices share one concise "Shading" status.
+  // Covers are status-oriented here: windows, doors and gates are shown when
+  // open; shading is shown only when deployed. Unknown cover types stay out of
+  // House information instead of falling back to the broad "Covers" label.
   Object.values(coverStatusCounts).forEach((data) => {
     if (data.total > 0 && data.on > 0) {
       result.push({
