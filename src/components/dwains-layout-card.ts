@@ -512,6 +512,34 @@ export class DwainsLayoutCard extends LitElement {
   }
 
   static override styles = css`
+    dwains-dashboard-next-now-playing.inline {
+      display: block;
+      margin: 0 0 18px;
+    }
+    .room-header dwains-dashboard-next-area-thermostat {
+      flex: 0 1 320px;
+      min-width: 220px;
+    }
+    @media (max-width: 768px) {
+      dwains-dashboard-next-now-playing.floating {
+        position: fixed;
+        left: max(12px, env(safe-area-inset-left, 0px));
+        right: max(12px, env(safe-area-inset-right, 0px));
+        bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+        z-index: 140;
+        max-width: 560px;
+        margin: 0 auto;
+      }
+      .layout-container.has-floating-now-playing .home-view,
+      .layout-container.has-floating-now-playing .content-area.area-content-area {
+        padding-bottom: calc(190px + env(safe-area-inset-bottom, 0px));
+      }
+      .room-header dwains-dashboard-next-area-thermostat {
+        width: 100%;
+        min-width: 0;
+        flex-basis: 100%;
+      }
+    }
     :host {
       display: block;
       height: 100%;
@@ -19651,6 +19679,83 @@ export class DwainsLayoutCard extends LitElement {
     }
   }
 
+  private _getHomeSceneItems(): HomeSceneItem[] {
+    return resolveHomeSceneItems(
+      normalizeHomeScenes(this.config?.settings?.home_scenes),
+      this.hass?.states || {},
+      getEntityRegistry(this.hass),
+      this.config?.settings?.hide_unavailable_entities !== false
+    );
+  }
+
+  private _homeSceneName(entityId: string): string {
+    return this.hass?.states[entityId]?.attributes?.friendly_name ||
+      getEntityRegistry(this.hass)[entityId]?.name || entityId;
+  }
+
+  private _scriptLastRunText(state: any): string {
+    const timestamp = Date.parse(state?.attributes?.last_triggered || '');
+    return Number.isFinite(timestamp) ? this._formatRelativeTime(timestamp) : this._t('scenes.not_run');
+  }
+
+  private _renderHomeScenes() {
+    const items = this._getHomeSceneItems();
+    if (!items.length) return nothing;
+    const title = this._t('home_section.scenes.label');
+    return html`
+      <section class="home-summaries-section home-scenes-section">
+        <div class="home-status-heading">
+          <ha-icon icon=${HOME_SECTION_META.scenes.icon}></ha-icon>
+          <span>${title}</span>
+        </div>
+        <div class="mobile-section-heading">
+          <div class="mobile-section-title">
+            <span class="mobile-layout-toggle active static"><ha-icon icon=${HOME_SECTION_META.scenes.icon}></ha-icon></span>
+            <span class="mobile-section-title-label">${title}</span>
+          </div>
+        </div>
+        <div class="home-summary-list">
+          ${items.map(item => {
+            const state = this.hass.states[item.entityId];
+            if (!state) return nothing;
+            const name = this._homeSceneName(item.entityId);
+            const meta = item.unavailable
+              ? this._t('common.unavailable')
+              : item.domain === 'scene'
+                ? this._sceneLastActivatedText(state)
+                : this._scriptLastRunText(state);
+            return html`
+              <button
+                class="home-summary-card ${item.domain}"
+                type="button"
+                ?disabled=${item.unavailable}
+                @click=${() => this._runHomeScene(item)}
+              >
+                <span class="home-summary-icon"><ha-icon icon=${getDomainIcon(item.domain)}></ha-icon></span>
+                <span class="home-summary-copy">
+                  <span class="home-summary-title">${name}</span>
+                  <span class="home-summary-subtitle">${meta}</span>
+                </span>
+                <span class="home-summary-chevron"><ha-icon icon="mdi:play"></ha-icon></span>
+              </button>
+            `;
+          })}
+        </div>
+      </section>
+    `;
+  }
+
+  private async _runHomeScene(item: HomeSceneItem): Promise<void> {
+    if (item.unavailable) return;
+    const name = this._homeSceneName(item.entityId);
+    try {
+      await this.hass.callService(item.domain, 'turn_on', { entity_id: item.entityId });
+      this._showToast(this._t(item.domain === 'scene' ? 'scenes.activated_named' : 'scenes.started_named', { name }));
+    } catch (err) {
+      console.warn(`Failed to run ${item.entityId}:`, err);
+      this._showToast(this._t(item.domain === 'scene' ? 'scenes.scene_failed' : 'scenes.script_failed', { name }));
+    }
+  }
   private _renderHomeSummaries() {
     const summaries = this._getHomeSummaryCards();
     if (!summaries.length) return nothing;
