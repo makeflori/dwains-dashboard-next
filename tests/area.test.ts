@@ -242,7 +242,6 @@ describe('area entity grouping', () => {
     entityState('sensor.temp', '20'),
     entityState('light.diag', 'on'),
     entityState('sensor.battery_diag', '87', { device_class: 'battery' }),
-    entityState('input_boolean.helper_switch', 'on'),
     entityState('light.hidden', 'on'),
     entityState('update.firmware', 'off'),
   ];
