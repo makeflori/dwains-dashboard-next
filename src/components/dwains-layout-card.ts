@@ -15837,6 +15837,168 @@ copy{
       }
     }
 
+
+
+    /* 2026-10-05 room/home consistency pass. */
+    .favorite-name {
+      display: block !important;
+      min-width: 0;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      white-space: nowrap !important;
+      -webkit-line-clamp: unset !important;
+      -webkit-box-orient: initial !important;
+    }
+
+    .dd-page-header-with-media {
+      align-items: start;
+    }
+
+    .dd-page-header-main {
+      justify-content: flex-start;
+      align-self: stretch;
+    }
+
+    .dd-page-header-main .dd-page-header-top {
+      align-items: flex-start;
+    }
+
+    .dd-page-header-title-row .dd-page-header-home {
+      width: 20px;
+      height: 20px;
+      min-width: 20px;
+      padding: 0;
+      border-radius: 5px;
+      background: transparent;
+      color: var(--ph-muted);
+    }
+
+    .dd-page-header-title-row .dd-page-header-home:hover {
+      color: var(--primary-color);
+      background: color-mix(in srgb, var(--primary-color) 8%, transparent);
+    }
+
+    .dd-page-header-title-row .dd-page-header-home ha-icon {
+      --mdc-icon-size: 14px;
+      width: 14px;
+      height: 14px;
+    }
+
+    .dd-page-header-title-chevron {
+      --mdc-icon-size: 12px;
+      width: 12px;
+      height: 12px;
+      flex: 0 0 12px;
+      color: var(--ph-muted);
+      opacity: 0.72;
+    }
+
+    .dd-page-header-button > ha-icon,
+    .dd-page-header-home > ha-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 0;
+      margin: 0;
+      transform: none;
+    }
+
+    .dd-page-header-actions .dd-page-header-button {
+      display: inline-grid;
+      place-items: center;
+    }
+
+    .home-status-secondary-grid.is-only-row {
+      margin-top: 0;
+      grid-template-columns: none;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(130px, 1fr);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .home-status-secondary-grid.is-only-row::-webkit-scrollbar {
+      display: none;
+    }
+
+    .home-todos-grid {
+      grid-template-columns: repeat(auto-fit, minmax(280px, 420px));
+      justify-content: start;
+    }
+
+    .home-custom-cards-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      justify-content: start;
+    }
+
+    .home-custom-card.is-wide {
+      grid-column: span 2;
+    }
+
+    .dd-custom-grid > .dd-custom-card-wrap {
+      --dd-card-default-column: span 3;
+    }
+
+    .dd-custom-grid > .dd-custom-card-wrap.dd-grid-wide {
+      --dd-card-default-column: span 6;
+    }
+
+    .home-todo-card,
+    .home-custom-card,
+    .area-view .mobile-todo-list-card,
+    .area-view .mobile-entity-replacement-card,
+    .dd-custom-card-wrap {
+      font-family: var(--ha-font-family-body, inherit);
+      font-size: 13px;
+      line-height: 1.3;
+      --ha-card-header-font-size: 15px;
+      --ha-font-size-l: 15px;
+      --ha-font-size-m: 13px;
+      --ha-font-size-s: 11px;
+    }
+
+    @media (min-width: 769px) {
+      .area-view .mobile-todo-list-card {
+        grid-column: span 2 !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        flex: none !important;
+      }
+
+      .room-favorites-content .favorites-grid {
+        grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .dd-room-compact .dd-page-header-home {
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+        border-radius: 999px;
+        background: var(--ph-control);
+        color: var(--ph-text);
+      }
+
+      .dd-room-compact .dd-page-header-home ha-icon {
+        --mdc-icon-size: 21px;
+        width: 21px;
+        height: 21px;
+      }
+
+      .home-custom-cards-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .home-custom-card.is-wide {
+        grid-column: auto;
+      }
+
+      .area-view .mobile-todo-list-card {
+        grid-column: 1 / -1 !important;
+      }
+    }
   `;
 
   connectedCallback() {
@@ -17512,6 +17674,14 @@ copy{
   }
 
   private _statusCardTitle(domain: DomainCount): string {
+    if (domain.domain === 'cover' && domain.deviceClass === 'window') {
+      const label = this._statusPair('status.window_open');
+      return domain.count === 1 ? label.singular : label.plural;
+    }
+    if (domain.domain === 'cover' && domain.deviceClass === 'door') {
+      const label = this._statusPair('status.door_open');
+      return domain.count === 1 ? label.singular : label.plural;
+    }
     if (domain.domain === 'cover') return domain.name;
     const activeLabel = this._statusCardActiveLabel(domain);
     if (activeLabel) {
@@ -17846,7 +18016,7 @@ copy{
             cards,
             entry => entry.id,
             entry => html`
-              <div class="home-custom-card">
+              <div class="home-custom-card ${this._customCardNeedsWideLayout(entry.card) ? 'is-wide' : ''}">
                 <dwains-dashboard-next-card-host
                   eager
                   .hass=${this.hass}
@@ -18063,7 +18233,9 @@ copy{
     ].filter(card => card !== nothing);
 
     const openPrimarySlots = Math.max(0, 3 - primaryCards.length);
-    const promotedStatusCount = Math.min(visibleDomains.length, openPrimarySlots * 2);
+    const promotedStatusCount = primaryCards.length > 0
+      ? Math.min(visibleDomains.length, openPrimarySlots * 2)
+      : 0;
     const promotedStatuses = visibleDomains.slice(0, promotedStatusCount);
     const remainingStatuses = visibleDomains.slice(promotedStatusCount);
     const promotedStacks = Array.from({ length: Math.ceil(promotedStatuses.length / 2) }, (_, index) =>
@@ -18127,7 +18299,7 @@ copy{
         </div>
 
         ${remainingStatuses.length ? html`
-          <div class="home-status-secondary-grid">
+          <div class="home-status-secondary-grid ${primaryCards.length ? '' : 'is-only-row'}">
             ${remainingStatuses.map(renderStatusCard)}
           </div>
         ` : nothing}
@@ -18961,9 +19133,12 @@ copy{
     const state = this._getEffectiveEntityState(rawState);
     const domain = entityId.split('.')[0] || 'unknown';
     const deviceClass = state.attributes?.device_class;
-    const name = state.attributes?.friendly_name || registry?.name || entityId;
+    const rawName = state.attributes?.friendly_name || registry?.name || entityId;
     const formattedState = this._favoriteDisplayState(state, domain);
     const areaName = this._entityAreaName(entityId);
+    const name = this.config?.settings?.hide_area_name_in_entity_names === true && areaName
+      ? stripAreaNameFromEntityName(rawName, areaName)
+      : rawName;
     const icon = registry?.icon || state.attributes?.icon || getDeviceClassIcon(domain, deviceClass) || getDomainIcon(domain);
     const activeState = this._favoriteActiveState(state, domain);
     const supportsToggle = this._favoriteSupportsQuickToggle(domain);
@@ -19001,7 +19176,7 @@ copy{
         </div>
         <div class="favorite-body">
           <div
-            class="favorite-name ${name.length > 24 ? 'is-very-long' : name.length > 18 ? 'is-long' : ''}"
+            class="favorite-name"
             title=${name}
           >${name}</div>
           <div class="favorite-meta">
@@ -19634,6 +19809,7 @@ copy{
                   <div class="dd-page-header-copy">
                     <div class="dd-page-header-title-row">
                       ${homeButton}
+                      <ha-icon class="dd-page-header-title-chevron" icon="mdi:chevron-right" aria-hidden="true"></ha-icon>
                       <h1 class="dd-page-header-title">${area.name}</h1>
                     </div>
                     <div class="dd-page-header-subtitle">
@@ -19787,6 +19963,7 @@ copy{
     const classes = {
       'dd-custom-card-wrap': true,
       'dd-grid-full': entry.card?.grid_options?.columns === 'full',
+      'dd-grid-wide': this._customCardNeedsWideLayout(entry.card),
       editing: this._editMode,
       dragging,
       'drag-over': dragOver,
@@ -19819,6 +19996,18 @@ copy{
     `;
   }
 
+  private _customCardNeedsWideLayout(card: any): boolean {
+    const type = String(card?.type || '').replace(/^custom:/, '');
+    return [
+      'todo-list',
+      'calendar',
+      'map',
+      'history-graph',
+      'statistics-graph',
+      'logbook',
+    ].includes(type);
+  }
+
   private _customCardGridStyle(card: any): Record<string, string> {
     const options = card?.grid_options;
     if (!options || typeof options !== 'object') return {};
@@ -19847,12 +20036,20 @@ copy{
   ): NormalizedAreaCustomCard[] {
     const placement = this._customCardPlacementInDomain(groupKey, slotIndex);
     const legacyAfterPlacement = this._customCardPlacementAfter(groupKey);
+    const legacyCoverGroup = groupKey === 'cover_openings' ? 'cover' : undefined;
 
     return this._getAreaCustomCards(areaId).filter(entry => {
       if (entry.placement === placement) return true;
       const domainPlacementIndex = this._domainCustomCardPlacementIndex(entry.placement, groupKey);
       if (slotIndex === entityCount && domainPlacementIndex !== undefined && domainPlacementIndex > entityCount) {
         return true;
+      }
+      if (legacyCoverGroup) {
+        const legacyPlacement = this._customCardPlacementInDomain(legacyCoverGroup, slotIndex);
+        if (entry.placement === legacyPlacement) return true;
+        const legacyIndex = this._domainCustomCardPlacementIndex(entry.placement, legacyCoverGroup);
+        if (slotIndex === entityCount && legacyIndex !== undefined && legacyIndex > entityCount) return true;
+        if (slotIndex === entityCount && entry.placement === this._customCardPlacementAfter(legacyCoverGroup)) return true;
       }
       return slotIndex === entityCount && entry.placement === legacyAfterPlacement;
     });
@@ -20565,6 +20762,7 @@ copy{
         groupKey = entry.placement.slice('after:'.length);
       }
 
+      if (groupKey === 'cover') groupKey = 'cover_openings';
       if (groupKey && !groupKeys.includes(groupKey)) groupKeys.push(groupKey);
     });
 
@@ -20586,7 +20784,7 @@ copy{
       if (!grouped[groupKey]) grouped[groupKey] = [];
     });
 
-    const order = ['light', 'switch', 'cover', 'climate', 'todo', 'scene', 'event', 'motion', 'binary_sensor', 'sensor', 'media_player', 'fan', 'lock', 'camera', 'vacuum'];
+    const order = ['light', 'switch', 'cover_openings', 'cover_shading', 'climate', 'todo', 'scene', 'event', 'motion', 'binary_sensor', 'sensor', 'media_player', 'fan', 'lock', 'camera', 'vacuum'];
 
     return Object.entries(grouped)
       .sort(([a], [b]) => {
@@ -20610,6 +20808,9 @@ copy{
     const groupIndex = (groupKey: string): number | undefined => {
       const direct = configuredOrder.indexOf(groupKey);
       if (direct >= 0) return direct;
+      if ((groupKey === 'cover_openings' || groupKey === 'cover_shading') && configuredOrder.includes('cover')) {
+        return configuredOrder.indexOf('cover');
+      }
 
       if ((AREA_STRATEGY_GROUPS as readonly string[]).includes(groupKey)) {
         const legacy = configuredOrder.indexOf(getLegacyAreaGroupKey(groupKey as AreaStrategyGroup));
@@ -20651,10 +20852,13 @@ copy{
         const bGroup = this._mobileEntityTypeKey(b.entity_id);
         if (aGroup === bGroup && aGroup) {
           const directOptions = areaOptions?.groups_options?.[aGroup];
+          const formerCoverOptions = (aGroup === 'cover_openings' || aGroup === 'cover_shading')
+            ? areaOptions?.groups_options?.cover
+            : undefined;
           const legacyOptions = (AREA_STRATEGY_GROUPS as readonly string[]).includes(aGroup)
             ? areaOptions?.groups_options?.[getLegacyAreaGroupKey(aGroup as AreaStrategyGroup)]
             : undefined;
-          const groupOrder = directOptions?.order || legacyOptions?.order || [];
+          const groupOrder = directOptions?.order || formerCoverOptions?.order || legacyOptions?.order || [];
           const aIndex = groupOrder.indexOf(a.entity_id);
           const bIndex = groupOrder.indexOf(b.entity_id);
           if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
@@ -20901,7 +21105,9 @@ copy{
     const storageGroup = useMobileGroup ? groupKey : Array.from(strategyGroups)[0] || groupKey;
     const areaOptions = this.config?.areas_options?.[areaId];
     const groupsOptions = areaOptions?.groups_options || {};
-    const groupOptions = groupsOptions[storageGroup] || {};
+    const groupOptions = groupsOptions[storageGroup] ||
+      ((storageGroup === 'cover_openings' || storageGroup === 'cover_shading') ? groupsOptions.cover : undefined) ||
+      {};
     const editableEntities = this._getEditableAreaEntities(areaId);
     const eligibleEntityIds = editableEntities
       .filter(entity => useMobileGroup
@@ -20983,11 +21189,21 @@ copy{
   }
 
   private _mobileGroupName(key: string): string {
+    if (key === 'cover_openings') {
+      return `${getDeviceClassName(this.hass, 'window')} & ${getDeviceClassName(this.hass, 'door')}`;
+    }
+    if (key === 'cover_shading') {
+      return String(this.hass?.language || this.hass?.locale?.language || '').toLowerCase().startsWith('de')
+        ? 'Beschattung'
+        : 'Shading';
+    }
     return getDomainName(this.hass, key);
   }
 
   private _mobileGroupIcon(key: string): string {
     if (key === 'motion') return 'mdi:motion-sensor';
+    if (key === 'cover_openings') return 'mdi:door-open';
+    if (key === 'cover_shading') return 'mdi:blinds-horizontal';
     return getDomainIcon(key);
   }
 
@@ -21837,6 +22053,14 @@ copy{
     return deviceIds.size;
   }
 
+  private _isEntityRegistryExcluded(entityId: string): boolean {
+    const registry = this.hass.entities?.[entityId] as any;
+    if (registry?.hidden_by || registry?.disabled_by || registry?.entity_category === 'config') return true;
+    if (registry?.entity_category !== 'diagnostic') return false;
+    const deviceClass = String(this.hass.states?.[entityId]?.attributes?.device_class || '').toLowerCase();
+    return !['battery', 'battery_charging'].includes(deviceClass);
+  }
+
   private _getAreaEntities(areaId: string): EntityConfig[] {
     // Check cache first
     const cached = this._areaEntitiesCache.get(areaId);
@@ -21862,11 +22086,7 @@ copy{
         if (entity.area_id === areaId ||
             (entity.device_id && areaDevices.has(entity.device_id))) {
           const registry = this.hass.entities?.[entity.entity_id];
-          if (!this.hass.states[entity.entity_id] ||
-              registry?.hidden_by ||
-              (registry as any)?.disabled_by ||
-              registry?.entity_category === 'diagnostic' ||
-              registry?.entity_category === 'config') {
+          if (!this.hass.states[entity.entity_id] || this._isEntityRegistryExcluded(entity.entity_id)) {
             return;
           }
           entities.push(entity);
@@ -21880,10 +22100,7 @@ copy{
       if (!processedEntities.has(state.entity_id) &&
           state.attributes?.area_id === areaId) {
         const registry = this.hass.entities?.[state.entity_id];
-        if (registry?.hidden_by ||
-            (registry as any)?.disabled_by ||
-            registry?.entity_category === 'diagnostic' ||
-            registry?.entity_category === 'config') {
+        if (this._isEntityRegistryExcluded(state.entity_id)) {
           return;
         }
         entities.push({
@@ -21910,12 +22127,8 @@ copy{
 
     // Always respect HA entity registry visibility and categories
     filteredEntities = filteredEntities.filter(entity => {
-      const registry = this.hass.entities?.[entity.entity_id];
       return Boolean(this.hass.states[entity.entity_id]) &&
-        !(registry?.hidden_by ||
-          (registry as any)?.disabled_by ||
-          registry?.entity_category === 'diagnostic' ||
-          registry?.entity_category === 'config');
+        !this._isEntityRegistryExcluded(entity.entity_id);
     });
 
     // Filter hidden entities if configured
@@ -21950,12 +22163,8 @@ copy{
 
   private _getEditableAreaEntities(areaId: string): EntityConfig[] {
     let entities = this._getAreaEntities(areaId).filter(entity => {
-      const registry = this.hass.entities?.[entity.entity_id];
       return Boolean(this.hass.states[entity.entity_id]) &&
-        !(registry?.hidden_by ||
-          (registry as any)?.disabled_by ||
-          registry?.entity_category === 'diagnostic' ||
-          registry?.entity_category === 'config');
+        !this._isEntityRegistryExcluded(entity.entity_id);
     });
 
     // Area-hidden entities remain in edit mode so they can be enabled again in place.
@@ -21975,8 +22184,7 @@ copy{
     const unknown: string[] = [];
 
     entities = entities.filter(entity => {
-      const registry = this.hass.entities?.[entity.entity_id];
-      return !(registry?.hidden_by || registry?.entity_category === 'diagnostic' || registry?.entity_category === 'config');
+      return !this._isEntityRegistryExcluded(entity.entity_id);
     });
 
     const areaOptions = this.config?.areas_options?.[areaId];
