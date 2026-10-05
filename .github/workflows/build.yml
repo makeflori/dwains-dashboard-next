@@ -160,10 +160,7 @@ jobs:
             fi
           fi
 
-          (cd dist && zip -r ../dwains-dashboard-next.zip .)
-
           gh release create "$TAG" \
-            dwains-dashboard-next.zip \
             --target "$RELEASE_SHA" \
             --title "$TAG" \
             --notes-file "$NOTES_FILE"
