@@ -10,6 +10,7 @@ import {
   areaEntityDeviceLabel,
   getAreaGroupedEntities,
   getAreaGroupedEntitiesFromConfig,
+  getAreaEntityGroupKey,
   resolveAreaSortMode,
   sortAreas,
   stripAreaFromEntityName,
@@ -240,6 +241,7 @@ describe('area entity grouping', () => {
     entityState('switch.plug', 'on'),
     entityState('sensor.temp', '20'),
     entityState('light.diag', 'on'),
+    entityState('sensor.battery_diag', '87', { device_class: 'battery' }),
     entityState('light.hidden', 'on'),
     entityState('update.firmware', 'off'),
   ];
@@ -247,8 +249,22 @@ describe('area entity grouping', () => {
     states.map((state) => [state.entity_id, { entity_id: state.entity_id, area_id: 'living_room' }])
   ) as Record<string, any>;
   registry['light.diag'].entity_category = 'diagnostic';
+  registry['sensor.battery_diag'].entity_category = 'diagnostic';
   registry['light.hidden'].hidden_by = 'user';
   const hass = hassWithStates(states, { entities: registry });
+
+  it('maps input_boolean helpers into the single switch group', () => {
+    expect(getAreaEntityGroupKey('input_boolean.helper_switch', hass)).toBe('switch');
+    expect(getAreaEntityGroupKey('switch.plug', hass)).toBe('switch');
+  });
+
+  it('keeps diagnostic battery entities hidden like v1.11.0', () => {
+    const grouped = getAreaGroupedEntitiesFromConfig(
+      [{ entity_id: 'sensor.battery_diag' }],
+      hass
+    );
+    expect(Object.values(grouped).flat()).not.toContain('sensor.battery_diag');
+  });
 
   it('groups config entities by domain and device class', () => {
     const grouped = getAreaGroupedEntitiesFromConfig(

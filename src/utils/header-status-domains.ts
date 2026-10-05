@@ -4,6 +4,7 @@ import { ddLocalize } from './localize';
 import { isEntityFromHiddenDevice } from './device-admission';
 import { getAlertIcon, getDeviceClassIcon, getDomainIcon } from './icons';
 import { buildHousePowerUsage } from './power-usage';
+import { isRegistryEntryVisible } from './entity-visibility';
 
 export interface DomainCount {
   domain: string;
@@ -96,7 +97,7 @@ export function getStatusDomains(hass: HomeAssistant, config: any): DomainCount[
 
     // Respect HA entity registry visibility
     const registry = hass.entities?.[entityId];
-    if (registry?.hidden_by) return false;
+    if (!isRegistryEntryVisible(registry)) return false;
 
     // Check state availability
     if (!entityState || (entityState as any).state === 'unavailable') return false;
@@ -164,7 +165,6 @@ export function getStatusDomains(hass: HomeAssistant, config: any): DomainCount[
   });
 
   const coverStatusCounts: Record<string, { total: number; on: number; entities: string[]; deviceClass?: string; statusKind: 'window' | 'door' | 'gate' | 'shading'; name: string; icon: string }> = {};
-  const shadingCoverClasses = new Set(['awning', 'blind', 'curtain', 'shade', 'shutter']);
   const gateCoverClasses = new Set(['garage', 'garage_door', 'gate']);
 
   const addOn = (bucket: { on: number; entities: string[] }, id: string) => {
@@ -212,13 +212,18 @@ export function getStatusDomains(hass: HomeAssistant, config: any): DomainCount[
         name = String(hass?.language || hass?.locale?.language || '').toLowerCase().startsWith('de') ? 'Tore' : 'Gates';
         icon = rawDeviceClass ? getDeviceClassIcon('cover', rawDeviceClass) : 'mdi:gate';
         active = coverState === 'open' || coverState === 'opening' || (hasPosition && currentPositionRaw > 0);
-      } else if (shadingCoverClasses.has(rawDeviceClass)) {
+      } else {
+        // Everything that is not an opening/gate belongs to the same
+        // "Beschattung & Tore" visual group used by the room view. This also
+        // covers template covers without a device_class (e.g. a test blind).
         groupKey = 'shading';
+        deviceClass = rawDeviceClass || undefined;
         name = String(hass?.language || hass?.locale?.language || '').toLowerCase().startsWith('de') ? 'Beschattung' : 'Shading';
         icon = 'mdi:blinds-horizontal';
-        // "Deployed" means the shading is providing cover. For awnings HA's
-        // open direction normally extends the awning; blinds/shutters/curtains
-        // are deployed when they are not fully open/retracted.
+
+        // "Deployed" means the shading is providing cover. HA uses opposite
+        // direction semantics for awnings versus blinds/shutters/curtains.
+        // Unknown covers follow the latter, matching the room grouping.
         active = rawDeviceClass === 'awning'
           ? (coverState === 'open' || coverState === 'opening' || (hasPosition && currentPositionRaw > 0))
           : (coverState === 'closed' || coverState === 'closing' || (hasPosition && currentPositionRaw < 100));

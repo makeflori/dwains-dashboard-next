@@ -118,9 +118,12 @@ export const getDomainColor = (domain: string, deviceClass?: string): string => 
 
     // Blue — controls
     switch: '#2F6FD6',
+    input_boolean: '#2F6FD6',
     lock: '#2F6FD6',
     select: '#2F6FD6',
+    input_select: '#2F6FD6',
     button: '#2F6FD6',
+    input_button: '#2F6FD6',
     remote: '#2F6FD6',
 
     // Orange — openings / mechanics

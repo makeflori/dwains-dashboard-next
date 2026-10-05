@@ -7765,10 +7765,6 @@ which also swallowed pointer events for the new handle. */
         align-self: center !important;
       }
 
-.area-view .mobile-entity-cover{
-        --entity-color: #D66A1F !important;
-      }
-
 .area-view .mobile-cover-actions{
         min-height: 30px !important;
         padding: 2px !important;
@@ -7841,12 +7837,6 @@ which also swallowed pointer events for the new handle. */
 .area-view .mobile-entity-card,
 .area-view .mobile-entities-section.layout-grid .mobile-entity-card{
         align-self: start !important;
-      }
-
-shading and gates. */
-      .area-view .mobile-entity-cover{
-        --entity-color: #E98A3B !important;
-        --favorite-color: #E98A3B !important;
       }
 
 }
