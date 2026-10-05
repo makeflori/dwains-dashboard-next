@@ -1,6 +1,9 @@
 import {
+  mdiArrowDown,
+  mdiArrowUp,
   mdiCardAccountDetailsStarOutline,
   mdiChevronRight,
+  mdiDelete,
   mdiDrag,
   mdiFloorPlan,
   mdiFormatListBulletedType,
@@ -31,6 +34,9 @@ import {
   type AreaStrategyGroup
 } from "../utils/area-entities";
 import { countReplacementRules } from "../utils/blueprint-replacements";
+import { isHiddenAsUnavailable } from "../utils/entity-availability";
+import { resolveStatusEntityAreaId } from "../utils/entity-lookups";
+import { normalizeNowPlayingMode, type NowPlayingMode } from "../utils/now-playing";
 import { getDeviceClassName, getDomainName } from "../utils/domain-names";
 import { getDeviceClassIcon, getDomainColor, getDomainIcon } from "../utils/icons";
 import { ddLocale, ddLocalize, ddLocalizePlural } from "../utils/localize";
@@ -43,6 +49,19 @@ import {
   normalizeHiddenHomeSections,
   normalizeHomeSectionsOrder,
 } from "../utils/home-sections";
+import {
+  addHomeScene,
+  filterHomeSceneCandidates,
+  homeSceneDomain,
+  moveHomeScene,
+  normalizeHomeScenes,
+  pickableHomeSceneIds,
+  removeHomeScene,
+  type HomeSceneCandidate,
+} from "../utils/home-scenes";
+import { getEntityRegistry } from "../utils/entity-registry";
+import { dashboardSegmentFromPath, readWallTabletPrefs } from "../utils/wall-tablet";
+import "./dwains-wall-tablet-settings";
 import { DD_NEXT_VERSION } from "../version";
 import {
   MASTER_ACTION_CONFIRMATION_DOMAINS,
@@ -63,7 +82,8 @@ type SettingsPageKey =
   | "favorites"
   | "replacements"
   | "permissions"
-  | "support";
+  | "support"
+  | "wall_tablet";
 
 interface SettingsPageItem {
   page: Exclude<SettingsPageKey, "overview">;
@@ -252,10 +272,16 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _alarmSearchFilter = '';
 
   @state()
+  private _showHomeScenePicker = false;
+
+  @state()
+  private _homeSceneSearch = '';
+
+  @state()
   private _settingsPage: SettingsPageKey = "overview";
 
   @state()
-  private _homeSettingsDetail: 'overview' | 'house_information' | 'climate' | 'outdoor_climate' | 'cameras' | 'custom_cards' = 'overview';
+  private _homeSettingsDetail: 'overview' | 'house_information' | 'climate' | 'outdoor_climate' | 'cameras' | 'custom_cards' | 'scenes' = 'overview';
 
   // Dashboard-eigenschappen (naam + sidebar-icoon)
   @state() private _dashboardId?: string;
@@ -658,6 +684,17 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           : this._t('settings.default_access'),
       },
       {
+        page: "wall_tablet",
+        group: "behavior",
+        icon: "mdi:tablet-dashboard",
+        color: "#64748b",
+        title: this._t('kiosk.title'),
+        description: this._t('kiosk.description'),
+        summary: readWallTabletPrefs(dashboardSegmentFromPath(window.location.pathname)).enabled
+          ? this._t('kiosk.summary_on')
+          : this._t('kiosk.summary_off'),
+      },
+      {
         page: "support",
         group: "support",
         icon: "mdi:heart",
@@ -919,6 +956,13 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         return this._renderPermissionsSettingsPanel();
       case "support":
         return this._renderSupportSection();
+      case "wall_tablet":
+        return this._renderSettingsPanel(
+          "mdi:tablet-dashboard",
+          this._t('kiosk.title'),
+          this._t('kiosk.panel_description'),
+          html`<dwains-dashboard-next-wall-tablet-settings .hass=${this.hass}></dwains-dashboard-next-wall-tablet-settings>`
+        );
       default:
         return nothing;
     }
@@ -937,6 +981,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       case "replacements": return this._t('settings.blueprint_replacements');
       case "permissions": return this._t('settings.user_permissions');
       case "support": return this._t('settings.support');
+      case "wall_tablet": return this._t('kiosk.title');
       default: return "";
     }
   }
@@ -1079,6 +1124,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     if (section === 'devices') return 'house_information';
     if (section === 'cameras') return 'cameras';
     if (section === 'custom_cards') return 'custom_cards';
+    if (section === 'scenes') return 'scenes';
     return undefined;
   }
 
@@ -2221,6 +2267,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       if (!sectionIsOpen(section)) return nothing;
       if (section === 'cameras') return this._renderHomeCameraSettings();
       if (section === 'custom_cards') return this._renderHomeCustomCardsSettings();
+      if (section === 'scenes') return this._renderHomeScenesSettings();
       if (section === 'devices') {
         return html`<div class="dd-home-house-information">${this._renderHomeInformationCardSettings()}</div>`;
       }
