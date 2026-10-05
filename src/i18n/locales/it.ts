@@ -1,6 +1,7 @@
-import type { TranslationDictionary } from './en';
+import { en, type TranslationDictionary } from './en';
 
 export const it = {
+  ...en,
   'common.save': 'Salva',
   'common.back': 'Indietro',
   'common.close': 'Chiudi',
