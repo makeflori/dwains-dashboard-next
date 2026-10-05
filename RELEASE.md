@@ -46,3 +46,5 @@ Dwains Dashboard Next follows semantic versioning.
 - Keep the v1.11.0 bootstrap strategy imports static in `src/index.ts`; do not move dashboard/view strategy loading back to dynamic imports without an explicit compatibility review.
 
 - The generated entry must retain the v1.11.0-style static bootstrap chunk (`./chunks/index-*.js`) rather than directly dynamically importing all runtime strategy/UI chunks from the entry file.
+
+- Keep `src/index.ts` as the thin bootstrap loader and keep runtime bootstrap logic in `src/bootstrap.ts` so the built entry preserves the v1.11.0 single static bootstrap-chunk shape.
