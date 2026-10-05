@@ -50,3 +50,4 @@ Dwains Dashboard Next follows semantic versioning.
 - Keep `src/index.ts` as the thin bootstrap loader and keep runtime bootstrap logic in `src/bootstrap.ts` so the built entry preserves the v1.11.0 single static bootstrap-chunk shape.
 - Hotfix: scope legacy room tile styles to entity/type sections so the v1.11 header layout remains intact.
 - Refactor room styling: remove room-ui-v2, keep the v1.11 header isolated, and move room entity/type styles into layout-card-styles.ts.
+- Room/Home UX: keep favorite labels stable, apply area-name hiding to favorites, top-align room headers, split cover grouping/statuses, keep battery diagnostics visible, restore the room breadcrumb, center header icons, replace switch lightning icons, compact imported cards, adapt status rows, and keep room favorites at six columns.
