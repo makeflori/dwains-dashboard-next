@@ -3414,9 +3414,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   }
 
   private _getGroupTitle(group: string): string {
-    if (group === 'motion') {
-      return ddLocale(this.hass).toLowerCase().startsWith('de') ? 'Bewegung' : 'Motion';
-    }
+    const german = ddLocale(this.hass).toLowerCase().startsWith('de');
+    if (group === 'cover_openings') return german ? 'Fenster & Türen' : 'Windows & doors';
+    if (group === 'cover_shading') return german ? 'Beschattung & Tore' : 'Shading & gates';
+    if (group === 'motion') return german ? 'Bewegung & Präsenz' : 'Motion & presence';
+    if (group === 'safety') return german ? 'Sicherheit & Warnmelder' : 'Safety & alarms';
     return getDomainName(this.hass, group);
   }
 
@@ -3435,9 +3437,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   }
 
   private _getAreaStrategyGroupColor(group: AreaStrategyGroup): string {
-    return group === 'motion'
-      ? getDomainColor('binary_sensor', 'motion')
-      : getDomainColor(group);
+    if (group === 'cover_openings') return getDomainColor('binary_sensor', 'opening');
+    if (group === 'cover_shading') return getDomainColor('cover');
+    if (group === 'motion') return getDomainColor('binary_sensor', 'motion');
+    if (group === 'safety') return getDomainColor('binary_sensor', 'smoke');
+    return getDomainColor(group);
   }
 
   private _resetAreaEntitySettings = (): void => {
