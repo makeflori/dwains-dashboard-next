@@ -687,7 +687,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         page: "wall_tablet",
         group: "behavior",
         icon: "mdi:tablet-dashboard",
-        color: "#64748b",
+        color: "#0f9f8f",
         title: this._t('kiosk.title'),
         description: this._t('kiosk.description'),
         summary: readWallTabletPrefs(dashboardSegmentFromPath(window.location.pathname)).enabled
@@ -763,7 +763,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   public _restoreSettingsNavigation(page: string, areaId?: string): void {
     const validPages: SettingsPageKey[] = [
       "overview", "dashboard", "home", "header", "controls", "devices",
-      "people", "areas", "favorites", "replacements", "permissions", "support"
+      "people", "areas", "favorites", "replacements", "permissions", "wall_tablet", "support"
     ];
     const nextPage = validPages.includes(page as SettingsPageKey)
       ? page as SettingsPageKey
