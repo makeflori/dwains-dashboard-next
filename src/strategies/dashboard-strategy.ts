@@ -9,13 +9,19 @@ import type {
   FloorConfig,
   DwainsDashboardConfig
 } from '../types/strategy';
-import { ddLocalize } from '../utils/localize';
+import { ddLang, ddLocalize } from '../utils/localize';
+import { loadTranslations } from '../i18n';
+import { setFullEntityRegistry } from '../utils/entity-registry';
 import { restrictNonAdminDashboardSettings } from '../utils/security';
+import { getEnergyPowerConfig } from '../utils/energy-prefs';
 
 export class DwainsDashboardStrategy implements LovelaceStrategy {
   async generate(config: LovelaceStrategyConfig, hass: HomeAssistant): Promise<LovelaceConfig> {
-    console.log('Dwains Dashboard Next Strategy');
-    console.log('Config received:', config);
+    // Start loading the energy settings (house power total) in the
+    // background, so they are usually known before the first render.
+    getEnergyPowerConfig(hass);
+
+    await loadTranslations(ddLang(hass));
 
     // Fetch data from Home Assistant
     const [areas, devices, entities, floors] = await Promise.all([
@@ -25,33 +31,10 @@ export class DwainsDashboardStrategy implements LovelaceStrategy {
       hass.callWS<{ floor_id: string; name: string; icon: string | null; level: number }[]>({ type: 'config/floor_registry/list' }).catch(() => [])
     ]);
 
-    console.log(`Found ${areas.length} areas, ${devices.length} devices, ${entities.length} entities, ${floors.length} floors`);
-
-    // Debug: Check devices area assignments
-    console.log('Devices met area_id:', devices.filter(d => d.area_id).map(d => ({
-      name: d.name,
-      id: d.id,
-      area_id: d.area_id
-    })));
-
-    console.log('Devices zonder area_id count:', devices.filter(d => !d.area_id).length);
-
-    // Debug: Check entity-to-area resolution
-    const entitiesWithResolvedAreas = entities.map(entity => {
-      const directAreaId = entity.area_id;
-      const deviceAreaId = entity.device_id ? devices.find(d => d.id === entity.device_id)?.area_id : null;
-      const resolvedAreaId = directAreaId || deviceAreaId;
-      return {
-        entity_id: entity.entity_id,
-        direct_area_id: directAreaId,
-        device_id: entity.device_id,
-        device_area_id: deviceAreaId,
-        resolved_area_id: resolvedAreaId
-      };
-    });
-
-    console.log('Entities met resolved area_id:', entitiesWithResolvedAreas.filter(e => e.resolved_area_id).slice(0, 10));
-    console.log('Entities zonder resolved area_id count:', entitiesWithResolvedAreas.filter(e => !e.resolved_area_id).length);
+    // Keep the full entity registry for Dwains Dashboard itself. hass.areas,
+    // hass.devices and hass.floors from Home Assistant are already complete,
+    // and hass is shared with the rest of Home Assistant, so it is not changed.
+    setFullEntityRegistry(entities);
 
     // Convert to our config format
     const areaConfigs: AreaConfig[] = areas.map(area => ({
@@ -96,6 +79,8 @@ export class DwainsDashboardStrategy implements LovelaceStrategy {
       areas_options: config.areas_options,
       // Pass through favorites configuration
       favorites: config.favorites || [],
+      // Pass through Lovelace cards added to the Home page
+      home_custom_cards: config.home_custom_cards || [],
       // Pass through blueprint-pagina's
       pages: config.pages || [],
       // Pass through replace-card blueprints
