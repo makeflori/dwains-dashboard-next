@@ -4,6 +4,12 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+    inputs:
+      publish_release:
+        description: 'Publish a new fork release from dev'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -37,11 +43,8 @@ jobs:
         shell: bash
         run: |
           SHOULD_RELEASE=false
-          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/dev" ]]; then
-            MESSAGE=$(git log -1 --pretty=%s)
-            if [[ ! "$MESSAGE" =~ ^Build\ (dev\ )?release\ v ]]; then
-              SHOULD_RELEASE=true
-            fi
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.ref }}" == "refs/heads/dev" && "${{ inputs.publish_release }}" == "true" ]]; then
+            SHOULD_RELEASE=true
           fi
           echo "should_release=$SHOULD_RELEASE" >> "$GITHUB_OUTPUT"
 
