@@ -36,6 +36,7 @@ import './dwains-now-playing-bar';
 import { formatEntityStateWithUnit, formatValueWithUnit } from '../utils/unit-format';
 import { stripAreaNameFromEntityName } from '../utils/entity-names';
 import { pageHeaderStyles } from './styles/page-header-styles';
+import { roomAreaStyles } from './styles/layout-card-styles';
 import { showDomainEntitiesDialog } from './utils/show-domain-entities-dialog';
 import { showCardEditorDialog } from './utils/show-card-editor-dialog';
 import { ensureBottomNav } from './dwains-bottom-nav';
@@ -512,16 +513,16 @@ export class DwainsLayoutCard extends LitElement {
   }
 
   static override styles = css`
-    dwains-dashboard-next-now-playing.inline {
+    dwains-dashboard-next-now-playing.inline{
       display: block;
       margin: 0 0 18px;
     }
-    .room-header dwains-dashboard-next-area-thermostat {
+    .room-header dwains-dashboard-next-area-thermostat{
       flex: 0 1 320px;
       min-width: 220px;
     }
     @media (max-width: 768px) {
-      dwains-dashboard-next-now-playing.floating {
+      dwains-dashboard-next-now-playing.floating{
         position: fixed;
         left: max(12px, env(safe-area-inset-left, 0px));
         right: max(12px, env(safe-area-inset-right, 0px));
@@ -531,16 +532,16 @@ export class DwainsLayoutCard extends LitElement {
         margin: 0 auto;
       }
       .layout-container.has-floating-now-playing .home-view,
-      .layout-container.has-floating-now-playing .content-area.area-content-area {
+.layout-container.has-floating-now-playing .content-area.area-content-area{
         padding-bottom: calc(190px + env(safe-area-inset-bottom, 0px));
       }
-      .room-header dwains-dashboard-next-area-thermostat {
+      .room-header dwains-dashboard-next-area-thermostat{
         width: 100%;
         min-width: 0;
         flex-basis: 100%;
       }
     }
-    :host {
+    :host{
       display: block;
       height: 100%;
       max-height: 100%;
@@ -552,33 +553,33 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     button,
-    .area-button,
-    .home-status-card,
-    .status-card-compact,
-    .mobile-area-card,
-    .house-person-mini,
-    .person-card,
-    .favorite-card-wrapper,
-    .favorite-quick-action,
-    .mobile-domain-master,
-    .mobile-layout-toggle,
-    .mobile-entity-card,
-    .mobile-entity-action,
-    .mobile-cover-action,
-    .mobile-entity-toggle,
-    .area-badge,
-    .area-quick-control,
-    .dd-edit-toggle,
-    .unavailable-entities-icon,
-    .dd-add-card,
-    .dd-custom-card-wrap.editing {
+.area-button,
+.home-status-card,
+.status-card-compact,
+.mobile-area-card,
+.house-person-mini,
+.person-card,
+.favorite-card-wrapper,
+.favorite-quick-action,
+.mobile-domain-master,
+.mobile-layout-toggle,
+.mobile-entity-card,
+.mobile-entity-action,
+.mobile-cover-action,
+.mobile-entity-toggle,
+.area-badge,
+.area-quick-control,
+.dd-edit-toggle,
+.unavailable-entities-icon,
+.dd-add-card,
+.dd-custom-card-wrap.editing{
       user-select: none;
       -webkit-user-select: none;
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
     }
 
-    .dd-static-icon {
+    .dd-static-icon{
       width: 20px;
       height: 20px;
       display: block;
@@ -588,31 +589,31 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .mobile-area-card,
-    .home-camera-card,
-    .home-summary-card,
-    .home-status-card,
-    .favorite-card-wrapper {
+.home-camera-card,
+.home-summary-card,
+.home-status-card,
+.favorite-card-wrapper{
       contain: layout style paint;
     }
 
     .mobile-home-section,
-    .home-camera-section,
-    .home-status-section,
-    .home-todos-section,
-    .home-custom-cards-section,
-    .home-favorites-section,
-    .home-summaries-section,
-    .mobile-domain-group {
+.home-camera-section,
+.home-status-section,
+.home-todos-section,
+.home-custom-cards-section,
+.home-favorites-section,
+.home-summaries-section,
+.mobile-domain-group{
       content-visibility: auto;
       contain-intrinsic-size: 1px 360px;
     }
 
-    .mobile-entities-section.layout-grid .mobile-entity-card {
+    .mobile-entities-section.layout-grid .mobile-entity-card{
       content-visibility: auto;
       contain-intrinsic-size: 164px 150px;
     }
 
-    :host {
+    :host{
       display: block;
       height: calc(100dvh - var(--header-height, 56px));
       min-height: 0;
@@ -620,7 +621,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     /* Layout Container */
-    .layout-container {
+    .layout-container{
       --area-sidebar-width: 250px;
       display: flex;
       height: 100%;
@@ -631,13 +632,13 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .layout-container.sidebar-resizing,
-    .layout-container.sidebar-resizing * {
+.layout-container.sidebar-resizing *{
       cursor: col-resize !important;
       user-select: none !important;
       -webkit-user-select: none !important;
     }
 
-    .layout-container.sidebar-collapsed .sidebar {
+    .layout-container.sidebar-collapsed .sidebar{
       width: 0;
       flex-basis: 0;
       border-right: 0;
@@ -646,12 +647,12 @@ export class DwainsLayoutCard extends LitElement {
       transform: translateX(-16px);
     }
 
-    .layout-container.sidebar-collapsed .main-content {
+    .layout-container.sidebar-collapsed .main-content{
       min-width: 0;
     }
 
     /* Sidebar Styles */
-    .sidebar {
+    .sidebar{
       width: var(--area-sidebar-width);
       flex: 0 0 var(--area-sidebar-width);
       background: var(--card-background-color);
@@ -670,11 +671,11 @@ export class DwainsLayoutCard extends LitElement {
       -webkit-overflow-scrolling: touch;
     }
 
-    .layout-container.sidebar-resizing .sidebar {
+    .layout-container.sidebar-resizing .sidebar{
       transition: none;
     }
 
-    .sidebar-resize-handle {
+    .sidebar-resize-handle{
       flex: 0 0 10px;
       width: 10px;
       align-self: stretch;
@@ -689,7 +690,7 @@ export class DwainsLayoutCard extends LitElement {
       touch-action: none;
     }
 
-    .sidebar-resize-handle::before {
+    .sidebar-resize-handle::before{
       content: '';
       position: absolute;
       top: 14px;
@@ -702,17 +703,17 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .sidebar-resize-handle:hover::before,
-    .sidebar-resize-handle:focus-visible::before,
-    .layout-container.sidebar-resizing .sidebar-resize-handle::before {
+.sidebar-resize-handle:focus-visible::before,
+.layout-container.sidebar-resizing .sidebar-resize-handle::before{
       background: var(--primary-color);
       box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary-color) 12%, transparent);
     }
 
-    .sidebar-resize-handle:focus-visible {
+    .sidebar-resize-handle:focus-visible{
       outline: none;
     }
 
-    .sidebar-collapse-toggle {
+    .sidebar-collapse-toggle{
       position: absolute;
       top: 50%;
       left: calc(var(--area-sidebar-width) - 17px);
@@ -740,23 +741,23 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow 0.16s ease;
     }
 
-    .sidebar-collapse-toggle:hover {
+    .sidebar-collapse-toggle:hover{
       background: color-mix(in srgb, var(--primary-color) 10%, var(--card-background-color));
       box-shadow:
         0 12px 28px rgba(15, 23, 42, 0.16),
         inset 0 1px 0 rgba(255, 255, 255, 0.62);
     }
 
-    .sidebar-collapse-toggle:focus-visible {
+    .sidebar-collapse-toggle:focus-visible{
       outline: 2px solid var(--primary-color);
       outline-offset: 3px;
     }
 
-    .sidebar-collapse-toggle ha-icon {
+    .sidebar-collapse-toggle ha-icon{
       --mdc-icon-size: 18px;
     }
 
-    .sidebar-collapse-toggle.is-collapsed {
+    .sidebar-collapse-toggle.is-collapsed{
       left: 0;
       top: 50%;
       width: 34px;
@@ -772,19 +773,19 @@ export class DwainsLayoutCard extends LitElement {
         inset 0 1px 0 rgba(255, 255, 255, 0.56);
     }
 
-    .sidebar-collapse-label {
+    .sidebar-collapse-label{
       display: none;
       font-size: 13px;
       font-weight: 850;
       line-height: 1;
     }
 
-    .sidebar-collapse-toggle.is-collapsed .sidebar-collapse-label {
+    .sidebar-collapse-toggle.is-collapsed .sidebar-collapse-label{
       display: inline;
     }
 
     /* Main Content */
-    .main-content {
+    .main-content{
       flex: 1;
       min-width: 0;
       min-height: 0;
@@ -794,7 +795,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     /* Global Header */
-    .global-header {
+    .global-header{
       background: var(--card-background-color);
       border-bottom: 1px solid var(--divider-color);
       padding: 16px;
@@ -804,11 +805,11 @@ export class DwainsLayoutCard extends LitElement {
       transition: all 0.3s ease;
     }
 
-    .global-header.compact {
+    .global-header.compact{
       padding: 8px 16px;
     }
 
-    .header-content {
+    .header-content{
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -816,7 +817,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     /* Time and Weather Section (right side) */
-    .header-time-weather {
+    .header-time-weather{
       display: flex;
       flex-direction: column;
       align-items: flex-end;
@@ -824,7 +825,7 @@ export class DwainsLayoutCard extends LitElement {
       min-width: 120px;
     }
 
-    .header-time-section {
+    .header-time-section{
       display: flex;
       flex-direction: column;
       align-items: flex-end;
@@ -832,7 +833,7 @@ export class DwainsLayoutCard extends LitElement {
       line-height: 0.8;
     }
 
-    .header-time {
+    .header-time{
       font-size: 24px;
       font-weight: 700;
       color: var(--primary-text-color);
@@ -840,7 +841,7 @@ export class DwainsLayoutCard extends LitElement {
       line-height: 1.2;
     }
 
-    .header-date {
+    .header-date{
       font-size: 14px;
       opacity: 0.8;
       color: var(--secondary-text-color);
@@ -848,7 +849,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     /* Weather Display */
-    .weather-compact {
+    .weather-compact{
       display: flex;
       align-items: center;
       gap: 8px;
@@ -859,28 +860,28 @@ export class DwainsLayoutCard extends LitElement {
       transition: all 0.2s ease;
     }
 
-    .weather-compact:hover {
+    .weather-compact:hover{
       background: var(--primary-color);
       color: var(--text-primary-color);
       transform: translateY(-1px);
     }
 
-    .weather-icon-compact ha-icon {
+    .weather-icon-compact ha-icon{
       --mdc-icon-size: 24px;
     }
 
-    .weather-temp-compact {
+    .weather-temp-compact{
       font-size: 14px;
       font-weight: 500;
     }
 
     /* Status Cards Section */
-    .header-status-section {
+    .header-status-section{
       flex: 1;
       overflow: hidden;
     }
 
-    .header-status-scroll {
+    .header-status-scroll{
       display: flex;
       gap: 8px;
       overflow-x: auto;
@@ -888,12 +889,12 @@ export class DwainsLayoutCard extends LitElement {
       -ms-overflow-style: none;
     }
 
-    .header-status-scroll::-webkit-scrollbar {
+    .header-status-scroll::-webkit-scrollbar{
       display: none;
     }
 
     /* Status Card Compact */
-    .status-card-compact {
+    .status-card-compact{
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -906,12 +907,12 @@ export class DwainsLayoutCard extends LitElement {
       position: relative;
     }
 
-    .status-card-compact:hover {
+    .status-card-compact:hover{
       transform: translateY(-2px);
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
-    .status-card-icon-compact {
+    .status-card-icon-compact{
       position: relative;
       width: 40px;
       height: 40px;
@@ -922,12 +923,12 @@ export class DwainsLayoutCard extends LitElement {
       background: color-mix(in srgb, var(--primary-color) 10%, transparent);
     }
 
-    .status-card-icon-compact ha-icon {
+    .status-card-icon-compact ha-icon{
       --mdc-icon-size: 20px;
       color: var(--primary-color);
     }
 
-    .status-card-badge-compact {
+    .status-card-badge-compact{
       position: absolute;
       top: -4px;
       right: -4px;
@@ -941,55 +942,55 @@ export class DwainsLayoutCard extends LitElement {
       text-align: center;
     }
 
-    .status-card-title-compact {
+    .status-card-title-compact{
       font-size: 11px;
       margin-top: 4px;
       opacity: 0.8;
     }
 
     /* Domain-specific status card colors */
-    .status-card-compact.light .status-card-icon-compact {
+    .status-card-compact.light .status-card-icon-compact{
       background: color-mix(in srgb, var(--status-color, #e1a129) 15%, transparent);
     }
 
-    .status-card-compact.light ha-icon {
+    .status-card-compact.light ha-icon{
       color: var(--status-color, #e1a129);
     }
 
-    .status-card-compact.switch .status-card-icon-compact {
+    .status-card-compact.switch .status-card-icon-compact{
       background: color-mix(in srgb, var(--status-color, #2f6fd6) 15%, transparent);
     }
 
-    .status-card-compact.switch ha-icon {
+    .status-card-compact.switch ha-icon{
       color: var(--status-color, #2f6fd6);
     }
 
-    .status-card-compact.binary_sensor .status-card-icon-compact {
+    .status-card-compact.binary_sensor .status-card-icon-compact{
       background: color-mix(in srgb, var(--status-color, #6d7891) 15%, transparent);
     }
 
-    .status-card-compact.binary_sensor ha-icon {
+    .status-card-compact.binary_sensor ha-icon{
       color: var(--status-color, #6d7891);
     }
 
-    .status-card-compact.person .status-card-icon-compact {
+    .status-card-compact.person .status-card-icon-compact{
       background: color-mix(in srgb, var(--status-color, #6d7891) 15%, transparent);
     }
 
-    .status-card-compact.person ha-icon {
+    .status-card-compact.person ha-icon{
       color: var(--status-color, #6d7891);
     }
 
-    .status-card-compact.wattage .status-card-icon-compact {
+    .status-card-compact.wattage .status-card-icon-compact{
       background: color-mix(in srgb, var(--status-color, #d88e20) 15%, transparent);
     }
 
-    .status-card-compact.wattage ha-icon {
+    .status-card-compact.wattage ha-icon{
       color: var(--status-color, #d88e20);
     }
 
     /* Header Expand Button */
-    .header-expand-button {
+    .header-expand-button{
       position: absolute;
       bottom: -28px;
       left: 50%;
@@ -1008,12 +1009,12 @@ export class DwainsLayoutCard extends LitElement {
       z-index: 5;
     }
 
-    .header-expand-button:hover {
+    .header-expand-button:hover{
       transform: translateX(-50%) translateY(-2px);
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
 
-    .header-expand-button[data-extra-count]::after {
+    .header-expand-button[data-extra-count]::after{
       content: attr(data-extra-count);
       position: absolute;
       right: -8px;
@@ -1030,21 +1031,21 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     /* Area List */
-    .area-list {
+    .area-list{
       padding: 8px;
     }
 
     /* Floor Sections */
-    .floor-section {
+    .floor-section{
       margin-bottom: 16px;
     }
 
-    .floor-header {
+    .floor-header{
       padding: 8px 16px;
       margin-bottom: 8px;
     }
 
-    .floor-header h3 {
+    .floor-header h3{
       margin: 0;
       font-size: 14px;
       font-weight: 600;
@@ -1053,13 +1054,13 @@ export class DwainsLayoutCard extends LitElement {
       letter-spacing: 0.5px;
     }
 
-    .floor-areas {
+    .floor-areas{
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(178px, 1fr));
       gap: 8px;
     }
 
-    .area-button {
+    .area-button{
       box-sizing: border-box;
       display: flex;
       align-items: center;
@@ -1081,23 +1082,23 @@ export class DwainsLayoutCard extends LitElement {
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
 
-    .area-button:hover {
+    .area-button:hover{
       transform: translateY(-2px);
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
     }
 
-    .area-button.selected {
+    .area-button.selected{
       background: var(--primary-color);
       color: var(--text-primary-color);
     }
 
     /* Home button specific styling */
-    .area-button.home-button {
+    .area-button.home-button{
       height: 60px;
     }
 
     /* Background image styles */
-    .area-button.has-picture {
+    .area-button.has-picture{
       position: relative;
       background: var(--secondary-background-color);
       --area-picture-text-color: #ffffff;
@@ -1108,7 +1109,7 @@ export class DwainsLayoutCard extends LitElement {
         linear-gradient(180deg, rgba(11, 17, 28, 0.04), rgba(11, 17, 28, 0.34));
     }
 
-    .area-button.has-picture.text-dark {
+    .area-button.has-picture.text-dark{
       --area-picture-text-color: #ffffff;
       --area-picture-muted-text-color: rgba(255, 255, 255, 0.76);
       --area-picture-text-shadow: 0 2px 10px rgba(0, 0, 0, 0.62);
@@ -1117,7 +1118,7 @@ export class DwainsLayoutCard extends LitElement {
         linear-gradient(180deg, rgba(11, 17, 28, 0.04), rgba(11, 17, 28, 0.34));
     }
 
-    .area-background {
+    .area-background{
       position: absolute;
       top: 0;
       left: 0;
@@ -1130,12 +1131,12 @@ export class DwainsLayoutCard extends LitElement {
       transition: opacity 0.2s ease;
     }
 
-    .area-button.has-picture:hover .area-background {
+    .area-button.has-picture:hover .area-background{
       opacity: 0.8;
     }
 
     /* Area content structure */
-    .area-content {
+    .area-content{
       position: relative;
       z-index: 1;
       display: flex;
@@ -1146,14 +1147,14 @@ export class DwainsLayoutCard extends LitElement {
       justify-content: space-between;
     }
 
-    .area-top-section {
+    .area-top-section{
       display: flex;
       flex-direction: column;
       gap: 2px;
       margin-top: 4px;
     }
 
-    .area-bottom-section {
+    .area-bottom-section{
       display: flex;
       align-items: flex-end;
       justify-content: flex-end;
@@ -1163,13 +1164,13 @@ export class DwainsLayoutCard extends LitElement {
 
     /* Enhanced text styling for picture backgrounds */
     .area-button.has-picture .area-name,
-    .area-button.has-picture .area-sensors {
+.area-button.has-picture .area-sensors{
       text-shadow: var(--area-picture-text-shadow);
       color: var(--area-picture-text-color);
     }
 
     /* Area main icon in sidebar - override home view styling */
-    .sidebar .area-main-icon {
+    .sidebar .area-main-icon{
       position: absolute;
       left: -25px;
       bottom: -25px;
@@ -1183,17 +1184,17 @@ export class DwainsLayoutCard extends LitElement {
       flex-shrink: 0;
     }
 
-    .area-button.selected .area-main-icon {
+    .area-button.selected .area-main-icon{
       background: rgba(255,255,255,0.2);
     }
 
-    .sidebar .area-main-icon ha-icon {
+    .sidebar .area-main-icon ha-icon{
       --mdc-icon-size: 40px;
       color: var(--primary-color);
     }
 
     /* Info badges container */
-    .area-info-badges {
+    .area-info-badges{
       display: flex;
       gap: 4px;
       flex-wrap: wrap;
@@ -1201,7 +1202,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     /* Legacy area-icon styles (still used for simple buttons) */
-    .area-icon {
+    .area-icon{
       width: 32px;
       height: 32px;
       border-radius: 50%;
@@ -1212,20 +1213,20 @@ export class DwainsLayoutCard extends LitElement {
       flex-shrink: 0;
     }
 
-    .area-button.selected .area-icon {
+    .area-button.selected .area-icon{
       background: rgba(255,255,255,0.2);
     }
 
     /* Legacy area-info styles (still used for simple buttons) */
-    .area-info {
+    .area-info{
       flex: 1;
     }
 
-    .area-menu-chevron {
+    .area-menu-chevron{
       display: none;
     }
 
-    .home-notification-shortcut {
+    .home-notification-shortcut{
       box-sizing: border-box;
       position: relative;
       z-index: 2;
@@ -1248,11 +1249,11 @@ export class DwainsLayoutCard extends LitElement {
         0 6px 14px rgba(220, 38, 38, 0.1);
     }
 
-    .home-notification-shortcut ha-icon {
+    .home-notification-shortcut ha-icon{
       --mdc-icon-size: 15px;
     }
 
-    .home-notification-count {
+    .home-notification-count{
       min-width: 17px;
       height: 17px;
       padding: 0 5px;
@@ -1267,20 +1268,20 @@ export class DwainsLayoutCard extends LitElement {
       line-height: 1;
     }
 
-    .area-name {
+    .area-name{
       font-weight: 600;
       font-size: 16px;
       margin-bottom: 2px;
     }
 
-    .area-sensors {
+    .area-sensors{
       font-size: 13px;
       opacity: 0.8;
       font-weight: 500;
     }
 
     /* Legacy area-alerts styles (still used for simple buttons without badges) */
-    .area-alerts {
+    .area-alerts{
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1295,7 +1296,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     /* Content Area */
-    .content-area {
+    .content-area{
       flex: 1;
       min-height: 0;
       overflow-y: auto;
@@ -1306,7 +1307,7 @@ export class DwainsLayoutCard extends LitElement {
       padding: 16px;
     }
 
-    .content-area.settings-content-area {
+    .content-area.settings-content-area{
       padding: 0;
       background:
         linear-gradient(180deg,
@@ -1315,7 +1316,7 @@ export class DwainsLayoutCard extends LitElement {
         var(--primary-background-color);
     }
 
-    .settings-page-view {
+    .settings-page-view{
       width: min(1180px, calc(100% - 32px));
       min-height: 100%;
       margin: 0 auto;
@@ -1323,7 +1324,7 @@ export class DwainsLayoutCard extends LitElement {
       box-sizing: border-box;
     }
 
-    .settings-page-header {
+    .settings-page-header{
       display: grid;
       grid-template-columns: auto minmax(0, 1fr) auto;
       align-items: center;
@@ -1340,8 +1341,8 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .settings-page-back,
-    .settings-secondary,
-    .settings-primary {
+.settings-secondary,
+.settings-primary{
       appearance: none;
       border: 0;
       font: inherit;
@@ -1349,7 +1350,7 @@ export class DwainsLayoutCard extends LitElement {
       -webkit-tap-highlight-color: transparent;
     }
 
-    .settings-page-back {
+    .settings-page-back{
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -1360,15 +1361,15 @@ export class DwainsLayoutCard extends LitElement {
       color: var(--primary-text-color);
     }
 
-    .settings-page-back ha-icon {
+    .settings-page-back ha-icon{
       --mdc-icon-size: 22px;
     }
 
-    .settings-page-title {
+    .settings-page-title{
       min-width: 0;
     }
 
-    .settings-page-title h1 {
+    .settings-page-title h1{
       margin: 0;
       display: flex;
       align-items: center;
@@ -1380,17 +1381,17 @@ export class DwainsLayoutCard extends LitElement {
       color: var(--primary-text-color);
       letter-spacing: 0;
     }
-    .settings-breadcrumb-parent {
+    .settings-breadcrumb-parent{
       color: var(--secondary-text-color);
       font-weight: 700;
     }
-    .settings-breadcrumb-separator {
+    .settings-breadcrumb-separator{
       flex: 0 0 auto;
       color: var(--secondary-text-color);
       --mdc-icon-size: 20px;
     }
 
-    .settings-page-title p {
+    .settings-page-title p{
       margin: 5px 0 0;
       color: var(--secondary-text-color);
       font-size: 14px;
@@ -1398,7 +1399,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .settings-page-actions,
-    .settings-page-bottom-actions {
+.settings-page-bottom-actions{
       display: flex;
       align-items: center;
       justify-content: flex-end;
@@ -1406,7 +1407,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .settings-secondary,
-    .settings-primary {
+.settings-primary{
       min-height: 40px;
       padding: 0 18px;
       border-radius: 999px;
@@ -1414,24 +1415,24 @@ export class DwainsLayoutCard extends LitElement {
       font-weight: 800;
     }
 
-    .settings-secondary {
+    .settings-secondary{
       background: transparent;
       color: var(--primary-color);
     }
 
-    .settings-primary {
+    .settings-primary{
       background: var(--primary-color);
       color: var(--text-primary-color);
       box-shadow: 0 10px 24px color-mix(in srgb, var(--primary-color) 24%, transparent);
     }
 
-    .settings-primary:disabled {
+    .settings-primary:disabled{
       opacity: 0.45;
       cursor: default;
       box-shadow: none;
     }
 
-    .settings-save-error {
+    .settings-save-error{
       margin: 0 0 14px;
       padding: 12px 14px;
       border-radius: 14px;
@@ -1441,7 +1442,7 @@ export class DwainsLayoutCard extends LitElement {
       font-size: 13px;
     }
 
-    .settings-page-editor {
+    .settings-page-editor{
       overflow: hidden;
       border-radius: 18px;
       background: var(--card-background-color);
@@ -1449,30 +1450,30 @@ export class DwainsLayoutCard extends LitElement {
       box-shadow: 0 16px 46px rgba(15, 23, 42, 0.08);
     }
 
-    .settings-page-editor dwains-dashboard-next-strategy-editor {
+    .settings-page-editor dwains-dashboard-next-strategy-editor{
       display: block;
     }
 
-    .settings-page-bottom-actions {
+    .settings-page-bottom-actions{
       display: none;
     }
 
     /* Ruimte voor de mobiele onderbalk */
     @media (max-width: 768px) {
-      .content-area {
+      .content-area{
         padding-bottom: calc(104px + env(safe-area-inset-bottom, 0px));
       }
     }
 
     /* Home View */
-    .home-view {
+    .home-view{
       max-width: 1600px;
       margin: 0 auto;
       padding: 0px; /*24px;*/
     }
 
     /* Home Welcome */
-    .home-welcome {
+    .home-welcome{
       text-align: left;
       margin-bottom: 28px;
       padding: 0;
@@ -1482,12 +1483,12 @@ export class DwainsLayoutCard extends LitElement {
       box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
     }
 
-    .welcome-content {
+    .welcome-content{
       margin: 0 auto;
       padding: 18px 22px;
     }
 
-    .welcome-header {
+    .welcome-header{
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
       align-items: center;
@@ -1495,7 +1496,7 @@ export class DwainsLayoutCard extends LitElement {
       margin-bottom: 0;
     }
 
-    .welcome-header-meta {
+    .welcome-header-meta{
       display: flex;
       align-items: center;
       justify-content: flex-end;
@@ -1503,14 +1504,14 @@ export class DwainsLayoutCard extends LitElement {
       min-width: 0;
     }
 
-    .welcome-user {
+    .welcome-user{
       display: flex;
       align-items: center;
       gap: 14px;
       min-width: 0;
     }
 
-    .welcome-avatar {
+    .welcome-avatar{
       border: 0;
       padding: 0;
       display: inline-flex;
@@ -1534,52 +1535,52 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow 0.18s ease;
     }
 
-    .welcome-avatar:hover {
+    .welcome-avatar:hover{
       transform: translateY(-1px);
     }
 
-    .welcome-avatar:focus-visible {
+    .welcome-avatar:focus-visible{
       outline: 2px solid var(--primary-color);
       outline-offset: 3px;
     }
 
-    .welcome-avatar ha-icon {
+    .welcome-avatar ha-icon{
       --mdc-icon-size: 26px;
     }
 
-    .welcome-avatar img {
+    .welcome-avatar img{
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
 
-    .welcome-copy {
+    .welcome-copy{
       min-width: 0;
     }
 
-    .welcome-text {
+    .welcome-text{
       display: flex;
       align-items: baseline;
       gap: 4px;
     }
 
-    .welcome-greeting {
+    .welcome-greeting{
       font-size: 22px;
       font-weight: 400;
       color: var(--secondary-text-color);
     }
 
-    .welcome-name {
+    .welcome-name{
       font-size: 28px;
       font-weight: 750;
       color: var(--primary-text-color);
     }
 
-    .welcome-title {
+    .welcome-title{
       display: none;
     }
 
-    .welcome-return {
+    .welcome-return{
       display: block;
       margin-top: 5px;
       color: var(--secondary-text-color);
@@ -1591,13 +1592,13 @@ export class DwainsLayoutCard extends LitElement {
       white-space: nowrap;
     }
 
-    .welcome-actions {
+    .welcome-actions{
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
-    .welcome-action {
+    .welcome-action{
       position: relative;
       border: 0;
       cursor: pointer;
@@ -1614,12 +1615,12 @@ export class DwainsLayoutCard extends LitElement {
       -webkit-tap-highlight-color: transparent;
     }
 
-    .welcome-action:hover {
+    .welcome-action:hover{
       background: color-mix(in srgb, var(--primary-color) 10%, var(--card-background-color));
       box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 18%, transparent);
     }
 
-    .welcome-notification-action {
+    .welcome-notification-action{
       width: 38px;
       height: 42px;
       border-radius: 10px;
@@ -1628,30 +1629,30 @@ export class DwainsLayoutCard extends LitElement {
       box-shadow: none;
     }
 
-    .welcome-notification-action:hover {
+    .welcome-notification-action:hover{
       color: var(--primary-color);
       background: color-mix(in srgb, var(--primary-color) 7%, transparent);
       box-shadow: none;
     }
 
-    .welcome-notification-action .welcome-action-badge {
+    .welcome-notification-action .welcome-action-badge{
       top: -1px;
       right: -3px;
     }
 
-    .welcome-settings-action {
+    .welcome-settings-action{
       margin-left: 2px;
     }
 
-    .welcome-action ha-icon {
+    .welcome-action ha-icon{
       --mdc-icon-size: 22px;
     }
 
-    .welcome-action:active {
+    .welcome-action:active{
       transform: scale(0.96);
     }
 
-    .welcome-action-badge {
+    .welcome-action-badge{
       position: absolute;
       top: -2px;
       right: -2px;
@@ -1670,7 +1671,7 @@ export class DwainsLayoutCard extends LitElement {
       box-shadow: 0 0 0 2px var(--card-background-color);
     }
 
-    .welcome-time-section {
+    .welcome-time-section{
       display: flex;
       flex-direction: column;
       align-items: flex-end;
@@ -1679,14 +1680,14 @@ export class DwainsLayoutCard extends LitElement {
       line-height: 1.1;
     }
 
-    .welcome-time {
+    .welcome-time{
       font-size: 34px;
       font-weight: 800;
       color: var(--primary-text-color);
       font-family: 'Roboto Mono', monospace;
     }
 
-    .welcome-date {
+    .welcome-date{
       margin-top: 4px;
       font-size: 14px;
       opacity: 0.8;
@@ -1694,7 +1695,7 @@ export class DwainsLayoutCard extends LitElement {
       font-weight: 650;
     }
 
-    .welcome-subheader {
+    .welcome-subheader{
       display: flex;
       justify-content: flex-start;
       align-items: center;
@@ -1702,7 +1703,7 @@ export class DwainsLayoutCard extends LitElement {
       margin-top: 14px;
     }
 
-    .welcome-alarm {
+    .welcome-alarm{
       display: flex;
       align-items: center;
       gap: 8px;
@@ -1713,43 +1714,43 @@ export class DwainsLayoutCard extends LitElement {
       font-weight: 500;
     }
 
-    .welcome-alarm.alarm-armed {
+    .welcome-alarm.alarm-armed{
       background: var(--error-color);
       color: var(--text-primary-color);
     }
 
-    .welcome-alarm.alarm-disarmed {
+    .welcome-alarm.alarm-disarmed{
       background: var(--success-color);
       color: var(--text-primary-color);
     }
 
-    .welcome-alarm.alarm-triggered {
+    .welcome-alarm.alarm-triggered{
       background: var(--error-color);
       color: var(--text-primary-color);
       animation: pulse 2s infinite;
     }
 
-    .welcome-alarm:hover {
+    .welcome-alarm:hover{
       transform: translateY(-1px);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
-    .welcome-alarm ha-icon {
+    .welcome-alarm ha-icon{
       --mdc-icon-size: 18px;
     }
 
-    .alarm-text {
+    .alarm-text{
       font-size: 14px;
       font-weight: 600;
     }
 
     @keyframes pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.7; }
-      100% { opacity: 1; }
+      0%{ opacity: 1; }
+      50%{ opacity: 0.7; }
+      100%{ opacity: 1; }
     }
 
-    .welcome-weather {
+    .welcome-weather{
       display: flex;
       align-items: center;
       gap: 8px;
@@ -1762,21 +1763,21 @@ export class DwainsLayoutCard extends LitElement {
       font-weight: 500;
     }
 
-    .welcome-weather:hover {
+    .welcome-weather:hover{
       transform: translateY(-1px);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
-    .welcome-weather ha-icon {
+    .welcome-weather ha-icon{
       --mdc-icon-size: 20px;
     }
 
-    .weather-temp {
+    .weather-temp{
       font-size: 16px;
       font-weight: 600;
     }
 
-    .weather-label {
+    .weather-label{
       font-size: 12px;
       font-weight: 750;
       line-height: 1;
@@ -1787,7 +1788,7 @@ export class DwainsLayoutCard extends LitElement {
 
     /* Mobile Responsive Design */
     @media (max-width: 768px) {
-      .home-welcome {
+      .home-welcome{
         text-align: left;
         margin: -10px -10px 16px;
         padding: calc(18px + env(safe-area-inset-top, 0px)) 20px 16px;
@@ -1799,11 +1800,11 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
       }
 
-      .welcome-content {
+      .welcome-content{
         padding: 0;
       }
 
-      .welcome-header {
+      .welcome-header{
         display: flex;
         flex-direction: row;
         justify-content: space-between;
@@ -1811,12 +1812,12 @@ export class DwainsLayoutCard extends LitElement {
         margin-bottom: 0;
       }
 
-      .welcome-user {
+      .welcome-user{
         gap: 10px;
         flex: 1 1 auto;
       }
 
-      .welcome-avatar {
+      .welcome-avatar{
         display: inline-flex;
         width: 38px;
         height: 38px;
@@ -1826,20 +1827,20 @@ export class DwainsLayoutCard extends LitElement {
           0 0 0 3px rgba(255, 255, 255, 0.72);
       }
 
-      .welcome-avatar ha-icon {
+      .welcome-avatar ha-icon{
         --mdc-icon-size: 21px;
       }
 
-      .welcome-text {
+      .welcome-text{
         display: block;
       }
 
       .welcome-greeting,
-      .welcome-name {
+.welcome-name{
         display: none;
       }
 
-      .welcome-title {
+      .welcome-title{
         display: block;
         color: var(--primary-text-color);
         font-size: 15px;
@@ -1850,7 +1851,7 @@ export class DwainsLayoutCard extends LitElement {
         white-space: nowrap;
       }
 
-      .welcome-return {
+      .welcome-return{
         display: block;
         margin-top: 3px;
         color: var(--secondary-text-color);
@@ -1859,18 +1860,18 @@ export class DwainsLayoutCard extends LitElement {
         line-height: 1.1;
       }
 
-      .welcome-time-section {
+      .welcome-time-section{
         display: none;
       }
 
-      .welcome-actions {
+      .welcome-actions{
         display: flex;
         align-items: center;
         gap: 8px;
         flex: 0 0 auto;
       }
 
-      .welcome-action {
+      .welcome-action{
         width: 42px;
         height: 42px;
         border-radius: 999px;
@@ -1881,11 +1882,11 @@ export class DwainsLayoutCard extends LitElement {
           inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 8%, transparent);
       }
 
-      .welcome-action ha-icon {
+      .welcome-action ha-icon{
         --mdc-icon-size: 21px;
       }
 
-      .welcome-subheader {
+      .welcome-subheader{
         justify-content: flex-start;
         gap: 8px;
         margin-top: 16px;
@@ -1894,12 +1895,12 @@ export class DwainsLayoutCard extends LitElement {
         scrollbar-width: none;
       }
 
-      .welcome-subheader::-webkit-scrollbar {
+      .welcome-subheader::-webkit-scrollbar{
         display: none;
       }
 
       .welcome-alarm,
-      .welcome-weather {
+.welcome-weather{
         min-width: auto;
         height: 42px;
         padding: 0 14px;
@@ -1910,66 +1911,66 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .alarm-text,
-      .weather-temp {
+.weather-temp{
         font-size: 15px;
       }
 
-      .weather-label {
+      .weather-label{
         font-size: 11px;
       }
     }
 
     @media (max-width: 480px) {
-      .home-welcome {
+      .home-welcome{
         padding: calc(16px + env(safe-area-inset-top, 0px)) 18px 14px;
         margin-bottom: 14px;
       }
 
-      .welcome-header {
+      .welcome-header{
         gap: 10px;
       }
 
-      .welcome-avatar {
+      .welcome-avatar{
         width: 36px;
         height: 36px;
       }
 
-      .welcome-title {
+      .welcome-title{
         font-size: 14px;
       }
 
-      .welcome-return {
+      .welcome-return{
         font-size: 11px;
       }
 
-      .welcome-action {
+      .welcome-action{
         width: 40px;
         height: 40px;
       }
 
       .welcome-alarm,
-      .welcome-weather {
+.welcome-weather{
         height: 40px;
         padding: 0 13px;
         font-size: 14px;
       }
 
       .alarm-text,
-      .weather-temp {
+.weather-temp{
         font-size: 14px;
       }
 
-      .weather-label {
+      .weather-label{
         font-size: 10px;
       }
     }
 
     /* Home Status Cards */
-    .home-status-section {
+    .home-status-section{
       margin-bottom: 48px;
     }
 
-    .home-status-heading {
+    .home-status-heading{
       display: flex;
       align-items: center;
       gap: 9px;
@@ -1980,7 +1981,7 @@ export class DwainsLayoutCard extends LitElement {
       line-height: 1.1;
     }
 
-    .home-status-heading ha-icon {
+    .home-status-heading ha-icon{
       --mdc-icon-size: 20px;
       width: 30px;
       height: 30px;
@@ -1992,17 +1993,17 @@ export class DwainsLayoutCard extends LitElement {
       background: color-mix(in srgb, var(--primary-color) 12%, transparent);
     }
 
-    .home-camera-section {
+    .home-camera-section{
       margin-bottom: 36px;
     }
 
-    .home-camera-section .home-status-heading ha-icon {
+    .home-camera-section .home-status-heading ha-icon{
       color: #ef4444;
       background: color-mix(in srgb, #ef4444 12%, transparent);
       box-shadow: inset 0 0 0 1px color-mix(in srgb, #ef4444 8%, transparent);
     }
 
-    .home-camera-section .mobile-layout-toggle {
+    .home-camera-section .mobile-layout-toggle{
       color: #ef4444;
       background: color-mix(in srgb, #ef4444 12%, var(--card-background-color));
       box-shadow:
@@ -2010,17 +2011,17 @@ export class DwainsLayoutCard extends LitElement {
         inset 0 0 0 1px color-mix(in srgb, #ef4444 8%, transparent);
     }
 
-    .home-summaries-section {
+    .home-summaries-section{
       margin-bottom: 36px;
     }
 
-    .home-summaries-section .home-status-heading ha-icon {
+    .home-summaries-section .home-status-heading ha-icon{
       color: #f59e0b;
       background: color-mix(in srgb, #f59e0b 13%, transparent);
       box-shadow: inset 0 0 0 1px color-mix(in srgb, #f59e0b 9%, transparent);
     }
 
-    .home-summaries-section .mobile-layout-toggle.active {
+    .home-summaries-section .mobile-layout-toggle.active{
       color: #f59e0b;
       background: color-mix(in srgb, #f59e0b 13%, var(--card-background-color));
       box-shadow:
@@ -2028,17 +2029,17 @@ export class DwainsLayoutCard extends LitElement {
         inset 0 0 0 1px color-mix(in srgb, #f59e0b 9%, transparent);
     }
 
-    .home-todos-section {
+    .home-todos-section{
       margin-bottom: 36px;
     }
 
-    .home-todos-section .home-status-heading ha-icon {
+    .home-todos-section .home-status-heading ha-icon{
       color: #7c3aed;
       background: color-mix(in srgb, #7c3aed 12%, transparent);
       box-shadow: inset 0 0 0 1px color-mix(in srgb, #7c3aed 8%, transparent);
     }
 
-    .home-todos-grid {
+    .home-todos-grid{
       width: 100%;
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
@@ -2047,22 +2048,22 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .home-todo-card,
-    .home-todo-card dwains-dashboard-next-card-host {
+.home-todo-card dwains-dashboard-next-card-host{
       display: block;
       min-width: 0;
     }
 
-    .home-custom-cards-section {
+    .home-custom-cards-section{
       margin-bottom: 36px;
     }
 
-    .home-custom-cards-section .home-status-heading ha-icon {
+    .home-custom-cards-section .home-status-heading ha-icon{
       color: #0ea5a8;
       background: color-mix(in srgb, #0ea5a8 12%, transparent);
       box-shadow: inset 0 0 0 1px color-mix(in srgb, #0ea5a8 20%, transparent);
     }
 
-    .home-custom-cards-grid {
+    .home-custom-cards-grid{
       width: 100%;
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
@@ -2071,19 +2072,19 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .home-custom-card,
-    .home-custom-card dwains-dashboard-next-card-host {
+.home-custom-card dwains-dashboard-next-card-host{
       display: block;
       min-width: 0;
     }
 
-    .home-summary-list {
+    .home-summary-list{
       width: min(100%, 980px);
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
     }
 
-    .home-summary-card {
+    .home-summary-card{
       appearance: none;
       width: 100%;
       min-height: 68px;
@@ -2106,22 +2107,22 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow 0.16s ease;
     }
 
-    .home-summary-card:hover {
+    .home-summary-card:hover{
       transform: translateY(-1px);
       border-color: color-mix(in srgb, var(--summary-color) 35%, transparent);
       box-shadow: 0 12px 26px color-mix(in srgb, var(--summary-color) 13%, transparent);
     }
 
-    .home-summary-card:active {
+    .home-summary-card:active{
       transform: scale(0.992);
     }
 
-    .home-summary-card:focus-visible {
+    .home-summary-card:focus-visible{
       outline: 2px solid color-mix(in srgb, var(--summary-color) 70%, #ffffff);
       outline-offset: 2px;
     }
 
-    .home-summary-icon {
+    .home-summary-icon{
       width: 38px;
       height: 38px;
       display: inline-flex;
@@ -2133,18 +2134,18 @@ export class DwainsLayoutCard extends LitElement {
       flex: 0 0 auto;
     }
 
-    .home-summary-icon ha-icon {
+    .home-summary-icon ha-icon{
       --mdc-icon-size: 21px;
     }
 
-    .home-summary-copy {
+    .home-summary-copy{
       min-width: 0;
       display: flex;
       flex-direction: column;
       gap: 2px;
     }
 
-    .home-summary-title {
+    .home-summary-title{
       color: var(--primary-text-color);
       font-size: 14px;
       font-weight: 850;
@@ -2154,7 +2155,7 @@ export class DwainsLayoutCard extends LitElement {
       white-space: nowrap;
     }
 
-    .home-summary-subtitle {
+    .home-summary-subtitle{
       color: var(--secondary-text-color);
       font-size: 12px;
       font-weight: 700;
@@ -2164,7 +2165,7 @@ export class DwainsLayoutCard extends LitElement {
       white-space: nowrap;
     }
 
-    .home-summary-chevron {
+    .home-summary-chevron{
       width: 26px;
       height: 26px;
       display: inline-flex;
@@ -2174,17 +2175,17 @@ export class DwainsLayoutCard extends LitElement {
       flex: 0 0 auto;
     }
 
-    .home-summary-chevron ha-icon {
+    .home-summary-chevron ha-icon{
       --mdc-icon-size: 20px;
     }
 
-    .home-camera-grid {
+    .home-camera-grid{
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
       gap: 14px;
     }
 
-    .home-camera-card {
+    .home-camera-card{
       position: relative;
       min-height: 168px;
       overflow: hidden;
@@ -2203,20 +2204,20 @@ export class DwainsLayoutCard extends LitElement {
       transition: transform 0.18s ease, box-shadow 0.18s ease;
     }
 
-    .home-camera-card:hover {
+    .home-camera-card:hover{
       transform: translateY(-2px);
       box-shadow:
         0 20px 42px rgba(15, 23, 42, 0.16),
         inset 0 0 0 1px rgba(255, 255, 255, 0.16);
     }
 
-    .home-camera-card:focus-visible {
+    .home-camera-card:focus-visible{
       outline: 2px solid var(--primary-color);
       outline-offset: 3px;
     }
 
     .home-camera-image,
-    .home-camera-placeholder {
+.home-camera-placeholder{
       position: absolute;
       inset: 0;
       background-size: cover;
@@ -2224,7 +2225,7 @@ export class DwainsLayoutCard extends LitElement {
       transform: scale(1.02);
     }
 
-    .home-camera-placeholder {
+    .home-camera-placeholder{
       display: flex;
       align-items: center;
       justify-content: center;
@@ -2233,12 +2234,12 @@ export class DwainsLayoutCard extends LitElement {
         linear-gradient(135deg, #192133, #0f172a);
     }
 
-    .home-camera-placeholder ha-icon {
+    .home-camera-placeholder ha-icon{
       --mdc-icon-size: 44px;
       color: rgba(255, 255, 255, 0.58);
     }
 
-    .home-camera-card::after {
+    .home-camera-card::after{
       content: "";
       position: absolute;
       left: 0;
@@ -2253,7 +2254,7 @@ export class DwainsLayoutCard extends LitElement {
       pointer-events: none;
     }
 
-    .home-camera-content {
+    .home-camera-content{
       position: relative;
       z-index: 1;
       width: 100%;
@@ -2264,7 +2265,7 @@ export class DwainsLayoutCard extends LitElement {
       justify-content: space-between;
     }
 
-    .home-camera-top {
+    .home-camera-top{
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
@@ -2272,7 +2273,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .home-camera-area-icon,
-    .home-camera-count {
+.home-camera-count{
       min-width: 36px;
       height: 36px;
       border-radius: 11px;
@@ -2287,11 +2288,11 @@ export class DwainsLayoutCard extends LitElement {
         inset 0 0 0 1px rgba(255, 255, 255, 0.12);
     }
 
-    .home-camera-area-icon ha-icon {
+    .home-camera-area-icon ha-icon{
       --mdc-icon-size: 20px;
     }
 
-    .home-camera-count {
+    .home-camera-count{
       min-width: 44px;
       padding: 0 10px;
       gap: 5px;
@@ -2300,16 +2301,16 @@ export class DwainsLayoutCard extends LitElement {
       font-weight: 850;
     }
 
-    .home-camera-count ha-icon {
+    .home-camera-count ha-icon{
       --mdc-icon-size: 14px;
     }
 
-    .home-camera-copy {
+    .home-camera-copy{
       min-width: 0;
       text-shadow: 0 2px 12px rgba(0, 0, 0, 0.62);
     }
 
-    .home-camera-name {
+    .home-camera-name{
       font-size: 18px;
       font-weight: 850;
       line-height: 1.08;
@@ -2318,7 +2319,7 @@ export class DwainsLayoutCard extends LitElement {
       white-space: nowrap;
     }
 
-    .home-camera-meta {
+    .home-camera-meta{
       margin-top: 5px;
       color: rgba(255, 255, 255, 0.76);
       font-size: 12px;
@@ -2330,16 +2331,16 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .mobile-home-section,
-    .mobile-section-heading {
+.mobile-section-heading{
       display: none;
     }
 
-    .layout-container.sidebar-collapsed .mobile-home-section.mobile-home-areas {
+    .layout-container.sidebar-collapsed .mobile-home-section.mobile-home-areas{
       display: block;
       margin: 0 0 36px;
     }
 
-    .layout-container.sidebar-collapsed .mobile-home-areas .mobile-section-heading {
+    .layout-container.sidebar-collapsed .mobile-home-areas .mobile-section-heading{
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -2348,11 +2349,11 @@ export class DwainsLayoutCard extends LitElement {
       margin-bottom: 14px;
     }
 
-    .layout-container.sidebar-collapsed .mobile-home-areas .mobile-section-action {
+    .layout-container.sidebar-collapsed .mobile-home-areas .mobile-section-action{
       display: none;
     }
 
-    .layout-container.sidebar-collapsed .mobile-area-rail {
+    .layout-container.sidebar-collapsed .mobile-area-rail{
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
       gap: 16px;
@@ -2361,7 +2362,7 @@ export class DwainsLayoutCard extends LitElement {
       scroll-snap-type: none;
     }
 
-    .layout-container.sidebar-collapsed .mobile-area-card {
+    .layout-container.sidebar-collapsed .mobile-area-card{
       appearance: none;
       position: relative;
       box-sizing: border-box;
@@ -2387,13 +2388,13 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow 0.18s ease;
     }
 
-    .layout-container.sidebar-collapsed .mobile-area-card:hover {
+    .layout-container.sidebar-collapsed .mobile-area-card:hover{
       transform: translateY(-2px);
       border-color: color-mix(in srgb, var(--primary-color) 22%, transparent);
       box-shadow: 0 18px 38px color-mix(in srgb, var(--primary-text-color) 11%, transparent);
     }
 
-    .layout-container.sidebar-collapsed .mobile-area-card.has-picture {
+    .layout-container.sidebar-collapsed .mobile-area-card.has-picture{
       min-height: 176px;
       color: var(--mobile-area-picture-text-color, #ffffff);
       border-color: rgba(255, 255, 255, 0.16);
@@ -2406,7 +2407,7 @@ export class DwainsLayoutCard extends LitElement {
         linear-gradient(90deg, rgba(12, 18, 32, 0.18), rgba(12, 18, 32, 0.04));
     }
 
-    .layout-container.sidebar-collapsed .mobile-area-picture {
+    .layout-container.sidebar-collapsed .mobile-area-picture{
       position: absolute;
       inset: 0;
       z-index: 0;
@@ -2415,7 +2416,7 @@ export class DwainsLayoutCard extends LitElement {
       transform: scale(1.02);
     }
 
-    .layout-container.sidebar-collapsed .mobile-area-card.has-picture::after {
+    .layout-container.sidebar-collapsed .mobile-area-card.has-picture::after{
       content: "";
       position: absolute;
       inset: 0;
@@ -2425,19 +2426,19 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .layout-container.sidebar-collapsed .mobile-area-top,
-    .layout-container.sidebar-collapsed .mobile-area-copy {
+.layout-container.sidebar-collapsed .mobile-area-copy{
       position: relative;
       z-index: 2;
     }
 
-    .layout-container.sidebar-collapsed .mobile-area-top {
+    .layout-container.sidebar-collapsed .mobile-area-top{
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
       gap: 8px;
     }
 
-    .layout-container.sidebar-collapsed .mobile-area-icon {
+    .layout-container.sidebar-collapsed .mobile-area-icon{
       width: 44px;
       height: 44px;
       display: inline-flex;
@@ -2449,17 +2450,17 @@ export class DwainsLayoutCard extends LitElement {
       background: color-mix(in srgb, var(--primary-color) 13%, transparent);
     }
 
-    .layout-container.sidebar-collapsed .mobile-area-icon ha-icon {
+    .layout-container.sidebar-collapsed .mobile-area-icon ha-icon{
       --mdc-icon-size: 23px;
     }
 
-    .layout-container.sidebar-collapsed .mobile-area-card.has-picture .mobile-area-icon {
+    .layout-container.sidebar-collapsed .mobile-area-card.has-picture .mobile-area-icon{
       color: var(--mobile-area-picture-text-color, #ffffff);
       background: rgba(255, 255, 255, 0.18);
       backdrop-filter: blur(12px);
     }
 
-    .layout-container.sidebar-collapsed .mobile-area-badges {
+    .layout-container.sidebar-collapsed .mobile-area-badges{
       display: flex;
       flex-wrap: wrap;
       justify-content: flex-end;
@@ -2467,7 +2468,7 @@ export class DwainsLayoutCard extends LitElement {
       min-width: 0;
     }
 
-    .layout-container.sidebar-collapsed .mobile-area-badge {
+    .layout-container.sidebar-collapsed .mobile-area-badge{
       min-width: 25px;
       height: 25px;
       padding: 0 8px;
@@ -2482,17 +2483,17 @@ export class DwainsLayoutCard extends LitElement {
       font-weight: 850;
     }
 
-    .layout-container.sidebar-collapsed .mobile-area-badge ha-icon {
+    .layout-container.sidebar-collapsed .mobile-area-badge ha-icon{
       --mdc-icon-size: 14px;
     }
 
-    .layout-container.sidebar-collapsed .mobile-area-card.has-picture .mobile-area-badge {
+    .layout-container.sidebar-collapsed .mobile-area-card.has-picture .mobile-area-badge{
       background: color-mix(in srgb, var(--area-badge-color, var(--primary-color)) 18%, rgba(255, 255, 255, 0.88));
       backdrop-filter: blur(12px);
       box-shadow: 0 4px 12px rgba(15, 23, 42, 0.16);
     }
 
-    .layout-container.sidebar-collapsed .mobile-area-name {
+    .layout-container.sidebar-collapsed .mobile-area-name{
       font-size: 16px;
       font-weight: 850;
       line-height: 1.1;
@@ -2501,7 +2502,7 @@ export class DwainsLayoutCard extends LitElement {
       white-space: nowrap;
     }
 
-    .layout-container.sidebar-collapsed .mobile-area-meta {
+    .layout-container.sidebar-collapsed .mobile-area-meta{
       margin-top: 5px;
       color: color-mix(in srgb, var(--primary-text-color) 56%, transparent);
       font-size: 12px;
@@ -2513,28 +2514,28 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .layout-container.sidebar-collapsed .mobile-area-card.has-picture .mobile-area-name,
-    .layout-container.sidebar-collapsed .mobile-area-card.has-picture .mobile-area-meta {
+.layout-container.sidebar-collapsed .mobile-area-card.has-picture .mobile-area-meta{
       color: var(--mobile-area-picture-text-color, #ffffff);
       text-shadow: var(--mobile-area-picture-text-shadow);
     }
 
-    .layout-container.sidebar-collapsed .mobile-area-card.has-picture .mobile-area-meta {
+    .layout-container.sidebar-collapsed .mobile-area-card.has-picture .mobile-area-meta{
       color: var(--mobile-area-picture-muted-text-color, rgba(255, 255, 255, 0.72));
     }
 
     /* Person Cards Section */
-    .person-cards-section {
+    .person-cards-section{
       margin-bottom: 32px;
     }
 
-    .person-cards-grid {
+    .person-cards-grid{
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 16px;
       margin: 0 auto;
     }
 
-    .person-card {
+    .person-card{
       --person-color: #8a94a6;
       --person-bg: color-mix(in srgb, var(--person-color) 8%, var(--card-background-color));
       position: relative;
@@ -2560,7 +2561,7 @@ export class DwainsLayoutCard extends LitElement {
         border-color 0.18s ease;
     }
 
-    .person-card::after {
+    .person-card::after{
       content: "";
       position: absolute;
       left: 18px;
@@ -2572,22 +2573,22 @@ export class DwainsLayoutCard extends LitElement {
       opacity: 0.34;
     }
 
-    .person-card.home {
+    .person-card.home{
       --person-color: #2f9b62;
       --person-bg: color-mix(in srgb, #2f9b62 10%, var(--card-background-color));
     }
 
-    .person-card.away {
+    .person-card.away{
       --person-color: #d88e20;
       --person-bg: color-mix(in srgb, #d88e20 9%, var(--card-background-color));
     }
 
-    .person-card.unknown {
+    .person-card.unknown{
       --person-color: #7c67c7;
       --person-bg: color-mix(in srgb, #7c67c7 8%, var(--card-background-color));
     }
 
-    .person-card:hover {
+    .person-card:hover{
       transform: translateY(-2px);
       border-color: color-mix(in srgb, var(--person-color) 24%, transparent);
       box-shadow:
@@ -2595,22 +2596,22 @@ export class DwainsLayoutCard extends LitElement {
         inset 0 0 0 1px color-mix(in srgb, var(--person-color) 16%, transparent);
     }
 
-    .person-card:active {
+    .person-card:active{
       transform: scale(0.988);
     }
 
-    .person-card:focus-visible {
+    .person-card:focus-visible{
       outline: 2px solid color-mix(in srgb, var(--person-color) 72%, #ffffff);
       outline-offset: 3px;
     }
 
-    .person-avatar-wrapper {
+    .person-avatar-wrapper{
       position: relative;
       z-index: 1;
       flex-shrink: 0;
     }
 
-    .person-avatar {
+    .person-avatar{
       width: 64px;
       height: 64px;
       border-radius: 22px;
@@ -2623,18 +2624,18 @@ export class DwainsLayoutCard extends LitElement {
       box-shadow: 0 12px 24px color-mix(in srgb, var(--person-color) 16%, transparent);
     }
 
-    .person-avatar img {
+    .person-avatar img{
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
 
-    .person-avatar ha-icon {
+    .person-avatar ha-icon{
       --mdc-icon-size: 34px;
       color: var(--person-color);
     }
 
-    .person-home-indicator {
+    .person-home-indicator{
       position: absolute;
       bottom: -5px;
       right: -5px;
@@ -2649,12 +2650,12 @@ export class DwainsLayoutCard extends LitElement {
       box-shadow: 0 8px 18px color-mix(in srgb, var(--person-color) 26%, transparent);
     }
 
-    .person-home-indicator ha-icon {
+    .person-home-indicator ha-icon{
       --mdc-icon-size: 14px;
       color: var(--text-primary-color);
     }
 
-    .person-info {
+    .person-info{
       position: relative;
       z-index: 1;
       text-align: left;
@@ -2665,7 +2666,7 @@ export class DwainsLayoutCard extends LitElement {
       min-width: 0;
     }
 
-    .person-name {
+    .person-name{
       font-size: 18px;
       font-weight: 850;
       color: var(--primary-text-color);
@@ -2675,7 +2676,7 @@ export class DwainsLayoutCard extends LitElement {
       white-space: nowrap;
     }
 
-    .person-status {
+    .person-status{
       display: inline-flex;
       width: max-content;
       max-width: 100%;
@@ -2694,11 +2695,11 @@ export class DwainsLayoutCard extends LitElement {
       white-space: nowrap;
     }
 
-    .person-status ha-icon {
+    .person-status ha-icon{
       --mdc-icon-size: 15px;
     }
 
-    .person-details {
+    .person-details{
       position: relative;
       z-index: 1;
       display: flex;
@@ -2713,7 +2714,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .person-battery,
-    .person-distance {
+.person-distance{
       display: flex;
       align-items: center;
       gap: 5px;
@@ -2728,68 +2729,68 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .person-battery ha-icon,
-    .person-distance ha-icon {
+.person-distance ha-icon{
       --mdc-icon-size: 14px;
     }
 
-    .person-battery ha-icon {
+    .person-battery ha-icon{
       color: var(--success-color);
     }
 
-    .person-battery ha-icon[icon*="alert"] {
+    .person-battery ha-icon[icon*="alert"]{
       color: var(--error-color);
     }
 
-    .person-distance ha-icon {
+    .person-distance ha-icon{
       color: var(--primary-color);
     }
 
     @media (max-width: 768px) {
-      .person-cards-grid {
+      .person-cards-grid{
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         gap: 12px;
       }
 
-      .person-card {
+      .person-card{
         padding: 16px;
       }
 
-      .person-avatar {
+      .person-avatar{
         width: 64px;
         height: 64px;
       }
 
-      .person-avatar ha-icon {
+      .person-avatar ha-icon{
         --mdc-icon-size: 36px;
       }
 
-      .person-name {
+      .person-name{
         font-size: 16px;
       }
 
-      .person-status {
+      .person-status{
         font-size: 13px;
       }
 
-      .person-details {
+      .person-details{
         gap: 8px;
       }
 
       .person-battery,
-      .person-distance {
+.person-distance{
         font-size: 12px;
         padding: 3px 6px;
       }
     }
 
-    .home-status-grid {
+    .home-status-grid{
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
       gap: 20px;
       margin: 0 auto;
     }
 
-    .home-status-card {
+    .home-status-card{
       background: var(--card-background-color);
       border-radius: 20px;
       padding: 24px 20px;
@@ -2801,7 +2802,7 @@ export class DwainsLayoutCard extends LitElement {
       overflow: hidden;
     }
 
-    .home-status-card::before {
+    .home-status-card::before{
       content: '';
       position: absolute;
       top: 0;
@@ -2813,32 +2814,32 @@ export class DwainsLayoutCard extends LitElement {
       transition: opacity 0.3s ease;
     }
 
-    .home-status-card:hover {
+    .home-status-card:hover{
       transform: translateY(-4px);
       box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
       border-color: var(--primary-color);
     }
 
-    .home-status-card:hover::before {
+    .home-status-card:hover::before{
       opacity: 1;
     }
 
-    .home-status-card .status-card-icon {
+    .home-status-card .status-card-icon{
       position: relative;
       margin-bottom: 16px;
     }
 
-    .home-status-card .status-card-icon ha-icon {
+    .home-status-card .status-card-icon ha-icon{
       --mdc-icon-size: 36px;
       color: var(--primary-color);
       transition: transform 0.3s ease;
     }
 
-    .home-status-card:hover .status-card-icon ha-icon {
+    .home-status-card:hover .status-card-icon ha-icon{
       transform: scale(1.1);
     }
 
-    .home-status-card .status-card-badge {
+    .home-status-card .status-card-badge{
       position: absolute;
       top: -10px;
       right: -10px;
@@ -2855,7 +2856,7 @@ export class DwainsLayoutCard extends LitElement {
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
 
-    .home-status-card .status-card-title {
+    .home-status-card .status-card-title{
       font-size: 15px;
       font-weight: 600;
       color: var(--primary-text-color);
@@ -2865,7 +2866,7 @@ export class DwainsLayoutCard extends LitElement {
 
 
     /* Area Info Badges */
-    .area-info-badges {
+    .area-info-badges{
       position: absolute;
       top: 5px;
       right: 0px;
@@ -2878,7 +2879,7 @@ export class DwainsLayoutCard extends LitElement {
       z-index: 2;
     }
 
-    .info-badge {
+    .info-badge{
       display: flex;
       align-items: center;
       gap: 4px;
@@ -2892,99 +2893,99 @@ export class DwainsLayoutCard extends LitElement {
       border: 1px solid color-mix(in srgb, var(--badge-color, var(--divider-color)) 18%, transparent);
     }
 
-    .info-badge ha-icon {
+    .info-badge ha-icon{
       --mdc-icon-size: 14px;
     }
 
-    .info-badge.light {
+    .info-badge.light{
       background: color-mix(in srgb, var(--badge-color, #e1a129) 10%, var(--card-background-color));
       color: var(--badge-color, #e1a129);
     }
 
-    .info-badge.switch {
+    .info-badge.switch{
       background: color-mix(in srgb, var(--badge-color, #2f6fd6) 10%, var(--card-background-color));
       color: var(--badge-color, #2f6fd6);
     }
 
-    .info-badge.climate {
+    .info-badge.climate{
       background: color-mix(in srgb, var(--badge-color, #34a6d8) 10%, var(--card-background-color));
       color: var(--badge-color, #34a6d8);
     }
 
-    .info-badge.media_player {
+    .info-badge.media_player{
       background: color-mix(in srgb, var(--badge-color, #7c67c7) 10%, var(--card-background-color));
       color: var(--badge-color, #7c67c7);
     }
 
-    .info-badge.cover {
+    .info-badge.cover{
       background: color-mix(in srgb, var(--badge-color, #d98928) 10%, var(--card-background-color));
       color: var(--badge-color, #d98928);
     }
 
-    .info-badge.fan {
+    .info-badge.fan{
       background: color-mix(in srgb, var(--badge-color, #16a6b6) 10%, var(--card-background-color));
       color: var(--badge-color, #16a6b6);
     }
 
-    .info-badge.motion {
+    .info-badge.motion{
       background: color-mix(in srgb, var(--badge-color, #6d7891) 10%, var(--card-background-color));
       color: var(--badge-color, #6d7891);
     }
 
     /* Sidebar info badges (smaller) */
-    .sidebar .info-badge {
+    .sidebar .info-badge{
       padding: 2px 6px;
       font-size: 11px;
       border-radius: 12px;
     }
 
-    .sidebar .info-badge ha-icon {
+    .sidebar .info-badge ha-icon{
       --mdc-icon-size: 12px;
     }
 
-    .sidebar .badge-count {
+    .sidebar .badge-count{
       min-width: 14px;
       text-align: center;
     }
 
     /* Clickable badges */
-    .info-badge.clickable {
+    .info-badge.clickable{
       cursor: pointer;
       transition: all 0.2s ease;
     }
 
-    .info-badge.clickable:hover {
+    .info-badge.clickable:hover{
       transform: scale(1.05);
       filter: brightness(1.1);
     }
 
     /* Color fallbacks for themes without custom colors */
-    :host {
+    :host{
       --purple-color: #9c27b0;
       --blue-color: #2196f3;
     }
 
     /* Area View */
-    .area-view {
+    .area-view{
       max-width: 1400px;
       margin: 0 auto;
     }
 
-    .area-header {
+    .area-header{
       margin-bottom: 24px;
       display: flex;
       align-items: center;
       gap: 12px;
     }
 
-    .area-title {
+    .area-title{
       font-size: 28px;
       font-weight: 400;
       margin: 0 0 16px 0;
       flex: 1;
     }
 
-    .unavailable-entities-icon {
+    .unavailable-entities-icon{
       background: var(--warning-color);
       border: none;
       border-radius: 50%;
@@ -2999,17 +3000,17 @@ export class DwainsLayoutCard extends LitElement {
       margin-bottom: 16px;
     }
 
-    .unavailable-entities-icon:hover {
+    .unavailable-entities-icon:hover{
       background: var(--error-color);
       transform: scale(1.1);
     }
 
-    .unavailable-entities-icon ha-icon {
+    .unavailable-entities-icon ha-icon{
       --mdc-icon-size: 18px;
       color: white;
     }
 
-    .unavailable-count {
+    .unavailable-count{
       position: absolute;
       top: -6px;
       right: -6px;
@@ -3025,14 +3026,14 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     /* Area Badges */
-    .area-badges {
+    .area-badges{
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
       margin-bottom: 24px;
     }
 
-    .area-badge {
+    .area-badge{
       display: flex;
       align-items: center;
       gap: 8px;
@@ -3045,64 +3046,64 @@ export class DwainsLayoutCard extends LitElement {
       transition: all 0.2s ease;
     }
 
-    .area-badge:hover {
+    .area-badge:hover{
       transform: translateY(-2px);
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
-    .area-badge ha-icon {
+    .area-badge ha-icon{
       --mdc-icon-size: 20px;
     }
 
-    .area-badge.light-toggle {
+    .area-badge.light-toggle{
       background: color-mix(in srgb, var(--warning-color) 10%, var(--card-background-color));
       border-color: var(--warning-color);
     }
 
-    .area-badge.light-toggle ha-icon {
+    .area-badge.light-toggle ha-icon{
       color: var(--warning-color);
     }
 
-    .area-badge.switch-toggle {
+    .area-badge.switch-toggle{
       background: color-mix(in srgb, var(--info-color) 10%, var(--card-background-color));
       border-color: var(--info-color);
     }
 
-    .area-badge.switch-toggle ha-icon {
+    .area-badge.switch-toggle ha-icon{
       color: var(--info-color);
     }
 
-    .area-badge.wattage {
+    .area-badge.wattage{
       background: color-mix(in srgb, var(--warning-color) 10%, var(--card-background-color));
       border-color: var(--warning-color);
     }
 
-    .area-badge.wattage ha-icon {
+    .area-badge.wattage ha-icon{
       color: var(--warning-color);
     }
 
-    .area-badge.energy {
+    .area-badge.energy{
       background: color-mix(in srgb, var(--info-color) 10%, var(--card-background-color));
       border-color: var(--info-color);
     }
 
-    .area-badge.energy ha-icon {
+    .area-badge.energy ha-icon{
       color: var(--info-color);
     }
 
     /* Entities Section */
-    .entities-section {
+    .entities-section{
       display: grid;
       gap: 16px;
     }
 
-    .domain-group {
+    .domain-group{
       background: var(--card-background-color);
       border-radius: 12px;
       padding: 16px;
     }
 
-    .domain-header {
+    .domain-header{
       display: flex;
       align-items: center;
       gap: 8px;
@@ -3111,75 +3112,75 @@ export class DwainsLayoutCard extends LitElement {
       font-weight: 500;
     }
 
-    .domain-header ha-icon {
+    .domain-header ha-icon{
       --mdc-icon-size: 20px;
       opacity: 0.8;
     }
 
-    .entities-grid {
+    .entities-grid{
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
       gap: 8px;
     }
 
-    .entities-grid.cover-entities-grid {
+    .entities-grid.cover-entities-grid{
       grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
       gap: 12px;
     }
 
-    .entities-grid.light-entities-grid {
+    .entities-grid.light-entities-grid{
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
       gap: 12px;
     }
 
-    .entities-grid.sensor-entities-grid {
+    .entities-grid.sensor-entities-grid{
       grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       gap: 12px;
     }
 
-    .entities-grid.motion-entities-grid {
+    .entities-grid.motion-entities-grid{
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 10px;
     }
 
-    .entity-card-wrapper {
+    .entity-card-wrapper{
       min-height: 60px;
       position: relative;
     }
 
     .cover-entity-card,
-    .light-entity-card,
-    .motion-entity-card {
+.light-entity-card,
+.motion-entity-card{
       min-height: 72px;
     }
 
-    .sensor-entity-card {
+    .sensor-entity-card{
       min-height: 150px;
     }
 
     .cover-entity-card dwains-dashboard-next-card-host,
-    .light-entity-card dwains-dashboard-next-card-host,
-    .sensor-entity-card dwains-dashboard-next-card-host,
-    .motion-entity-card dwains-dashboard-next-card-host {
+.light-entity-card dwains-dashboard-next-card-host,
+.sensor-entity-card dwains-dashboard-next-card-host,
+.motion-entity-card dwains-dashboard-next-card-host{
       display: block;
     }
 
     .mobile-area-overview,
-    .mobile-entities-section {
+.mobile-entities-section{
       display: none;
     }
 
-    .area-view .mobile-entities-section {
+    .area-view .mobile-entities-section{
       display: grid;
       position: relative;
       z-index: 2;
     }
 
-    .area-header-metrics {
+    .area-header-metrics{
       display: none;
     }
 
-    .mobile-area-metrics {
+    .mobile-area-metrics{
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
@@ -3187,7 +3188,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .mobile-area-metric,
-    .area-header-metric {
+.area-header-metric{
       min-height: 64px;
       padding: 10px 12px;
       display: flex;
@@ -3202,26 +3203,26 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .mobile-area-metric.temperature,
-    .area-header-metric.temperature {
+.area-header-metric.temperature{
       --metric-color: #7c67c7;
     }
 
     .mobile-area-metric.humidity,
-    .area-header-metric.humidity {
+.area-header-metric.humidity{
       --metric-color: #34a6d8;
     }
 
     .mobile-area-metric.power,
-    .area-header-metric.power {
+.area-header-metric.power{
       --metric-color: #d88e20;
     }
 
     .mobile-area-metric.energy,
-    .area-header-metric.energy {
+.area-header-metric.energy{
       --metric-color: #7c67c7;
     }
 
-    .metric-ring {
+    .metric-ring{
       width: 44px;
       height: 44px;
       position: relative;
@@ -3234,7 +3235,7 @@ export class DwainsLayoutCard extends LitElement {
         conic-gradient(var(--metric-color) 0deg var(--metric-angle), rgba(15, 23, 42, 0.08) var(--metric-angle) 270deg, transparent 270deg 360deg);
     }
 
-    .metric-ring::after {
+    .metric-ring::after{
       content: "";
       position: absolute;
       inset: 5px;
@@ -3242,21 +3243,21 @@ export class DwainsLayoutCard extends LitElement {
       background: color-mix(in srgb, var(--card-background-color) 92%, #ffffff);
     }
 
-    .metric-ring.metric-icon {
+    .metric-ring.metric-icon{
       background: color-mix(in srgb, var(--metric-color) 15%, transparent);
       box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--metric-color) 16%, transparent);
     }
 
-    .metric-ring.metric-icon::after {
+    .metric-ring.metric-icon::after{
       display: none;
     }
 
-    .metric-ring.metric-icon ha-icon {
+    .metric-ring.metric-icon ha-icon{
       --mdc-icon-size: 22px;
       color: var(--metric-color);
     }
 
-    .metric-value {
+    .metric-value{
       position: relative;
       z-index: 1;
       color: color-mix(in srgb, var(--primary-text-color) 74%, transparent);
@@ -3265,18 +3266,18 @@ export class DwainsLayoutCard extends LitElement {
       line-height: 1;
     }
 
-    .metric-copy {
+    .metric-copy{
       min-width: 0;
     }
 
-    .metric-label {
+    .metric-label{
       color: color-mix(in srgb, var(--primary-text-color) 62%, transparent);
       font-size: 13px;
       font-weight: 850;
       line-height: 1.1;
     }
 
-    .metric-range {
+    .metric-range{
       margin-top: 4px;
       color: color-mix(in srgb, var(--primary-text-color) 38%, transparent);
       font-size: 10px;
@@ -3284,7 +3285,7 @@ export class DwainsLayoutCard extends LitElement {
       line-height: 1;
     }
 
-    .metric-reading {
+    .metric-reading{
       margin-top: 3px;
       color: var(--primary-text-color);
       font-size: 13px;
@@ -3293,39 +3294,39 @@ export class DwainsLayoutCard extends LitElement {
       white-space: nowrap;
     }
 
-    .mobile-entities-section {
+    .mobile-entities-section{
       gap: 22px;
     }
 
-    .mobile-domain-group {
+    .mobile-domain-group{
       min-width: 0;
       position: relative;
     }
 
-    .mobile-domain-group.group-editing {
+    .mobile-domain-group.group-editing{
       border-radius: 8px;
       transition: opacity 0.16s ease, outline-color 0.16s ease, background-color 0.16s ease;
     }
 
-    .mobile-domain-group.group-dragging {
+    .mobile-domain-group.group-dragging{
       opacity: 0.46;
     }
 
-    .mobile-domain-group.group-drag-over {
+    .mobile-domain-group.group-drag-over{
       outline: 2px solid var(--primary-color);
       outline-offset: 7px;
       background: color-mix(in srgb, var(--primary-color) 5%, transparent);
     }
 
-    .mobile-domain-group:not(.menu-open) {
+    .mobile-domain-group:not(.menu-open){
       contain: layout style paint;
     }
 
-    .mobile-domain-group.menu-open {
+    .mobile-domain-group.menu-open{
       z-index: 1200;
     }
 
-    .mobile-domain-header {
+    .mobile-domain-header{
       position: relative;
       display: flex;
       align-items: center;
@@ -3335,14 +3336,14 @@ export class DwainsLayoutCard extends LitElement {
       margin-bottom: 10px;
     }
 
-    .mobile-domain-title {
+    .mobile-domain-title{
       display: inline-flex;
       align-items: center;
       gap: 8px;
       min-width: 0;
     }
 
-    .mobile-domain-header-actions {
+    .mobile-domain-header-actions{
       display: inline-flex;
       align-items: center;
       gap: 2px;
@@ -3350,7 +3351,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .mobile-domain-order-button,
-    .mobile-domain-drag-handle {
+.mobile-domain-drag-handle{
       width: 30px;
       height: 30px;
       padding: 0;
@@ -3364,26 +3365,26 @@ export class DwainsLayoutCard extends LitElement {
       cursor: pointer;
     }
 
-    .mobile-domain-drag-handle {
+    .mobile-domain-drag-handle{
       cursor: grab;
       touch-action: none;
     }
 
-    .mobile-domain-drag-handle:active {
+    .mobile-domain-drag-handle:active{
       cursor: grabbing;
     }
 
-    .mobile-domain-order-button:disabled {
+    .mobile-domain-order-button:disabled{
       opacity: 0.28;
       cursor: default;
     }
 
     .mobile-domain-order-button ha-icon,
-    .mobile-domain-drag-handle ha-icon {
+.mobile-domain-drag-handle ha-icon{
       --mdc-icon-size: 18px;
     }
 
-    .mobile-layout-toggle {
+    .mobile-layout-toggle{
       width: 30px;
       height: 30px;
       padding: 0;
@@ -3403,33 +3404,33 @@ export class DwainsLayoutCard extends LitElement {
         transform 0.18s ease;
     }
 
-    .mobile-layout-toggle.active {
+    .mobile-layout-toggle.active{
       background: #182044;
       color: #ffffff;
       box-shadow: 0 8px 18px rgba(15, 23, 42, 0.14);
     }
 
-    .mobile-layout-toggle:active {
+    .mobile-layout-toggle:active{
       transform: scale(0.94);
     }
 
-    .mobile-layout-toggle ha-icon {
+    .mobile-layout-toggle ha-icon{
       --mdc-icon-size: 17px;
     }
 
-    .mobile-layout-toggle.static {
+    .mobile-layout-toggle.static{
       cursor: default;
       pointer-events: none;
     }
 
-    .mobile-domain-title-copy {
+    .mobile-domain-title-copy{
       min-width: 0;
       display: inline-flex;
       align-items: baseline;
       gap: 7px;
     }
 
-    .mobile-domain-title-label {
+    .mobile-domain-title-label{
       color: var(--primary-text-color);
       font-size: 18px;
       font-weight: 900;
@@ -3439,7 +3440,7 @@ export class DwainsLayoutCard extends LitElement {
       white-space: nowrap;
     }
 
-    .mobile-domain-count {
+    .mobile-domain-count{
       color: color-mix(in srgb, var(--primary-text-color) 42%, transparent);
       font-size: 12px;
       font-weight: 850;
@@ -3447,7 +3448,7 @@ export class DwainsLayoutCard extends LitElement {
       white-space: nowrap;
     }
 
-    .mobile-domain-master {
+    .mobile-domain-master{
       --mobile-domain-accent: var(--primary-color);
       min-width: 58px;
       height: 30px;
@@ -3469,42 +3470,42 @@ export class DwainsLayoutCard extends LitElement {
       z-index: 1202;
     }
 
-    .mobile-domain-master.domain-light {
+    .mobile-domain-master.domain-light{
       --mobile-domain-accent: #e89a17;
     }
 
     .mobile-domain-master.domain-switch,
-    .mobile-domain-master.domain-input_boolean {
+.mobile-domain-master.domain-input_boolean{
       --mobile-domain-accent: #3275d6;
     }
 
-    .mobile-domain-master.domain-cover {
+    .mobile-domain-master.domain-cover{
       --mobile-domain-accent: #0d98aa;
     }
 
-    .mobile-domain-master.domain-fan {
+    .mobile-domain-master.domain-fan{
       --mobile-domain-accent: #2d9d79;
     }
 
-    .mobile-domain-master.domain-lock {
+    .mobile-domain-master.domain-lock{
       --mobile-domain-accent: #7657c8;
     }
 
-    .mobile-domain-master.active {
+    .mobile-domain-master.active{
       border-color: color-mix(in srgb, var(--mobile-domain-accent) 42%, transparent);
       background: color-mix(in srgb, var(--mobile-domain-accent) 11%, var(--card-background-color));
       color: var(--mobile-domain-accent);
     }
 
-    .mobile-domain-master:active {
+    .mobile-domain-master:active{
       transform: scale(0.94);
     }
 
-    .mobile-domain-master ha-icon {
+    .mobile-domain-master ha-icon{
       --mdc-icon-size: 16px;
     }
 
-    .mobile-domain-master-track {
+    .mobile-domain-master-track{
       position: relative;
       width: 26px;
       height: 16px;
@@ -3515,7 +3516,7 @@ export class DwainsLayoutCard extends LitElement {
       transition: background-color 0.18s ease;
     }
 
-    .mobile-domain-master-track::after {
+    .mobile-domain-master-track::after{
       content: "";
       position: absolute;
       top: 3px;
@@ -3528,15 +3529,15 @@ export class DwainsLayoutCard extends LitElement {
       transition: transform 0.18s ease;
     }
 
-    .mobile-domain-master.active .mobile-domain-master-track {
+    .mobile-domain-master.active .mobile-domain-master-track{
       background: var(--mobile-domain-accent);
     }
 
-    .mobile-domain-master.active .mobile-domain-master-track::after {
+    .mobile-domain-master.active .mobile-domain-master-track::after{
       transform: translateX(10px);
     }
 
-    .mobile-domain-master-actions {
+    .mobile-domain-master-actions{
       --mobile-domain-accent: var(--primary-color);
       height: 30px;
       display: inline-flex;
@@ -3549,15 +3550,15 @@ export class DwainsLayoutCard extends LitElement {
       z-index: 1202;
     }
 
-    .mobile-domain-master-actions.domain-cover {
+    .mobile-domain-master-actions.domain-cover{
       --mobile-domain-accent: #0d98aa;
     }
 
-    .mobile-domain-master-actions.domain-lock {
+    .mobile-domain-master-actions.domain-lock{
       --mobile-domain-accent: #7657c8;
     }
 
-    .mobile-domain-master-action {
+    .mobile-domain-master-action{
       width: 34px;
       height: 30px;
       padding: 0;
@@ -3574,25 +3575,25 @@ export class DwainsLayoutCard extends LitElement {
         transform 0.18s ease;
     }
 
-    .mobile-domain-master-action + .mobile-domain-master-action {
+    .mobile-domain-master-action + .mobile-domain-master-action{
       border-left: 1px solid color-mix(in srgb, var(--divider-color) 72%, transparent);
     }
 
     .mobile-domain-master-action:hover,
-    .mobile-domain-master-action.active {
+.mobile-domain-master-action.active{
       background: color-mix(in srgb, var(--mobile-domain-accent) 12%, var(--card-background-color));
       color: var(--mobile-domain-accent);
     }
 
-    .mobile-domain-master-action:active {
+    .mobile-domain-master-action:active{
       transform: scale(0.88);
     }
 
-    .mobile-domain-master-action ha-icon {
+    .mobile-domain-master-action ha-icon{
       --mdc-icon-size: 17px;
     }
 
-    .mobile-entity-rail {
+    .mobile-entity-rail{
       display: flex;
       gap: 10px;
       margin: 0 -10px;
@@ -3603,15 +3604,15 @@ export class DwainsLayoutCard extends LitElement {
       scrollbar-width: none;
     }
 
-    .mobile-entity-rail::-webkit-scrollbar {
+    .mobile-entity-rail::-webkit-scrollbar{
       display: none;
     }
 
-    .mobile-entities-section.layout-grid {
+    .mobile-entities-section.layout-grid{
       gap: 26px;
     }
 
-    .mobile-entities-section.layout-grid .mobile-entity-rail {
+    .mobile-entities-section.layout-grid .mobile-entity-rail{
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       margin: 0;
@@ -3621,7 +3622,7 @@ export class DwainsLayoutCard extends LitElement {
       align-items: stretch;
     }
 
-    .mobile-entities-section.layout-grid .mobile-entity-card {
+    .mobile-entities-section.layout-grid .mobile-entity-card{
       width: 100%;
       min-width: 0;
       box-sizing: border-box;
@@ -3630,12 +3631,12 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     @media (max-width: 380px) {
-      .mobile-entities-section.layout-grid .mobile-entity-rail {
+      .mobile-entities-section.layout-grid .mobile-entity-rail{
         grid-template-columns: 1fr;
       }
     }
 
-    .mobile-entity-card {
+    .mobile-entity-card{
       --entity-color: var(--primary-color);
       position: relative;
       box-sizing: border-box;
@@ -3664,33 +3665,19 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow 0.18s ease;
     }
 
-    .mobile-entity-replacement-card {
+    .mobile-entity-replacement-card{
       box-sizing: border-box;
       flex: 0 0 260px;
       min-width: 0;
       scroll-snap-align: start;
     }
 
-    .mobile-entity-replacement-card dwains-dashboard-next-card-host {
+    .mobile-entity-replacement-card dwains-dashboard-next-card-host{
       display: block;
       width: 100%;
     }
 
-    .room-ui-v2 .mobile-entity-replacement-card {
-      --dd-replacement-min-height: 62px;
-      --dd-replacement-padding: 8px 10px;
-      --dd-replacement-radius: 8px;
-    }
-
-    @media (min-width: 769px) {
-      .room-ui-v2 .mobile-entity-replacement-card {
-        --dd-replacement-min-height: 72px;
-        --dd-replacement-padding: 12px;
-        --dd-replacement-radius: 10px;
-      }
-    }
-
-    .mobile-todo-list-card {
+    .mobile-todo-list-card{
       box-sizing: border-box;
       flex: 0 0 min(100%, 520px);
       width: min(100%, 520px);
@@ -3698,18 +3685,18 @@ export class DwainsLayoutCard extends LitElement {
       scroll-snap-align: start;
     }
 
-    .mobile-todo-list-card dwains-dashboard-next-card-host {
+    .mobile-todo-list-card dwains-dashboard-next-card-host{
       display: block;
       width: 100%;
     }
 
-    .mobile-entities-section.layout-grid .mobile-entity-replacement-card {
+    .mobile-entities-section.layout-grid .mobile-entity-replacement-card{
       width: 100%;
       flex: none;
       scroll-snap-align: none;
     }
 
-    .mobile-entities-section.layout-grid .mobile-todo-list-card {
+    .mobile-entities-section.layout-grid .mobile-todo-list-card{
       grid-column: 1 / -1;
       width: 100%;
       min-width: 0;
@@ -3717,28 +3704,28 @@ export class DwainsLayoutCard extends LitElement {
       scroll-snap-align: none;
     }
 
-    .mobile-entity-card:active {
+    .mobile-entity-card:active{
       transform: scale(0.985);
       }
 
-      .mobile-entity-card.is-active {
+      .mobile-entity-card.is-active{
         box-shadow:
           0 14px 30px rgba(15, 23, 42, 0.08),
           inset 0 0 0 1px color-mix(in srgb, var(--entity-color) 18%, transparent);
       }
 
-      .mobile-entity-card.is-unavailable {
+      .mobile-entity-card.is-unavailable{
         opacity: 0.62;
       }
 
-    .mobile-entity-top {
+    .mobile-entity-top{
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
       gap: 10px;
     }
 
-    .mobile-entity-icon {
+    .mobile-entity-icon{
       width: 36px;
       height: 36px;
       display: inline-flex;
@@ -3750,11 +3737,11 @@ export class DwainsLayoutCard extends LitElement {
       background: color-mix(in srgb, var(--entity-color) 13%, transparent);
     }
 
-      .mobile-entity-icon ha-icon {
+      .mobile-entity-icon ha-icon{
         --mdc-icon-size: 20px;
       }
 
-      .mobile-entity-action {
+      .mobile-entity-action{
         padding: 0;
         display: inline-flex;
         align-items: center;
@@ -3769,16 +3756,16 @@ export class DwainsLayoutCard extends LitElement {
           opacity 0.18s ease;
       }
 
-      .mobile-entity-action:active {
+      .mobile-entity-action:active{
         transform: scale(0.94);
       }
 
-      .mobile-entity-action:disabled {
+      .mobile-entity-action:disabled{
         opacity: 0.36;
         cursor: not-allowed;
       }
 
-      .mobile-entity-toggle {
+      .mobile-entity-toggle{
         width: 38px;
         height: 22px;
         justify-content: flex-start;
@@ -3789,7 +3776,7 @@ export class DwainsLayoutCard extends LitElement {
           0 4px 10px rgba(15, 23, 42, 0.08);
       }
 
-    .mobile-entity-toggle::before {
+    .mobile-entity-toggle::before{
       content: "";
       width: 18px;
       height: 18px;
@@ -3800,17 +3787,17 @@ export class DwainsLayoutCard extends LitElement {
       transition: transform 0.18s ease;
       }
 
-      .mobile-entity-card.is-active .mobile-entity-toggle {
+      .mobile-entity-card.is-active .mobile-entity-toggle{
         background: var(--entity-color);
       }
 
-    .mobile-entity-card.is-active .mobile-entity-toggle::before {
+    .mobile-entity-card.is-active .mobile-entity-toggle::before{
       transform: translateX(16px);
     }
 
       .mobile-entity-more,
-      .mobile-scene-action,
-      .mobile-lock-action {
+.mobile-scene-action,
+.mobile-lock-action{
         width: 30px;
         height: 30px;
         border-radius: 999px;
@@ -3819,19 +3806,19 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.05);
       }
 
-      .mobile-lock-action.is-unlocked {
+      .mobile-lock-action.is-unlocked{
         color: #ffffff;
         background: var(--entity-color);
         box-shadow: 0 8px 16px color-mix(in srgb, var(--entity-color) 24%, transparent);
       }
 
       .mobile-entity-more ha-icon,
-      .mobile-scene-action ha-icon,
-      .mobile-lock-action ha-icon {
+.mobile-scene-action ha-icon,
+.mobile-lock-action ha-icon{
         --mdc-icon-size: 17px;
       }
 
-      .mobile-cover-actions {
+      .mobile-cover-actions{
         min-height: 32px;
         padding: 3px;
         display: inline-flex;
@@ -3845,7 +3832,7 @@ export class DwainsLayoutCard extends LitElement {
           0 6px 14px rgba(15, 23, 42, 0.08);
       }
 
-      .mobile-cover-action {
+      .mobile-cover-action{
         width: 26px;
         height: 26px;
         border-radius: 999px;
@@ -3853,63 +3840,63 @@ export class DwainsLayoutCard extends LitElement {
         background: transparent;
       }
 
-      .mobile-cover-action.active {
+      .mobile-cover-action.active{
         color: #ffffff;
         background: var(--entity-color);
         box-shadow: 0 6px 12px color-mix(in srgb, var(--entity-color) 22%, transparent);
       }
 
-      .mobile-cover-action ha-icon {
+      .mobile-cover-action ha-icon{
         --mdc-icon-size: 16px;
       }
 
-      .mobile-entities-section.layout-grid .mobile-cover-actions {
+      .mobile-entities-section.layout-grid .mobile-cover-actions{
         min-height: 30px;
         padding: 3px;
         gap: 2px;
       }
 
-      .mobile-entities-section.layout-grid .mobile-cover-action {
+      .mobile-entities-section.layout-grid .mobile-cover-action{
         width: 24px;
         height: 24px;
       }
 
-      .mobile-entities-section.layout-grid .mobile-cover-action ha-icon {
+      .mobile-entities-section.layout-grid .mobile-cover-action ha-icon{
         --mdc-icon-size: 15px;
       }
 
       @media (max-width: 430px) {
-        .mobile-entities-section.layout-grid .mobile-entity-card {
+        .mobile-entities-section.layout-grid .mobile-entity-card{
           min-height: 138px;
           padding: 12px;
         }
 
-        .mobile-entities-section.layout-grid .mobile-entity-top {
+        .mobile-entities-section.layout-grid .mobile-entity-top{
           gap: 6px;
         }
 
-        .mobile-entities-section.layout-grid .mobile-entity-icon {
+        .mobile-entities-section.layout-grid .mobile-entity-icon{
           width: 34px;
           height: 34px;
         }
 
-        .mobile-entities-section.layout-grid .mobile-cover-actions {
+        .mobile-entities-section.layout-grid .mobile-cover-actions{
           min-height: 28px;
           padding: 2px;
           gap: 1px;
         }
 
-        .mobile-entities-section.layout-grid .mobile-cover-action {
+        .mobile-entities-section.layout-grid .mobile-cover-action{
           width: 23px;
           height: 23px;
         }
 
-        .mobile-entities-section.layout-grid .mobile-cover-action ha-icon {
+        .mobile-entities-section.layout-grid .mobile-cover-action ha-icon{
           --mdc-icon-size: 14px;
         }
       }
 
-    .mobile-entity-meta {
+    .mobile-entity-meta{
       color: color-mix(in srgb, var(--primary-text-color) 42%, transparent);
       font-size: 10px;
       font-weight: 750;
@@ -3919,7 +3906,7 @@ export class DwainsLayoutCard extends LitElement {
       white-space: nowrap;
     }
 
-      .mobile-entity-name {
+      .mobile-entity-name{
         margin-top: 3px;
         color: var(--primary-text-color);
         font-size: 15px;
@@ -3931,7 +3918,7 @@ export class DwainsLayoutCard extends LitElement {
         -webkit-box-orient: vertical;
       }
 
-      .mobile-entity-status {
+      .mobile-entity-status{
         margin-top: 5px;
         color: color-mix(in srgb, var(--primary-text-color) 46%, transparent);
         font-size: 11px;
@@ -3942,31 +3929,31 @@ export class DwainsLayoutCard extends LitElement {
         white-space: nowrap;
       }
 
-      .mobile-entity-content {
+      .mobile-entity-content{
         min-width: 0;
       }
 
-      .mobile-entity-card.has-inline-select {
+      .mobile-entity-card.has-inline-select{
         min-height: 170px;
         justify-content: flex-start;
         gap: 10px;
       }
 
-      .mobile-entity-card.has-inline-select .mobile-entity-content {
+      .mobile-entity-card.has-inline-select .mobile-entity-content{
         margin-top: auto;
       }
 
-      .mobile-entity-card.has-inline-select .mobile-entity-status {
+      .mobile-entity-card.has-inline-select .mobile-entity-status{
         display: none;
       }
 
-      .mobile-entity-select {
+      .mobile-entity-select{
         position: relative;
         display: block;
         width: 100%;
       }
 
-      .mobile-entity-select select {
+      .mobile-entity-select select{
         width: 100%;
         height: 34px;
         padding: 0 34px 0 12px;
@@ -3987,18 +3974,18 @@ export class DwainsLayoutCard extends LitElement {
           0 8px 18px rgba(15, 23, 42, 0.06);
       }
 
-      .mobile-entity-select select:focus {
+      .mobile-entity-select select:focus{
         box-shadow:
           inset 0 0 0 2px color-mix(in srgb, var(--entity-color) 72%, transparent),
           0 10px 22px color-mix(in srgb, var(--entity-color) 14%, transparent);
       }
 
-      .mobile-entity-select select:disabled {
+      .mobile-entity-select select:disabled{
         opacity: 0.55;
         cursor: not-allowed;
       }
 
-      .mobile-entity-select ha-icon {
+      .mobile-entity-select ha-icon{
         position: absolute;
         top: 50%;
         right: 10px;
@@ -4010,45 +3997,45 @@ export class DwainsLayoutCard extends LitElement {
 
     @media (min-width: 769px) {
       .area-view .dd-generated-card-wrap.editing,
-      .area-view .mobile-entities-section.layout-grid .dd-generated-card-wrap.editing {
+.area-view .mobile-entities-section.layout-grid .dd-generated-card-wrap.editing{
         width: 100%;
         min-width: 0;
         flex: none;
         scroll-snap-align: none;
       }
 
-      .area-view .mobile-entities-section {
+      .area-view .mobile-entities-section{
         gap: 28px;
         margin-top: 20px;
       }
 
-      .area-view .mobile-domain-group {
+      .area-view .mobile-domain-group{
         min-width: 0;
       }
 
-      .area-view .mobile-domain-header {
+      .area-view .mobile-domain-header{
         padding: 0;
         margin-bottom: 12px;
       }
 
-      .area-view .mobile-layout-toggle {
+      .area-view .mobile-layout-toggle{
         display: none;
       }
 
-      .area-view .mobile-domain-title {
+      .area-view .mobile-domain-title{
         gap: 0;
       }
 
-      .area-view .mobile-domain-title-label {
+      .area-view .mobile-domain-title-label{
         font-size: 20px;
       }
 
-      .area-view .mobile-domain-count {
+      .area-view .mobile-domain-count{
         font-size: 12px;
       }
 
       .area-view .mobile-entity-rail,
-      .area-view .mobile-entities-section.layout-grid .mobile-entity-rail {
+.area-view .mobile-entities-section.layout-grid .mobile-entity-rail{
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(178px, 1fr));
         gap: 14px;
@@ -4061,7 +4048,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .area-view .mobile-entity-card,
-      .area-view .mobile-entities-section.layout-grid .mobile-entity-card {
+.area-view .mobile-entities-section.layout-grid .mobile-entity-card{
         width: 100%;
         min-width: 0;
         min-height: 152px;
@@ -4071,58 +4058,58 @@ export class DwainsLayoutCard extends LitElement {
         scroll-snap-align: none;
       }
 
-      .area-view .mobile-entity-card:hover {
+      .area-view .mobile-entity-card:hover{
         transform: translateY(-1px);
         box-shadow:
           0 16px 32px rgba(15, 23, 42, 0.08),
           inset 0 0 0 1px rgba(15, 23, 42, 0.045);
       }
 
-      .area-view .mobile-entity-card.has-inline-select {
+      .area-view .mobile-entity-card.has-inline-select{
         min-height: 178px;
       }
 
       .area-view .mobile-entity-icon,
-      .area-view .mobile-entities-section.layout-grid .mobile-entity-icon {
+.area-view .mobile-entities-section.layout-grid .mobile-entity-icon{
         width: 38px;
         height: 38px;
         border-radius: 11px;
       }
 
-      .area-view .mobile-entity-icon ha-icon {
+      .area-view .mobile-entity-icon ha-icon{
         --mdc-icon-size: 21px;
       }
 
-      .area-view .mobile-entity-name {
+      .area-view .mobile-entity-name{
         font-size: 15px;
       }
 
-      .area-view .mobile-entity-status {
+      .area-view .mobile-entity-status{
         font-size: 11px;
       }
 
       .area-view .mobile-cover-actions,
-      .area-view .mobile-entities-section.layout-grid .mobile-cover-actions {
+.area-view .mobile-entities-section.layout-grid .mobile-cover-actions{
         min-height: 32px;
         padding: 3px;
         gap: 3px;
       }
 
       .area-view .mobile-cover-action,
-      .area-view .mobile-entities-section.layout-grid .mobile-cover-action {
+.area-view .mobile-entities-section.layout-grid .mobile-cover-action{
         width: 26px;
         height: 26px;
       }
 
       .area-view .mobile-cover-action ha-icon,
-      .area-view .mobile-entities-section.layout-grid .mobile-cover-action ha-icon {
+.area-view .mobile-entities-section.layout-grid .mobile-cover-action ha-icon{
         --mdc-icon-size: 16px;
       }
 
       .area-view .mobile-entity-rail .dd-custom-card-wrap,
-      .area-view .mobile-entity-rail .dd-domain-add-card,
-      .area-view .mobile-entities-section.layout-grid .mobile-entity-rail .dd-custom-card-wrap,
-      .area-view .mobile-entities-section.layout-grid .mobile-entity-rail .dd-domain-add-card {
+.area-view .mobile-entity-rail .dd-domain-add-card,
+.area-view .mobile-entities-section.layout-grid .mobile-entity-rail .dd-custom-card-wrap,
+.area-view .mobile-entities-section.layout-grid .mobile-entity-rail .dd-domain-add-card{
         width: 100%;
         min-width: 0;
         flex: none;
@@ -4130,7 +4117,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .area-view .mobile-todo-list-card,
-      .area-view .mobile-entities-section.layout-grid .mobile-todo-list-card {
+.area-view .mobile-entities-section.layout-grid .mobile-todo-list-card{
         grid-column: 1 / -1;
         width: 100%;
         max-width: 760px;
@@ -4141,8 +4128,8 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     /* Bewerk-toggle in de area-header */
-    .area-header { display: flex; align-items: center; gap: 8px; }
-    .dd-edit-toggle {
+    .area-header{ display: flex; align-items: center; gap: 8px; }
+    .dd-edit-toggle{
       margin-left: auto;
       display: inline-flex; align-items: center; justify-content: center;
       width: 38px; height: 38px; border-radius: 50%;
@@ -4151,18 +4138,18 @@ export class DwainsLayoutCard extends LitElement {
       color: var(--primary-text-color);
       transition: background-color .2s ease, color .2s ease;
     }
-    .dd-edit-toggle:hover { background: rgba(var(--rgb-primary-color, 3,169,244), .14); }
-    .dd-edit-toggle.active { background: var(--primary-color); color: var(--text-primary-color, #fff); }
-    .dd-edit-toggle.danger:hover { background: rgba(var(--rgb-error-color, 244,67,54), .16); color: var(--error-color, #f44336); }
-    .dd-edit-toggle ha-icon { --mdc-icon-size: 20px; }
+    .dd-edit-toggle:hover{ background: rgba(var(--rgb-primary-color, 3,169,244), .14); }
+    .dd-edit-toggle.active{ background: var(--primary-color); color: var(--text-primary-color, #fff); }
+    .dd-edit-toggle.danger:hover{ background: rgba(var(--rgb-error-color, 244,67,54), .16); color: var(--error-color, #f44336); }
+    .dd-edit-toggle ha-icon{ --mdc-icon-size: 20px; }
 
     /* Sidebar: blueprint-pagina's + toevoegknop */
-    .sidebar-divider {
+    .sidebar-divider{
       height: 1px;
       background: var(--divider-color);
       margin: 8px 12px;
     }
-    .dd-add-page {
+    .dd-add-page{
       width: 100%;
       box-sizing: border-box;
       margin-top: 12px;
@@ -4178,41 +4165,41 @@ export class DwainsLayoutCard extends LitElement {
       font-size: 14px;
       transition: background-color .2s ease, color .2s ease, border-color .2s ease;
     }
-    .dd-add-page:hover {
+    .dd-add-page:hover{
       color: var(--primary-color);
       border-color: var(--primary-color);
       background: rgba(var(--rgb-primary-color, 3,169,244), .08);
     }
-    .dd-add-page ha-icon { --mdc-icon-size: 20px; }
+    .dd-add-page ha-icon{ --mdc-icon-size: 20px; }
 
     /* Blueprint-paginakaart */
-    .dd-page-card { margin-top: 8px; }
-    .dd-page-card dwains-dashboard-next-card-host { display: block; }
+    .dd-page-card{ margin-top: 8px; }
+    .dd-page-card dwains-dashboard-next-card-host{ display: block; }
 
     /* Area custom card slots */
-    .dd-custom-section {
+    .dd-custom-section{
       margin: 12px 0;
       min-width: 0;
     }
 
-    .dd-custom-section.after-domain {
+    .dd-custom-section.after-domain{
       margin: 12px 0 2px;
     }
 
-    .dd-custom-section.editing {
+    .dd-custom-section.editing{
       padding: 10px;
       border: 1px dashed color-mix(in srgb, var(--primary-color) 28%, transparent);
       border-radius: 12px;
       background: color-mix(in srgb, var(--primary-color) 4%, transparent);
     }
 
-    .dd-custom-section.drag-over {
+    .dd-custom-section.drag-over{
       border-color: var(--primary-color);
       background: color-mix(in srgb, var(--primary-color) 10%, transparent);
       box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 22%, transparent);
     }
 
-    .dd-custom-slot-head {
+    .dd-custom-slot-head{
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -4224,25 +4211,25 @@ export class DwainsLayoutCard extends LitElement {
       line-height: 1.2;
     }
 
-    .dd-custom-slot-title {
+    .dd-custom-slot-title{
       display: inline-flex;
       align-items: center;
       gap: 6px;
       min-width: 0;
     }
 
-    .dd-custom-slot-title ha-icon {
+    .dd-custom-slot-title ha-icon{
       --mdc-icon-size: 16px;
       color: var(--primary-color);
     }
 
-    .dd-custom-slot-title span {
+    .dd-custom-slot-title span{
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
-    .dd-custom-grid {
+    .dd-custom-grid{
       display: grid;
       grid-template-columns: repeat(12, minmax(0, 1fr));
       gap: 8px;
@@ -4250,29 +4237,29 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .dd-custom-grid > .dd-custom-card-wrap,
-    .dd-custom-grid > .dd-add-card {
+.dd-custom-grid > .dd-add-card{
       --dd-card-default-column: span 4;
       grid-column: var(--dd-card-grid-column, var(--dd-card-default-column));
       min-height: var(--dd-card-grid-min-height, 0);
     }
 
-    .dd-custom-card-wrap {
+    .dd-custom-card-wrap{
       position: relative;
       min-width: 0;
       border-radius: 12px;
     }
 
-    .dd-custom-card-wrap.editing {
+    .dd-custom-card-wrap.editing{
       outline: 1px solid color-mix(in srgb, var(--divider-color) 78%, transparent);
       outline-offset: 2px;
       cursor: grab;
     }
 
-    .dd-generated-card-wrap {
+    .dd-generated-card-wrap{
       display: contents;
     }
 
-    .dd-generated-card-wrap.editing {
+    .dd-generated-card-wrap.editing{
       position: relative;
       display: block;
       box-sizing: border-box;
@@ -4287,30 +4274,30 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .dd-generated-card-wrap.editing > .mobile-entity-card,
-    .dd-generated-card-wrap.editing > .mobile-entity-replacement-card,
-    .dd-generated-card-wrap.editing > .mobile-todo-list-card {
+.dd-generated-card-wrap.editing > .mobile-entity-replacement-card,
+.dd-generated-card-wrap.editing > .mobile-todo-list-card{
       width: 100%;
       min-width: 0;
       pointer-events: none;
     }
 
-    .dd-generated-card-wrap.editing.is-hidden > :not(.dd-generated-card-toolbar) {
+    .dd-generated-card-wrap.editing.is-hidden > :not(.dd-generated-card-toolbar){
       opacity: 0.38;
       filter: saturate(0.45);
     }
 
-    .dd-generated-card-wrap.editing.dragging {
+    .dd-generated-card-wrap.editing.dragging{
       opacity: 0.42;
       cursor: grabbing;
     }
 
-    .dd-generated-card-wrap.editing.drag-over {
+    .dd-generated-card-wrap.editing.drag-over{
       outline-color: var(--primary-color);
       box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 14%, transparent);
       transform: translateY(-2px);
     }
 
-    .dd-generated-card-toolbar {
+    .dd-generated-card-toolbar{
       position: absolute;
       top: 7px;
       right: 7px;
@@ -4325,7 +4312,7 @@ export class DwainsLayoutCard extends LitElement {
       -webkit-backdrop-filter: blur(8px);
     }
 
-    .dd-generated-card-toolbar button {
+    .dd-generated-card-toolbar button{
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -4339,64 +4326,64 @@ export class DwainsLayoutCard extends LitElement {
       cursor: pointer;
     }
 
-    .dd-generated-card-toolbar button:first-child {
+    .dd-generated-card-toolbar button:first-child{
       color: var(--primary-color);
       cursor: grab;
     }
 
     .dd-generated-card-toolbar button:hover,
-    .dd-generated-card-toolbar button:focus-visible {
+.dd-generated-card-toolbar button:focus-visible{
       background: color-mix(in srgb, var(--primary-color) 12%, transparent);
       outline: none;
     }
 
-    .dd-generated-card-toolbar ha-icon {
+    .dd-generated-card-toolbar ha-icon{
       --mdc-icon-size: 17px;
     }
 
-    .mobile-entities-section.layout-grid .dd-generated-card-wrap.editing {
+    .mobile-entities-section.layout-grid .dd-generated-card-wrap.editing{
       width: 100%;
       min-width: 0;
       flex: none;
       scroll-snap-align: none;
     }
 
-    .dd-custom-card-wrap.dragging {
+    .dd-custom-card-wrap.dragging{
       opacity: 0.48;
       cursor: grabbing;
     }
 
-    .dd-custom-card-wrap.drag-over {
+    .dd-custom-card-wrap.drag-over{
       outline-color: var(--primary-color);
       box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 12%, transparent);
     }
 
-    .dd-card-toolbar {
+    .dd-card-toolbar{
       position: absolute; top: 6px; right: 6px; z-index: 4;
       display: none; gap: 4px;
     }
-    .dd-custom-card-wrap.editing .dd-card-toolbar { display: flex; }
-    .dd-card-toolbar button {
+    .dd-custom-card-wrap.editing .dd-card-toolbar{ display: flex; }
+    .dd-card-toolbar button{
       display: inline-flex; align-items: center; justify-content: center;
       width: 30px; height: 30px; border-radius: 50%; border: none; cursor: pointer;
       background: var(--card-background-color);
       box-shadow: 0 1px 4px rgba(0,0,0,.2);
       color: var(--primary-text-color);
     }
-    .dd-card-toolbar button.del:hover { color: var(--error-color, #f44336); }
-    .dd-card-toolbar ha-icon { --mdc-icon-size: 18px; }
+    .dd-card-toolbar button.del:hover{ color: var(--error-color, #f44336); }
+    .dd-card-toolbar ha-icon{ --mdc-icon-size: 18px; }
 
-    .dd-card-toolbar button.drag {
+    .dd-card-toolbar button.drag{
       cursor: grab;
       color: var(--primary-color);
     }
 
-    .dd-card-toolbar button.drag:active {
+    .dd-card-toolbar button.drag:active{
       cursor: grabbing;
     }
 
     .dd-add-card-inline,
-    .dd-add-card {
+.dd-add-card{
       display: flex; align-items: center; justify-content: center; gap: 8px;
       min-height: 72px; width: 100%;
       border: 2px dashed var(--divider-color); border-radius: 12px;
@@ -4404,12 +4391,12 @@ export class DwainsLayoutCard extends LitElement {
       color: var(--secondary-text-color); font-weight: 600; font-size: .9rem;
       transition: border-color .2s ease, color .2s ease, background-color .2s ease;
     }
-    .dd-add-card:hover {
+    .dd-add-card:hover{
       border-color: var(--primary-color); color: var(--primary-color);
       background: rgba(var(--rgb-primary-color, 3,169,244), .06);
     }
 
-    .dd-add-card-inline {
+    .dd-add-card-inline{
       min-height: 32px;
       width: auto;
       padding: 0 12px;
@@ -4419,13 +4406,13 @@ export class DwainsLayoutCard extends LitElement {
       white-space: nowrap;
     }
 
-    .dd-add-card-inline ha-icon {
+    .dd-add-card-inline ha-icon{
       --mdc-icon-size: 16px;
     }
 
-    .dd-add-card ha-icon { --mdc-icon-size: 22px; }
+    .dd-add-card ha-icon{ --mdc-icon-size: 22px; }
 
-    .dd-domain-add-card {
+    .dd-domain-add-card{
       min-height: 72px;
       border-width: 1px;
       background: color-mix(in srgb, var(--secondary-background-color) 54%, transparent);
@@ -4433,7 +4420,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .dd-domain-add-card:hover,
-    .dd-domain-add-card.drag-over {
+.dd-domain-add-card.drag-over{
       opacity: 1;
       border-color: var(--primary-color);
       color: var(--primary-color);
@@ -4442,58 +4429,58 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .entities-grid .dd-custom-card-wrap,
-    .entities-grid .dd-domain-add-card {
+.entities-grid .dd-domain-add-card{
       min-width: 0;
     }
 
     .entities-grid > .dd-custom-card-wrap.dd-grid-full,
-    .mobile-entities-section.layout-grid .mobile-entity-rail > .dd-custom-card-wrap.dd-grid-full {
+.mobile-entities-section.layout-grid .mobile-entity-rail > .dd-custom-card-wrap.dd-grid-full{
       grid-column: 1 / -1;
       width: 100%;
     }
 
     .mobile-entity-rail .dd-custom-card-wrap,
-    .mobile-entity-rail .dd-domain-add-card {
+.mobile-entity-rail .dd-domain-add-card{
       box-sizing: border-box;
       flex: 0 0 164px;
       min-width: 0;
       scroll-snap-align: start;
     }
 
-    .mobile-entity-rail > .dd-custom-card-wrap.dd-grid-full {
+    .mobile-entity-rail > .dd-custom-card-wrap.dd-grid-full{
       flex-basis: calc(100% - 20px);
     }
 
-    .mobile-entity-rail .dd-domain-add-card {
+    .mobile-entity-rail .dd-domain-add-card{
       min-height: 128px;
     }
 
     .mobile-entities-section.layout-grid .mobile-entity-rail .dd-custom-card-wrap,
-    .mobile-entities-section.layout-grid .mobile-entity-rail .dd-domain-add-card {
+.mobile-entities-section.layout-grid .mobile-entity-rail .dd-domain-add-card{
       width: 100%;
       flex: none;
       scroll-snap-align: none;
     }
 
-    .mobile-entities-section.layout-grid .mobile-entity-rail .dd-domain-add-card {
+    .mobile-entities-section.layout-grid .mobile-entity-rail .dd-domain-add-card{
       min-height: 138px;
     }
 
     @container (max-width: 899px) {
       .dd-custom-grid > .dd-custom-card-wrap,
-      .dd-custom-grid > .dd-add-card {
+.dd-custom-grid > .dd-add-card{
         --dd-card-default-column: span 6;
       }
     }
 
     @container (max-width: 559px) {
       .dd-custom-grid > .dd-custom-card-wrap,
-      .dd-custom-grid > .dd-add-card {
+.dd-custom-grid > .dd-add-card{
         --dd-card-default-column: span 12;
       }
     }
 
-    .entity-card-wrapper.loading {
+    .entity-card-wrapper.loading{
       background: var(--secondary-background-color);
       border-radius: 8px;
       display: flex;
@@ -4502,7 +4489,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     /* Loading skeleton */
-    .skeleton {
+    .skeleton{
       background: linear-gradient(90deg,
         var(--secondary-background-color) 25%,
         var(--primary-background-color) 50%,
@@ -4513,13 +4500,13 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     @keyframes loading {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
+      0%{ background-position: 200% 0; }
+      100%{ background-position: -200% 0; }
     }
 
     /* Mobile Styles */
     @media (max-width: 768px) {
-      .sidebar {
+      .sidebar{
         position: fixed;
         right: 0;
         top: 0;
@@ -4531,29 +4518,29 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
       }
 
-      .sidebar-resize-handle {
+      .sidebar-resize-handle{
         display: none;
       }
 
-      .sidebar-collapse-toggle {
+      .sidebar-collapse-toggle{
         display: none;
       }
 
-      .floor-areas {
+      .floor-areas{
         display: flex;
         flex-direction: column;
         gap: 0;
       }
 
-      .area-button {
+      .area-button{
         margin-bottom: 8px;
       }
 
-      .sidebar.open {
+      .sidebar.open{
         transform: translateX(0);
       }
 
-      .mobile-nav-overlay {
+      .mobile-nav-overlay{
         position: fixed;
         inset: 0;
         background: rgba(0,0,0,0.5);
@@ -4563,49 +4550,49 @@ export class DwainsLayoutCard extends LitElement {
         transition: opacity 0.3s ease;
       }
 
-      .mobile-nav-overlay.open {
+      .mobile-nav-overlay.open{
         opacity: 1;
         pointer-events: auto;
       }
 
-      .global-header {
+      .global-header{
         padding: 12px;
       }
 
-      .header-time {
+      .header-time{
         font-size: 20px;
       }
 
 
 
-      .entities-grid {
+      .entities-grid{
         grid-template-columns: 1fr;
       }
 
-      .global-header.mobile .header-expand-button[data-extra-count]::after {
+      .global-header.mobile .header-expand-button[data-extra-count]::after{
         right: -8px;
       }
 
       .mobile-home-section,
-      .home-camera-section,
-      .home-status-section,
-      .home-todos-section,
-      .home-custom-cards-section,
-      .home-favorites-section,
-      .home-summaries-section,
-      .mobile-domain-group,
-      .mobile-entities-section.layout-grid .mobile-entity-card {
+.home-camera-section,
+.home-status-section,
+.home-todos-section,
+.home-custom-cards-section,
+.home-favorites-section,
+.home-summaries-section,
+.mobile-domain-group,
+.mobile-entities-section.layout-grid .mobile-entity-card{
         content-visibility: visible;
         contain-intrinsic-size: auto;
       }
     }
 
     /* Favorites Section */
-    .favorites-section {
+    .favorites-section{
       margin-bottom: 24px;
     }
 
-    .favorites-header {
+    .favorites-header{
       display: flex;
       align-items: center;
       gap: 8px;
@@ -4614,13 +4601,13 @@ export class DwainsLayoutCard extends LitElement {
       font-weight: 500;
     }
 
-    .favorites-grid {
+    .favorites-grid{
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
       gap: 8px;
     }
 
-    .favorite-card-wrapper {
+    .favorite-card-wrapper{
       --favorite-color: var(--primary-color);
       appearance: none;
       position: relative;
@@ -4648,76 +4635,76 @@ export class DwainsLayoutCard extends LitElement {
         background-color 0.18s ease;
     }
 
-    .favorite-card-wrapper:hover {
+    .favorite-card-wrapper:hover{
       transform: translateY(-2px);
       box-shadow:
         0 16px 30px rgba(15, 23, 42, 0.1),
         inset 0 0 0 1px color-mix(in srgb, var(--favorite-color) 20%, transparent);
     }
 
-    .favorite-card-wrapper:active {
+    .favorite-card-wrapper:active{
       transform: scale(0.985);
     }
 
     .favorite-card-wrapper:focus-visible,
-    .favorite-quick-action:focus-visible {
+.favorite-quick-action:focus-visible{
       outline: 2px solid color-mix(in srgb, var(--favorite-color) 72%, #ffffff);
       outline-offset: 3px;
     }
 
     .favorite-card-wrapper.is-off,
-    .favorite-card-wrapper.is-idle {
+.favorite-card-wrapper.is-idle{
       --favorite-color: color-mix(in srgb, var(--secondary-text-color) 56%, var(--primary-color));
     }
 
-    .favorite-card-wrapper.favorite-light {
+    .favorite-card-wrapper.favorite-light{
       --favorite-color: #e1a129;
     }
 
-    .favorite-card-wrapper.favorite-switch {
+    .favorite-card-wrapper.favorite-switch{
       --favorite-color: #2f6fd6;
     }
 
-    .favorite-card-wrapper.favorite-cover {
+    .favorite-card-wrapper.favorite-cover{
       --favorite-color: #d98928;
     }
 
     .favorite-card-wrapper.favorite-binary_sensor,
-    .favorite-card-wrapper.favorite-motion {
+.favorite-card-wrapper.favorite-motion{
       --favorite-color: #6d7891;
     }
 
     .favorite-card-wrapper.favorite-climate,
-    .favorite-card-wrapper.favorite-weather {
+.favorite-card-wrapper.favorite-weather{
       --favorite-color: #34a6d8;
     }
 
-    .favorite-card-wrapper.favorite-media_player {
+    .favorite-card-wrapper.favorite-media_player{
       --favorite-color: #7c67c7;
     }
 
-    .favorite-card-wrapper.favorite-person {
+    .favorite-card-wrapper.favorite-person{
       --favorite-color: #3f9b6d;
     }
 
-    .favorite-card-wrapper.favorite-sun {
+    .favorite-card-wrapper.favorite-sun{
       --favorite-color: #2d7eea;
     }
 
     .favorite-top,
-    .favorite-body {
+.favorite-body{
       position: relative;
       z-index: 1;
     }
 
-    .favorite-top {
+    .favorite-top{
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
       gap: 12px;
     }
 
-    .favorite-icon {
+    .favorite-icon{
       width: 31px;
       height: 34px;
       display: inline-flex;
@@ -4729,11 +4716,11 @@ export class DwainsLayoutCard extends LitElement {
       background: color-mix(in srgb, var(--favorite-color) 13%, transparent);
     }
 
-    .favorite-icon ha-icon {
+    .favorite-icon ha-icon{
       --mdc-icon-size: 19px;
     }
 
-    .favorite-quick-action {
+    .favorite-quick-action{
       --toggle-track: color-mix(in srgb, var(--secondary-background-color) 80%, #ffffff);
       width: 38px;
       height: 22px;
@@ -4756,7 +4743,7 @@ export class DwainsLayoutCard extends LitElement {
         background-color 0.18s ease;
     }
 
-    .favorite-quick-action::before {
+    .favorite-quick-action::before{
       content: "";
       width: 18px;
       height: 18px;
@@ -4769,15 +4756,15 @@ export class DwainsLayoutCard extends LitElement {
         background-color 0.18s ease;
     }
 
-    .favorite-card-wrapper.is-active .favorite-quick-action {
+    .favorite-card-wrapper.is-active .favorite-quick-action{
       background: var(--favorite-color);
     }
 
-    .favorite-card-wrapper.is-active .favorite-quick-action::before {
+    .favorite-card-wrapper.is-active .favorite-quick-action::before{
       transform: translateX(16px);
     }
 
-    .favorite-card-wrapper.info-only .favorite-quick-action {
+    .favorite-card-wrapper.info-only .favorite-quick-action{
       width: 30px;
       height: 30px;
       justify-content: center;
@@ -4786,24 +4773,24 @@ export class DwainsLayoutCard extends LitElement {
       box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.05);
     }
 
-    .favorite-card-wrapper.info-only .favorite-quick-action::before {
+    .favorite-card-wrapper.info-only .favorite-quick-action::before{
       display: none;
     }
 
-    .favorite-card-wrapper.info-only .favorite-quick-action ha-icon {
+    .favorite-card-wrapper.info-only .favorite-quick-action ha-icon{
       display: block;
       --mdc-icon-size: 17px;
     }
 
-    .favorite-quick-action ha-icon {
+    .favorite-quick-action ha-icon{
       display: none;
     }
 
-    .favorite-quick-action:active {
+    .favorite-quick-action:active{
       transform: scale(0.94);
     }
 
-    .favorite-name {
+    .favorite-name{
       color: inherit;
       margin-top: 2px;
       font-size: 14px;
@@ -4815,7 +4802,7 @@ export class DwainsLayoutCard extends LitElement {
       -webkit-box-orient: vertical;
     }
 
-    .favorite-state {
+    .favorite-state{
       margin-top: 0;
       color: color-mix(in srgb, var(--primary-text-color) 58%, transparent);
       font-size: 10px;
@@ -4826,7 +4813,7 @@ export class DwainsLayoutCard extends LitElement {
       white-space: nowrap;
     }
 
-    .favorite-area {
+    .favorite-area{
       margin-top: 0;
       color: color-mix(in srgb, var(--primary-text-color) 46%, transparent);
       font-size: 10px;
@@ -4837,7 +4824,7 @@ export class DwainsLayoutCard extends LitElement {
       white-space: nowrap;
     }
 
-    :host([data-theme-dark]) {
+    :host([data-theme-dark]){
       .favorite-card-wrapper {
         background:
           linear-gradient(180deg,
@@ -4870,7 +4857,7 @@ export class DwainsLayoutCard extends LitElement {
 
 
     /* Toast Notification */
-    .toast {
+    .toast{
       position: fixed;
       bottom: 20px;
       left: 50%;
@@ -4885,12 +4872,12 @@ export class DwainsLayoutCard extends LitElement {
       transition: opacity 0.3s ease;
     }
 
-    .toast.show {
+    .toast.show{
       opacity: 1;
     }
 
     /* Confirmation Dialog */
-    .confirmation-dialog {
+    .confirmation-dialog{
       position: fixed;
       inset: 0;
       display: flex;
@@ -4905,12 +4892,12 @@ export class DwainsLayoutCard extends LitElement {
       transition: opacity 0.18s ease;
     }
 
-    .confirmation-dialog.show {
+    .confirmation-dialog.show{
       opacity: 1;
       pointer-events: auto;
     }
 
-    .confirmation-content {
+    .confirmation-content{
       box-sizing: border-box;
       background: var(--card-background-color);
       color: var(--primary-text-color);
@@ -4924,31 +4911,31 @@ export class DwainsLayoutCard extends LitElement {
       transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
-    .confirmation-dialog.show .confirmation-content {
+    .confirmation-dialog.show .confirmation-content{
       transform: scale(1);
     }
 
-    .confirmation-title {
+    .confirmation-title{
       font-size: 18px;
       font-weight: 700;
       line-height: 1.25;
       margin-bottom: 8px;
     }
 
-    .confirmation-message {
+    .confirmation-message{
       margin-bottom: 20px;
       color: var(--secondary-text-color);
       font-size: 14px;
       line-height: 1.5;
     }
 
-    .confirmation-actions {
+    .confirmation-actions{
       display: flex;
       gap: 12px;
       justify-content: flex-end;
     }
 
-    .notifications-overlay {
+    .notifications-overlay{
       position: fixed;
       inset: 0;
       z-index: 1040;
@@ -4959,12 +4946,12 @@ export class DwainsLayoutCard extends LitElement {
       transition: opacity 0.22s ease;
     }
 
-    .notifications-overlay.open {
+    .notifications-overlay.open{
       opacity: 1;
       pointer-events: auto;
     }
 
-    .notifications-panel {
+    .notifications-panel{
       position: fixed;
       left: 50%;
       top: 50%;
@@ -4987,13 +4974,13 @@ export class DwainsLayoutCard extends LitElement {
         opacity 0.2s ease;
     }
 
-    .notifications-panel.open {
+    .notifications-panel.open{
       transform: translate3d(-50%, -50%, 0) scale(1);
       opacity: 1;
       pointer-events: auto;
     }
 
-    .notifications-panel::before {
+    .notifications-panel::before{
       content: "";
       width: 42px;
       height: 4px;
@@ -5003,7 +4990,7 @@ export class DwainsLayoutCard extends LitElement {
       background: rgba(0, 0, 0, 0.14);
     }
 
-    .notifications-head {
+    .notifications-head{
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -5012,11 +4999,11 @@ export class DwainsLayoutCard extends LitElement {
       border-bottom: 1px solid rgba(15, 23, 42, 0.08);
     }
 
-    .notifications-title {
+    .notifications-title{
       min-width: 0;
     }
 
-    .notifications-title-row {
+    .notifications-title-row{
       display: flex;
       align-items: center;
       gap: 8px;
@@ -5026,12 +5013,12 @@ export class DwainsLayoutCard extends LitElement {
       line-height: 1.15;
     }
 
-    .notifications-title-row ha-icon {
+    .notifications-title-row ha-icon{
       color: var(--primary-color);
       --mdc-icon-size: 20px;
     }
 
-    .notifications-subtitle {
+    .notifications-subtitle{
       margin-top: 3px;
       color: var(--secondary-text-color);
       font-size: 12px;
@@ -5039,7 +5026,7 @@ export class DwainsLayoutCard extends LitElement {
       line-height: 1.2;
     }
 
-    .notifications-actions {
+    .notifications-actions{
       display: flex;
       align-items: center;
       gap: 6px;
@@ -5047,7 +5034,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .notifications-icon-button,
-    .notification-dismiss {
+.notification-dismiss{
       border: 0;
       cursor: pointer;
       display: inline-flex;
@@ -5059,21 +5046,21 @@ export class DwainsLayoutCard extends LitElement {
       -webkit-tap-highlight-color: transparent;
     }
 
-    .notifications-icon-button {
+    .notifications-icon-button{
       width: 34px;
       height: 34px;
     }
 
-    .notifications-icon-button ha-icon {
+    .notifications-icon-button ha-icon{
       --mdc-icon-size: 18px;
     }
 
-    .notifications-list {
+    .notifications-list{
       overflow-y: auto;
       padding: 10px;
     }
 
-    .notification-row {
+    .notification-row{
       display: grid;
       grid-template-columns: 38px minmax(0, 1fr) auto;
       gap: 10px;
@@ -5086,11 +5073,11 @@ export class DwainsLayoutCard extends LitElement {
       box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
     }
 
-    .notification-row:last-child {
+    .notification-row:last-child{
       margin-bottom: 0;
     }
 
-    .notification-icon {
+    .notification-icon{
       width: 38px;
       height: 38px;
       display: inline-flex;
@@ -5101,11 +5088,11 @@ export class DwainsLayoutCard extends LitElement {
       color: var(--primary-color);
     }
 
-    .notification-icon ha-icon {
+    .notification-icon ha-icon{
       --mdc-icon-size: 21px;
     }
 
-    .notification-title {
+    .notification-title{
       color: var(--primary-text-color);
       font-size: 14px;
       font-weight: 800;
@@ -5113,7 +5100,7 @@ export class DwainsLayoutCard extends LitElement {
       overflow-wrap: anywhere;
     }
 
-    .notification-message {
+    .notification-message{
       margin-top: 4px;
       color: var(--secondary-text-color);
       font-size: 13px;
@@ -5122,27 +5109,27 @@ export class DwainsLayoutCard extends LitElement {
       overflow-wrap: anywhere;
     }
 
-    .notification-date {
+    .notification-date{
       margin-top: 7px;
       color: color-mix(in srgb, var(--secondary-text-color) 74%, transparent);
       font-size: 11px;
       font-weight: 650;
     }
 
-    .notification-dismiss {
+    .notification-dismiss{
       width: 32px;
       height: 32px;
       color: var(--secondary-text-color);
       background: rgba(0, 0, 0, 0.05);
     }
 
-    .notification-dismiss ha-icon {
+    .notification-dismiss ha-icon{
       --mdc-icon-size: 17px;
     }
 
     .notifications-empty,
-    .notifications-error,
-    .notifications-loading {
+.notifications-error,
+.notifications-loading{
       min-height: 130px;
       display: flex;
       flex-direction: column;
@@ -5157,14 +5144,14 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .notifications-empty ha-icon,
-    .notifications-error ha-icon,
-    .notifications-loading ha-icon {
+.notifications-error ha-icon,
+.notifications-loading ha-icon{
       --mdc-icon-size: 28px;
       color: var(--primary-color);
     }
 
     @media (max-width: 1024px) {
-      .notifications-panel {
+      .notifications-panel{
         top: auto;
         bottom: calc(18px + env(safe-area-inset-bottom, 0px));
         width: min(460px, calc(100vw - 28px));
@@ -5172,12 +5159,12 @@ export class DwainsLayoutCard extends LitElement {
         transform: translate3d(-50%, calc(100% + 48px), 0);
       }
 
-      .notifications-panel.open {
+      .notifications-panel.open{
         transform: translate3d(-50%, 0, 0);
       }
     }
 
-    .confirmation-button {
+    .confirmation-button{
       min-height: 40px;
       padding: 9px 16px;
       border-radius: 8px;
@@ -5188,35 +5175,35 @@ export class DwainsLayoutCard extends LitElement {
       transition: transform 0.16s ease, box-shadow 0.16s ease;
     }
 
-    .confirmation-button.cancel {
+    .confirmation-button.cancel{
       background: var(--secondary-background-color);
       color: var(--primary-text-color);
     }
 
-    .confirmation-button.confirm {
+    .confirmation-button.confirm{
       background: var(--primary-color);
       color: var(--text-primary-color);
     }
 
-    .confirmation-button.confirm.destructive {
+    .confirmation-button.confirm.destructive{
       background: var(--error-color, #db4437);
       color: #fff;
     }
 
-    .confirmation-button:hover {
+    .confirmation-button:hover{
       transform: translateY(-1px);
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
     /* Area Badges Styling */
-    .area-badges {
+    .area-badges{
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
       padding: 0px; /* 16px;*/
     }
 
-    .area-badge {
+    .area-badge{
       display: flex;
       align-items: center;
       gap: 8px;
@@ -5231,66 +5218,66 @@ export class DwainsLayoutCard extends LitElement {
       border: 1px solid color-mix(in srgb, var(--area-badge-color, var(--divider-color)) 20%, transparent);
     }
 
-    .area-badge ha-icon {
+    .area-badge ha-icon{
       --mdc-icon-size: 18px;
     }
 
     /* Domain-specific badge colors */
-    .area-badge.light {
+    .area-badge.light{
       background: color-mix(in srgb, var(--area-badge-color, #e1a129) 10%, var(--card-background-color));
       color: var(--area-badge-color, #e1a129);
       border-color: color-mix(in srgb, var(--area-badge-color, #e1a129) 20%, transparent);
     }
 
-    .area-badge.switch {
+    .area-badge.switch{
       background: color-mix(in srgb, var(--area-badge-color, #2f6fd6) 10%, var(--card-background-color));
       color: var(--area-badge-color, #2f6fd6);
       border-color: color-mix(in srgb, var(--area-badge-color, #2f6fd6) 20%, transparent);
     }
 
-    .area-badge.climate {
+    .area-badge.climate{
       background: color-mix(in srgb, var(--area-badge-color, #34a6d8) 10%, var(--card-background-color));
       color: var(--area-badge-color, #34a6d8);
       border-color: color-mix(in srgb, var(--area-badge-color, #34a6d8) 20%, transparent);
     }
 
-    .area-badge.motion.active {
+    .area-badge.motion.active{
       background: color-mix(in srgb, var(--area-badge-color, #6d7891) 10%, var(--card-background-color));
       color: var(--area-badge-color, #6d7891);
       border-color: color-mix(in srgb, var(--area-badge-color, #6d7891) 20%, transparent);
     }
 
-    .area-badge.cover {
+    .area-badge.cover{
       background: color-mix(in srgb, var(--area-badge-color, #d98928) 10%, var(--card-background-color));
       color: var(--area-badge-color, #d98928);
       border-color: color-mix(in srgb, var(--area-badge-color, #d98928) 20%, transparent);
     }
 
-    .area-badge.media_player {
+    .area-badge.media_player{
       background: color-mix(in srgb, var(--area-badge-color, #7c67c7) 10%, var(--card-background-color));
       color: var(--area-badge-color, #7c67c7);
       border-color: color-mix(in srgb, var(--area-badge-color, #7c67c7) 20%, transparent);
     }
 
-    .area-badge.temperature {
+    .area-badge.temperature{
       background: color-mix(in srgb, var(--cyan-color) 10%, var(--card-background-color));
       color: var(--cyan-color);
       border-color: color-mix(in srgb, var(--cyan-color) 20%, transparent);
     }
 
-    .area-badge.humidity {
+    .area-badge.humidity{
       background: color-mix(in srgb, var(--blue-color) 10%, var(--card-background-color));
       color: var(--blue-color);
       border-color: color-mix(in srgb, var(--blue-color) 20%, transparent);
     }
 
-    .area-badge.wattage {
+    .area-badge.wattage{
       background: color-mix(in srgb, var(--yellow-color) 10%, var(--card-background-color));
       color: var(--yellow-color);
       border-color: color-mix(in srgb, var(--yellow-color) 20%, transparent);
     }
 
-    .area-badge.energy {
+    .area-badge.energy{
       background: color-mix(in srgb, var(--indigo-color) 10%, var(--card-background-color));
       color: var(--indigo-color);
       border-color: color-mix(in srgb, var(--indigo-color) 20%, transparent);
@@ -5298,7 +5285,7 @@ export class DwainsLayoutCard extends LitElement {
 
     /* Toggle button badges */
     .area-badge.light-toggle,
-    .area-badge.switch-toggle {
+.area-badge.switch-toggle{
       cursor: pointer;
       background: var(--primary-color);
       color: var(--text-primary-color);
@@ -5306,7 +5293,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .area-badge.light-toggle:hover,
-    .area-badge.switch-toggle:hover {
+.area-badge.switch-toggle:hover{
       background: color-mix(in srgb, var(--primary-color) 90%, black);
       transform: translateY(-1px);
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -5314,28 +5301,28 @@ export class DwainsLayoutCard extends LitElement {
 
     /* Responsive adjustments */
     @media (max-width: 768px) {
-      .area-badges {
+      .area-badges{
         padding: 12px;
         gap: 6px;
       }
 
-      .area-badge {
+      .area-badge{
         padding: 6px 10px;
         font-size: 13px;
       }
 
-      .area-badge ha-icon {
+      .area-badge ha-icon{
         --mdc-icon-size: 16px;
       }
     }
 
     /* Header Expanded Content Styling */
-    .global-header.expanded {
+    .global-header.expanded{
       border-bottom: 2px solid var(--primary-color);
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
-    .header-expanded-content {
+    .header-expanded-content{
       background: var(--card-background-color);
       padding: 16px;
       border-top: 1px solid var(--divider-color);
@@ -5343,26 +5330,26 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     @keyframes slideDown {
-      from {
+      from{
         opacity: 0;
         transform: translateY(-10px);
       }
-      to {
+      to{
         opacity: 1;
         transform: translateY(0);
       }
     }
 
-    .header-expanded-content .header-favorites {
+    .header-expanded-content .header-favorites{
       max-width: 100%;
     }
 
     /* Favorites Section Styling */
-    .favorites-section {
+    .favorites-section{
       width: 100%;
     }
 
-    .favorites-header {
+    .favorites-header{
       display: flex;
       align-items: center;
       gap: 8px;
@@ -5371,36 +5358,36 @@ export class DwainsLayoutCard extends LitElement {
       border-bottom: 1px solid var(--divider-color);
     }
 
-    .favorites-header ha-icon {
+    .favorites-header ha-icon{
       --mdc-icon-size: 20px;
       color: var(--primary-color);
     }
 
-    .favorites-header h3 {
+    .favorites-header h3{
       margin: 0;
       font-size: 16px;
       font-weight: 500;
       color: var(--primary-text-color);
     }
 
-    .favorites-grid {
+    .favorites-grid{
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
       gap: 12px;
       width: 100%;
     }
 
-    .favorite-tile-wrapper {
+    .favorite-tile-wrapper{
       width: 100%;
       min-height: 60px;
     }
 
-    .favorite-tile {
+    .favorite-tile{
       width: 100% !important;
       height: auto !important;
     }
 
-    .no-favorites {
+    .no-favorites{
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -5413,19 +5400,19 @@ export class DwainsLayoutCard extends LitElement {
       border: 1px dashed var(--divider-color);
     }
 
-    .no-favorites ha-icon {
+    .no-favorites ha-icon{
       --mdc-icon-size: 32px;
       margin-bottom: 8px;
       opacity: 0.6;
     }
 
-    .no-favorites p {
+    .no-favorites p{
       margin: 0;
       font-size: 14px;
     }
 
     /* Header Expand Button Enhanced Styling */
-    .header-expand-button {
+    .header-expand-button{
       position: absolute;
       bottom: -20px;
       left: 50%;
@@ -5445,109 +5432,109 @@ export class DwainsLayoutCard extends LitElement {
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
-    .header-expand-button:hover {
+    .header-expand-button:hover{
       background: var(--primary-color);
       color: var(--text-primary-color);
       transform: translateX(-50%) translateY(-2px);
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
 
-    .header-expand-button ha-icon {
+    .header-expand-button ha-icon{
       --mdc-icon-size: 20px;
       transition: transform 0.3s ease;
     }
 
-    .global-header.expanded .header-expand-button {
+    .global-header.expanded .header-expand-button{
       bottom: -20px;
     }
 
     /* Mobile specific adjustments for expanded header */
     @media (max-width: 768px) {
-      .header-expanded-content {
+      .header-expanded-content{
         padding: 12px;
       }
 
-      .favorites-grid {
+      .favorites-grid{
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
         gap: 8px;
       }
 
-      .header-expand-button {
+      .header-expand-button{
         width: 36px;
         height: 36px;
         bottom: -18px;
       }
 
-      .header-expand-button ha-icon {
+      .header-expand-button ha-icon{
         --mdc-icon-size: 18px;
       }
     }
 
     /* Home and header status cards */
     .home-status-card,
-    .status-card-compact {
+.status-card-compact{
       --status-color: var(--primary-color);
       --status-bg: color-mix(in srgb, var(--status-color) 16%, transparent);
     }
 
     .home-status-card.cover,
-    .status-card-compact.cover {
+.status-card-compact.cover{
       --status-color: #d98928;
     }
 
     .home-status-card.binary_sensor,
-    .home-status-card.motion,
-    .status-card-compact.binary_sensor,
-    .status-card-compact.motion {
+.home-status-card.motion,
+.status-card-compact.binary_sensor,
+.status-card-compact.motion{
       --status-color: #6d7891;
     }
 
     .home-status-card.light,
-    .status-card-compact.light {
+.status-card-compact.light{
       --status-color: #e1a129;
     }
 
     .home-status-card.switch,
-    .status-card-compact.switch {
+.status-card-compact.switch{
       --status-color: #2f6fd6;
     }
 
     .home-status-card.climate,
-    .home-status-card.house-climate-card,
-    .status-card-compact.climate {
+.home-status-card.house-climate-card,
+.status-card-compact.climate{
       --status-color: #34a6d8;
     }
 
     .home-status-card.person,
-    .status-card-compact.person {
+.status-card-compact.person{
       --status-color: #3f9b6d;
     }
 
     .home-status-card.media_player,
-    .status-card-compact.media_player {
+.status-card-compact.media_player{
       --status-color: #7c67c7;
     }
 
     .home-status-card.fan,
-    .status-card-compact.fan {
+.status-card-compact.fan{
       --status-color: #16a6b6;
     }
 
     .home-status-card.wattage,
-    .home-status-card.house-power-card,
-    .home-status-card.energy,
-    .status-card-compact.wattage,
-    .status-card-compact.energy {
+.home-status-card.house-power-card,
+.home-status-card.energy,
+.status-card-compact.wattage,
+.status-card-compact.energy{
       --status-color: #d88e20;
     }
 
-    .home-status-grid {
+    .home-status-grid{
       grid-template-columns: repeat(auto-fill, minmax(150px, 170px));
       justify-content: start;
       gap: 12px;
     }
 
-    .home-status-card {
+    .home-status-card{
       min-height: 134px;
       display: flex;
       flex-direction: column;
@@ -5561,7 +5548,7 @@ export class DwainsLayoutCard extends LitElement {
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
     }
 
-    .home-status-card::before {
+    .home-status-card::before{
       top: auto;
       left: 16px;
       right: 16px;
@@ -5572,17 +5559,17 @@ export class DwainsLayoutCard extends LitElement {
       opacity: 0.55;
     }
 
-    .home-status-card:hover {
+    .home-status-card:hover{
       transform: translateY(-2px);
       border-color: color-mix(in srgb, var(--status-color) 40%, transparent);
       box-shadow: 0 14px 30px rgba(0, 0, 0, 0.12);
     }
 
-    .home-status-card:hover::before {
+    .home-status-card:hover::before{
       opacity: 0.85;
     }
 
-    .home-status-card .status-card-icon {
+    .home-status-card .status-card-icon{
       width: 48px;
       height: 48px;
       margin: 0 0 16px;
@@ -5593,17 +5580,17 @@ export class DwainsLayoutCard extends LitElement {
       background: var(--status-bg);
     }
 
-    .home-status-card .status-card-icon ha-icon {
+    .home-status-card .status-card-icon ha-icon{
       --mdc-icon-size: 25px;
       color: var(--status-color);
       transform: none;
     }
 
-    .home-status-card:hover .status-card-icon ha-icon {
+    .home-status-card:hover .status-card-icon ha-icon{
       transform: none;
     }
 
-    .home-status-card .status-card-badge {
+    .home-status-card .status-card-badge{
       top: -8px;
       right: -8px;
       width: auto;
@@ -5618,7 +5605,7 @@ export class DwainsLayoutCard extends LitElement {
       box-shadow: 0 5px 12px color-mix(in srgb, var(--status-color) 28%, transparent);
     }
 
-    .home-status-card .status-card-title {
+    .home-status-card .status-card-title{
       margin: auto 0 0;
       color: var(--primary-text-color);
       font-size: 16px;
@@ -5627,14 +5614,14 @@ export class DwainsLayoutCard extends LitElement {
       text-align: left;
     }
 
-    .home-status-card.has-value .status-card-title {
+    .home-status-card.has-value .status-card-title{
       margin-top: 2px;
       color: var(--secondary-text-color);
       font-size: 12px;
       font-weight: 800;
     }
 
-    .home-status-card .status-card-value {
+    .home-status-card .status-card-value{
       margin: auto 0 0;
       color: var(--primary-text-color);
       font-size: 22px;
@@ -5644,28 +5631,28 @@ export class DwainsLayoutCard extends LitElement {
       white-space: nowrap;
     }
 
-    .home-status-card.house-persons-card {
+    .home-status-card.house-persons-card{
       --status-color: #182044;
       grid-column: span 2;
       min-width: 240px;
       gap: 12px;
     }
 
-    .home-status-card.house-power-card {
+    .home-status-card.house-power-card{
       --status-color: #d88e20;
       grid-column: span 2;
       min-width: 270px;
       gap: 12px;
     }
 
-    .home-status-card.house-climate-card {
+    .home-status-card.house-climate-card{
       --status-color: #34a6d8;
       grid-column: span 2;
       min-width: 270px;
       gap: 12px;
     }
 
-    .house-persons-head {
+    .house-persons-head{
       width: 100%;
       display: flex;
       align-items: center;
@@ -5673,8 +5660,8 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .home-status-card.house-persons-card .house-persons-icon,
-    .home-status-card.house-climate-card .house-climate-icon,
-    .home-status-card.house-power-card .house-power-icon {
+.home-status-card.house-climate-card .house-climate-icon,
+.home-status-card.house-power-card .house-power-icon{
       width: 42px;
       height: 42px;
       margin: 0;
@@ -5683,15 +5670,15 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .house-persons-copy,
-    .house-climate-copy,
-    .house-power-copy {
+.house-climate-copy,
+.house-power-copy{
       min-width: 0;
       text-align: left;
     }
 
     .house-persons-title,
-    .house-climate-title,
-    .house-power-title {
+.house-climate-title,
+.house-power-title{
       color: var(--primary-text-color);
       font-size: 15px;
       font-weight: 850;
@@ -5699,31 +5686,31 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .house-persons-subtitle,
-    .house-persons-empty,
-    .house-climate-subtitle,
-    .house-power-subtitle,
-    .house-power-empty {
+.house-persons-empty,
+.house-climate-subtitle,
+.house-power-subtitle,
+.house-power-empty{
       color: var(--secondary-text-color);
       font-size: 12px;
       font-weight: 700;
       line-height: 1.25;
     }
 
-    .house-climate-head {
+    .house-climate-head{
       width: 100%;
       display: flex;
       align-items: center;
       gap: 10px;
     }
 
-    .house-climate-grid {
+    .house-climate-grid{
       width: 100%;
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 8px;
     }
 
-    .house-climate-metric {
+    .house-climate-metric{
       min-width: 0;
       min-height: 48px;
       padding: 8px 9px;
@@ -5744,11 +5731,11 @@ export class DwainsLayoutCard extends LitElement {
         background-color 0.18s ease;
     }
 
-    .house-climate-metric:active {
+    .house-climate-metric:active{
       transform: scale(0.97);
     }
 
-    .house-climate-metric-icon {
+    .house-climate-metric-icon{
       width: 26px;
       height: 26px;
       border-radius: 9px;
@@ -5759,11 +5746,11 @@ export class DwainsLayoutCard extends LitElement {
       color: var(--metric-color);
     }
 
-    .house-climate-metric-icon ha-icon {
+    .house-climate-metric-icon ha-icon{
       --mdc-icon-size: 16px;
     }
 
-    .house-climate-metric-copy {
+    .house-climate-metric-copy{
       min-width: 0;
       display: flex;
       flex-direction: column;
@@ -5771,26 +5758,26 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .house-climate-metric-value,
-    .house-climate-metric-label {
+.house-climate-metric-label{
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
       line-height: 1.1;
     }
 
-    .house-climate-metric-value {
+    .house-climate-metric-value{
       font-size: 14px;
       font-weight: 900;
       color: var(--primary-text-color);
     }
 
-    .house-climate-metric-label {
+    .house-climate-metric-label{
       font-size: 10px;
       font-weight: 750;
       color: var(--secondary-text-color);
     }
 
-    .house-power-head {
+    .house-power-head{
       width: 100%;
       display: grid;
       grid-template-columns: auto minmax(0, 1fr) auto;
@@ -5798,7 +5785,7 @@ export class DwainsLayoutCard extends LitElement {
       gap: 10px;
     }
 
-    .house-power-total {
+    .house-power-total{
       color: var(--primary-text-color);
       font-size: 22px;
       font-weight: 950;
@@ -5806,13 +5793,13 @@ export class DwainsLayoutCard extends LitElement {
       white-space: nowrap;
     }
 
-    .house-power-list {
+    .house-power-list{
       width: 100%;
       display: grid;
       gap: 7px;
     }
 
-    .house-power-room {
+    .house-power-room{
       display: grid;
       grid-template-columns: 26px minmax(0, 1fr) auto;
       align-items: center;
@@ -5820,7 +5807,7 @@ export class DwainsLayoutCard extends LitElement {
       row-gap: 4px;
     }
 
-    .house-power-room-icon {
+    .house-power-room-icon{
       width: 26px;
       height: 26px;
       grid-row: span 2;
@@ -5832,31 +5819,31 @@ export class DwainsLayoutCard extends LitElement {
       color: var(--status-color);
     }
 
-    .house-power-room-icon ha-icon {
+    .house-power-room-icon ha-icon{
       --mdc-icon-size: 16px;
     }
 
     .house-power-room-name,
-    .house-power-room-value {
+.house-power-room-value{
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
       line-height: 1.1;
     }
 
-    .house-power-room-name {
+    .house-power-room-name{
       color: var(--primary-text-color);
       font-size: 11px;
       font-weight: 850;
     }
 
-    .house-power-room-value {
+    .house-power-room-value{
       color: var(--secondary-text-color);
       font-size: 11px;
       font-weight: 800;
     }
 
-    .house-power-bar {
+    .house-power-bar{
       position: relative;
       height: 5px;
       grid-column: 2 / -1;
@@ -5865,7 +5852,7 @@ export class DwainsLayoutCard extends LitElement {
       background: color-mix(in srgb, var(--status-color) 10%, var(--secondary-background-color));
     }
 
-    .house-power-bar-fill {
+    .house-power-bar-fill{
       position: absolute;
       inset: 0 auto 0 0;
       width: var(--power-width, 0%);
@@ -5874,14 +5861,14 @@ export class DwainsLayoutCard extends LitElement {
       background: linear-gradient(90deg, #d88e20, #f4c34d);
     }
 
-    .house-persons-grid {
+    .house-persons-grid{
       width: 100%;
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 7px;
     }
 
-    .house-person-mini {
+    .house-person-mini{
       appearance: none;
       min-width: 0;
       min-height: 42px;
@@ -5901,19 +5888,19 @@ export class DwainsLayoutCard extends LitElement {
         transform 0.18s ease;
     }
 
-    .house-person-mini:active {
+    .house-person-mini:active{
       transform: scale(0.97);
     }
 
-    .house-person-mini.is-home {
+    .house-person-mini.is-home{
       background: color-mix(in srgb, #2f9b62 13%, var(--card-background-color));
     }
 
-    .house-person-mini.is-away {
+    .house-person-mini.is-away{
       background: color-mix(in srgb, #df5b63 10%, var(--card-background-color));
     }
 
-    .house-person-avatar {
+    .house-person-avatar{
       width: 26px;
       height: 26px;
       display: inline-flex;
@@ -5926,17 +5913,17 @@ export class DwainsLayoutCard extends LitElement {
       color: var(--status-color);
     }
 
-    .house-person-avatar img {
+    .house-person-avatar img{
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
 
-    .house-person-avatar ha-icon {
+    .house-person-avatar ha-icon{
       --mdc-icon-size: 16px;
     }
 
-    .house-person-mini-copy {
+    .house-person-mini-copy{
       min-width: 0;
       display: flex;
       flex-direction: column;
@@ -5944,32 +5931,32 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .house-person-mini-name,
-    .house-person-mini-state {
+.house-person-mini-state{
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
-    .house-person-mini-name {
+    .house-person-mini-name{
       color: var(--primary-text-color);
       font-size: 11px;
       font-weight: 850;
       line-height: 1.1;
     }
 
-    .house-person-mini-state {
+    .house-person-mini-state{
       color: var(--secondary-text-color);
       font-size: 10px;
       font-weight: 700;
       line-height: 1.1;
     }
 
-    .header-status-scroll {
+    .header-status-scroll{
       gap: 8px;
       padding: 2px 2px 4px 12px;
     }
 
-    .status-card-compact {
+    .status-card-compact{
       flex: 0 0 auto;
       min-width: 92px;
       max-width: 150px;
@@ -5983,25 +5970,25 @@ export class DwainsLayoutCard extends LitElement {
       box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
     }
 
-    .status-card-compact:hover {
+    .status-card-compact:hover{
       transform: translateY(-1px);
       border-color: color-mix(in srgb, var(--status-color) 36%, transparent);
       box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
     }
 
-    .status-card-compact .status-card-icon-compact {
+    .status-card-compact .status-card-icon-compact{
       width: 36px;
       height: 36px;
       border-radius: 8px;
       background: var(--status-bg);
     }
 
-    .status-card-compact .status-card-icon-compact ha-icon {
+    .status-card-compact .status-card-icon-compact ha-icon{
       --mdc-icon-size: 20px;
       color: var(--status-color);
     }
 
-    .status-card-compact .status-card-badge-compact {
+    .status-card-compact .status-card-badge-compact{
       top: -7px;
       right: -8px;
       min-width: 22px;
@@ -6018,7 +6005,7 @@ export class DwainsLayoutCard extends LitElement {
       box-shadow: 0 4px 10px color-mix(in srgb, var(--status-color) 26%, transparent);
     }
 
-    .status-card-compact .status-card-title-compact {
+    .status-card-compact .status-card-title-compact{
       width: 100%;
       margin-top: 5px;
       color: var(--secondary-text-color);
@@ -6033,7 +6020,7 @@ export class DwainsLayoutCard extends LitElement {
       -webkit-box-orient: vertical;
     }
 
-    .status-card-compact.has-value .status-card-title-compact {
+    .status-card-compact.has-value .status-card-title-compact{
       color: var(--primary-text-color);
       font-size: 13px;
       font-weight: 900;
@@ -6041,7 +6028,7 @@ export class DwainsLayoutCard extends LitElement {
       display: block;
     }
 
-    .status-card-subtitle-compact {
+    .status-card-subtitle-compact{
       width: 100%;
       margin-top: 1px;
       color: var(--secondary-text-color);
@@ -6054,7 +6041,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     @media (max-width: 768px) {
-      .home-status-grid {
+      .home-status-grid{
         display: flex;
         grid-template-columns: none;
         gap: 10px;
@@ -6066,54 +6053,54 @@ export class DwainsLayoutCard extends LitElement {
         scrollbar-width: none;
       }
 
-      .home-camera-section {
+      .home-camera-section{
         margin: 0 -10px 18px;
       }
 
-      .home-camera-section .home-status-heading {
+      .home-camera-section .home-status-heading{
         display: none;
       }
 
-      .home-summaries-section {
+      .home-summaries-section{
         margin: 0 -10px 18px;
       }
 
-      .home-summaries-section .home-status-heading {
+      .home-summaries-section .home-status-heading{
         display: none;
       }
 
-      .home-todos-section {
+      .home-todos-section{
         margin: 0 -10px 18px;
       }
 
-      .home-todos-section .home-status-heading {
+      .home-todos-section .home-status-heading{
         display: none;
       }
 
-      .home-todos-grid {
+      .home-todos-grid{
         display: grid;
         grid-template-columns: minmax(0, 1fr);
         gap: 10px;
         padding: 2px 18px 16px;
       }
 
-      .home-custom-cards-section {
+      .home-custom-cards-section{
         min-width: 0;
         margin: 0 -10px 18px;
       }
 
-      .home-custom-cards-section .home-status-heading {
+      .home-custom-cards-section .home-status-heading{
         display: none;
       }
 
-      .home-custom-cards-grid {
+      .home-custom-cards-grid{
         display: grid;
         grid-template-columns: minmax(0, 1fr);
         gap: 10px;
         padding: 2px 18px 16px;
       }
 
-      .home-summary-list {
+      .home-summary-list{
         width: auto;
         display: flex;
         flex-direction: column;
@@ -6121,18 +6108,18 @@ export class DwainsLayoutCard extends LitElement {
         gap: 8px;
       }
 
-      .home-summary-card {
+      .home-summary-card{
         min-height: 64px;
         padding: 11px 12px;
         border-radius: 14px;
       }
 
-      .home-summary-icon {
+      .home-summary-icon{
         width: 36px;
         height: 36px;
       }
 
-      .home-camera-grid {
+      .home-camera-grid{
         display: flex;
         grid-template-columns: none;
         gap: 10px;
@@ -6143,11 +6130,11 @@ export class DwainsLayoutCard extends LitElement {
         scrollbar-width: none;
       }
 
-      .home-camera-grid::-webkit-scrollbar {
+      .home-camera-grid::-webkit-scrollbar{
         display: none;
       }
 
-      .home-camera-section.layout-grid .home-camera-grid {
+      .home-camera-section.layout-grid .home-camera-grid{
         display: grid;
         grid-template-columns: 1fr;
         gap: 10px;
@@ -6156,7 +6143,7 @@ export class DwainsLayoutCard extends LitElement {
         scroll-snap-type: none;
       }
 
-      .home-camera-card {
+      .home-camera-card{
         flex: 0 0 226px;
         min-height: 146px;
         border-radius: 18px;
@@ -6164,26 +6151,26 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow: 0 12px 28px rgba(15, 23, 42, 0.11);
       }
 
-      .home-camera-section.layout-grid .home-camera-card {
+      .home-camera-section.layout-grid .home-camera-card{
         width: 100%;
         flex: none;
         scroll-snap-align: none;
       }
 
-      .home-camera-content {
+      .home-camera-content{
         min-height: 146px;
         padding: 13px;
       }
 
-      .home-camera-name {
+      .home-camera-name{
         font-size: 16px;
       }
 
-      .home-status-grid::-webkit-scrollbar {
+      .home-status-grid::-webkit-scrollbar{
         display: none;
       }
 
-      .home-status-card {
+      .home-status-card{
         flex: 0 0 126px;
         min-height: 114px;
         padding: 14px;
@@ -6192,50 +6179,50 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
       }
 
-      .home-status-card.house-persons-card {
+      .home-status-card.house-persons-card{
         flex: 0 0 230px;
         min-height: 132px;
         padding: 14px;
       }
 
-      .home-status-card.house-power-card {
+      .home-status-card.house-power-card{
         flex: 0 0 250px;
         min-height: 132px;
         padding: 14px;
       }
 
-      .home-status-card.house-climate-card {
+      .home-status-card.house-climate-card{
         flex: 0 0 250px;
         min-height: 132px;
         padding: 14px;
       }
 
-      .home-status-card .status-card-title {
+      .home-status-card .status-card-title{
         font-size: 15px;
       }
 
-      .status-card-compact {
+      .status-card-compact{
         min-width: 88px;
       }
 
-      .home-view {
+      .home-view{
         max-width: none;
       }
 
-      .person-cards-section {
+      .person-cards-section{
         display: none;
       }
 
-      .home-status-heading {
+      .home-status-heading{
         display: none;
       }
 
-      .mobile-home-section {
+      .mobile-home-section{
         display: block;
         margin: 0 -10px 18px;
       }
 
-      .mobile-section-heading {
+      .mobile-section-heading{
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -6244,14 +6231,14 @@ export class DwainsLayoutCard extends LitElement {
         margin-bottom: 10px;
       }
 
-      .mobile-section-title {
+      .mobile-section-title{
         min-width: 0;
         display: inline-flex;
         align-items: center;
         gap: 8px;
       }
 
-      .mobile-section-title-label {
+      .mobile-section-title-label{
         color: var(--primary-text-color);
         font-size: 16px;
         font-weight: 850;
@@ -6261,7 +6248,7 @@ export class DwainsLayoutCard extends LitElement {
         white-space: nowrap;
       }
 
-      .mobile-section-action {
+      .mobile-section-action{
         appearance: none;
         min-width: 66px;
         height: 28px;
@@ -6283,16 +6270,16 @@ export class DwainsLayoutCard extends LitElement {
           transform 0.18s ease;
       }
 
-      .mobile-section-action ha-icon {
+      .mobile-section-action ha-icon{
         --mdc-icon-size: 15px;
       }
 
-      .mobile-section-action:active {
+      .mobile-section-action:active{
         transform: scale(0.96);
         background: color-mix(in srgb, var(--primary-color) 18%, transparent);
       }
 
-      .mobile-area-rail {
+      .mobile-area-rail{
         display: flex;
         gap: 10px;
         padding: 2px 18px 16px;
@@ -6302,11 +6289,11 @@ export class DwainsLayoutCard extends LitElement {
         scrollbar-width: none;
       }
 
-      .mobile-area-rail::-webkit-scrollbar {
+      .mobile-area-rail::-webkit-scrollbar{
         display: none;
       }
 
-      .mobile-home-section.layout-grid .mobile-area-rail {
+      .mobile-home-section.layout-grid .mobile-area-rail{
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 10px;
@@ -6315,7 +6302,7 @@ export class DwainsLayoutCard extends LitElement {
         scroll-snap-type: none;
       }
 
-      .mobile-area-card {
+      .mobile-area-card{
         appearance: none;
         position: relative;
         box-sizing: border-box;
@@ -6343,23 +6330,23 @@ export class DwainsLayoutCard extends LitElement {
           box-shadow 0.18s ease;
       }
 
-      .mobile-home-section.layout-grid .mobile-area-card {
+      .mobile-home-section.layout-grid .mobile-area-card{
         width: 100%;
         flex: none;
         scroll-snap-align: none;
       }
 
       @media (max-width: 380px) {
-        .mobile-home-section.layout-grid .mobile-area-rail {
+        .mobile-home-section.layout-grid .mobile-area-rail{
           grid-template-columns: 1fr;
         }
       }
 
-      .mobile-area-card:active {
+      .mobile-area-card:active{
         transform: scale(0.98);
       }
 
-      .mobile-area-card.has-picture {
+      .mobile-area-card.has-picture{
         min-height: 146px;
         color: var(--mobile-area-picture-text-color, #ffffff);
         border-color: rgba(255, 255, 255, 0.16);
@@ -6372,7 +6359,7 @@ export class DwainsLayoutCard extends LitElement {
           linear-gradient(90deg, rgba(12, 18, 32, 0.18), rgba(12, 18, 32, 0.04));
       }
 
-      .mobile-area-card.has-picture.text-dark {
+      .mobile-area-card.has-picture.text-dark{
         --mobile-area-picture-text-color: #ffffff;
         --mobile-area-picture-muted-text-color: rgba(255, 255, 255, 0.76);
         --mobile-area-picture-text-shadow: 0 2px 10px rgba(0, 0, 0, 0.62);
@@ -6381,7 +6368,7 @@ export class DwainsLayoutCard extends LitElement {
           linear-gradient(90deg, rgba(12, 18, 32, 0.18), rgba(12, 18, 32, 0.04));
       }
 
-      .mobile-area-picture {
+      .mobile-area-picture{
         position: absolute;
         inset: 0;
         z-index: 0;
@@ -6390,7 +6377,7 @@ export class DwainsLayoutCard extends LitElement {
         transform: scale(1.02);
       }
 
-      .mobile-area-card.has-picture::after {
+      .mobile-area-card.has-picture::after{
         content: "";
         position: absolute;
         inset: 0;
@@ -6399,19 +6386,19 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .mobile-area-top,
-      .mobile-area-copy {
+.mobile-area-copy{
         position: relative;
         z-index: 2;
       }
 
-      .mobile-area-top {
+      .mobile-area-top{
         display: flex;
         align-items: flex-start;
         justify-content: space-between;
         gap: 8px;
       }
 
-      .mobile-area-icon {
+      .mobile-area-icon{
         width: 42px;
         height: 42px;
         display: inline-flex;
@@ -6423,17 +6410,17 @@ export class DwainsLayoutCard extends LitElement {
         background: color-mix(in srgb, var(--primary-color) 13%, transparent);
       }
 
-      .mobile-area-icon ha-icon {
+      .mobile-area-icon ha-icon{
         --mdc-icon-size: 22px;
       }
 
-      .mobile-area-card.has-picture .mobile-area-icon {
+      .mobile-area-card.has-picture .mobile-area-icon{
         color: var(--mobile-area-picture-text-color, #ffffff);
         background: rgba(255, 255, 255, 0.18);
         backdrop-filter: blur(12px);
       }
 
-      .mobile-area-badges {
+      .mobile-area-badges{
         display: flex;
         flex-wrap: wrap;
         justify-content: flex-end;
@@ -6441,7 +6428,7 @@ export class DwainsLayoutCard extends LitElement {
         min-width: 0;
       }
 
-      .mobile-area-badge {
+      .mobile-area-badge{
         min-width: 24px;
         height: 24px;
         padding: 0 7px;
@@ -6456,30 +6443,30 @@ export class DwainsLayoutCard extends LitElement {
         font-weight: 850;
       }
 
-      .mobile-area-card.has-picture .mobile-area-badge {
+      .mobile-area-card.has-picture .mobile-area-badge{
         color: var(--area-badge-color, var(--primary-color));
         background: color-mix(in srgb, var(--area-badge-color, var(--primary-color)) 18%, rgba(255, 255, 255, 0.88));
         backdrop-filter: blur(12px);
         box-shadow: 0 4px 12px rgba(15, 23, 42, 0.16);
       }
 
-      .mobile-area-badge ha-icon {
+      .mobile-area-badge ha-icon{
         --mdc-icon-size: 14px;
       }
 
-      .mobile-area-badge.light {
+      .mobile-area-badge.light{
         --area-badge-color: #e1a129;
       }
 
-      .mobile-area-badge.cover {
+      .mobile-area-badge.cover{
         --area-badge-color: #d98928;
       }
 
-      .mobile-area-badge.motion {
+      .mobile-area-badge.motion{
         --area-badge-color: #6d7891;
       }
 
-      .mobile-area-name {
+      .mobile-area-name{
         font-size: 15px;
         font-weight: 850;
         line-height: 1.1;
@@ -6488,7 +6475,7 @@ export class DwainsLayoutCard extends LitElement {
         white-space: nowrap;
       }
 
-      .mobile-area-meta {
+      .mobile-area-meta{
         margin-top: 4px;
         color: color-mix(in srgb, var(--primary-text-color) 54%, transparent);
         font-size: 12px;
@@ -6499,34 +6486,34 @@ export class DwainsLayoutCard extends LitElement {
         white-space: nowrap;
       }
 
-      .mobile-area-card.has-picture .mobile-area-meta {
+      .mobile-area-card.has-picture .mobile-area-meta{
         color: var(--mobile-area-picture-muted-text-color, rgba(255, 255, 255, 0.72));
       }
 
       .mobile-area-card.has-picture .mobile-area-name,
-      .mobile-area-card.has-picture .mobile-area-meta {
+.mobile-area-card.has-picture .mobile-area-meta{
         text-shadow: var(--mobile-area-picture-text-shadow);
       }
 
-      .mobile-area-card.has-picture.text-dark .mobile-area-icon {
+      .mobile-area-card.has-picture.text-dark .mobile-area-icon{
         color: var(--mobile-area-picture-text-color, #ffffff);
         background: rgba(255, 255, 255, 0.18);
       }
 
       .mobile-area-card.has-picture.text-dark .mobile-area-name,
-      .mobile-area-card.has-picture.text-dark .mobile-area-meta {
+.mobile-area-card.has-picture.text-dark .mobile-area-meta{
         text-shadow: var(--mobile-area-picture-text-shadow);
       }
 
-      .home-status-section {
+      .home-status-section{
         margin: 0 -10px 18px;
       }
 
-      .home-status-section .mobile-section-heading {
+      .home-status-section .mobile-section-heading{
         margin-bottom: 10px;
       }
 
-      .home-status-section.layout-grid .home-status-grid {
+      .home-status-section.layout-grid .home-status-grid{
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 10px;
@@ -6535,7 +6522,7 @@ export class DwainsLayoutCard extends LitElement {
         scroll-snap-type: none;
       }
 
-      .home-status-section.layout-grid .home-status-card {
+      .home-status-section.layout-grid .home-status-card{
         width: 100%;
         min-width: 0;
         box-sizing: border-box;
@@ -6544,41 +6531,41 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .home-status-section.layout-grid .house-persons-card,
-      .home-status-section.layout-grid .house-climate-card,
-      .home-status-section.layout-grid .house-power-card {
+.home-status-section.layout-grid .house-climate-card,
+.home-status-section.layout-grid .house-power-card{
         grid-column: 1 / -1;
       }
 
       @media (max-width: 380px) {
-        .home-status-section.layout-grid .home-status-grid {
+        .home-status-section.layout-grid .home-status-grid{
           grid-template-columns: 1fr;
         }
       }
 
-      .home-status-card::before {
+      .home-status-card::before{
         left: 14px;
         right: 14px;
       }
 
-      .home-status-card .status-card-icon {
+      .home-status-card .status-card-icon{
         width: 42px;
         height: 42px;
         border-radius: 13px;
         margin-bottom: 16px;
       }
 
-      .home-status-card .status-card-icon ha-icon {
+      .home-status-card .status-card-icon ha-icon{
         --mdc-icon-size: 22px;
       }
 
-      .home-status-card .status-card-badge {
+      .home-status-card .status-card-badge{
         min-width: 23px;
         height: 23px;
         top: -8px;
         right: -9px;
       }
 
-      :host([data-theme-dark]) {
+      :host([data-theme-dark]){
         .home-welcome {
           background:
             linear-gradient(180deg,
@@ -6679,7 +6666,7 @@ export class DwainsLayoutCard extends LitElement {
         }
       }
 
-      .home-favorites-section {
+      .home-favorites-section{
         box-sizing: border-box;
         width: 100%;
         max-width: 100%;
@@ -6688,15 +6675,15 @@ export class DwainsLayoutCard extends LitElement {
         overflow-x: clip;
       }
 
-      .home-favorites-section .favorites-header {
+      .home-favorites-section .favorites-header{
         display: none;
       }
 
-      .home-favorites-section .mobile-section-heading {
+      .home-favorites-section .mobile-section-heading{
         margin-bottom: 10px;
       }
 
-      .home-favorites-section .favorites-grid {
+      .home-favorites-section .favorites-grid{
         display: flex;
         grid-template-columns: none;
         gap: 10px;
@@ -6707,18 +6694,18 @@ export class DwainsLayoutCard extends LitElement {
         scrollbar-width: none;
       }
 
-      .home-favorites-section .favorites-grid::-webkit-scrollbar {
+      .home-favorites-section .favorites-grid::-webkit-scrollbar{
         display: none;
       }
 
-      .home-favorites-section.layout-grid .favorites-grid {
+      .home-favorites-section.layout-grid .favorites-grid{
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         overflow: visible;
         scroll-snap-type: none;
       }
 
-      .home-favorites-section .favorite-card-wrapper {
+      .home-favorites-section .favorite-card-wrapper{
         flex: 0 0 186px;
         width: auto;
         min-width: 0;
@@ -6729,27 +6716,27 @@ export class DwainsLayoutCard extends LitElement {
         scroll-snap-align: start;
       }
 
-      .home-favorites-section.layout-grid .favorite-card-wrapper {
+      .home-favorites-section.layout-grid .favorite-card-wrapper{
         width: 100%;
         flex: none;
         scroll-snap-align: none;
       }
 
       @media (max-width: 380px) {
-        .home-favorites-section.layout-grid .favorites-grid {
+        .home-favorites-section.layout-grid .favorites-grid{
           grid-template-columns: 1fr;
         }
       }
     }
 
     /* Area status/action pills */
-    .area-badges {
+    .area-badges{
       gap: 8px;
       align-items: center;
       margin-bottom: 18px;
     }
 
-    .area-badge {
+    .area-badge{
       min-height: 38px;
       padding: 9px 15px;
       border-radius: 999px;
@@ -6759,22 +6746,22 @@ export class DwainsLayoutCard extends LitElement {
       box-shadow: none;
     }
 
-    .area-badge ha-icon {
+    .area-badge ha-icon{
       --mdc-icon-size: 17px;
     }
 
-    .area-badge.cover {
+    .area-badge.cover{
       background: color-mix(in srgb, var(--area-badge-color, #d98928) 12%, var(--card-background-color));
       border-color: color-mix(in srgb, var(--area-badge-color, #d98928) 22%, transparent);
       color: var(--area-badge-color, #d98928);
     }
 
-    .area-badge.cover ha-icon {
+    .area-badge.cover ha-icon{
       color: var(--area-badge-color, #d98928);
     }
 
     .area-badge.light-toggle,
-    .area-badge.switch-toggle {
+.area-badge.switch-toggle{
       min-width: 132px;
       justify-content: center;
       cursor: pointer;
@@ -6784,16 +6771,16 @@ export class DwainsLayoutCard extends LitElement {
       box-shadow: 0 8px 20px rgba(8, 153, 135, 0.18);
     }
 
-    .area-badge.light-toggle ha-icon {
+    .area-badge.light-toggle ha-icon{
       color: #ffc400;
     }
 
-    .area-badge.switch-toggle ha-icon {
+    .area-badge.switch-toggle ha-icon{
       color: #1f86d9;
     }
 
     .area-badge.light-toggle:hover,
-    .area-badge.switch-toggle:hover {
+.area-badge.switch-toggle:hover{
       background: #078b7b;
       border-color: #078b7b;
       transform: translateY(-1px);
@@ -6801,13 +6788,13 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .area-badge.light-toggle:active,
-    .area-badge.switch-toggle:active {
+.area-badge.switch-toggle:active{
       transform: translateY(0);
       box-shadow: 0 5px 14px rgba(8, 153, 135, 0.18);
     }
 
     /* Room header */
-    .area-header {
+    .area-header{
       position: relative;
       isolation: isolate;
       z-index: 0;
@@ -6828,7 +6815,7 @@ export class DwainsLayoutCard extends LitElement {
       box-shadow: 0 12px 30px rgba(15, 23, 42, 0.07);
     }
 
-    .area-header::before {
+    .area-header::before{
       content: "";
       position: absolute;
       inset: 0;
@@ -6841,7 +6828,7 @@ export class DwainsLayoutCard extends LitElement {
       opacity: 0.38;
     }
 
-    .area-header-background {
+    .area-header-background{
       position: absolute;
       inset: 0;
       z-index: 0;
@@ -6850,7 +6837,7 @@ export class DwainsLayoutCard extends LitElement {
       filter: saturate(1.05) contrast(1.02);
     }
 
-    .area-header.has-picture {
+    .area-header.has-picture{
       border-color: rgba(255, 255, 255, 0.16);
       background: #172321;
       color: var(--area-header-picture-text-color, #ffffff);
@@ -6864,7 +6851,7 @@ export class DwainsLayoutCard extends LitElement {
         linear-gradient(90deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
     }
 
-    .area-header.has-picture.text-dark {
+    .area-header.has-picture.text-dark{
       --area-header-picture-text-color: #0f172a;
       --area-header-picture-muted-text-color: rgba(15, 23, 42, 0.72);
       --area-header-picture-control-bg: rgba(255, 255, 255, 0.72);
@@ -6875,14 +6862,14 @@ export class DwainsLayoutCard extends LitElement {
         linear-gradient(90deg, rgba(15, 23, 42, 0.04) 1px, transparent 1px);
     }
 
-    .area-header.has-picture::before {
+    .area-header.has-picture::before{
       z-index: 1;
       background: var(--area-header-picture-overlay);
       background-size: auto, 56px 56px, 56px 56px;
       opacity: 1;
     }
 
-    .area-header-content {
+    .area-header-content{
       position: relative;
       z-index: 2;
       display: flex;
@@ -6892,14 +6879,14 @@ export class DwainsLayoutCard extends LitElement {
       min-width: 0;
     }
 
-    .area-title-group {
+    .area-title-group{
       display: flex;
       align-items: center;
       gap: 14px;
       min-width: 0;
     }
 
-    .area-mobile-toolbar {
+    .area-mobile-toolbar{
       position: relative;
       z-index: 3;
       display: grid;
@@ -6909,7 +6896,7 @@ export class DwainsLayoutCard extends LitElement {
       min-width: 0;
     }
 
-    .area-mobile-round {
+    .area-mobile-round{
       width: 42px;
       height: 42px;
       padding: 0;
@@ -6932,7 +6919,7 @@ export class DwainsLayoutCard extends LitElement {
         color 0.18s ease;
     }
 
-    .area-mobile-round:hover {
+    .area-mobile-round:hover{
       transform: translateY(-1px);
       box-shadow:
         0 14px 28px rgba(15, 23, 42, 0.16),
@@ -6940,13 +6927,13 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .area-mobile-round ha-icon,
-    .area-mobile-round .dd-static-icon {
+.area-mobile-round .dd-static-icon{
       --mdc-icon-size: 22px;
       width: 22px;
       height: 22px;
     }
 
-    .area-mobile-home {
+    .area-mobile-home{
       display: none;
       background:
         linear-gradient(180deg, rgba(34, 38, 48, 0.84), rgba(8, 10, 15, 0.9)),
@@ -6955,11 +6942,11 @@ export class DwainsLayoutCard extends LitElement {
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .layout-container.sidebar-collapsed .area-mobile-home {
+    .layout-container.sidebar-collapsed .area-mobile-home{
       display: inline-flex;
     }
 
-    .area-mobile-quick-controls {
+    .area-mobile-quick-controls{
       grid-column: 2;
       justify-self: start;
       max-width: 100%;
@@ -6976,11 +6963,11 @@ export class DwainsLayoutCard extends LitElement {
         inset 0 0 0 1px rgba(15, 23, 42, 0.05);
     }
 
-    .area-mobile-quick-controls.empty {
+    .area-mobile-quick-controls.empty{
       visibility: hidden;
     }
 
-    .area-quick-control {
+    .area-quick-control{
       min-width: 60px;
       height: 34px;
       padding: 0 7px 0 9px;
@@ -6999,23 +6986,23 @@ export class DwainsLayoutCard extends LitElement {
         transform 0.18s ease;
     }
 
-    .area-quick-control:active {
+    .area-quick-control:active{
       transform: scale(0.96);
     }
 
-    .area-quick-main {
+    .area-quick-main{
       min-width: 0;
       display: inline-flex;
       align-items: center;
       gap: 4px;
     }
 
-    .area-quick-control ha-icon {
+    .area-quick-control ha-icon{
       --mdc-icon-size: 17px;
       flex: 0 0 auto;
     }
 
-    .area-quick-count {
+    .area-quick-count{
       color: currentColor;
       font-size: 11px;
       font-weight: 850;
@@ -7023,7 +7010,7 @@ export class DwainsLayoutCard extends LitElement {
       white-space: nowrap;
     }
 
-    .area-quick-switch {
+    .area-quick-switch{
       position: relative;
       width: 26px;
       height: 16px;
@@ -7038,7 +7025,7 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow 0.18s ease;
     }
 
-    .area-quick-switch::after {
+    .area-quick-switch::after{
       content: "";
       position: absolute;
       top: 3px;
@@ -7051,40 +7038,40 @@ export class DwainsLayoutCard extends LitElement {
       transition: transform 0.18s ease;
     }
 
-    .area-quick-control.active {
+    .area-quick-control.active{
       background: #182044;
       color: #ffffff;
     }
 
-    .area-quick-control.light.active {
+    .area-quick-control.light.active{
       color: #ffd047;
     }
 
-    .area-quick-control.switch.active {
+    .area-quick-control.switch.active{
       color: #58a9ff;
     }
 
-    .area-quick-control.cover.active {
+    .area-quick-control.cover.active{
       color: #b984ff;
     }
 
-    .area-quick-control.fan.active {
+    .area-quick-control.fan.active{
       color: #55bda4;
     }
 
-    .area-quick-control.climate.active {
+    .area-quick-control.climate.active{
       color: #51aadd;
     }
 
-    .area-quick-control.active .area-quick-switch {
+    .area-quick-control.active .area-quick-switch{
       background: currentColor;
     }
 
-    .area-quick-control.active .area-quick-switch::after {
+    .area-quick-control.active .area-quick-switch::after{
       transform: translateX(10px);
     }
 
-    .area-quick-direction {
+    .area-quick-direction{
       width: 22px;
       height: 22px;
       display: inline-flex;
@@ -7096,20 +7083,20 @@ export class DwainsLayoutCard extends LitElement {
       color: currentColor;
     }
 
-    .area-quick-direction ha-icon {
+    .area-quick-direction ha-icon{
       --mdc-icon-size: 16px;
     }
 
-    .area-quick-control.has-actions {
+    .area-quick-control.has-actions{
       padding-right: 4px;
       cursor: default;
     }
 
-    .area-quick-control.has-actions:active {
+    .area-quick-control.has-actions:active{
       transform: none;
     }
 
-    .area-quick-actions {
+    .area-quick-actions{
       display: inline-flex;
       align-items: center;
       overflow: hidden;
@@ -7117,7 +7104,7 @@ export class DwainsLayoutCard extends LitElement {
       background: rgba(15, 23, 42, 0.08);
     }
 
-    .area-quick-action {
+    .area-quick-action{
       width: 25px;
       height: 24px;
       padding: 0;
@@ -7131,23 +7118,23 @@ export class DwainsLayoutCard extends LitElement {
       transition: background-color 0.18s ease, transform 0.18s ease;
     }
 
-    .area-quick-action + .area-quick-action {
+    .area-quick-action + .area-quick-action{
       border-left: 1px solid color-mix(in srgb, currentColor 18%, transparent);
     }
 
-    .area-quick-action:hover {
+    .area-quick-action:hover{
       background: color-mix(in srgb, currentColor 10%, transparent);
     }
 
-    .area-quick-action:active {
+    .area-quick-action:active{
       transform: scale(0.86);
     }
 
-    .area-quick-action ha-icon {
+    .area-quick-action ha-icon{
       --mdc-icon-size: 15px;
     }
 
-    .area-mobile-actions {
+    .area-mobile-actions{
       grid-column: 3;
       justify-self: end;
       display: inline-flex;
@@ -7156,23 +7143,23 @@ export class DwainsLayoutCard extends LitElement {
       min-width: 0;
     }
 
-    .area-mobile-edit {
+    .area-mobile-edit{
       position: relative;
     }
 
-    .area-mobile-edit.active {
+    .area-mobile-edit.active{
       background: var(--primary-color);
       color: var(--text-primary-color);
     }
 
-    .area-mobile-actions .unavailable-entities-icon {
+    .area-mobile-actions .unavailable-entities-icon{
       width: 42px;
       height: 42px;
       margin: 0;
       border-radius: 999px;
     }
 
-    .area-desktop-back {
+    .area-desktop-back{
       display: none;
       width: 42px;
       height: 42px;
@@ -7196,34 +7183,34 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow 0.18s ease;
     }
 
-    .area-desktop-back:hover {
+    .area-desktop-back:hover{
       transform: translateY(-1px);
       box-shadow:
         0 14px 30px rgba(15, 23, 42, 0.24),
         inset 0 0 0 1px rgba(255, 255, 255, 0.14);
     }
 
-    .area-desktop-back:focus-visible {
+    .area-desktop-back:focus-visible{
       outline: 2px solid var(--primary-color);
       outline-offset: 3px;
     }
 
     .area-desktop-back ha-icon,
-    .area-desktop-back .dd-static-icon {
+.area-desktop-back .dd-static-icon{
       --mdc-icon-size: 22px;
       width: 22px;
       height: 22px;
     }
 
-    .layout-container.sidebar-collapsed .area-desktop-back {
+    .layout-container.sidebar-collapsed .area-desktop-back{
       display: none;
     }
 
-    .area-title-copy {
+    .area-title-copy{
       min-width: 0;
     }
 
-    .area-subtitle {
+    .area-subtitle{
       display: block;
       margin-top: 5px;
       color: color-mix(in srgb, var(--primary-text-color) 55%, transparent);
@@ -7233,7 +7220,7 @@ export class DwainsLayoutCard extends LitElement {
       white-space: nowrap;
     }
 
-    .area-header-icon {
+    .area-header-icon{
       width: 48px;
       height: 48px;
       border-radius: 10px;
@@ -7246,17 +7233,17 @@ export class DwainsLayoutCard extends LitElement {
       box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 14%, transparent);
     }
 
-    .area-header-icon ha-icon {
+    .area-header-icon ha-icon{
       --mdc-icon-size: 26px;
     }
 
-    .area-header.has-picture .area-header-icon {
+    .area-header.has-picture .area-header-icon{
       background: var(--area-header-picture-control-bg);
       color: var(--area-header-picture-text-color, #ffffff);
       box-shadow: inset 0 0 0 1px var(--area-header-picture-control-border);
     }
 
-    .area-title {
+    .area-title{
       margin: 0;
       color: var(--primary-text-color);
       font-size: clamp(30px, 3.1vw, 44px);
@@ -7266,22 +7253,22 @@ export class DwainsLayoutCard extends LitElement {
       overflow-wrap: anywhere;
     }
 
-    .area-header.has-picture .area-subtitle {
+    .area-header.has-picture .area-subtitle{
       color: var(--area-header-picture-muted-text-color, rgba(255, 255, 255, 0.76));
     }
 
-    .area-header.has-picture .area-title {
+    .area-header.has-picture .area-title{
       color: var(--area-header-picture-text-color, #ffffff);
     }
 
-    .area-header-actions {
+    .area-header-actions{
       display: none;
       align-items: center;
       gap: 10px;
       flex: 0 0 auto;
     }
 
-    .area-header .dd-edit-toggle {
+    .area-header .dd-edit-toggle{
       margin-left: 0;
       width: 42px;
       height: 42px;
@@ -7291,17 +7278,17 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .area-header .dd-edit-toggle:hover,
-    .area-header .dd-edit-toggle.active {
+.area-header .dd-edit-toggle.active{
       background: var(--primary-color);
       color: var(--text-primary-color);
     }
 
-    .area-header.has-picture .dd-edit-toggle {
+    .area-header.has-picture .dd-edit-toggle{
       background: var(--area-header-picture-control-bg);
       color: var(--area-header-picture-text-color, #ffffff);
     }
 
-    .area-header .unavailable-entities-icon {
+    .area-header .unavailable-entities-icon{
       margin-bottom: 0;
       width: 42px;
       height: 42px;
@@ -7310,21 +7297,21 @@ export class DwainsLayoutCard extends LitElement {
       color: var(--warning-color);
     }
 
-    .area-header .unavailable-entities-icon ha-icon {
+    .area-header .unavailable-entities-icon ha-icon{
       color: var(--warning-color);
     }
 
-    .area-header.has-picture .unavailable-entities-icon {
+    .area-header.has-picture .unavailable-entities-icon{
       background: var(--area-header-picture-control-bg);
     }
 
-    .area-header.has-picture .unavailable-entities-icon ha-icon {
+    .area-header.has-picture .unavailable-entities-icon ha-icon{
       color: var(--area-header-picture-text-color, #ffffff);
     }
 
     .area-header.has-picture .area-mobile-round,
-    .area-header.has-picture .area-mobile-quick-controls,
-    .area-header.has-picture .area-mobile-actions .unavailable-entities-icon {
+.area-header.has-picture .area-mobile-quick-controls,
+.area-header.has-picture .area-mobile-actions .unavailable-entities-icon{
       background: var(--area-header-picture-control-bg);
       color: var(--area-header-picture-text-color, #ffffff);
       box-shadow:
@@ -7334,18 +7321,18 @@ export class DwainsLayoutCard extends LitElement {
       -webkit-backdrop-filter: blur(14px);
     }
 
-    .area-header .area-badges {
+    .area-header .area-badges{
       display: none;
     }
 
-    .area-header.has-picture .area-badge:not(.light-toggle):not(.switch-toggle) {
+    .area-header.has-picture .area-badge:not(.light-toggle):not(.switch-toggle){
       background: var(--area-header-picture-control-bg);
       border-color: var(--area-header-picture-control-border);
       color: var(--area-header-picture-text-color, #ffffff);
     }
 
     @media (min-width: 769px) {
-      .area-header {
+      .area-header{
         min-height: 166px;
         padding: 20px 22px 22px;
         display: grid;
@@ -7365,21 +7352,21 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
       }
 
-      .area-header::before {
+      .area-header::before{
         opacity: 0;
       }
 
-      .area-header-content {
+      .area-header-content{
         grid-area: title;
         align-self: start;
         margin-top: 2px;
       }
 
-      .area-mobile-toolbar {
+      .area-mobile-toolbar{
         display: contents;
       }
 
-      .area-mobile-home {
+      .area-mobile-home{
         grid-area: nav;
         display: inline-flex;
         align-self: start;
@@ -7396,7 +7383,7 @@ export class DwainsLayoutCard extends LitElement {
           inset 0 1px 0 rgba(255, 255, 255, 0.075);
       }
 
-      .area-mobile-quick-controls {
+      .area-mobile-quick-controls{
         grid-area: controls;
         min-height: 42px;
         width: min(520px, 100%);
@@ -7407,21 +7394,21 @@ export class DwainsLayoutCard extends LitElement {
         justify-self: start;
       }
 
-      .area-mobile-quick-controls.count-1 {
+      .area-mobile-quick-controls.count-1{
         width: min(420px, 100%);
       }
 
-      .area-mobile-quick-controls.count-1 .area-quick-control {
+      .area-mobile-quick-controls.count-1 .area-quick-control{
         flex: 1 1 auto;
         justify-content: space-between;
       }
 
-      .area-mobile-quick-controls.empty {
+      .area-mobile-quick-controls.empty{
         min-height: 0;
         margin: 0;
       }
 
-      .area-mobile-actions {
+      .area-mobile-actions{
         grid-area: actions;
         position: relative;
         top: auto;
@@ -7431,7 +7418,7 @@ export class DwainsLayoutCard extends LitElement {
         justify-self: end;
       }
 
-      .area-header-metrics {
+      .area-header-metrics{
         grid-area: metrics;
         position: relative;
         z-index: 3;
@@ -7445,7 +7432,7 @@ export class DwainsLayoutCard extends LitElement {
         gap: 8px;
       }
 
-      .area-header-metric {
+      .area-header-metric{
         min-width: 132px;
         min-height: 44px;
         padding: 8px 12px;
@@ -7453,71 +7440,71 @@ export class DwainsLayoutCard extends LitElement {
         border-radius: 999px;
       }
 
-      .area-header-metric .metric-ring {
+      .area-header-metric .metric-ring{
         width: 30px;
         height: 30px;
       }
 
-      .area-header-metric .metric-ring::after {
+      .area-header-metric .metric-ring::after{
         inset: 4px;
       }
 
-      .area-header-metric .metric-ring.metric-icon ha-icon {
+      .area-header-metric .metric-ring.metric-icon ha-icon{
         --mdc-icon-size: 17px;
       }
 
-      .area-header-metric .metric-label {
+      .area-header-metric .metric-label{
         font-size: 10px;
         letter-spacing: 0.02em;
         text-transform: uppercase;
       }
 
-      .area-header-metric .metric-reading {
+      .area-header-metric .metric-reading{
         margin-top: 2px;
         font-size: 13px;
       }
 
-      .area-title-group {
+      .area-title-group{
         gap: 0;
       }
 
-      .area-header-icon {
+      .area-header-icon{
         display: none;
       }
 
-      .area-title {
+      .area-title{
         font-size: clamp(24px, 2.4vw, 34px);
         line-height: 1.04;
       }
 
-      .area-subtitle {
+      .area-subtitle{
         margin-top: 3px;
       }
 
-      .layout-container.sidebar-collapsed .area-mobile-home {
+      .layout-container.sidebar-collapsed .area-mobile-home{
         position: relative;
         top: auto;
         left: auto;
       }
 
-      .layout-container.sidebar-collapsed .area-header-content {
+      .layout-container.sidebar-collapsed .area-header-content{
         padding-left: 0;
       }
 
-      .layout-container.sidebar-collapsed .area-mobile-quick-controls {
+      .layout-container.sidebar-collapsed .area-mobile-quick-controls{
         margin-left: 0;
       }
     }
 
     @media (max-width: 768px) {
-      :host {
+      :host{
         height: auto;
         max-height: none;
         min-height: 100%;
         overflow: visible;
       }
 
-      .layout-container {
+      .layout-container{
         display: block;
         height: auto;
         max-height: none;
@@ -7525,13 +7512,13 @@ export class DwainsLayoutCard extends LitElement {
         overflow: visible;
       }
 
-      .main-content {
+      .main-content{
         display: block;
         min-height: 100dvh;
         overflow: visible;
       }
 
-      .content-area {
+      .content-area{
         padding: 0;
         height: auto;
         max-height: none;
@@ -7545,29 +7532,29 @@ export class DwainsLayoutCard extends LitElement {
             var(--primary-background-color) 150px);
       }
 
-      .content-area.home-content-area {
+      .content-area.home-content-area{
         padding-bottom: 0;
       }
 
-      .content-area.area-content-area {
+      .content-area.area-content-area{
         padding: 0 10px calc(128px + env(safe-area-inset-bottom, 0px));
       }
 
-      .content-area.settings-content-area {
+      .content-area.settings-content-area{
         padding: 0;
       }
 
-      .home-view {
+      .home-view{
         padding: 10px 10px calc(128px + env(safe-area-inset-bottom, 0px));
       }
 
-      .settings-page-view {
+      .settings-page-view{
         width: 100%;
         margin: 0;
         padding: 8px 10px calc(152px + env(safe-area-inset-bottom, 0px));
       }
 
-      .settings-page-header {
+      .settings-page-header{
         grid-template-columns: auto minmax(0, 1fr);
         gap: 12px;
         margin: 0 0 12px;
@@ -7577,30 +7564,30 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow: 0 10px 28px rgba(15, 23, 42, 0.07);
       }
 
-      .settings-page-back {
+      .settings-page-back{
         width: 42px;
         height: 42px;
       }
 
-      .settings-page-title h1 {
+      .settings-page-title h1{
         font-size: 21px;
       }
 
-      .settings-page-title p {
+      .settings-page-title p{
         margin-top: 3px;
         font-size: 13px;
       }
 
-      .settings-page-actions {
+      .settings-page-actions{
         display: none;
       }
 
-      .settings-page-editor {
+      .settings-page-editor{
         border-radius: 18px;
         box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
       }
 
-      .settings-page-bottom-actions {
+      .settings-page-bottom-actions{
         position: sticky;
         bottom: calc(88px + env(safe-area-inset-bottom, 0px));
         z-index: 5;
@@ -7618,11 +7605,11 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .settings-page-bottom-actions .settings-secondary,
-      .settings-page-bottom-actions .settings-primary {
+.settings-page-bottom-actions .settings-primary{
         width: 100%;
       }
 
-      .global-header.mobile {
+      .global-header.mobile{
         margin: -10px -10px 0;
         padding: 12px 14px 22px;
         border-bottom: 0;
@@ -7634,21 +7621,21 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
       }
 
-      .global-header.mobile .header-content {
+      .global-header.mobile .header-content{
         display: block;
       }
 
-      .global-header.mobile .header-status-section {
+      .global-header.mobile .header-status-section{
         width: 100%;
       }
 
-      .global-header.mobile .header-status-scroll {
+      .global-header.mobile .header-status-scroll{
         gap: 10px;
         padding: 2px 2px 4px;
         scroll-padding: 14px;
       }
 
-      .global-header.mobile .status-card-compact {
+      .global-header.mobile .status-card-compact{
         min-width: 112px;
         min-height: 82px;
         padding: 10px 12px 11px;
@@ -7658,20 +7645,20 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
       }
 
-      .global-header.mobile .status-card-compact .status-card-icon-compact {
+      .global-header.mobile .status-card-compact .status-card-icon-compact{
         width: 40px;
         height: 40px;
         border-radius: 8px;
       }
 
-      .global-header.mobile .status-card-compact .status-card-title-compact {
+      .global-header.mobile .status-card-compact .status-card-title-compact{
         margin-top: 7px;
         color: color-mix(in srgb, var(--primary-text-color) 76%, transparent);
         font-size: 12px;
         line-height: 1.15;
       }
 
-      .global-header.mobile .header-expand-button {
+      .global-header.mobile .header-expand-button{
         bottom: -18px;
         width: 36px;
         height: 36px;
@@ -7680,7 +7667,7 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow: 0 8px 20px rgba(3, 169, 244, 0.18);
       }
 
-      .area-header {
+      .area-header{
         position: relative;
         top: auto;
         z-index: 3;
@@ -7706,11 +7693,11 @@ export class DwainsLayoutCard extends LitElement {
           background-color 0.2s ease;
       }
 
-      .area-header.has-metrics {
+      .area-header.has-metrics{
         min-height: 248px;
       }
 
-      .area-header.is-stuck {
+      .area-header.is-stuck{
         position: sticky;
         top: 0;
         z-index: 90;
@@ -7723,11 +7710,11 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow: 0 12px 28px rgba(15, 23, 42, 0.1);
       }
 
-      .area-header::before {
+      .area-header::before{
         opacity: 0;
       }
 
-      .area-header::after {
+      .area-header::after{
         content: "";
         position: absolute;
         left: 0;
@@ -7745,11 +7732,11 @@ export class DwainsLayoutCard extends LitElement {
         transition: opacity 0.18s ease;
       }
 
-      .area-header.is-stuck::after {
+      .area-header.is-stuck::after{
         opacity: 1;
       }
 
-      .area-mobile-toolbar {
+      .area-mobile-toolbar{
         position: relative;
         z-index: 3;
         width: 100%;
@@ -7759,7 +7746,7 @@ export class DwainsLayoutCard extends LitElement {
         gap: 12px;
       }
 
-      .area-mobile-round {
+      .area-mobile-round{
         width: 38px;
         height: 38px;
         padding: 0;
@@ -7776,22 +7763,22 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .area-mobile-round ha-icon,
-      .area-mobile-round .dd-static-icon {
+.area-mobile-round .dd-static-icon{
         --mdc-icon-size: 20px;
         width: 20px;
         height: 20px;
       }
 
-      .area-header.is-stuck .area-mobile-round {
+      .area-header.is-stuck .area-mobile-round{
         width: 34px;
         height: 34px;
       }
 
-      .area-header.is-stuck .area-mobile-round ha-icon {
+      .area-header.is-stuck .area-mobile-round ha-icon{
         --mdc-icon-size: 18px;
       }
 
-      .area-mobile-home {
+      .area-mobile-home{
         position: absolute;
         top: 0;
         left: 0;
@@ -7807,7 +7794,7 @@ export class DwainsLayoutCard extends LitElement {
           inset 0 1px 0 rgba(255, 255, 255, 0.075);
       }
 
-      .area-header.has-picture .area-mobile-home {
+      .area-header.has-picture .area-mobile-home{
         background:
           linear-gradient(180deg, rgba(34, 38, 48, 0.72), rgba(8, 10, 15, 0.76)),
           rgba(10, 12, 18, 0.72);
@@ -7818,7 +7805,7 @@ export class DwainsLayoutCard extends LitElement {
           inset 0 1px 0 rgba(255, 255, 255, 0.08);
       }
 
-      .area-mobile-quick-controls {
+      .area-mobile-quick-controls{
         grid-column: 2;
         justify-self: center;
         max-width: 100%;
@@ -7834,16 +7821,16 @@ export class DwainsLayoutCard extends LitElement {
           inset 0 0 0 1px rgba(15, 23, 42, 0.05);
       }
 
-      .area-mobile-quick-controls.empty {
+      .area-mobile-quick-controls.empty{
         visibility: hidden;
       }
 
-      .area-header.is-stuck .area-mobile-quick-controls {
+      .area-header.is-stuck .area-mobile-quick-controls{
         min-height: 36px;
         padding: 3px;
       }
 
-      .area-quick-control {
+      .area-quick-control{
         min-width: 58px;
         height: 34px;
         padding: 0 6px 0 8px;
@@ -7861,19 +7848,19 @@ export class DwainsLayoutCard extends LitElement {
           transform 0.18s ease;
       }
 
-      .area-quick-main {
+      .area-quick-main{
         min-width: 0;
         display: inline-flex;
         align-items: center;
         gap: 4px;
       }
 
-      .area-quick-control ha-icon {
+      .area-quick-control ha-icon{
         --mdc-icon-size: 17px;
         flex: 0 0 auto;
       }
 
-      .area-quick-count {
+      .area-quick-count{
         color: currentColor;
         font-size: 11px;
         font-weight: 850;
@@ -7881,7 +7868,7 @@ export class DwainsLayoutCard extends LitElement {
         white-space: nowrap;
       }
 
-      .area-quick-switch {
+      .area-quick-switch{
         position: relative;
         width: 26px;
         height: 16px;
@@ -7896,7 +7883,7 @@ export class DwainsLayoutCard extends LitElement {
           box-shadow 0.18s ease;
       }
 
-      .area-quick-switch::after {
+      .area-quick-switch::after{
         content: "";
         position: absolute;
         top: 3px;
@@ -7909,15 +7896,15 @@ export class DwainsLayoutCard extends LitElement {
         transition: transform 0.18s ease;
       }
 
-      .area-quick-control.active .area-quick-switch {
+      .area-quick-control.active .area-quick-switch{
         background: currentColor;
       }
 
-      .area-quick-control.active .area-quick-switch::after {
+      .area-quick-control.active .area-quick-switch::after{
         transform: translateX(10px);
       }
 
-      .area-quick-direction {
+      .area-quick-direction{
         width: 22px;
         height: 22px;
         display: inline-flex;
@@ -7929,80 +7916,80 @@ export class DwainsLayoutCard extends LitElement {
         color: currentColor;
       }
 
-      .area-quick-direction ha-icon {
+      .area-quick-direction ha-icon{
         --mdc-icon-size: 16px;
       }
 
-      .area-header.is-stuck .area-quick-control {
+      .area-header.is-stuck .area-quick-control{
         min-width: 50px;
         height: 30px;
         padding: 0 5px 0 7px;
         gap: 4px;
       }
 
-      .area-header.is-stuck .area-quick-control ha-icon {
+      .area-header.is-stuck .area-quick-control ha-icon{
         --mdc-icon-size: 15px;
       }
 
-      .area-header.is-stuck .area-quick-count {
+      .area-header.is-stuck .area-quick-count{
         font-size: 10px;
       }
 
-      .area-header.is-stuck .area-quick-switch {
+      .area-header.is-stuck .area-quick-switch{
         width: 22px;
         height: 14px;
       }
 
-      .area-header.is-stuck .area-quick-switch::after {
+      .area-header.is-stuck .area-quick-switch::after{
         top: 3px;
         left: 3px;
         width: 8px;
         height: 8px;
       }
 
-      .area-header.is-stuck .area-quick-control.active .area-quick-switch::after {
+      .area-header.is-stuck .area-quick-control.active .area-quick-switch::after{
         transform: translateX(8px);
       }
 
-      .area-header.is-stuck .area-quick-direction {
+      .area-header.is-stuck .area-quick-direction{
         width: 20px;
         height: 20px;
       }
 
-      .area-header.is-stuck .area-quick-direction ha-icon {
+      .area-header.is-stuck .area-quick-direction ha-icon{
         --mdc-icon-size: 14px;
       }
 
-      .area-quick-control:active {
+      .area-quick-control:active{
         transform: scale(0.94);
       }
 
-      .area-quick-control.active {
+      .area-quick-control.active{
         background: #182044;
         color: #ffffff;
       }
 
-      .area-quick-control.light.active {
+      .area-quick-control.light.active{
         color: #ffd047;
       }
 
-      .area-quick-control.switch.active {
+      .area-quick-control.switch.active{
         color: #58a9ff;
       }
 
-      .area-quick-control.cover.active {
+      .area-quick-control.cover.active{
         color: #b984ff;
       }
 
-      .area-quick-control.fan.active {
+      .area-quick-control.fan.active{
         color: #55bda4;
       }
 
-      .area-quick-control.climate.active {
+      .area-quick-control.climate.active{
         color: #51aadd;
       }
 
-      .area-mobile-edit {
+      .area-mobile-edit{
         position: relative;
         background:
           linear-gradient(180deg, rgba(34, 38, 48, 0.84), rgba(8, 10, 15, 0.9)),
@@ -8011,7 +7998,7 @@ export class DwainsLayoutCard extends LitElement {
         border-color: rgba(255, 255, 255, 0.1);
       }
 
-      .area-mobile-actions {
+      .area-mobile-actions{
         grid-column: 3;
         justify-self: end;
         display: inline-flex;
@@ -8019,7 +8006,7 @@ export class DwainsLayoutCard extends LitElement {
         gap: 8px;
       }
 
-      .area-mobile-actions .unavailable-entities-icon {
+      .area-mobile-actions .unavailable-entities-icon{
         width: 38px;
         height: 38px;
         margin: 0;
@@ -8035,23 +8022,23 @@ export class DwainsLayoutCard extends LitElement {
           inset 0 0 0 1px rgba(255, 255, 255, 0.2);
       }
 
-      .area-mobile-actions .unavailable-entities-icon ha-icon {
+      .area-mobile-actions .unavailable-entities-icon ha-icon{
         color: #ffffff;
         --mdc-icon-size: 19px;
       }
 
-      .area-mobile-actions .unavailable-count {
+      .area-mobile-actions .unavailable-count{
         top: -6px;
         right: -6px;
         background: #ff9800;
         box-shadow: 0 0 0 2px color-mix(in srgb, var(--card-background-color) 92%, transparent);
       }
 
-      .area-mobile-edit.active {
+      .area-mobile-edit.active{
         background: var(--primary-color);
       }
 
-      .area-header-content {
+      .area-header-content{
         position: relative;
         z-index: 3;
         width: 100%;
@@ -8060,15 +8047,15 @@ export class DwainsLayoutCard extends LitElement {
         gap: 12px;
       }
 
-      .area-header.is-stuck .area-header-content {
+      .area-header.is-stuck .area-header-content{
         gap: 6px;
       }
 
-      .area-header-icon {
+      .area-header-icon{
         display: none;
       }
 
-      .area-title-group {
+      .area-title-group{
         width: 100%;
         justify-content: center;
         gap: 0;
@@ -8076,7 +8063,7 @@ export class DwainsLayoutCard extends LitElement {
         text-align: center;
       }
 
-      .area-title {
+      .area-title{
         max-width: min(260px, calc(100vw - 122px));
         margin: 0 auto;
         font-size: 16px;
@@ -8087,11 +8074,11 @@ export class DwainsLayoutCard extends LitElement {
         white-space: nowrap;
       }
 
-      .area-header.is-stuck .area-title {
+      .area-header.is-stuck .area-title{
         font-size: 14px;
       }
 
-      .area-subtitle {
+      .area-subtitle{
         display: block;
         margin-top: 2px;
         color: color-mix(in srgb, var(--primary-text-color) 52%, transparent);
@@ -8100,12 +8087,12 @@ export class DwainsLayoutCard extends LitElement {
         line-height: 1.1;
       }
 
-      .area-header.is-stuck .area-subtitle {
+      .area-header.is-stuck .area-subtitle{
         margin-top: 1px;
         font-size: 11px;
       }
 
-      .area-header-metrics {
+      .area-header-metrics{
         position: relative;
         z-index: 3;
         width: 100%;
@@ -8118,7 +8105,7 @@ export class DwainsLayoutCard extends LitElement {
           margin 0.2s ease;
       }
 
-      .area-header-metric {
+      .area-header-metric{
         min-height: 72px;
         padding: 12px;
         border-radius: 10px;
@@ -8135,7 +8122,7 @@ export class DwainsLayoutCard extends LitElement {
           border-radius 0.2s ease;
       }
 
-      .area-header-metric .metric-ring {
+      .area-header-metric .metric-ring{
         width: 46px;
         height: 46px;
         transition:
@@ -8143,25 +8130,25 @@ export class DwainsLayoutCard extends LitElement {
           height 0.2s ease;
       }
 
-      .area-header-metric .metric-ring::after {
+      .area-header-metric .metric-ring::after{
         transition: inset 0.2s ease;
       }
 
       .area-header-metric .metric-value,
-      .area-header-metric .metric-label,
-      .area-header-metric .metric-range,
-      .area-header-metric .metric-reading {
+.area-header-metric .metric-label,
+.area-header-metric .metric-range,
+.area-header-metric .metric-reading{
         transition:
           font-size 0.2s ease,
           opacity 0.2s ease;
       }
 
-      .area-header.is-stuck .area-header-metrics {
+      .area-header.is-stuck .area-header-metrics{
         gap: 8px;
         margin-top: 0;
       }
 
-      .area-header.is-stuck .area-header-metric {
+      .area-header.is-stuck .area-header-metric{
         min-height: 40px;
         padding: 6px 9px;
         gap: 8px;
@@ -8171,46 +8158,46 @@ export class DwainsLayoutCard extends LitElement {
           inset 0 0 0 1px color-mix(in srgb, var(--metric-color) 16%, transparent);
       }
 
-      .area-header.is-stuck .area-header-metric .metric-ring {
+      .area-header.is-stuck .area-header-metric .metric-ring{
         width: 30px;
         height: 30px;
       }
 
-      .area-header.is-stuck .area-header-metric .metric-ring::after {
+      .area-header.is-stuck .area-header-metric .metric-ring::after{
         inset: 4px;
       }
 
-      .area-header.is-stuck .area-header-metric .metric-value {
+      .area-header.is-stuck .area-header-metric .metric-value{
         font-size: 9px;
       }
 
-      .area-header.is-stuck .area-header-metric .metric-label {
+      .area-header.is-stuck .area-header-metric .metric-label{
         font-size: 11px;
       }
 
-      .area-header.is-stuck .area-header-metric .metric-reading {
+      .area-header.is-stuck .area-header-metric .metric-reading{
         font-size: 10px;
       }
 
-      .area-header.is-stuck .area-header-metric .metric-range {
+      .area-header.is-stuck .area-header-metric .metric-range{
         opacity: 0;
         height: 0;
         margin-top: 0;
         overflow: hidden;
       }
 
-      .area-header-actions {
+      .area-header-actions{
         display: none;
       }
 
-      .area-header .area-badges {
+      .area-header .area-badges{
         position: relative;
         z-index: 3;
         width: 100%;
         display: none;
       }
 
-      .area-header .area-badge {
+      .area-header .area-badge{
         min-height: 34px;
         flex: 0 0 auto;
         padding: 0 12px;
@@ -8221,12 +8208,12 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .area-header .area-badge.light-toggle,
-      .area-header .area-badge.switch-toggle {
+.area-header .area-badge.switch-toggle{
         min-width: 128px;
         justify-content: center;
       }
 
-      .area-header.has-picture {
+      .area-header.has-picture{
         background:
           linear-gradient(180deg,
             rgba(23, 35, 33, 0.74) 0%,
@@ -8234,11 +8221,11 @@ export class DwainsLayoutCard extends LitElement {
             rgba(23, 35, 33, 0.22) 100%);
       }
 
-      .area-header.has-picture .area-subtitle {
+      .area-header.has-picture .area-subtitle{
         color: rgba(255, 255, 255, 0.72);
       }
 
-      .area-content-area .area-header {
+      .area-content-area .area-header{
         min-height: 252px;
         margin: 0 -10px 18px;
         padding: calc(18px + env(safe-area-inset-top, 0px)) 18px 18px;
@@ -8254,15 +8241,15 @@ export class DwainsLayoutCard extends LitElement {
           inset 0 -1px 0 rgba(255, 255, 255, 0.24);
       }
 
-      .area-content-area .area-header.has-metrics {
+      .area-content-area .area-header.has-metrics{
         min-height: 312px;
       }
 
-      .area-content-area .area-header.has-picture {
+      .area-content-area .area-header.has-picture{
         background: #0f172a;
       }
 
-      .area-content-area .area-header-background {
+      .area-content-area .area-header-background{
         inset: 0;
         background-position: center;
         background-size: cover;
@@ -8270,7 +8257,7 @@ export class DwainsLayoutCard extends LitElement {
         filter: saturate(1.08) contrast(1.02);
       }
 
-      .area-content-area .area-header::before {
+      .area-content-area .area-header::before{
         opacity: 1;
         background:
           linear-gradient(180deg,
@@ -8280,7 +8267,7 @@ export class DwainsLayoutCard extends LitElement {
             rgba(4, 9, 16, 0.64) 100%);
       }
 
-      .area-content-area .area-header::after {
+      .area-content-area .area-header::after{
         bottom: -22px;
         height: 46px;
         opacity: 1;
@@ -8291,19 +8278,19 @@ export class DwainsLayoutCard extends LitElement {
         filter: blur(14px);
       }
 
-      .area-content-area .area-mobile-toolbar {
+      .area-content-area .area-mobile-toolbar{
         position: static;
         display: block;
         width: 100%;
         height: 0;
       }
 
-      .area-content-area .area-mobile-home {
+      .area-content-area .area-mobile-home{
         top: calc(18px + env(safe-area-inset-top, 0px));
         left: 18px;
       }
 
-      .area-content-area .area-mobile-actions {
+      .area-content-area .area-mobile-actions{
         position: absolute;
         top: calc(18px + env(safe-area-inset-top, 0px));
         right: 18px;
@@ -8316,7 +8303,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .area-content-area .area-mobile-round,
-      .area-content-area .area-mobile-actions .unavailable-entities-icon {
+.area-content-area .area-mobile-actions .unavailable-entities-icon{
         width: 48px;
         height: 48px;
         border-radius: 999px;
@@ -8330,41 +8317,41 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .area-content-area .area-mobile-round ha-icon,
-      .area-content-area .area-mobile-round .dd-static-icon,
-      .area-content-area .area-mobile-actions .unavailable-entities-icon ha-icon {
+.area-content-area .area-mobile-round .dd-static-icon,
+.area-content-area .area-mobile-actions .unavailable-entities-icon ha-icon{
         --mdc-icon-size: 22px;
         width: 22px;
         height: 22px;
         color: currentColor;
       }
 
-      .area-content-area .area-mobile-camera {
+      .area-content-area .area-mobile-camera{
         display: inline-flex;
       }
 
-      .area-content-area .area-mobile-edit {
+      .area-content-area .area-mobile-edit{
         background: rgba(255, 255, 255, 0.92);
         color: #14181f;
       }
 
-      .area-content-area .area-mobile-edit.active {
+      .area-content-area .area-mobile-edit.active{
         background: var(--primary-color);
         color: var(--text-primary-color);
       }
 
-      .area-content-area .area-mobile-actions .unavailable-entities-icon {
+      .area-content-area .area-mobile-actions .unavailable-entities-icon{
         background: rgba(244, 67, 54, 0.94);
         color: #ffffff;
         border-color: rgba(255, 255, 255, 0.34);
       }
 
-      .area-content-area .area-mobile-actions .unavailable-count {
+      .area-content-area .area-mobile-actions .unavailable-count{
         top: -5px;
         right: -5px;
         box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.92);
       }
 
-      .area-content-area .area-header-content {
+      .area-content-area .area-header-content{
         position: absolute;
         top: calc(25px + env(safe-area-inset-top, 0px));
         left: 84px;
@@ -8375,11 +8362,11 @@ export class DwainsLayoutCard extends LitElement {
         pointer-events: none;
       }
 
-      .area-content-area .area-title-group {
+      .area-content-area .area-title-group{
         width: 100%;
       }
 
-      .area-content-area .area-title {
+      .area-content-area .area-title{
         max-width: 100%;
         color: #ffffff;
         font-size: 17px;
@@ -8388,12 +8375,12 @@ export class DwainsLayoutCard extends LitElement {
         text-shadow: 0 1px 12px rgba(0, 0, 0, 0.42);
       }
 
-      .area-content-area .area-subtitle {
+      .area-content-area .area-subtitle{
         color: rgba(255, 255, 255, 0.82);
         text-shadow: 0 1px 10px rgba(0, 0, 0, 0.36);
       }
 
-      .area-content-area .area-mobile-quick-controls {
+      .area-content-area .area-mobile-quick-controls{
         position: absolute;
         left: 18px;
         right: auto;
@@ -8411,15 +8398,15 @@ export class DwainsLayoutCard extends LitElement {
           inset 0 1px 0 rgba(255, 255, 255, 0.66);
       }
 
-      .area-content-area .area-mobile-quick-controls::-webkit-scrollbar {
+      .area-content-area .area-mobile-quick-controls::-webkit-scrollbar{
         display: none;
       }
 
-      .area-content-area .area-mobile-quick-controls.empty {
+      .area-content-area .area-mobile-quick-controls.empty{
         display: none;
       }
 
-      .area-content-area .area-header-metrics {
+      .area-content-area .area-header-metrics{
         position: absolute;
         left: 18px;
         right: 18px;
@@ -8430,15 +8417,15 @@ export class DwainsLayoutCard extends LitElement {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
-      .area-content-area .area-header.has-metrics .area-mobile-quick-controls {
+      .area-content-area .area-header.has-metrics .area-mobile-quick-controls{
         bottom: 18px;
       }
 
-      .area-content-area .area-header.has-metrics:not(.has-quick-controls) .area-header-metrics {
+      .area-content-area .area-header.has-metrics:not(.has-quick-controls) .area-header-metrics{
         bottom: 18px;
       }
 
-      .area-content-area .area-header-metric {
+      .area-content-area .area-header-metric{
         min-height: 58px;
         padding: 9px 10px;
         border-radius: 14px;
@@ -8450,19 +8437,19 @@ export class DwainsLayoutCard extends LitElement {
           inset 0 0 0 1px color-mix(in srgb, var(--metric-color) 18%, transparent);
       }
 
-      .area-content-area .area-header-metric .metric-ring {
+      .area-content-area .area-header-metric .metric-ring{
         width: 38px;
         height: 38px;
       }
 
       .area-content-area .area-header-metric .metric-value,
-      .area-content-area .area-header-metric .metric-label,
-      .area-content-area .area-header-metric .metric-range,
-      .area-content-area .area-header-metric .metric-reading {
+.area-content-area .area-header-metric .metric-label,
+.area-content-area .area-header-metric .metric-range,
+.area-content-area .area-header-metric .metric-reading{
         color: #182044;
       }
 
-      .area-content-area .area-header.is-stuck {
+      .area-content-area .area-header.is-stuck{
         min-height: 88px;
         padding: calc(8px + env(safe-area-inset-top, 0px)) 16px 10px;
         border-radius: 0;
@@ -8474,52 +8461,52 @@ export class DwainsLayoutCard extends LitElement {
         backdrop-filter: blur(22px);
       }
 
-      .area-content-area .area-header.is-stuck .area-header-background {
+      .area-content-area .area-header.is-stuck .area-header-background{
         opacity: 0;
       }
 
-      .area-content-area .area-header.is-stuck::before {
+      .area-content-area .area-header.is-stuck::before{
         background: transparent;
       }
 
       .area-content-area .area-header.is-stuck .area-mobile-home,
-      .area-content-area .area-header.is-stuck .area-mobile-actions {
+.area-content-area .area-header.is-stuck .area-mobile-actions{
         top: calc(8px + env(safe-area-inset-top, 0px));
       }
 
       .area-content-area .area-header.is-stuck .area-mobile-round,
-      .area-content-area .area-header.is-stuck .area-mobile-actions .unavailable-entities-icon {
+.area-content-area .area-header.is-stuck .area-mobile-actions .unavailable-entities-icon{
         width: 38px;
         height: 38px;
       }
 
-      .area-content-area .area-header.is-stuck .area-mobile-actions {
+      .area-content-area .area-header.is-stuck .area-mobile-actions{
         flex-direction: row;
         gap: 8px;
       }
 
-      .area-content-area .area-header.is-stuck .area-header-content {
+      .area-content-area .area-header.is-stuck .area-header-content{
         top: calc(14px + env(safe-area-inset-top, 0px));
         left: 68px;
         right: 100px;
       }
 
-      .area-content-area .area-header.is-stuck .area-title {
+      .area-content-area .area-header.is-stuck .area-title{
         color: var(--primary-text-color);
         text-shadow: none;
       }
 
-      .area-content-area .area-header.is-stuck .area-subtitle {
+      .area-content-area .area-header.is-stuck .area-subtitle{
         color: var(--secondary-text-color);
         text-shadow: none;
       }
 
       .area-content-area .area-header.is-stuck .area-mobile-quick-controls,
-      .area-content-area .area-header.is-stuck .area-header-metrics {
+.area-content-area .area-header.is-stuck .area-header-metrics{
         display: none;
       }
 
-      .area-content-area .area-header {
+      .area-content-area .area-header{
         min-height: 214px;
         background:
           radial-gradient(circle at 10% 0%, rgba(255, 255, 255, 0.92), transparent 28%),
@@ -8527,15 +8514,15 @@ export class DwainsLayoutCard extends LitElement {
         color: var(--primary-text-color);
       }
 
-      .area-content-area .area-header.has-metrics {
+      .area-content-area .area-header.has-metrics{
         min-height: 214px;
       }
 
-      .area-content-area .area-header.has-picture {
+      .area-content-area .area-header.has-picture{
         color: #ffffff;
       }
 
-      .area-content-area .area-header:not(.has-picture)::before {
+      .area-content-area .area-header:not(.has-picture)::before{
         background:
           linear-gradient(180deg,
             rgba(255, 255, 255, 0.72) 0%,
@@ -8543,18 +8530,18 @@ export class DwainsLayoutCard extends LitElement {
             rgba(226, 235, 242, 0.78) 100%);
       }
 
-      .area-content-area .area-mobile-home {
+      .area-content-area .area-mobile-home{
         top: calc(16px + env(safe-area-inset-top, 0px));
         left: 18px;
       }
 
-      .area-content-area .area-mobile-actions {
+      .area-content-area .area-mobile-actions{
         top: calc(16px + env(safe-area-inset-top, 0px));
         right: 18px;
       }
 
       .area-content-area .area-mobile-round,
-      .area-content-area .area-mobile-actions .unavailable-entities-icon {
+.area-content-area .area-mobile-actions .unavailable-entities-icon{
         width: 44px;
         height: 44px;
         background: rgba(255, 255, 255, 0.92);
@@ -8563,7 +8550,7 @@ export class DwainsLayoutCard extends LitElement {
           inset 0 1px 0 rgba(255, 255, 255, 0.68);
       }
 
-      .area-content-area .area-mobile-home {
+      .area-content-area .area-mobile-home{
         background:
           linear-gradient(180deg, rgba(34, 38, 48, 0.84), rgba(8, 10, 15, 0.9)),
           rgba(10, 12, 18, 0.86);
@@ -8571,7 +8558,7 @@ export class DwainsLayoutCard extends LitElement {
         border-color: rgba(255, 255, 255, 0.1);
       }
 
-      .area-content-area .area-header-content {
+      .area-content-area .area-header-content{
         top: calc(88px + env(safe-area-inset-top, 0px));
         left: 22px;
         right: 24px;
@@ -8579,16 +8566,16 @@ export class DwainsLayoutCard extends LitElement {
         text-align: left;
       }
 
-      .area-content-area .area-header.has-metrics .area-header-content {
+      .area-content-area .area-header.has-metrics .area-header-content{
         right: 112px;
       }
 
-      .area-content-area .area-title-group {
+      .area-content-area .area-title-group{
         justify-content: flex-start;
         text-align: left;
       }
 
-      .area-content-area .area-title {
+      .area-content-area .area-title{
         margin: 0;
         max-width: 100%;
         color: var(--primary-text-color);
@@ -8599,12 +8586,12 @@ export class DwainsLayoutCard extends LitElement {
         text-shadow: none;
       }
 
-      .area-content-area .area-header.has-picture .area-title {
+      .area-content-area .area-header.has-picture .area-title{
         color: #ffffff;
         text-shadow: 0 1px 16px rgba(0, 0, 0, 0.42);
       }
 
-      .area-content-area .area-subtitle {
+      .area-content-area .area-subtitle{
         margin-top: 6px;
         color: color-mix(in srgb, var(--primary-text-color) 52%, transparent);
         font-size: 13px;
@@ -8613,12 +8600,12 @@ export class DwainsLayoutCard extends LitElement {
         text-shadow: none;
       }
 
-      .area-content-area .area-header.has-picture .area-subtitle {
+      .area-content-area .area-header.has-picture .area-subtitle{
         color: rgba(255, 255, 255, 0.78);
         text-shadow: 0 1px 12px rgba(0, 0, 0, 0.36);
       }
 
-      .area-content-area .area-header-metrics {
+      .area-content-area .area-header-metrics{
         top: calc(90px + env(safe-area-inset-top, 0px));
         right: 18px;
         bottom: auto;
@@ -8628,11 +8615,11 @@ export class DwainsLayoutCard extends LitElement {
         gap: 6px;
       }
 
-      .area-content-area .area-header.has-metrics:not(.has-quick-controls) .area-header-metrics {
+      .area-content-area .area-header.has-metrics:not(.has-quick-controls) .area-header-metrics{
         bottom: auto;
       }
 
-      .area-content-area .area-header-metric {
+      .area-content-area .area-header-metric{
         min-height: 32px;
         padding: 5px 9px 5px 6px;
         gap: 6px;
@@ -8644,38 +8631,38 @@ export class DwainsLayoutCard extends LitElement {
           0 8px 18px rgba(15, 23, 42, 0.08);
       }
 
-      .area-content-area .area-header.has-picture .area-header-metric {
+      .area-content-area .area-header.has-picture .area-header-metric{
         background: rgba(255, 255, 255, 0.66);
         box-shadow:
           0 10px 22px rgba(8, 13, 24, 0.16),
           inset 0 0 0 1px rgba(255, 255, 255, 0.22);
       }
 
-      .area-content-area .area-header-metric .metric-ring {
+      .area-content-area .area-header-metric .metric-ring{
         width: 22px;
         height: 22px;
         background: color-mix(in srgb, var(--metric-color) 14%, transparent);
         box-shadow: none;
       }
 
-      .area-content-area .area-header-metric .metric-ring::after {
+      .area-content-area .area-header-metric .metric-ring::after{
         display: none;
       }
 
-      .area-content-area .area-header-metric .metric-ring ha-icon {
+      .area-content-area .area-header-metric .metric-ring ha-icon{
         --mdc-icon-size: 15px;
         color: var(--metric-color);
       }
 
-      .area-content-area .area-header-metric .metric-value {
+      .area-content-area .area-header-metric .metric-value{
         font-size: 10px;
       }
 
-      .area-content-area .area-header-metric .metric-label {
+      .area-content-area .area-header-metric .metric-label{
         display: none;
       }
 
-      .area-content-area .area-header-metric .metric-reading {
+      .area-content-area .area-header-metric .metric-reading{
         margin-top: 0;
         color: #101827;
         font-size: 12px;
@@ -8683,11 +8670,11 @@ export class DwainsLayoutCard extends LitElement {
         line-height: 1;
       }
 
-      .area-content-area .area-header-metric .metric-range {
+      .area-content-area .area-header-metric .metric-range{
         display: none;
       }
 
-      .area-content-area .area-mobile-quick-controls {
+      .area-content-area .area-mobile-quick-controls{
         top: calc(154px + env(safe-area-inset-top, 0px));
         left: 22px;
         right: 24px;
@@ -8701,30 +8688,30 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow: none;
       }
 
-      .area-content-area .area-header.has-metrics .area-mobile-quick-controls {
+      .area-content-area .area-header.has-metrics .area-mobile-quick-controls{
         top: calc(154px + env(safe-area-inset-top, 0px));
         bottom: auto;
       }
 
-      .area-content-area .area-header.has-metrics.has-quick-controls {
+      .area-content-area .area-header.has-metrics.has-quick-controls{
         min-height: 214px;
       }
 
-      .area-content-area .area-header.is-stuck {
+      .area-content-area .area-header.is-stuck{
         min-height: 84px;
       }
 
-      .area-content-area .area-header.is-stuck .area-header-content {
+      .area-content-area .area-header.is-stuck .area-header-content{
         top: calc(13px + env(safe-area-inset-top, 0px));
         left: 68px;
         right: 106px;
       }
 
-      .area-content-area .area-header.is-stuck .area-title {
+      .area-content-area .area-header.is-stuck .area-title{
         font-size: 16px;
       }
 
-      .area-content-area .area-header {
+      .area-content-area .area-header{
         box-sizing: border-box;
         min-height: calc(146px + env(safe-area-inset-top, 0px));
         margin: 0 -10px 18px;
@@ -8743,21 +8730,21 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .area-content-area .area-header.has-metrics,
-      .area-content-area .area-header.has-quick-controls,
-      .area-content-area .area-header.has-metrics.has-quick-controls {
+.area-content-area .area-header.has-quick-controls,
+.area-content-area .area-header.has-metrics.has-quick-controls{
         min-height: calc(154px + env(safe-area-inset-top, 0px));
       }
 
-      .area-content-area .area-header.has-picture {
+      .area-content-area .area-header.has-picture{
         min-height: calc(178px + env(safe-area-inset-top, 0px));
       }
 
       .area-content-area .area-header.has-picture.has-metrics,
-      .area-content-area .area-header.has-picture.has-quick-controls {
+.area-content-area .area-header.has-picture.has-quick-controls{
         min-height: calc(186px + env(safe-area-inset-top, 0px));
       }
 
-      .area-content-area .area-header:not(.has-picture)::before {
+      .area-content-area .area-header:not(.has-picture)::before{
         background:
           linear-gradient(180deg,
             color-mix(in srgb, var(--card-background-color) 42%, transparent) 0%,
@@ -8766,7 +8753,7 @@ export class DwainsLayoutCard extends LitElement {
         opacity: 1;
       }
 
-      .area-content-area .area-header::after {
+      .area-content-area .area-header::after{
         bottom: -20px;
         height: 40px;
         opacity: 0.88;
@@ -8777,12 +8764,12 @@ export class DwainsLayoutCard extends LitElement {
             transparent 82%);
       }
 
-      .area-content-area .area-mobile-home {
+      .area-content-area .area-mobile-home{
         top: calc(14px + env(safe-area-inset-top, 0px));
         left: 18px;
       }
 
-      .area-content-area .area-mobile-actions {
+      .area-content-area .area-mobile-actions{
         top: calc(14px + env(safe-area-inset-top, 0px));
         right: 18px;
         flex-direction: row;
@@ -8790,7 +8777,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .area-content-area .area-mobile-round,
-      .area-content-area .area-mobile-actions .unavailable-entities-icon {
+.area-content-area .area-mobile-actions .unavailable-entities-icon{
         width: 40px;
         height: 40px;
         border-radius: 999px;
@@ -8801,7 +8788,7 @@ export class DwainsLayoutCard extends LitElement {
           inset 0 0 0 1px color-mix(in srgb, var(--divider-color) 62%, transparent);
       }
 
-      .area-content-area .area-mobile-home {
+      .area-content-area .area-mobile-home{
         background:
           linear-gradient(180deg, rgba(34, 38, 48, 0.84), rgba(8, 10, 15, 0.9)),
           rgba(10, 12, 18, 0.86);
@@ -8810,25 +8797,25 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .area-content-area .area-mobile-round ha-icon,
-      .area-content-area .area-mobile-round .dd-static-icon,
-      .area-content-area .area-mobile-actions .unavailable-entities-icon ha-icon {
+.area-content-area .area-mobile-round .dd-static-icon,
+.area-content-area .area-mobile-actions .unavailable-entities-icon ha-icon{
         --mdc-icon-size: 20px;
         width: 20px;
         height: 20px;
       }
 
-      .area-content-area .area-header-content {
+      .area-content-area .area-header-content{
         top: calc(58px + env(safe-area-inset-top, 0px));
         left: 20px;
         right: 22px;
         justify-content: flex-start;
       }
 
-      .area-content-area .area-header.has-metrics .area-header-content {
+      .area-content-area .area-header.has-metrics .area-header-content{
         right: 136px;
       }
 
-      .area-content-area .area-title {
+      .area-content-area .area-title{
         max-width: 100%;
         font-size: 25px;
         font-weight: 900;
@@ -8836,7 +8823,7 @@ export class DwainsLayoutCard extends LitElement {
         letter-spacing: 0;
       }
 
-      .area-content-area .area-subtitle {
+      .area-content-area .area-subtitle{
         margin-top: 3px;
         padding-bottom: 5px;
         font-size: 12px;
@@ -8844,7 +8831,7 @@ export class DwainsLayoutCard extends LitElement {
         line-height: 1.1;
       }
 
-      .area-content-area .area-header-metrics {
+      .area-content-area .area-header-metrics{
         top: calc(63px + env(safe-area-inset-top, 0px));
         right: 18px;
         left: auto;
@@ -8855,11 +8842,11 @@ export class DwainsLayoutCard extends LitElement {
         gap: 6px;
       }
 
-      .area-content-area .area-header.has-metrics:not(.has-quick-controls) .area-header-metrics {
+      .area-content-area .area-header.has-metrics:not(.has-quick-controls) .area-header-metrics{
         bottom: auto;
       }
 
-      .area-content-area .area-header-metric {
+      .area-content-area .area-header-metric{
         min-height: 29px;
         height: 29px;
         min-width: 96px;
@@ -8875,26 +8862,26 @@ export class DwainsLayoutCard extends LitElement {
           inset 0 0 0 1px color-mix(in srgb, var(--metric-color) 16%, transparent);
       }
 
-      .area-content-area .area-header.has-picture .area-header-metric {
+      .area-content-area .area-header.has-picture .area-header-metric{
         background: rgba(255, 255, 255, 0.76);
       }
 
-      .area-content-area .area-header-metric .metric-ring {
+      .area-content-area .area-header-metric .metric-ring{
         width: 21px;
         height: 21px;
       }
 
-      .area-content-area .area-header-metric .metric-ring ha-icon {
+      .area-content-area .area-header-metric .metric-ring ha-icon{
         --mdc-icon-size: 14px;
       }
 
-      .area-content-area .area-header-metric .metric-copy {
+      .area-content-area .area-header-metric .metric-copy{
         min-width: 0;
         display: flex;
         align-items: center;
       }
 
-      .area-content-area .area-header-metric .metric-reading {
+      .area-content-area .area-header-metric .metric-reading{
         max-width: 62px;
         overflow: hidden;
         color: var(--primary-text-color);
@@ -8904,7 +8891,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .area-content-area .area-mobile-quick-controls,
-      .area-content-area .area-header.has-metrics .area-mobile-quick-controls {
+.area-content-area .area-header.has-metrics .area-mobile-quick-controls{
         top: auto;
         bottom: 8px;
         left: 20px;
@@ -8925,7 +8912,7 @@ export class DwainsLayoutCard extends LitElement {
           inset 0 0 0 1px color-mix(in srgb, var(--divider-color) 58%, transparent);
       }
 
-      .area-content-area .area-header:not(.has-metrics) .area-mobile-quick-controls {
+      .area-content-area .area-header:not(.has-metrics) .area-mobile-quick-controls{
         top: auto;
         bottom: 8px;
         right: 20px;
@@ -8933,40 +8920,40 @@ export class DwainsLayoutCard extends LitElement {
         max-width: none;
       }
 
-      .area-content-area .area-mobile-quick-controls.count-2 {
+      .area-content-area .area-mobile-quick-controls.count-2{
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
-      .area-content-area .area-mobile-quick-controls.count-3 {
+      .area-content-area .area-mobile-quick-controls.count-3{
         grid-template-columns: repeat(3, minmax(0, 1fr));
       }
 
       .area-content-area .area-mobile-quick-controls.count-4,
-      .area-content-area .area-mobile-quick-controls.count-5 {
+.area-content-area .area-mobile-quick-controls.count-5{
         display: flex;
         justify-content: flex-start;
         overflow-x: auto;
       }
 
       .area-content-area .area-mobile-quick-controls.count-4 > .area-quick-control,
-      .area-content-area .area-mobile-quick-controls.count-5 > .area-quick-control {
+.area-content-area .area-mobile-quick-controls.count-5 > .area-quick-control{
         flex: 0 0 auto;
         width: auto;
         min-width: 88px;
       }
 
-      .area-content-area .area-mobile-quick-controls.count-1 {
+      .area-content-area .area-mobile-quick-controls.count-1{
         right: auto;
         width: min(148px, calc(50% - 20px));
         min-width: 122px;
       }
 
-      .area-content-area .area-header.has-metrics .area-mobile-quick-controls.count-1 {
+      .area-content-area .area-header.has-metrics .area-mobile-quick-controls.count-1{
         right: auto;
         width: min(148px, calc(100% - 176px));
       }
 
-      .area-content-area .area-quick-control {
+      .area-content-area .area-quick-control{
         min-width: 48px;
         width: 100%;
         height: 30px;
@@ -8974,40 +8961,40 @@ export class DwainsLayoutCard extends LitElement {
         justify-content: space-between;
       }
 
-      .area-content-area .area-quick-control ha-icon {
+      .area-content-area .area-quick-control ha-icon{
         --mdc-icon-size: 16px;
       }
 
-      .area-content-area .area-quick-count {
+      .area-content-area .area-quick-count{
         font-size: 10px;
       }
 
-      .area-content-area .area-quick-switch {
+      .area-content-area .area-quick-switch{
         width: 24px;
         height: 15px;
       }
 
-      .area-content-area .area-quick-switch::after {
+      .area-content-area .area-quick-switch::after{
         top: 3px;
         left: 3px;
         width: 9px;
         height: 9px;
       }
 
-      .area-content-area .area-quick-control.active .area-quick-switch::after {
+      .area-content-area .area-quick-control.active .area-quick-switch::after{
         transform: translateX(9px);
       }
 
-      .area-content-area .area-quick-direction {
+      .area-content-area .area-quick-direction{
         width: 20px;
         height: 20px;
       }
 
-      .area-content-area .area-quick-direction ha-icon {
+      .area-content-area .area-quick-direction ha-icon{
         --mdc-icon-size: 14px;
       }
 
-      .area-content-area .area-header.has-picture:not(.is-stuck) .area-mobile-home {
+      .area-content-area .area-header.has-picture:not(.is-stuck) .area-mobile-home{
         background: rgba(10, 16, 38, 0.86);
         color: #ffffff;
         box-shadow:
@@ -9018,12 +9005,12 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .area-content-area .area-header.has-picture:not(.is-stuck) .area-mobile-home ha-icon,
-      .area-content-area .area-header.has-picture:not(.is-stuck) .area-mobile-home .dd-static-icon {
+.area-content-area .area-header.has-picture:not(.is-stuck) .area-mobile-home .dd-static-icon{
         color: #ffffff;
         opacity: 1;
       }
 
-      .area-content-area .area-header.has-picture:not(.is-stuck) .area-mobile-actions .area-mobile-round {
+      .area-content-area .area-header.has-picture:not(.is-stuck) .area-mobile-actions .area-mobile-round{
         background: rgba(255, 255, 255, 0.86);
         color: #0f172a;
         box-shadow:
@@ -9034,7 +9021,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .area-content-area .area-header.has-picture:not(.is-stuck) .area-mobile-quick-controls,
-      .area-content-area .area-header.has-picture:not(.is-stuck).has-metrics .area-mobile-quick-controls {
+.area-content-area .area-header.has-picture:not(.is-stuck).has-metrics .area-mobile-quick-controls{
         background: rgba(255, 255, 255, 0.9);
         box-shadow:
           0 16px 32px rgba(0, 0, 0, 0.2),
@@ -9043,56 +9030,56 @@ export class DwainsLayoutCard extends LitElement {
         -webkit-backdrop-filter: blur(18px) saturate(1.18);
       }
 
-      .area-content-area .area-header.has-picture:not(.is-stuck) .area-quick-control {
+      .area-content-area .area-header.has-picture:not(.is-stuck) .area-quick-control{
         color: rgba(15, 23, 42, 0.66);
       }
 
-      .area-content-area .area-header.has-picture:not(.is-stuck) .area-quick-control.active {
+      .area-content-area .area-header.has-picture:not(.is-stuck) .area-quick-control.active{
         background: color-mix(in srgb, var(--domain-color, #182044) 16%, rgba(15, 23, 42, 0.06));
         color: var(--domain-color, #182044);
       }
 
-      .area-content-area .area-header.has-picture:not(.is-stuck) .area-quick-control.light {
+      .area-content-area .area-header.has-picture:not(.is-stuck) .area-quick-control.light{
         --domain-color: #d99a12;
       }
 
-      .area-content-area .area-header.has-picture:not(.is-stuck) .area-quick-control.switch {
+      .area-content-area .area-header.has-picture:not(.is-stuck) .area-quick-control.switch{
         --domain-color: #2f73d6;
       }
 
-      .area-content-area .area-header.has-picture:not(.is-stuck) .area-quick-control.cover {
+      .area-content-area .area-header.has-picture:not(.is-stuck) .area-quick-control.cover{
         --domain-color: #7c4fc7;
       }
 
-      .area-content-area .area-header.has-picture:not(.is-stuck) .area-quick-control.fan {
+      .area-content-area .area-header.has-picture:not(.is-stuck) .area-quick-control.fan{
         --domain-color: #15967f;
       }
 
-      .area-content-area .area-header.has-picture:not(.is-stuck) .area-quick-control.climate {
+      .area-content-area .area-header.has-picture:not(.is-stuck) .area-quick-control.climate{
         --domain-color: #2f9ed6;
       }
 
-      .area-content-area .area-header.has-picture:not(.is-stuck) .area-quick-switch {
+      .area-content-area .area-header.has-picture:not(.is-stuck) .area-quick-switch{
         background: rgba(15, 23, 42, 0.16);
       }
 
-      .area-content-area .area-header.has-picture:not(.is-stuck) .area-quick-control.active .area-quick-switch {
+      .area-content-area .area-header.has-picture:not(.is-stuck) .area-quick-control.active .area-quick-switch{
         background: var(--domain-color, #182044);
       }
 
-      .area-content-area .area-header {
+      .area-content-area .area-header{
         position: relative;
         top: auto;
         z-index: 3;
       }
 
       .area-content-area .area-header.is-stuck,
-      .area-content-area .area-header.is-stuck.has-metrics,
-      .area-content-area .area-header.is-stuck.has-quick-controls,
-      .area-content-area .area-header.is-stuck.has-metrics.has-quick-controls,
-      .area-content-area .area-header.is-stuck.has-picture,
-      .area-content-area .area-header.is-stuck.has-picture.has-metrics,
-      .area-content-area .area-header.is-stuck.has-picture.has-quick-controls {
+.area-content-area .area-header.is-stuck.has-metrics,
+.area-content-area .area-header.is-stuck.has-quick-controls,
+.area-content-area .area-header.is-stuck.has-metrics.has-quick-controls,
+.area-content-area .area-header.is-stuck.has-picture,
+.area-content-area .area-header.is-stuck.has-picture.has-metrics,
+.area-content-area .area-header.is-stuck.has-picture.has-quick-controls{
         position: sticky;
         top: 0;
         z-index: 90;
@@ -9103,28 +9090,28 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .area-content-area .area-header.is-stuck .area-mobile-home,
-      .area-content-area .area-header.is-stuck .area-mobile-actions {
+.area-content-area .area-header.is-stuck .area-mobile-actions{
         top: calc(9px + env(safe-area-inset-top, 0px));
       }
 
       .area-content-area .area-header.is-stuck .area-mobile-round,
-      .area-content-area .area-header.is-stuck .area-mobile-actions .unavailable-entities-icon {
+.area-content-area .area-header.is-stuck .area-mobile-actions .unavailable-entities-icon{
         width: 36px;
         height: 36px;
       }
 
-      .area-content-area .area-header.is-stuck .area-header-content {
+      .area-content-area .area-header.is-stuck .area-header-content{
         top: calc(10px + env(safe-area-inset-top, 0px));
         left: 66px;
         right: 66px;
       }
 
-      .area-content-area .area-header.is-stuck .area-title {
+      .area-content-area .area-header.is-stuck .area-title{
         font-size: 15px;
         line-height: 1.05;
       }
 
-      .area-content-area .area-header.is-stuck .area-subtitle {
+      .area-content-area .area-header.is-stuck .area-subtitle{
         display: block;
         margin-top: 2px;
         padding-bottom: 0;
@@ -9136,19 +9123,19 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .area-content-area .area-header.is-stuck::after,
-      .area-content-area .area-header.is-stuck .area-mobile-quick-controls,
-      .area-content-area .area-header.is-stuck.has-metrics .area-mobile-quick-controls,
-      .area-content-area .area-header.is-stuck.has-quick-controls .area-mobile-quick-controls,
-      .area-content-area .area-header.is-stuck .area-header-metrics,
-      .area-content-area .area-header.is-stuck .area-badges {
+.area-content-area .area-header.is-stuck .area-mobile-quick-controls,
+.area-content-area .area-header.is-stuck.has-metrics .area-mobile-quick-controls,
+.area-content-area .area-header.is-stuck.has-quick-controls .area-mobile-quick-controls,
+.area-content-area .area-header.is-stuck .area-header-metrics,
+.area-content-area .area-header.is-stuck .area-badges{
         display: none;
       }
 
-      .area-content-area .area-header.is-stuck.is-revealed {
+      .area-content-area .area-header.is-stuck.is-revealed{
         overflow: visible;
       }
 
-      .area-content-area .area-header.is-stuck.is-revealed::before {
+      .area-content-area .area-header.is-stuck.is-revealed::before{
         content: "";
         position: absolute;
         inset: 0 0 auto;
@@ -9168,23 +9155,23 @@ export class DwainsLayoutCard extends LitElement {
         pointer-events: none;
       }
 
-      .area-content-area .area-header.is-stuck.is-revealed .area-header-content {
+      .area-content-area .area-header.is-stuck.is-revealed .area-header-content{
         top: calc(58px + env(safe-area-inset-top, 0px));
         left: 20px;
         right: 22px;
         justify-content: flex-start;
       }
 
-      .area-content-area .area-header.is-stuck.is-revealed.has-metrics .area-header-content {
+      .area-content-area .area-header.is-stuck.is-revealed.has-metrics .area-header-content{
         right: 136px;
       }
 
-      .area-content-area .area-header.is-stuck.is-revealed .area-title {
+      .area-content-area .area-header.is-stuck.is-revealed .area-title{
         font-size: 25px;
         line-height: 1.02;
       }
 
-      .area-content-area .area-header.is-stuck.is-revealed .area-subtitle {
+      .area-content-area .area-header.is-stuck.is-revealed .area-subtitle{
         display: block;
         margin-top: 3px;
         padding-bottom: 5px;
@@ -9195,12 +9182,12 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .area-content-area .area-header.is-stuck.is-revealed.has-picture .area-title,
-      .area-content-area .area-header.is-stuck.is-revealed.has-picture .area-subtitle {
+.area-content-area .area-header.is-stuck.is-revealed.has-picture .area-subtitle{
         color: var(--primary-text-color);
         text-shadow: none;
       }
 
-      .area-content-area .area-header.is-stuck.is-revealed .area-header-metrics {
+      .area-content-area .area-header.is-stuck.is-revealed .area-header-metrics{
         top: calc(63px + env(safe-area-inset-top, 0px));
         right: 18px;
         left: auto;
@@ -9212,8 +9199,8 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .area-content-area .area-header.is-stuck.is-revealed .area-mobile-quick-controls,
-      .area-content-area .area-header.is-stuck.is-revealed.has-metrics .area-mobile-quick-controls,
-      .area-content-area .area-header.is-stuck.is-revealed.has-quick-controls .area-mobile-quick-controls {
+.area-content-area .area-header.is-stuck.is-revealed.has-metrics .area-mobile-quick-controls,
+.area-content-area .area-header.is-stuck.is-revealed.has-quick-controls .area-mobile-quick-controls{
         top: calc(110px + env(safe-area-inset-top, 0px));
         bottom: auto;
         left: 20px;
@@ -9233,26 +9220,26 @@ export class DwainsLayoutCard extends LitElement {
           inset 0 0 0 1px color-mix(in srgb, var(--divider-color) 58%, transparent);
       }
 
-      .area-content-area .area-header.is-stuck.is-revealed .area-mobile-quick-controls.count-2 {
+      .area-content-area .area-header.is-stuck.is-revealed .area-mobile-quick-controls.count-2{
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
-      .area-content-area .area-header.is-stuck.is-revealed .area-mobile-quick-controls.count-3 {
+      .area-content-area .area-header.is-stuck.is-revealed .area-mobile-quick-controls.count-3{
         grid-template-columns: repeat(3, minmax(0, 1fr));
       }
 
-      .area-content-area .area-header.is-stuck.is-revealed .area-mobile-quick-controls.count-1 {
+      .area-content-area .area-header.is-stuck.is-revealed .area-mobile-quick-controls.count-1{
         right: auto;
         width: min(148px, calc(50% - 20px));
         min-width: 122px;
       }
 
-      .area-content-area .area-header.is-stuck.is-revealed.has-metrics .area-mobile-quick-controls.count-1 {
+      .area-content-area .area-header.is-stuck.is-revealed.has-metrics .area-mobile-quick-controls.count-1{
         right: auto;
         width: min(148px, calc(100% - 176px));
       }
 
-      .area-content-area .area-header.is-stuck.is-revealed .area-mobile-quick-controls.empty {
+      .area-content-area .area-header.is-stuck.is-revealed .area-mobile-quick-controls.empty{
         display: none;
       }
 
@@ -9261,45 +9248,46 @@ export class DwainsLayoutCard extends LitElement {
        * Adding env(safe-area-inset-top) inside DD Next a second time creates the
        * large empty strip visible above the home greeting and room controls.
        */
-      .home-welcome {
+      .home-welcome{
         padding-top: 16px;
       }
 
       .area-content-area .area-header:not(.is-stuck),
-      .area-content-area .area-header:not(.is-stuck).has-metrics,
-      .area-content-area .area-header:not(.is-stuck).has-quick-controls,
-      .area-content-area .area-header:not(.is-stuck).has-metrics.has-quick-controls {
+.area-content-area .area-header:not(.is-stuck).has-metrics,
+.area-content-area .area-header:not(.is-stuck).has-quick-controls,
+.area-content-area .area-header:not(.is-stuck).has-metrics.has-quick-controls{
         min-height: 174px;
       }
 
       .area-content-area .area-header:not(.is-stuck).has-picture,
-      .area-content-area .area-header:not(.is-stuck).has-picture.has-metrics,
-      .area-content-area .area-header:not(.is-stuck).has-picture.has-quick-controls {
+.area-content-area .area-header:not(.is-stuck).has-picture.has-metrics,
+.area-content-area .area-header:not(.is-stuck).has-picture.has-quick-controls{
         min-height: 194px;
       }
 
       .area-content-area .area-mobile-home,
-      .area-content-area .area-mobile-actions {
+.area-content-area .area-mobile-actions{
         top: 14px;
       }
 
       .area-content-area .area-header-content,
-      .area-content-area .area-header.has-metrics .area-header-content {
+.area-content-area .area-header.has-metrics .area-header-content{
         top: 58px;
       }
 
-      .area-content-area .area-header-metrics {
+      .area-content-area .area-header-metrics{
         top: 63px;
       }
 
       /*
-       * Quick controls are compact controls, not a full-width second toolbar.
+       * Quick controls are compact controls,
+not a full-width second toolbar.
        * Keeping them content-sized prevents the switch thumb from ending up
        * visually detached at the far right edge of the header.
        */
       .area-content-area .area-mobile-quick-controls,
-      .area-content-area .area-header.has-metrics .area-mobile-quick-controls,
-      .area-content-area .area-header.has-quick-controls .area-mobile-quick-controls {
+.area-content-area .area-header.has-metrics .area-mobile-quick-controls,
+.area-content-area .area-header.has-quick-controls .area-mobile-quick-controls{
         top: auto;
         right: auto;
         bottom: 10px;
@@ -9312,57 +9300,57 @@ export class DwainsLayoutCard extends LitElement {
         overflow-x: auto;
       }
 
-      .area-content-area .area-header.has-metrics .area-mobile-quick-controls {
+      .area-content-area .area-header.has-metrics .area-mobile-quick-controls{
         max-width: calc(100% - 154px);
       }
 
       .area-content-area .area-mobile-quick-controls > .area-quick-control,
-      .area-content-area .area-mobile-quick-controls.count-1 > .area-quick-control,
-      .area-content-area .area-mobile-quick-controls.count-2 > .area-quick-control,
-      .area-content-area .area-mobile-quick-controls.count-3 > .area-quick-control,
-      .area-content-area .area-mobile-quick-controls.count-4 > .area-quick-control,
-      .area-content-area .area-mobile-quick-controls.count-5 > .area-quick-control {
+.area-content-area .area-mobile-quick-controls.count-1 > .area-quick-control,
+.area-content-area .area-mobile-quick-controls.count-2 > .area-quick-control,
+.area-content-area .area-mobile-quick-controls.count-3 > .area-quick-control,
+.area-content-area .area-mobile-quick-controls.count-4 > .area-quick-control,
+.area-content-area .area-mobile-quick-controls.count-5 > .area-quick-control{
         width: auto;
         min-width: 88px;
         flex: 0 0 auto;
       }
 
       .area-content-area .area-header.is-stuck,
-      .area-content-area .area-header.is-stuck.has-metrics,
-      .area-content-area .area-header.is-stuck.has-quick-controls,
-      .area-content-area .area-header.is-stuck.has-metrics.has-quick-controls {
+.area-content-area .area-header.is-stuck.has-metrics,
+.area-content-area .area-header.is-stuck.has-quick-controls,
+.area-content-area .area-header.is-stuck.has-metrics.has-quick-controls{
         min-height: 62px;
         padding-top: 8px;
       }
 
       .area-content-area .area-header.is-stuck .area-mobile-home,
-      .area-content-area .area-header.is-stuck .area-mobile-actions {
+.area-content-area .area-header.is-stuck .area-mobile-actions{
         top: 9px;
       }
 
-      .area-content-area .area-header.is-stuck .area-header-content {
+      .area-content-area .area-header.is-stuck .area-header-content{
         top: 10px;
       }
 
       .area-content-area .area-header.is-stuck.is-revealed,
-      .area-content-area .area-header.is-stuck.is-revealed.has-metrics,
-      .area-content-area .area-header.is-stuck.is-revealed.has-quick-controls,
-      .area-content-area .area-header.is-stuck.is-revealed.has-metrics.has-quick-controls {
+.area-content-area .area-header.is-stuck.is-revealed.has-metrics,
+.area-content-area .area-header.is-stuck.is-revealed.has-quick-controls,
+.area-content-area .area-header.is-stuck.is-revealed.has-metrics.has-quick-controls{
         min-height: 174px;
       }
 
       .area-content-area .area-header.is-stuck.is-revealed .area-header-content,
-      .area-content-area .area-header.is-stuck.is-revealed.has-metrics .area-header-content {
+.area-content-area .area-header.is-stuck.is-revealed.has-metrics .area-header-content{
         top: 58px;
       }
 
-      .area-content-area .area-header.is-stuck.is-revealed .area-header-metrics {
+      .area-content-area .area-header.is-stuck.is-revealed .area-header-metrics{
         top: 63px;
       }
 
       .area-content-area .area-header.is-stuck.is-revealed .area-mobile-quick-controls,
-      .area-content-area .area-header.is-stuck.is-revealed.has-metrics .area-mobile-quick-controls,
-      .area-content-area .area-header.is-stuck.is-revealed.has-quick-controls .area-mobile-quick-controls {
+.area-content-area .area-header.is-stuck.is-revealed.has-metrics .area-mobile-quick-controls,
+.area-content-area .area-header.is-stuck.is-revealed.has-quick-controls .area-mobile-quick-controls{
         top: auto;
         bottom: 10px;
         left: 20px;
@@ -9372,76 +9360,77 @@ export class DwainsLayoutCard extends LitElement {
         display: flex;
       }
 
-      .area-content-area .area-header.is-stuck.is-revealed.has-metrics .area-mobile-quick-controls {
+      .area-content-area .area-header.is-stuck.is-revealed.has-metrics .area-mobile-quick-controls{
         max-width: calc(100% - 154px);
       }
 
       /* Keep the expanded room header geometrically honest: earlier variants used a
-         short physical header plus absolutely-positioned content, which could overlap
+         short physical header plus absolutely-positioned content,
+which could overlap
          the subtitle and the first controls row on iPhone-sized viewports. */
       .area-content-area .area-header:not(.is-stuck),
-      .area-content-area .area-header:not(.is-stuck).has-metrics,
-      .area-content-area .area-header:not(.is-stuck).has-quick-controls,
-      .area-content-area .area-header:not(.is-stuck).has-metrics.has-quick-controls {
+.area-content-area .area-header:not(.is-stuck).has-metrics,
+.area-content-area .area-header:not(.is-stuck).has-quick-controls,
+.area-content-area .area-header:not(.is-stuck).has-metrics.has-quick-controls{
         min-height: calc(174px + env(safe-area-inset-top, 0px));
       }
 
       .area-content-area .area-header:not(.is-stuck).has-picture,
-      .area-content-area .area-header:not(.is-stuck).has-picture.has-metrics,
-      .area-content-area .area-header:not(.is-stuck).has-picture.has-quick-controls {
+.area-content-area .area-header:not(.is-stuck).has-picture.has-metrics,
+.area-content-area .area-header:not(.is-stuck).has-picture.has-quick-controls{
         min-height: calc(194px + env(safe-area-inset-top, 0px));
       }
 
       .area-content-area .area-header:not(.is-stuck) .area-mobile-quick-controls,
-      .area-content-area .area-header:not(.is-stuck).has-metrics .area-mobile-quick-controls,
-      .area-content-area .area-header:not(.is-stuck).has-quick-controls .area-mobile-quick-controls {
+.area-content-area .area-header:not(.is-stuck).has-metrics .area-mobile-quick-controls,
+.area-content-area .area-header:not(.is-stuck).has-quick-controls .area-mobile-quick-controls{
         top: auto;
         bottom: 10px;
       }
 
       .area-content-area .area-header.is-stuck.is-revealed,
-      .area-content-area .area-header.is-stuck.is-revealed.has-metrics,
-      .area-content-area .area-header.is-stuck.is-revealed.has-quick-controls,
-      .area-content-area .area-header.is-stuck.is-revealed.has-metrics.has-quick-controls {
+.area-content-area .area-header.is-stuck.is-revealed.has-metrics,
+.area-content-area .area-header.is-stuck.is-revealed.has-quick-controls,
+.area-content-area .area-header.is-stuck.is-revealed.has-metrics.has-quick-controls{
         min-height: calc(174px + env(safe-area-inset-top, 0px));
       }
 
-      .area-content-area .area-header.is-stuck.is-revealed::before {
+      .area-content-area .area-header.is-stuck.is-revealed::before{
         height: 100%;
       }
 
       .area-content-area .area-header.is-stuck.is-revealed .area-mobile-quick-controls,
-      .area-content-area .area-header.is-stuck.is-revealed.has-metrics .area-mobile-quick-controls,
-      .area-content-area .area-header.is-stuck.is-revealed.has-quick-controls .area-mobile-quick-controls {
+.area-content-area .area-header.is-stuck.is-revealed.has-metrics .area-mobile-quick-controls,
+.area-content-area .area-header.is-stuck.is-revealed.has-quick-controls .area-mobile-quick-controls{
         top: auto;
         bottom: 10px;
       }
 
       .area-view .entities-section,
-      .area-view .dd-custom-section {
+.area-view .dd-custom-section{
         position: relative;
         z-index: 2;
       }
 
-      .area-view .entities-section {
+      .area-view .entities-section{
         display: none;
       }
 
-      .mobile-area-overview {
+      .mobile-area-overview{
         display: block;
         position: relative;
         z-index: 2;
         margin: 12px 0 20px;
       }
 
-      .mobile-entities-section {
+      .mobile-entities-section{
         display: grid;
         position: relative;
         z-index: 2;
       }
 
       .layout-container > .sidebar,
-      .sidebar {
+.sidebar{
         position: fixed !important;
         left: 18px !important;
         right: 18px !important;
@@ -9463,11 +9452,11 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .layout-container > .sidebar.open,
-      .sidebar.open {
+.sidebar.open{
         transform: translate3d(0, 0, 0) !important;
       }
 
-      .sidebar::before {
+      .sidebar::before{
         content: "";
         width: 42px;
         height: 4px;
@@ -9477,7 +9466,7 @@ export class DwainsLayoutCard extends LitElement {
         background: rgba(0, 0, 0, 0.14);
       }
 
-      .mobile-area-picker-head {
+      .mobile-area-picker-head{
         min-height: 42px;
         margin: 0 2px 10px;
         display: flex;
@@ -9486,7 +9475,7 @@ export class DwainsLayoutCard extends LitElement {
         gap: 12px;
       }
 
-      .mobile-area-picker-title {
+      .mobile-area-picker-title{
         min-width: 0;
         color: var(--primary-text-color);
         font-size: 20px;
@@ -9494,7 +9483,7 @@ export class DwainsLayoutCard extends LitElement {
         line-height: 1.1;
       }
 
-      .mobile-area-picker-close {
+      .mobile-area-picker-close{
         width: 38px;
         height: 38px;
         padding: 0;
@@ -9508,30 +9497,30 @@ export class DwainsLayoutCard extends LitElement {
         color: var(--primary-text-color);
       }
 
-      .mobile-area-picker-close ha-icon {
+      .mobile-area-picker-close ha-icon{
         --mdc-icon-size: 21px;
       }
 
-      .sidebar .area-list {
+      .sidebar .area-list{
         padding: 0;
       }
 
-      .sidebar .floor-section {
+      .sidebar .floor-section{
         margin-bottom: 12px;
       }
 
-      .sidebar .floor-header {
+      .sidebar .floor-header{
         padding: 6px 12px 9px;
       }
 
-      .sidebar .floor-header h3 {
+      .sidebar .floor-header h3{
         font-size: 13px;
         font-weight: 850;
         letter-spacing: 0;
         text-transform: none;
       }
 
-      .sidebar .area-button {
+      .sidebar .area-button{
         min-height: 64px;
         height: auto;
         margin-bottom: 8px;
@@ -9547,14 +9536,14 @@ export class DwainsLayoutCard extends LitElement {
           inset 0 1px 0 rgba(255, 255, 255, 0.42);
       }
 
-      .sidebar .area-button.home-button {
+      .sidebar .area-button.home-button{
         height: 48px;
         min-height: 48px;
         padding: 10px 14px 10px 54px;
         border-radius: 8px;
       }
 
-      .sidebar .area-button.home-button .area-icon {
+      .sidebar .area-button.home-button .area-icon{
         position: absolute;
         left: 12px;
         top: 50%;
@@ -9565,7 +9554,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .sidebar .area-button.selected,
-      .sidebar .area-button.home-button.selected {
+.sidebar .area-button.home-button.selected{
         border-color: color-mix(in srgb, var(--primary-color) 42%, transparent);
         background:
           linear-gradient(180deg,
@@ -9577,7 +9566,7 @@ export class DwainsLayoutCard extends LitElement {
           inset 0 1px 0 rgba(255, 255, 255, 0.2);
       }
 
-      .sidebar .area-content {
+      .sidebar .area-content{
         min-height: 42px;
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
@@ -9586,19 +9575,19 @@ export class DwainsLayoutCard extends LitElement {
         gap: 3px 10px;
       }
 
-      .sidebar .area-top-section {
+      .sidebar .area-top-section{
         min-width: 0;
         margin-top: 0;
         grid-column: 1;
         grid-row: 1 / span 2;
       }
 
-      .sidebar .area-bottom-section {
+      .sidebar .area-bottom-section{
         display: contents;
         min-height: 0;
       }
 
-      .sidebar .area-main-icon {
+      .sidebar .area-main-icon{
         position: absolute;
         left: -44px;
         top: 50%;
@@ -9611,25 +9600,25 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow: none;
       }
 
-      .sidebar .area-main-icon ha-icon {
+      .sidebar .area-main-icon ha-icon{
         --mdc-icon-size: 20px;
       }
 
-      .sidebar .area-button.has-picture {
+      .sidebar .area-button.has-picture{
         min-height: 70px;
         color: var(--area-picture-text-color, #ffffff);
         border-color: rgba(255, 255, 255, 0.18);
         background: #182044;
       }
 
-      .sidebar .area-button.has-picture.selected {
+      .sidebar .area-button.has-picture.selected{
         border-color: color-mix(in srgb, var(--primary-color) 44%, rgba(255, 255, 255, 0.18));
         box-shadow:
           0 14px 30px rgba(15, 23, 42, 0.18),
           inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 34%, transparent);
       }
 
-      .sidebar .area-button.has-picture::after {
+      .sidebar .area-button.has-picture::after{
         content: "";
         position: absolute;
         inset: 0;
@@ -9638,18 +9627,18 @@ export class DwainsLayoutCard extends LitElement {
         pointer-events: none;
       }
 
-      .sidebar .area-button.has-picture .area-background {
+      .sidebar .area-button.has-picture .area-background{
         opacity: 0.78;
         transform: scale(1.02);
       }
 
       .sidebar .area-button.has-picture .area-content,
-      .sidebar .area-button.has-picture .area-info-badges,
-      .sidebar .area-button.has-picture .area-main-icon {
+.sidebar .area-button.has-picture .area-info-badges,
+.sidebar .area-button.has-picture .area-main-icon{
         z-index: 1;
       }
 
-      .sidebar .area-info-badges {
+      .sidebar .area-info-badges{
         position: relative;
         top: auto;
         right: auto;
@@ -9661,7 +9650,7 @@ export class DwainsLayoutCard extends LitElement {
         gap: 5px;
       }
 
-      .sidebar .area-name {
+      .sidebar .area-name{
         max-width: 100%;
         margin: 0;
         font-size: 15px;
@@ -9672,7 +9661,7 @@ export class DwainsLayoutCard extends LitElement {
         white-space: nowrap;
       }
 
-      .sidebar .area-sensors {
+      .sidebar .area-sensors{
         margin-top: 4px;
         color: color-mix(in srgb, var(--primary-text-color) 58%, transparent);
         font-size: 12px;
@@ -9680,11 +9669,11 @@ export class DwainsLayoutCard extends LitElement {
         line-height: 1.1;
       }
 
-      .sidebar .area-button.has-picture .area-sensors {
+      .sidebar .area-button.has-picture .area-sensors{
         color: var(--area-picture-muted-text-color, rgba(255, 255, 255, 0.72));
       }
 
-      .sidebar .info-badge {
+      .sidebar .info-badge{
         min-width: 24px;
         height: 22px;
         padding: 0 7px;
@@ -9693,16 +9682,16 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.04);
       }
 
-      .sidebar .info-badge ha-icon {
+      .sidebar .info-badge ha-icon{
         --mdc-icon-size: 13px;
       }
 
-      .sidebar .badge-count {
+      .sidebar .badge-count{
         font-size: 11px;
         font-weight: 850;
       }
 
-      .sidebar .area-button.has-picture .info-badge {
+      .sidebar .area-button.has-picture .info-badge{
         background: color-mix(in srgb, var(--badge-color, var(--primary-color)) 18%, rgba(255, 255, 255, 0.88));
         color: var(--badge-color, var(--primary-color));
         backdrop-filter: blur(10px);
@@ -9710,36 +9699,36 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .sidebar .area-button.selected .area-main-icon,
-      .sidebar .area-button.selected .area-icon {
+.sidebar .area-button.selected .area-icon{
         background: rgba(var(--rgb-primary-color, 3, 169, 244), 0.14);
         color: var(--primary-color);
       }
 
-      .sidebar .area-list {
+      .sidebar .area-list{
         display: grid;
         grid-template-columns: minmax(0, 1fr) !important;
         gap: 8px;
       }
 
-      .sidebar .floor-section {
+      .sidebar .floor-section{
         display: grid;
         grid-template-columns: minmax(0, 1fr) !important;
         gap: 8px;
         margin-bottom: 10px;
       }
 
-      .sidebar .floor-areas {
+      .sidebar .floor-areas{
         display: grid;
         grid-template-columns: minmax(0, 1fr) !important;
         gap: 8px;
       }
 
-      .sidebar .floor-header {
+      .sidebar .floor-header{
         margin: 0;
         padding: 4px 6px 2px;
       }
 
-      .sidebar .floor-header h3 {
+      .sidebar .floor-header h3{
         color: var(--secondary-text-color);
         font-size: 14px;
         font-weight: 760;
@@ -9747,7 +9736,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .sidebar .area-button,
-      .sidebar .area-button.home-button {
+.sidebar .area-button.home-button{
         display: grid;
         grid-template-columns: 48px minmax(0, 1fr) auto 22px;
         align-items: center;
@@ -9764,13 +9753,13 @@ export class DwainsLayoutCard extends LitElement {
         transform: none;
       }
 
-      .sidebar .area-button:hover {
+      .sidebar .area-button:hover{
         transform: translateY(-1px);
         box-shadow: 0 12px 24px rgba(15, 23, 42, 0.09);
       }
 
       .sidebar .area-button.selected,
-      .sidebar .area-button.home-button.selected {
+.sidebar .area-button.home-button.selected{
         border-color: color-mix(in srgb, var(--primary-color) 58%, transparent);
         background: color-mix(in srgb, var(--card-background-color) 90%, var(--primary-color) 10%);
         color: var(--primary-text-color);
@@ -9781,8 +9770,8 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .sidebar .area-button.home-button .area-icon,
-      .sidebar .area-icon,
-      .sidebar .area-main-icon {
+.sidebar .area-icon,
+.sidebar .area-main-icon{
         position: relative;
         left: auto;
         top: auto;
@@ -9798,19 +9787,19 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow: none;
       }
 
-      .sidebar .area-button.home-button .area-icon {
+      .sidebar .area-button.home-button .area-icon{
         position: relative;
         left: auto;
         top: auto;
       }
 
       .sidebar .area-main-icon ha-icon,
-      .sidebar .area-icon ha-icon {
+.sidebar .area-icon ha-icon{
         --mdc-icon-size: 24px;
         color: currentColor;
       }
 
-      .sidebar .area-content {
+      .sidebar .area-content{
         display: contents;
         width: auto;
         height: auto;
@@ -9818,18 +9807,18 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .sidebar .area-info,
-      .sidebar .area-top-section {
+.sidebar .area-top-section{
         grid-column: 2;
         grid-row: 1;
         min-width: 0;
         margin: 0;
       }
 
-      .sidebar .area-bottom-section {
+      .sidebar .area-bottom-section{
         display: contents;
       }
 
-      .sidebar .area-name {
+      .sidebar .area-name{
         margin: 0;
         color: inherit;
         font-size: 15px;
@@ -9837,7 +9826,7 @@ export class DwainsLayoutCard extends LitElement {
         line-height: 1.1;
       }
 
-      .sidebar .area-sensors {
+      .sidebar .area-sensors{
         margin-top: 4px;
         color: var(--secondary-text-color);
         font-size: 12px;
@@ -9845,7 +9834,7 @@ export class DwainsLayoutCard extends LitElement {
         line-height: 1.1;
       }
 
-      .sidebar .area-info-badges {
+      .sidebar .area-info-badges{
         position: relative;
         top: auto;
         right: auto;
@@ -9859,7 +9848,7 @@ export class DwainsLayoutCard extends LitElement {
         z-index: 1;
       }
 
-      .sidebar .area-menu-chevron {
+      .sidebar .area-menu-chevron{
         display: block;
         grid-column: 4;
         grid-row: 1;
@@ -9869,7 +9858,7 @@ export class DwainsLayoutCard extends LitElement {
         transition: transform 0.18s ease, color 0.18s ease;
       }
 
-      .sidebar .home-notification-shortcut {
+      .sidebar .home-notification-shortcut{
         grid-column: 3;
         grid-row: 1;
         justify-self: end;
@@ -9879,19 +9868,19 @@ export class DwainsLayoutCard extends LitElement {
         margin-left: 0;
       }
 
-      .sidebar .area-button.selected .area-menu-chevron {
+      .sidebar .area-button.selected .area-menu-chevron{
         color: var(--primary-color);
         transform: translateX(2px);
       }
 
-      .sidebar .area-button.has-picture {
+      .sidebar .area-button.has-picture{
         min-height: 68px;
         border-color: rgba(15, 23, 42, 0.12);
         background: rgba(18, 24, 38, 0.9);
         color: var(--area-picture-text-color, #ffffff);
       }
 
-      .sidebar .area-button.has-picture.selected {
+      .sidebar .area-button.has-picture.selected{
         border-color: rgba(var(--rgb-primary-color, 3, 169, 244), 0.48);
         background: rgba(18, 24, 38, 0.92);
         box-shadow:
@@ -9899,27 +9888,27 @@ export class DwainsLayoutCard extends LitElement {
           inset 3px 0 0 var(--primary-color);
       }
 
-      .sidebar .area-button.has-picture .area-background {
+      .sidebar .area-button.has-picture .area-background{
         opacity: 0.78;
         transform: scale(1.02);
       }
 
       .sidebar .area-button.has-picture .area-top-section,
-      .sidebar .area-button.has-picture .area-name,
-      .sidebar .area-button.has-picture .area-sensors,
-      .sidebar .area-button.has-picture .area-menu-chevron,
-      .sidebar .area-button.has-picture .area-info-badges,
-      .sidebar .area-button.has-picture .area-main-icon,
-      .sidebar .area-button.has-picture .area-icon {
+.sidebar .area-button.has-picture .area-name,
+.sidebar .area-button.has-picture .area-sensors,
+.sidebar .area-button.has-picture .area-menu-chevron,
+.sidebar .area-button.has-picture .area-info-badges,
+.sidebar .area-button.has-picture .area-main-icon,
+.sidebar .area-button.has-picture .area-icon{
         position: relative;
         z-index: 2;
       }
 
-      .sidebar .area-button.has-picture::after {
+      .sidebar .area-button.has-picture::after{
         background: var(--area-picture-overlay);
       }
 
-      .sidebar .area-button.has-picture .area-name {
+      .sidebar .area-button.has-picture .area-name{
         width: fit-content;
         max-width: 100%;
         padding: 4px 8px;
@@ -9932,39 +9921,39 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .sidebar .area-button.has-picture .area-main-icon,
-      .sidebar .area-button.has-picture .area-icon {
+.sidebar .area-button.has-picture .area-icon{
         background: rgba(255, 255, 255, 0.18);
         color: var(--area-picture-text-color, #ffffff);
         backdrop-filter: blur(10px);
       }
 
       .sidebar .area-button.has-picture .area-sensors,
-      .sidebar .area-button.has-picture .area-menu-chevron {
+.sidebar .area-button.has-picture .area-menu-chevron{
         color: var(--area-picture-muted-text-color, rgba(255, 255, 255, 0.72));
       }
 
-      .sidebar .area-button.has-picture.selected .area-menu-chevron {
+      .sidebar .area-button.has-picture.selected .area-menu-chevron{
         color: var(--area-picture-text-color, #ffffff);
       }
 
       .sidebar .area-button.has-picture.text-dark .area-main-icon,
-      .sidebar .area-button.has-picture.text-dark .area-icon {
+.sidebar .area-button.has-picture.text-dark .area-icon{
         background: rgba(255, 255, 255, 0.18);
         color: var(--area-picture-text-color, #ffffff);
       }
 
-      .sidebar .area-button.has-picture.text-dark .info-badge {
+      .sidebar .area-button.has-picture.text-dark .info-badge{
         background: color-mix(in srgb, var(--badge-color, var(--primary-color)) 18%, rgba(255, 255, 255, 0.88));
         color: var(--badge-color, var(--primary-color));
       }
 
-      .mobile-nav-overlay {
+      .mobile-nav-overlay{
         z-index: 120 !important;
         background: rgba(0, 0, 0, 0.45);
         backdrop-filter: blur(2px);
       }
 
-      :host([data-theme-dark]) {
+      :host([data-theme-dark]){
         .layout-container > .sidebar,
         .sidebar {
           border-color: rgba(255, 255, 255, 0.1);
@@ -10068,12 +10057,12 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .home-view,
-      .home-content-area {
+.home-content-area{
         max-width: 100% !important;
         overflow-x: hidden !important;
       }
 
-      .home-view .home-favorites-section {
+      .home-view .home-favorites-section{
         box-sizing: border-box !important;
         width: 100% !important;
         max-width: 100% !important;
@@ -10082,50 +10071,50 @@ export class DwainsLayoutCard extends LitElement {
         overflow-x: hidden !important;
       }
 
-      .home-view .home-favorites-section .favorites-grid {
+      .home-view .home-favorites-section .favorites-grid{
         box-sizing: border-box !important;
         width: 100% !important;
         max-width: 100% !important;
         min-width: 0 !important;
       }
 
-      .home-view .home-favorites-section .favorite-card-wrapper {
+      .home-view .home-favorites-section .favorite-card-wrapper{
         max-width: 100% !important;
         min-width: 0 !important;
       }
     }
 
     /* Settings shell correction */
-    .settings-page-view {
+    .settings-page-view{
       width: min(840px, calc(100% - 32px));
       padding-top: 18px;
     }
 
     .settings-page-header,
-    .settings-page-editor {
+.settings-page-editor{
       width: 100%;
       box-sizing: border-box;
     }
 
-    .settings-page-header {
+    .settings-page-header{
       min-height: 76px;
       padding: 12px 16px;
       gap: 14px;
     }
 
-    .settings-page-title {
+    .settings-page-title{
       min-height: 44px;
       display: flex;
       flex-direction: column;
       justify-content: center;
     }
 
-    .settings-page-title h1 {
+    .settings-page-title h1{
       font-size: clamp(22px, 1.65vw, 26px);
       line-height: 1.05;
     }
 
-    .settings-page-title p {
+    .settings-page-title p{
       margin: 3px 0 0;
       min-height: 16px;
       font-size: 12px;
@@ -10133,26 +10122,26 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .settings-page-actions,
-    .settings-page-back {
+.settings-page-back{
       align-self: center;
     }
 
     @media (max-width: 768px) {
-      .settings-page-view {
+      .settings-page-view{
         width: 100%;
       }
 
-      .settings-page-header {
+      .settings-page-header{
         min-height: 68px;
       }
 
-      .settings-page-title {
+      .settings-page-title{
         min-height: 42px;
       }
     }
 
     /* Room navigation: fixed media slot for either a photo or the HA pictogram. */
-    .area-media {
+    .area-media{
       position: relative;
       flex: 0 0 auto;
       overflow: hidden;
@@ -10160,7 +10149,7 @@ export class DwainsLayoutCard extends LitElement {
       background: color-mix(in srgb, var(--primary-color) 9%, var(--secondary-background-color));
     }
 
-    .area-media-picture {
+    .area-media-picture{
       position: absolute;
       inset: 0;
       background-position: center;
@@ -10168,7 +10157,7 @@ export class DwainsLayoutCard extends LitElement {
       background-repeat: no-repeat;
     }
 
-    .area-media-icon {
+    .area-media-icon{
       width: 100%;
       height: 100%;
       display: flex;
@@ -10181,12 +10170,12 @@ export class DwainsLayoutCard extends LitElement {
           color-mix(in srgb, var(--primary-color) 6%, var(--secondary-background-color)));
     }
 
-    .area-media-icon ha-icon {
+    .area-media-icon ha-icon{
       --mdc-icon-size: 34px;
     }
 
     @media (min-width: 769px) {
-      .sidebar .room-area-button {
+      .sidebar .room-area-button{
         display: grid;
         grid-template-columns: 74px minmax(0, 1fr);
         align-items: stretch;
@@ -10201,18 +10190,18 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow: 0 8px 18px color-mix(in srgb, var(--primary-text-color) 6%, transparent);
       }
 
-      .sidebar .room-area-button.has-picture {
+      .sidebar .room-area-button.has-picture{
         color: var(--primary-text-color);
         background: color-mix(in srgb, var(--card-background-color) 96%, var(--primary-background-color));
         border-color: color-mix(in srgb, var(--primary-text-color) 7%, transparent);
       }
 
-      .sidebar .room-area-button.has-picture::after {
+      .sidebar .room-area-button.has-picture::after{
         display: none;
       }
 
       .sidebar .room-area-button.selected,
-      .sidebar .room-area-button.has-picture.selected {
+.sidebar .room-area-button.has-picture.selected{
         color: var(--primary-text-color);
         border-color: color-mix(in srgb, var(--primary-color) 58%, transparent);
         background: color-mix(in srgb, var(--primary-color) 8%, var(--card-background-color));
@@ -10221,14 +10210,14 @@ export class DwainsLayoutCard extends LitElement {
           inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 14%, transparent);
       }
 
-      .sidebar .room-area-button .area-media {
+      .sidebar .room-area-button .area-media{
         width: 74px;
         height: 74px;
         align-self: center;
         grid-column: 1;
       }
 
-      .sidebar .room-area-button .area-content {
+      .sidebar .room-area-button .area-content{
         position: relative;
         display: flex;
         flex-direction: column;
@@ -10240,13 +10229,13 @@ export class DwainsLayoutCard extends LitElement {
         grid-column: 2;
       }
 
-      .sidebar .room-area-button .area-top-section {
+      .sidebar .room-area-button .area-top-section{
         min-width: 0;
         margin: 0;
       }
 
       .sidebar .room-area-button .area-name,
-      .sidebar .room-area-button.has-picture .area-name {
+.sidebar .room-area-button.has-picture .area-name{
         color: var(--primary-text-color);
         text-shadow: none;
         font-size: 14px;
@@ -10254,7 +10243,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .sidebar .room-area-button .area-sensors,
-      .sidebar .room-area-button.has-picture .area-sensors {
+.sidebar .room-area-button.has-picture .area-sensors{
         margin-top: 3px;
         color: var(--secondary-text-color);
         text-shadow: none;
@@ -10262,7 +10251,7 @@ export class DwainsLayoutCard extends LitElement {
         font-weight: 650;
       }
 
-      .sidebar .room-area-button .area-info-badges {
+      .sidebar .room-area-button .area-info-badges{
         position: static;
         display: flex;
         flex-wrap: nowrap;
@@ -10275,7 +10264,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .sidebar .room-area-button .info-badge,
-      .sidebar .room-area-button.has-picture .info-badge {
+.sidebar .room-area-button.has-picture .info-badge{
         min-width: 27px;
         height: 21px;
         padding: 0 5px;
@@ -10287,22 +10276,22 @@ export class DwainsLayoutCard extends LitElement {
         backdrop-filter: none;
       }
 
-      .sidebar .room-area-button .info-badge ha-icon {
+      .sidebar .room-area-button .info-badge ha-icon{
         --mdc-icon-size: 12px;
       }
 
-      .sidebar .room-area-button .badge-count {
+      .sidebar .room-area-button .badge-count{
         font-size: 10px;
       }
 
       .sidebar .room-area-button .area-menu-chevron,
-      .sidebar .room-area-button .area-main-icon {
+.sidebar .room-area-button .area-main-icon{
         display: none;
       }
     }
 
     @media (max-width: 768px) {
-      .sidebar .room-area-button {
+      .sidebar .room-area-button{
         display: grid;
         grid-template-columns: 64px minmax(0, 1fr);
         gap: 10px;
@@ -10310,12 +10299,12 @@ export class DwainsLayoutCard extends LitElement {
         padding: 8px;
       }
 
-      .sidebar .room-area-button .area-media {
+      .sidebar .room-area-button .area-media{
         width: 64px;
         height: 64px;
       }
 
-      .sidebar .room-area-button .area-content {
+      .sidebar .room-area-button .area-content{
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -10323,7 +10312,7 @@ export class DwainsLayoutCard extends LitElement {
         gap: 6px;
       }
 
-      .sidebar .room-area-button .area-info-badges {
+      .sidebar .room-area-button .area-info-badges{
         position: static;
         display: flex;
         flex-wrap: nowrap;
@@ -10333,19 +10322,19 @@ export class DwainsLayoutCard extends LitElement {
         overflow: hidden;
       }
 
-      .sidebar .room-area-button .info-badge {
+      .sidebar .room-area-button .info-badge{
         min-width: 26px;
         height: 21px;
         padding: 0 5px;
       }
 
-      .sidebar .room-area-button .area-menu-chevron {
+      .sidebar .room-area-button .area-menu-chevron{
         display: none;
       }
     }
 
     /* Favorites are a dedicated layer between house information and room content. */
-    .area-favorites-toggle {
+    .area-favorites-toggle{
       width: calc(100% - 32px);
       min-height: 40px;
       margin: 0 16px 10px;
@@ -10361,7 +10350,7 @@ export class DwainsLayoutCard extends LitElement {
       cursor: pointer;
     }
 
-    .area-favorites-toggle-main {
+    .area-favorites-toggle-main{
       display: inline-flex;
       align-items: center;
       gap: 8px;
@@ -10370,26 +10359,26 @@ export class DwainsLayoutCard extends LitElement {
       font-weight: 850;
     }
 
-    .area-favorites-toggle-main > ha-icon {
+    .area-favorites-toggle-main > ha-icon{
       --mdc-icon-size: 18px;
       color: var(--primary-color);
     }
 
-    .area-favorites-count {
+    .area-favorites-count{
       color: var(--secondary-text-color);
       font-weight: 700;
     }
 
-    .global-header .header-expanded-content {
+    .global-header .header-expanded-content{
       padding-top: 0;
     }
 
-    .global-header .header-favorites .favorites-header {
+    .global-header .header-favorites .favorites-header{
       display: none;
     }
 
     /* Keep status text and the toggle in one visual cluster. */
-    .mobile-entity-status-row {
+    .mobile-entity-status-row{
       margin-top: 5px;
       min-width: 0;
       display: flex;
@@ -10398,21 +10387,21 @@ export class DwainsLayoutCard extends LitElement {
       gap: 10px;
     }
 
-    .mobile-entity-status-row .mobile-entity-status {
+    .mobile-entity-status-row .mobile-entity-status{
       margin-top: 0;
       min-width: 0;
       flex: 1 1 auto;
     }
 
-    .mobile-entity-status-row .mobile-entity-toggle {
+    .mobile-entity-status-row .mobile-entity-toggle{
       flex: 0 0 auto;
     }
 
-    .mobile-domain-master {
+    .mobile-domain-master{
       min-width: 76px;
     }
 
-    .mobile-domain-master-count {
+    .mobile-domain-master-count{
       min-width: 25px;
       color: currentColor;
       font-size: 11px;
@@ -10422,17 +10411,18 @@ export class DwainsLayoutCard extends LitElement {
       white-space: nowrap;
     }
 
-    /* Window/door/opening state is expressed by its icon/status badge, not a tinted whole card. */
+    /* Window/door/opening state is expressed by its icon/status badge,
+not a tinted whole card. */
     .mobile-entity-card.mobile-entity-binary_sensor.device-window.is-active,
-    .mobile-entity-card.mobile-entity-binary_sensor.device-door.is-active,
-    .mobile-entity-card.mobile-entity-binary_sensor.device-opening.is-active {
+.mobile-entity-card.mobile-entity-binary_sensor.device-door.is-active,
+.mobile-entity-card.mobile-entity-binary_sensor.device-opening.is-active{
       background: color-mix(in srgb, var(--card-background-color) 96%, var(--primary-background-color));
       box-shadow: 0 10px 24px rgba(15, 23, 42, 0.07);
     }
 
     .mobile-entity-card.mobile-entity-binary_sensor.device-window .mobile-entity-status,
-    .mobile-entity-card.mobile-entity-binary_sensor.device-door .mobile-entity-status,
-    .mobile-entity-card.mobile-entity-binary_sensor.device-opening .mobile-entity-status {
+.mobile-entity-card.mobile-entity-binary_sensor.device-door .mobile-entity-status,
+.mobile-entity-card.mobile-entity-binary_sensor.device-opening .mobile-entity-status{
       width: fit-content;
       max-width: 100%;
       padding: 3px 8px;
@@ -10442,8 +10432,8 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .mobile-entity-card.mobile-entity-binary_sensor.device-window.is-active .mobile-entity-status,
-    .mobile-entity-card.mobile-entity-binary_sensor.device-door.is-active .mobile-entity-status,
-    .mobile-entity-card.mobile-entity-binary_sensor.device-opening.is-active .mobile-entity-status {
+.mobile-entity-card.mobile-entity-binary_sensor.device-door.is-active .mobile-entity-status,
+.mobile-entity-card.mobile-entity-binary_sensor.device-opening.is-active .mobile-entity-status{
       color: var(--entity-color);
       background: color-mix(in srgb, var(--entity-color) 11%, var(--card-background-color));
     }
@@ -10451,7 +10441,7 @@ export class DwainsLayoutCard extends LitElement {
 
     /* Final desktop room redesign: compact sidebar cards + compact room header. */
     @media (min-width: 769px) {
-      .sidebar .room-area-button {
+      .sidebar .room-area-button{
         grid-template-columns: 58px minmax(0, 1fr);
         gap: 8px;
         min-height: 76px;
@@ -10462,64 +10452,64 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow: 0 5px 14px color-mix(in srgb, var(--primary-text-color) 4%, transparent);
       }
 
-      .sidebar .room-area-button .area-media {
+      .sidebar .room-area-button .area-media{
         width: 58px;
         height: 58px;
         border-radius: 9px;
       }
 
-      .sidebar .room-area-button .area-media-icon {
+      .sidebar .room-area-button .area-media-icon{
         color: color-mix(in srgb, var(--primary-color) 84%, var(--primary-text-color));
         background: color-mix(in srgb, var(--primary-color) 9%, var(--card-background-color));
         box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 8%, transparent);
       }
 
-      .sidebar .room-area-button .area-media-icon ha-icon {
+      .sidebar .room-area-button .area-media-icon ha-icon{
         --mdc-icon-size: 27px;
       }
 
-      .sidebar .room-area-button .area-content {
+      .sidebar .room-area-button .area-content{
         gap: 4px;
         justify-content: center;
       }
 
       .sidebar .room-area-button .area-name,
-      .sidebar .room-area-button.has-picture .area-name {
+.sidebar .room-area-button.has-picture .area-name{
         font-size: 13px;
         font-weight: 850;
         line-height: 1.15;
       }
 
       .sidebar .room-area-button .area-sensors,
-      .sidebar .room-area-button.has-picture .area-sensors {
+.sidebar .room-area-button.has-picture .area-sensors{
         margin-top: 2px;
         font-size: 10px;
         line-height: 1.15;
       }
 
-      .sidebar .room-area-button .area-info-badges {
+      .sidebar .room-area-button .area-info-badges{
         gap: 3px;
         min-height: 19px;
       }
 
       .sidebar .room-area-button .info-badge,
-      .sidebar .room-area-button.has-picture .info-badge {
+.sidebar .room-area-button.has-picture .info-badge{
         min-width: 24px;
         height: 19px;
         padding: 0 4px;
         border-radius: 999px;
       }
 
-      .sidebar .room-area-button .info-badge ha-icon {
+      .sidebar .room-area-button .info-badge ha-icon{
         --mdc-icon-size: 11px;
       }
 
-      .sidebar .room-area-button .badge-count {
+      .sidebar .room-area-button .badge-count{
         font-size: 9px;
       }
 
       .sidebar .room-area-button.selected,
-      .sidebar .room-area-button.has-picture.selected {
+.sidebar .room-area-button.has-picture.selected{
         border-color: color-mix(in srgb, var(--primary-color) 54%, transparent);
         background: color-mix(in srgb, var(--primary-color) 8%, var(--card-background-color));
         box-shadow:
@@ -10527,7 +10517,7 @@ export class DwainsLayoutCard extends LitElement {
           inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 10%, transparent);
       }
 
-      .area-header.area-header-desktop-compact {
+      .area-header.area-header-desktop-compact{
         position: relative;
         min-height: 0;
         margin: 0 0 18px;
@@ -10544,11 +10534,11 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
       }
 
-      .area-header.area-header-desktop-compact::before {
+      .area-header.area-header-desktop-compact::before{
         display: none;
       }
 
-      .area-desktop-room-media {
+      .area-desktop-room-media{
         position: relative;
         width: 68px;
         height: 68px;
@@ -10558,7 +10548,7 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 8%, transparent);
       }
 
-      .area-desktop-room-picture {
+      .area-desktop-room-picture{
         position: absolute;
         inset: 0;
         background-position: center;
@@ -10566,7 +10556,7 @@ export class DwainsLayoutCard extends LitElement {
         background-repeat: no-repeat;
       }
 
-      .area-desktop-room-icon {
+      .area-desktop-room-icon{
         width: 100%;
         height: 100%;
         display: flex;
@@ -10576,11 +10566,11 @@ export class DwainsLayoutCard extends LitElement {
         background: color-mix(in srgb, var(--primary-color) 9%, var(--card-background-color));
       }
 
-      .area-desktop-room-icon ha-icon {
+      .area-desktop-room-icon ha-icon{
         --mdc-icon-size: 31px;
       }
 
-      .area-desktop-room-copy {
+      .area-desktop-room-copy{
         min-width: 0;
         display: flex;
         flex-direction: column;
@@ -10588,14 +10578,14 @@ export class DwainsLayoutCard extends LitElement {
         gap: 6px;
       }
 
-      .area-header-desktop-compact .area-title {
+      .area-header-desktop-compact .area-title{
         margin: 0;
         font-size: clamp(26px, 2.15vw, 36px);
         line-height: 1;
         color: var(--primary-text-color);
       }
 
-      .area-desktop-room-meta {
+      .area-desktop-room-meta{
         color: var(--secondary-text-color);
         font-size: 12px;
         font-weight: 750;
@@ -10603,7 +10593,7 @@ export class DwainsLayoutCard extends LitElement {
         white-space: nowrap;
       }
 
-      .area-header-desktop-compact .area-header-metrics {
+      .area-header-desktop-compact .area-header-metrics{
         position: static;
         z-index: auto;
         min-width: 0;
@@ -10616,7 +10606,7 @@ export class DwainsLayoutCard extends LitElement {
         gap: 8px;
       }
 
-      .area-header-desktop-compact .area-header-metric {
+      .area-header-desktop-compact .area-header-metric{
         min-width: 132px;
         min-height: 44px;
         padding: 7px 11px;
@@ -10624,20 +10614,20 @@ export class DwainsLayoutCard extends LitElement {
         border-radius: 999px;
       }
 
-      .area-header-desktop-compact .area-header-metric .metric-ring {
+      .area-header-desktop-compact .area-header-metric .metric-ring{
         width: 30px;
         height: 30px;
       }
 
-      .area-header-desktop-compact .area-header-metric .metric-label {
+      .area-header-desktop-compact .area-header-metric .metric-label{
         font-size: 9px;
       }
 
-      .area-header-desktop-compact .area-header-metric .metric-reading {
+      .area-header-desktop-compact .area-header-metric .metric-reading{
         font-size: 13px;
       }
 
-      .area-header-desktop-compact .area-header-actions {
+      .area-header-desktop-compact .area-header-actions{
         position: static;
         display: inline-flex;
         align-items: center;
@@ -10647,8 +10637,8 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .area-header-desktop-compact .area-header-actions .unavailable-entities-icon,
-      .area-header-desktop-compact .area-header-actions .area-mobile-camera,
-      .area-header-desktop-compact .area-header-actions .dd-edit-toggle {
+.area-header-desktop-compact .area-header-actions .area-mobile-camera,
+.area-header-desktop-compact .area-header-actions .dd-edit-toggle{
         width: 42px;
         height: 42px;
         margin: 0;
@@ -10656,32 +10646,32 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .area-header-desktop-compact .area-mobile-toolbar,
-      .area-header-desktop-compact .area-mobile-home,
-      .area-header-desktop-compact .area-mobile-quick-controls,
-      .area-header-desktop-compact .area-badges,
-      .area-header-desktop-compact .area-header-content {
+.area-header-desktop-compact .area-mobile-home,
+.area-header-desktop-compact .area-mobile-quick-controls,
+.area-header-desktop-compact .area-badges,
+.area-header-desktop-compact .area-header-content{
         display: none;
       }
     }
 
     @media (min-width: 769px) and (max-width: 1120px) {
-      .area-header.area-header-desktop-compact {
+      .area-header.area-header-desktop-compact{
         grid-template-columns: 58px minmax(150px, 1fr) auto;
         gap: 12px;
       }
 
-      .area-desktop-room-media {
+      .area-desktop-room-media{
         width: 58px;
         height: 58px;
       }
 
-      .area-header-desktop-compact .area-header-metrics {
+      .area-header-desktop-compact .area-header-metrics{
         grid-column: 2;
         justify-content: flex-start;
         margin-top: 4px;
       }
 
-      .area-header-desktop-compact .area-header-actions {
+      .area-header-desktop-compact .area-header-actions{
         grid-column: 3;
         grid-row: 1 / span 2;
       }
@@ -10689,15 +10679,16 @@ export class DwainsLayoutCard extends LitElement {
 
 
     /* Responsive room UI v3 — desktop reference is the base;
-       mobile only changes flow, scale and navigation. */
+       mobile only changes flow,
+scale and navigation. */
 
-    .global-header {
+    .global-header{
       padding: 8px 16px 6px;
       border-bottom: 0;
       background: var(--primary-background-color);
     }
 
-    .global-header .header-content {
+    .global-header .header-content{
       width: 100%;
       min-height: 54px;
       margin: 0;
@@ -10709,12 +10700,12 @@ export class DwainsLayoutCard extends LitElement {
       box-sizing: border-box;
     }
 
-    .header-status-section {
+    .header-status-section{
       min-width: 0;
       flex: 1 1 auto;
     }
 
-    .header-status-scroll {
+    .header-status-scroll{
       display: flex;
       align-items: center;
       gap: 8px;
@@ -10723,9 +10714,9 @@ export class DwainsLayoutCard extends LitElement {
       scrollbar-width: none;
     }
 
-    .header-status-scroll::-webkit-scrollbar { display: none; }
+    .header-status-scroll::-webkit-scrollbar{ display: none; }
 
-    .status-card-compact {
+    .status-card-compact{
       width: auto;
       min-width: 140px;
       max-width: 194px;
@@ -10745,7 +10736,7 @@ export class DwainsLayoutCard extends LitElement {
       box-shadow: 0 3px 10px rgba(15, 23, 42, 0.045);
     }
 
-    .status-card-compact .status-card-icon-compact {
+    .status-card-compact .status-card-icon-compact{
       grid-column: 1;
       grid-row: 1 / span 2;
       position: relative;
@@ -10760,9 +10751,9 @@ export class DwainsLayoutCard extends LitElement {
       background: color-mix(in srgb, var(--status-color) 12%, var(--card-background-color));
     }
 
-    .status-card-compact .status-card-icon-compact ha-icon { --mdc-icon-size: 19px; }
+    .status-card-compact .status-card-icon-compact ha-icon{ --mdc-icon-size: 19px; }
 
-    .status-card-badge-compact {
+    .status-card-badge-compact{
       top: -7px;
       right: -11px;
       min-width: 18px;
@@ -10773,7 +10764,7 @@ export class DwainsLayoutCard extends LitElement {
       line-height: 1;
     }
 
-    .status-card-compact .status-card-title-compact {
+    .status-card-compact .status-card-title-compact{
       grid-column: 2;
       grid-row: 1;
       align-self: end;
@@ -10786,11 +10777,11 @@ export class DwainsLayoutCard extends LitElement {
       white-space: nowrap;
     }
 
-    .status-card-compact:not(.has-value) {
+    .status-card-compact:not(.has-value){
       grid-template-rows: 1fr;
     }
 
-    .status-card-compact:not(.has-value) .status-card-title-compact {
+    .status-card-compact:not(.has-value) .status-card-title-compact{
       grid-row: 1;
       align-self: center;
       display: flex;
@@ -10799,7 +10790,7 @@ export class DwainsLayoutCard extends LitElement {
       margin: 0;
     }
 
-    .status-card-compact .status-card-subtitle-compact {
+    .status-card-compact .status-card-subtitle-compact{
       grid-column: 2;
       grid-row: 2;
       align-self: start;
@@ -10813,7 +10804,7 @@ export class DwainsLayoutCard extends LitElement {
       white-space: nowrap;
     }
 
-    .header-time-weather {
+    .header-time-weather{
       min-width: 116px;
       flex: 0 0 auto;
       display: flex;
@@ -10823,46 +10814,15 @@ export class DwainsLayoutCard extends LitElement {
       gap: 4px;
     }
 
-    .header-time { font-size: 21px; line-height: 1; }
-    .header-date { font-size: 12px; line-height: 1.1; }
-    .weather-compact { padding: 3px 9px; }
+    .header-time{ font-size: 21px; line-height: 1; }
+    .header-date{ font-size: 12px; line-height: 1.1; }
+    .weather-compact{ padding: 3px 9px; }
 
-    .area-content-area {
+    .area-content-area{
       padding: 8px 16px 16px;
     }
 
-    .room-ui-v2 {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .room-ui-v2 .room-header {
-      position: relative;
-      width: 100%;
-      min-height: 210px;
-      margin: 0;
-      padding: 14px 16px;
-      box-sizing: border-box;
-      display: grid;
-      grid-template-columns: 220px minmax(250px, 1fr) minmax(250px, 320px) minmax(220px, 250px) 42px;
-      grid-template-areas: "media copy camera metrics actions";
-      align-items: center;
-      gap: 18px;
-      overflow: hidden;
-      border: 1px solid color-mix(in srgb, var(--primary-text-color) 7%, transparent);
-      border-radius: 10px;
-      background: var(--card-background-color);
-      color: var(--primary-text-color);
-      box-shadow: 0 5px 18px rgba(15, 23, 42, 0.05);
-    }
-
-    .room-ui-v2 .room-header.no-camera {
-      grid-template-columns: 220px minmax(280px, 1fr) minmax(220px, 250px) 42px;
-      grid-template-areas: "media copy metrics actions";
-    }
-
-    .room-header-media {
+    .room-header-media{
       grid-area: media;
       position: relative;
       width: 220px;
@@ -10873,7 +10833,7 @@ export class DwainsLayoutCard extends LitElement {
       background: color-mix(in srgb, var(--primary-color) 8%, var(--card-background-color));
     }
 
-    .room-header-picture {
+    .room-header-picture{
       position: absolute;
       inset: 0;
       background-position: center;
@@ -10881,7 +10841,7 @@ export class DwainsLayoutCard extends LitElement {
       background-repeat: no-repeat;
     }
 
-    .room-header-icon {
+    .room-header-icon{
       width: 100%;
       height: 100%;
       display: flex;
@@ -10891,9 +10851,9 @@ export class DwainsLayoutCard extends LitElement {
       background: color-mix(in srgb, var(--primary-color) 9%, var(--card-background-color));
     }
 
-    .room-header-icon ha-icon { --mdc-icon-size: 52px; }
+    .room-header-icon ha-icon{ --mdc-icon-size: 52px; }
 
-    .room-header-copy {
+    .room-header-copy{
       grid-area: copy;
       min-width: 0;
       height: 100%;
@@ -10903,14 +10863,7 @@ export class DwainsLayoutCard extends LitElement {
       gap: 6px;
     }
 
-    .room-ui-v2 .room-header .area-title {
-      margin: 0;
-      font-size: clamp(27px, 2.15vw, 36px);
-      line-height: 1.02;
-      font-weight: 850;
-    }
-
-    .room-header-breadcrumb {
+    .room-header-breadcrumb{
       min-height: 18px;
       margin-bottom: 1px;
       display: inline-flex;
@@ -10923,7 +10876,7 @@ export class DwainsLayoutCard extends LitElement {
       white-space: nowrap;
     }
 
-    .room-header-home-link {
+    .room-header-home-link{
       width: 20px;
       height: 20px;
       margin: 0;
@@ -10938,21 +10891,21 @@ export class DwainsLayoutCard extends LitElement {
       cursor: pointer;
     }
 
-    .room-header-home-link:hover {
+    .room-header-home-link:hover{
       color: var(--primary-color);
       background: color-mix(in srgb, var(--primary-color) 8%, transparent);
     }
 
-    .room-header-home-link ha-icon { --mdc-icon-size: 14px; }
-    .room-header-breadcrumb-chevron { --mdc-icon-size: 12px; opacity: 0.7; }
+    .room-header-home-link ha-icon{ --mdc-icon-size: 14px; }
+    .room-header-breadcrumb-chevron{ --mdc-icon-size: 12px; opacity: 0.7; }
 
-    .room-header-device-count {
+    .room-header-device-count{
       color: var(--secondary-text-color);
       font-size: 13px;
       font-weight: 750;
     }
 
-    .room-header-summary {
+    .room-header-summary{
       margin-top: 6px;
       display: flex;
       align-items: center;
@@ -10961,11 +10914,11 @@ export class DwainsLayoutCard extends LitElement {
       overflow: visible;
     }
 
-    .room-header-summary::-webkit-scrollbar {
+    .room-header-summary::-webkit-scrollbar{
       display: none;
     }
 
-    .room-summary-item {
+    .room-summary-item{
       min-height: 28px;
       display: inline-flex;
       align-items: center;
@@ -10978,7 +10931,7 @@ export class DwainsLayoutCard extends LitElement {
       white-space: nowrap;
     }
 
-    button.room-summary-item {
+    button.room-summary-item{
       min-width: 46px;
       padding: 5px 10px;
       border: 0;
@@ -10990,7 +10943,7 @@ export class DwainsLayoutCard extends LitElement {
       transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
     }
 
-    button.room-summary-item:hover {
+    button.room-summary-item:hover{
       transform: translateY(-1px);
       filter: brightness(1.03);
       box-shadow:
@@ -10998,22 +10951,22 @@ export class DwainsLayoutCard extends LitElement {
         0 8px 16px rgba(15, 23, 42, 0.06);
     }
 
-    button.room-summary-item:active {
+    button.room-summary-item:active{
       transform: translateY(0) scale(0.97);
     }
 
-    .room-summary-item ha-icon { --mdc-icon-size: 17px; }
-    .room-summary-item.temperature ha-icon { color: #7567d8; }
-    .room-summary-item.humidity ha-icon { color: #35a9dc; }
-    .room-summary-item.power ha-icon { color: #d99600; }
+    .room-summary-item ha-icon{ --mdc-icon-size: 17px; }
+    .room-summary-item.temperature ha-icon{ color: #7567d8; }
+    .room-summary-item.humidity ha-icon{ color: #35a9dc; }
+    .room-summary-item.power ha-icon{ color: #d99600; }
 
-    .room-summary-item.status {
+    .room-summary-item.status{
       border-radius: 999px;
       color: var(--room-summary-color);
       background: color-mix(in srgb, var(--room-summary-color) 10%, var(--card-background-color));
     }
 
-    .room-header-camera-preview {
+    .room-header-camera-preview{
       grid-area: camera;
       position: relative;
       width: 100%;
@@ -11032,7 +10985,7 @@ export class DwainsLayoutCard extends LitElement {
       transition: transform 0.16s ease, box-shadow 0.16s ease;
     }
 
-    .room-header-camera-preview:hover {
+    .room-header-camera-preview:hover{
       transform: translateY(-1px);
       box-shadow:
         inset 0 0 0 1px rgba(15, 23, 42, 0.08),
@@ -11040,7 +10993,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .room-header-camera-image,
-    .room-header-camera-stream {
+.room-header-camera-stream{
       position: absolute;
       inset: 0;
       width: 100%;
@@ -11049,13 +11002,13 @@ export class DwainsLayoutCard extends LitElement {
       object-fit: cover;
     }
 
-    .room-header-camera-image {
+    .room-header-camera-image{
       background-position: center;
       background-size: cover;
       background-repeat: no-repeat;
     }
 
-    .room-header-camera-placeholder {
+    .room-header-camera-placeholder{
       position: absolute;
       inset: 0;
       display: flex;
@@ -11064,11 +11017,11 @@ export class DwainsLayoutCard extends LitElement {
       color: var(--secondary-text-color);
     }
 
-    .room-header-camera-placeholder ha-icon {
+    .room-header-camera-placeholder ha-icon{
       --mdc-icon-size: 38px;
     }
 
-    .room-header-camera-live {
+    .room-header-camera-live{
       position: absolute;
       top: 10px;
       left: 10px;
@@ -11087,7 +11040,7 @@ export class DwainsLayoutCard extends LitElement {
       backdrop-filter: blur(8px);
     }
 
-    .room-header-camera-live-dot {
+    .room-header-camera-live-dot{
       width: 8px;
       height: 8px;
       border-radius: 50%;
@@ -11095,70 +11048,7 @@ export class DwainsLayoutCard extends LitElement {
       box-shadow: 0 0 0 3px rgba(32, 199, 122, 0.14);
     }
 
-    .room-ui-v2 .room-header .area-header-metrics {
-      grid-area: metrics !important;
-      grid-column: auto !important;
-      grid-row: auto !important;
-      position: static !important;
-      inset: auto !important;
-      width: 100%;
-      min-width: 0;
-      max-width: none;
-      margin: 0 !important;
-      padding: 0 !important;
-      display: flex !important;
-      flex-direction: column;
-      align-items: stretch;
-      justify-content: center;
-      gap: 8px;
-      transform: none !important;
-    }
-
-    .room-ui-v2 .room-header .area-header-metric {
-      width: 100%;
-      min-width: 0;
-      min-height: 52px;
-      padding: 6px 12px;
-      box-sizing: border-box;
-      gap: 9px;
-      border: 0;
-      border-radius: 999px;
-      font: inherit;
-      text-align: left;
-      cursor: pointer;
-      transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
-    }
-
-    .room-ui-v2 .room-header .area-header-metric:hover {
-      transform: translateX(2px);
-      filter: brightness(1.025);
-      box-shadow: 0 7px 16px rgba(15, 23, 42, 0.055);
-    }
-
-    .room-ui-v2 .room-header .area-header-metric:active {
-      transform: translateX(1px) scale(0.985);
-    }
-
-    .room-ui-v2 .room-header .area-header-metric .metric-ring {
-      width: 34px;
-      height: 34px;
-    }
-
-    .room-ui-v2 .room-header .area-header-metric .metric-copy {
-      min-width: 0;
-      flex: 1;
-    }
-
-    .room-ui-v2 .room-header .area-header-metric .metric-label { font-size: 9px; }
-    .room-ui-v2 .room-header .area-header-metric .metric-reading { font-size: 15px; }
-
-    .room-ui-v2 .room-header .area-header-metric .metric-chevron {
-      --mdc-icon-size: 18px;
-      flex: 0 0 auto;
-      opacity: 0.55;
-    }
-
-    .room-header-actions {
+    .room-header-actions{
       grid-area: actions;
       grid-column: auto;
       grid-row: auto;
@@ -11177,7 +11067,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .room-header-actions .unavailable-entities-icon,
-    .room-header-actions .dd-edit-toggle {
+.room-header-actions .dd-edit-toggle{
       width: 38px;
       height: 38px;
       margin: 0;
@@ -11185,9 +11075,9 @@ export class DwainsLayoutCard extends LitElement {
       flex: 0 0 auto;
     }
 
-    .room-header-back { display: none; }
+    .room-header-back{ display: none; }
 
-    .room-favorites-block {
+    .room-favorites-block{
       width: 100%;
       margin: 0;
       overflow: visible;
@@ -11197,31 +11087,31 @@ export class DwainsLayoutCard extends LitElement {
       box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
     }
 
-    .room-favorites-header {
+    .room-favorites-header{
       margin-bottom: 0 !important;
     }
 
-    .room-favorites-block:not(.is-collapsed) .room-favorites-header {
+    .room-favorites-block:not(.is-collapsed) .room-favorites-header{
       margin-bottom: 6px !important;
     }
 
-    .room-favorites-icon {
+    .room-favorites-icon{
       color: var(--primary-color);
     }
 
-    .room-favorites-content {
+    .room-favorites-content{
       margin: 0;
     }
 
-    .room-favorites-content .favorites-header {
+    .room-favorites-content .favorites-header{
       display: none;
     }
 
-    .room-favorites-content .favorites-section {
+    .room-favorites-content .favorites-section{
       margin: 0;
     }
 
-    .sidebar .room-area-button {
+    .sidebar .room-area-button{
       min-height: 84px !important;
       height: 84px !important;
       padding: 6px !important;
@@ -11232,16 +11122,16 @@ export class DwainsLayoutCard extends LitElement {
       border-radius: 10px;
     }
 
-    .sidebar .room-area-button .area-media {
+    .sidebar .room-area-button .area-media{
       width: 72px !important;
       height: 70px !important;
       align-self: center;
       border-radius: 8px;
     }
 
-    .sidebar .room-area-button .area-media-icon ha-icon { --mdc-icon-size: 30px; }
+    .sidebar .room-area-button .area-media-icon ha-icon{ --mdc-icon-size: 30px; }
 
-    .sidebar .room-area-button .area-content {
+    .sidebar .room-area-button .area-content{
       min-width: 0;
       height: 100%;
       display: flex;
@@ -11251,20 +11141,20 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .sidebar .room-area-button .area-name,
-    .sidebar .room-area-button.has-picture .area-name {
+.sidebar .room-area-button.has-picture .area-name{
       font-size: 13px;
       line-height: 1.1;
       font-weight: 850;
     }
 
     .sidebar .room-area-button .area-sensors,
-    .sidebar .room-area-button.has-picture .area-sensors {
+.sidebar .room-area-button.has-picture .area-sensors{
       margin-top: 1px;
       font-size: 10px;
       line-height: 1.1;
     }
 
-    .sidebar .room-area-button .area-info-badges {
+    .sidebar .room-area-button .area-info-badges{
       width: 100%;
       max-width: 100%;
       display: flex;
@@ -11275,7 +11165,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .sidebar .room-area-button .info-badge,
-    .sidebar .room-area-button.has-picture .info-badge {
+.sidebar .room-area-button.has-picture .info-badge{
       min-width: 22px;
       height: 19px;
       padding: 0 4px;
@@ -11288,7 +11178,7 @@ export class DwainsLayoutCard extends LitElement {
       line-height: 1;
     }
 
-    .sidebar .room-area-button .info-badge ha-icon {
+    .sidebar .room-area-button .info-badge ha-icon{
       width: 11px;
       height: 11px;
       flex: 0 0 11px;
@@ -11297,7 +11187,7 @@ export class DwainsLayoutCard extends LitElement {
       line-height: 0;
     }
 
-    .sidebar .room-area-button .badge-count {
+    .sidebar .room-area-button .badge-count{
       height: 11px;
       display: inline-flex;
       align-items: center;
@@ -11306,58 +11196,7 @@ export class DwainsLayoutCard extends LitElement {
       line-height: 11px;
     }
 
-    .room-ui-v2 .mobile-entities-section {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin: 0;
-    }
-
-    .room-ui-v2 .mobile-domain-group {
-      min-width: 0;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      border: 1px solid color-mix(in srgb, var(--primary-text-color) 7%, transparent);
-      border-radius: 8px;
-      background: var(--card-background-color);
-      box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
-      contain: layout style;
-    }
-
-    .room-ui-v2 .mobile-domain-header {
-      width: 100%;
-      min-height: 38px;
-      margin: 0;
-      padding: 7px 9px;
-      box-sizing: border-box;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      border-radius: 7px 7px 0 0;
-    }
-
-    .room-ui-v2 .mobile-domain-group.is-collapsed .mobile-domain-header {
-      margin-bottom: 0;
-      border-radius: 7px;
-    }
-
-    .room-ui-v2 .mobile-domain-title {
-      appearance: none;
-      min-width: 0;
-      padding: 0;
-      border: 0;
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      background: transparent;
-      color: inherit;
-      font: inherit;
-      cursor: pointer;
-    }
-
-    .room-domain-icon {
+    .room-domain-icon{
       width: 22px;
       height: 22px;
       flex: 0 0 auto;
@@ -11369,104 +11208,16 @@ export class DwainsLayoutCard extends LitElement {
       background: transparent;
     }
 
-    .room-domain-icon ha-icon { --mdc-icon-size: 18px; }
+    .room-domain-icon ha-icon{ --mdc-icon-size: 18px; }
 
-    .room-ui-v2 .mobile-domain-title-copy {
-      min-width: 0;
-      display: inline-flex;
-      align-items: baseline;
-      gap: 5px;
-    }
-
-    .room-ui-v2 .mobile-domain-title-label {
-      font-size: 15px;
-      font-weight: 850;
-    }
-
-    .room-ui-v2 .mobile-domain-count {
-      color: var(--secondary-text-color);
-      font-size: 10px;
-      font-weight: 650;
-    }
-
-    .mobile-domain-title-chevron {
+    .mobile-domain-title-chevron{
       margin-left: 1px;
       color: var(--secondary-text-color);
       --mdc-icon-size: 16px;
     }
 
-    .room-ui-v2 .mobile-domain-header-actions {
-      display: inline-flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 6px;
-      margin-right: 2px;
-    }
-
-    .room-ui-v2 .mobile-domain-master {
-      min-width: 76px;
-      height: 28px;
-    }
-
-    .room-ui-v2 .mobile-domain-collapse-button { display: none !important; }
-
-    .room-ui-v2 .mobile-entity-rail,
-    .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-rail {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      align-items: stretch;
-      gap: 8px;
-      margin: 0;
-      padding: 0 9px 9px;
-      overflow: visible;
-      scroll-padding: 0;
-      scroll-snap-type: none;
-    }
-
-    .room-ui-v2 .mobile-entity-card,
-    .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-card {
-      width: 100% !important;
-      min-width: 0 !important;
-      min-height: 62px !important;
-      height: auto !important;
-      margin: 0 !important;
-      padding: 8px 10px !important;
-      box-sizing: border-box;
-      display: flex !important;
-      flex-direction: column;
-      justify-content: center;
-      overflow: hidden;
-      border: 1px solid color-mix(in srgb, var(--primary-text-color) 6%, transparent);
-      border-radius: 8px;
-      background: var(--card-background-color);
-      color: var(--primary-text-color);
-      box-shadow: 0 3px 9px rgba(15, 23, 42, 0.035);
-      cursor: pointer;
-      scroll-snap-align: none;
-    }
-
-    .room-ui-v2 .mobile-entity-card:hover {
-      transform: translateY(-1px);
-      border-color: color-mix(in srgb, var(--primary-color) 14%, transparent);
-      box-shadow: 0 6px 14px rgba(15, 23, 42, 0.055);
-    }
-
-    .room-ui-v2 .mobile-entity-main {
-      width: 100%;
-      min-width: 0;
-      display: grid;
-      grid-template-columns: 36px minmax(0, 1fr) auto;
-      align-items: center;
-      gap: 9px;
-    }
-
-    .room-ui-v2 .mobile-entity-main.editing-inline {
-      grid-template-columns: 24px 36px minmax(0, 1fr) 34px;
-      gap: 7px;
-    }
-
     .dd-generated-card-leading-drag-handle,
-    .dd-generated-card-visibility {
+.dd-generated-card-visibility{
       width: 30px;
       height: 30px;
       padding: 0;
@@ -11480,187 +11231,47 @@ export class DwainsLayoutCard extends LitElement {
       pointer-events: auto;
     }
 
-    .dd-generated-card-leading-drag-handle {
+    .dd-generated-card-leading-drag-handle{
       width: 24px;
       cursor: grab;
       color: var(--primary-color);
     }
 
-    .dd-generated-card-leading-drag-handle:active { cursor: grabbing; }
+    .dd-generated-card-leading-drag-handle:active{ cursor: grabbing; }
 
     .dd-generated-card-leading-drag-handle ha-icon,
-    .dd-generated-card-visibility ha-icon {
+.dd-generated-card-visibility ha-icon{
       --mdc-icon-size: 19px;
     }
 
-    .dd-generated-card-visibility {
+    .dd-generated-card-visibility{
       color: var(--primary-text-color);
       background: color-mix(in srgb, var(--primary-text-color) 5%, transparent);
     }
 
     .dd-generated-card-visibility:hover,
-    .dd-generated-card-leading-drag-handle:hover {
+.dd-generated-card-leading-drag-handle:hover{
       background: color-mix(in srgb, var(--primary-color) 10%, transparent);
     }
 
-    .room-ui-v2 .mobile-entity-icon {
-      width: 36px;
-      height: 36px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 8px;
-    }
-
-    .room-ui-v2 .mobile-entity-icon ha-icon { --mdc-icon-size: 20px; }
-
-    .room-ui-v2 .mobile-entity-content {
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 2px;
-    }
-
-    .room-ui-v2 .mobile-entity-name {
-      overflow: hidden;
-      font-size: 12px;
-      font-weight: 850;
-      line-height: 1.15;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .room-ui-v2 .mobile-entity-state {
-      overflow: hidden;
-      color: var(--secondary-text-color);
-      font-size: 10px;
-      font-weight: 650;
-      line-height: 1.1;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .room-ui-v2 .mobile-entity-state.active {
-      color: var(--entity-color);
-    }
-
-    .room-ui-v2 .mobile-entity-right {
-      min-width: 0;
-      display: inline-flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 5px;
-    }
-
-    .room-ui-v2 .mobile-entity-status-pill { display: none !important; }
-
-    .room-ui-v2 .mobile-entity-brightness {
-      width: calc(100% - 45px);
-      margin: 6px 0 0 45px;
-    }
-
-    .room-ui-v2 .mobile-entity-brightness input[type="range"] {
-      appearance: none;
-      width: 100%;
-      height: 4px;
-      margin: 0;
-      border-radius: 999px;
-      outline: none;
-      background: linear-gradient(
-        90deg,
-        var(--entity-color) 0%,
-        var(--entity-color) var(--brightness),
-        color-mix(in srgb, var(--primary-text-color) 13%, transparent) var(--brightness),
-        color-mix(in srgb, var(--primary-text-color) 13%, transparent) 100%
-      );
-    }
-
-    .room-ui-v2 .mobile-entity-brightness input[type="range"]::-webkit-slider-thumb {
-      appearance: none;
-      width: 14px;
-      height: 14px;
-      border: 2px solid var(--entity-color);
-      border-radius: 50%;
-      background: var(--card-background-color);
-    }
-
-    .room-ui-v2 .mobile-entity-brightness input[type="range"]::-moz-range-thumb {
-      width: 12px;
-      height: 12px;
-      border: 2px solid var(--entity-color);
-      border-radius: 50%;
-      background: var(--card-background-color);
-    }
-
-    .room-ui-v2 .mobile-entity-more { display: none !important; }
-
     @media (max-width: 1180px) and (min-width: 769px) {
-      .room-ui-v2 .room-header {
-        min-height: 188px;
-        padding: 12px;
-        grid-template-columns: 170px minmax(180px, 1fr) minmax(180px, 230px) minmax(184px, 210px) 38px;
-        grid-template-areas: "media copy camera metrics actions";
-        gap: 12px;
-      }
 
-      .room-ui-v2 .room-header.no-camera {
-        grid-template-columns: 170px minmax(220px, 1fr) minmax(184px, 210px) 38px;
-        grid-template-areas: "media copy metrics actions";
-      }
-
-      .room-header-media {
+      .room-header-media{
         width: 170px;
         height: 148px;
       }
 
-      .room-header-camera-preview {
+      .room-header-camera-preview{
         height: 148px;
-      }
-
-      .room-ui-v2 .room-header .area-header-metric {
-        min-width: 0;
-        min-height: 44px;
-        padding: 5px 9px;
-      }
-
-      .room-ui-v2 .mobile-entity-rail,
-      .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-rail {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
       }
     }
 
     @media (max-width: 768px) {
-      .global-header { padding: 8px 10px 6px; }
+      .global-header{ padding: 8px 10px 6px; }
 
-      .area-content-area { padding: 8px 10px 88px; }
+      .area-content-area{ padding: 8px 10px 88px; }
 
-      .room-ui-v2 { gap: 7px; }
-
-      .room-ui-v2 .room-header,
-      .room-ui-v2 .room-header.no-camera {
-        min-height: 0;
-        padding: 10px;
-        grid-template-columns: 42px 64px minmax(0, 1fr) 36px;
-        grid-template-rows: auto auto auto;
-        grid-template-areas:
-          "back media copy actions"
-          "camera camera camera camera"
-          "metrics metrics metrics metrics";
-        column-gap: 9px;
-        row-gap: 10px;
-        align-items: center;
-        border-radius: 10px;
-      }
-
-      .room-ui-v2 .room-header.no-camera {
-        grid-template-rows: auto auto;
-        grid-template-areas:
-          "back media copy actions"
-          "metrics metrics metrics metrics";
-      }
-
-      .room-header-back {
+      .room-header-back{
         grid-area: back;
         width: 40px;
         height: 40px;
@@ -11673,58 +11284,30 @@ export class DwainsLayoutCard extends LitElement {
         color: var(--primary-text-color);
       }
 
-      .room-header-media {
+      .room-header-media{
         width: 64px;
         height: 64px;
         border-radius: 9px;
       }
 
-      .room-header-icon ha-icon { --mdc-icon-size: 30px; }
-      .room-header-breadcrumb { display: none; }
-      .room-ui-v2 .room-header .area-title { font-size: 20px; }
-      .room-header-device-count { font-size: 10px; }
+      .room-header-icon ha-icon{ --mdc-icon-size: 30px; }
+      .room-header-breadcrumb{ display: none; }
+      .room-header-device-count{ font-size: 10px; }
 
-      .room-header-summary {
+      .room-header-summary{
         gap: 5px;
         flex-wrap: wrap;
       }
 
-      .room-summary-item { font-size: 10px; }
+      .room-summary-item{ font-size: 10px; }
 
-      .room-header-camera-preview {
+      .room-header-camera-preview{
         width: 100%;
         height: 148px;
         border-radius: 10px;
       }
 
-      .room-ui-v2 .room-header .area-header-metrics {
-        grid-area: metrics !important;
-        grid-column: auto !important;
-        grid-row: auto !important;
-        width: 100%;
-        display: flex !important;
-        flex-direction: column;
-        align-items: stretch;
-        gap: 7px;
-      }
-
-      .room-ui-v2 .room-header .area-header-metric {
-        width: 100%;
-        min-width: 0;
-        min-height: 38px;
-        padding: 4px 9px;
-        justify-content: flex-start;
-      }
-
-      .room-ui-v2 .room-header .area-header-metric .metric-ring {
-        width: 23px;
-        height: 23px;
-      }
-
-      .room-ui-v2 .room-header .area-header-metric .metric-label { display: none; }
-      .room-ui-v2 .room-header .area-header-metric .metric-reading { font-size: 11px; }
-
-      .room-header-actions {
+      .room-header-actions{
         grid-area: actions;
         grid-column: auto;
         grid-row: auto;
@@ -11736,105 +11319,32 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .room-header-actions .unavailable-entities-icon,
-      .room-header-actions .dd-edit-toggle {
+.room-header-actions .dd-edit-toggle{
         width: 34px;
         height: 34px;
       }
 
-      .room-favorites-toggle {
+      .room-favorites-toggle{
         min-height: 36px;
       }
-
-      .room-ui-v2 .mobile-domain-group {
-        padding: 0;
-        border-radius: 9px;
-      }
-
-      .room-ui-v2 .mobile-domain-header {
-        min-height: 36px;
-        margin: 0;
-        padding: 6px 7px;
-      }
-
-      .room-ui-v2 .mobile-entity-rail,
-      .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-rail {
-        grid-template-columns: 1fr;
-        gap: 6px;
-        padding: 0 7px 7px;
-      }
-
-      .room-ui-v2 .mobile-entity-card,
-      .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-card {
-        min-height: 58px !important;
-        padding: 7px 9px !important;
-      }
-
-      .room-ui-v2 .mobile-entity-main {
-        grid-template-columns: 34px minmax(0, 1fr) auto;
-        gap: 8px;
-      }
-
-      .room-ui-v2 .mobile-entity-main.editing-inline {
-        grid-template-columns: 24px 34px minmax(0, 1fr) 34px;
-        gap: 7px;
-      }
-
-      .room-ui-v2 .mobile-entity-icon {
-        width: 34px;
-        height: 34px;
-      }
-
-      .room-ui-v2 .mobile-entity-brightness {
-        width: calc(100% - 42px);
-        margin-left: 42px;
-      }
-    }
-
-
-    .room-ui-v2 .room-header .unavailable-entities-icon,
-    .room-ui-v2 .room-header .dd-edit-toggle,
-    .room-ui-v2 .room-header .area-mobile-camera {
-      margin: 0 !important;
-      position: relative;
-      inset: auto;
-      transform: none;
-    }
-
-    .room-ui-v2 .room-header .unavailable-entities-icon {
-      background: color-mix(in srgb, var(--warning-color) 14%, var(--card-background-color));
-      color: var(--warning-color);
-    }
-
-    .room-ui-v2 .room-header .unavailable-entities-icon ha-icon {
-      color: currentColor;
-    }
-
-    .room-ui-v2 .room-header .dd-edit-toggle {
-      background: color-mix(in srgb, var(--primary-text-color) 6%, var(--card-background-color));
-      color: var(--primary-text-color);
-    }
-
-    .room-ui-v2 .room-header .dd-edit-toggle.active {
-      background: var(--primary-color);
-      color: var(--text-primary-color);
     }
 
 
     /* Room context: global house information and Favorites form one subtle visual zone. */
-    .global-header.room-context {
+    .global-header.room-context{
       background: color-mix(in srgb, var(--secondary-background-color) 34%, var(--card-background-color));
       border-bottom-color: transparent;
       box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--divider-color) 42%, transparent);
     }
 
-    .global-header.room-context .room-favorites-block {
+    .global-header.room-context .room-favorites-block{
       margin-top: 10px !important;
       margin-bottom: 0 !important;
       background: color-mix(in srgb, var(--card-background-color) 78%, transparent);
       box-shadow: none;
     }
 
-    .global-header.room-context .room-favorites-block::after {
+    .global-header.room-context .room-favorites-block::after{
       display: none;
     }
 
@@ -11844,43 +11354,8 @@ export class DwainsLayoutCard extends LitElement {
        - status badges stay fully visible
        - actions stay aligned with the room title */
     @media (min-width: 769px) {
-      .room-ui-v2 .room-header {
-        min-height: 176px !important;
-        padding-top: 8px !important;
-        padding-bottom: 8px !important;
-        align-items: center !important;
-      }
 
-      .room-ui-v2 .room-header-media {
-        width: 190px !important;
-        height: 150px !important;
-        align-self: center !important;
-        border-radius: 10px;
-      }
-
-      .room-ui-v2 .room-header-icon ha-icon {
-        --mdc-icon-size: 46px;
-      }
-
-      .room-ui-v2 .room-header-copy {
-        height: 150px !important;
-        min-height: 150px !important;
-        align-self: center !important;
-        justify-content: flex-start !important;
-        gap: 4px !important;
-        padding: 0 !important;
-        overflow: visible !important;
-      }
-
-      .room-ui-v2 .room-header .area-title {
-        font-size: clamp(29px, 2vw, 35px);
-        line-height: 1.05;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .room-header-title-row {
+      .room-header-title-row{
         min-height: 38px;
         display: flex;
         flex-wrap: nowrap;
@@ -11888,27 +11363,27 @@ export class DwainsLayoutCard extends LitElement {
         gap: 7px;
       }
 
-      .room-header-title-row .room-header-home-link {
+      .room-header-title-row .room-header-home-link{
         flex: 0 0 30px;
         width: 30px;
         height: 30px;
       }
 
-      .room-header-title-row .room-header-home-link ha-icon {
+      .room-header-title-row .room-header-home-link ha-icon{
         --mdc-icon-size: 20px;
       }
 
-      .room-header-title-row .room-header-home-chevron {
+      .room-header-title-row .room-header-home-chevron{
         flex: 0 0 auto;
       }
 
-      .room-header-device-count {
+      .room-header-device-count{
         font-size: 13px;
         line-height: 1.15;
         margin: 0 !important;
       }
 
-      .room-header-summary {
+      .room-header-summary{
         min-height: 34px !important;
         margin-top: 2px !important;
         margin-bottom: 0 !important;
@@ -11918,57 +11393,27 @@ export class DwainsLayoutCard extends LitElement {
         overflow: visible !important;
       }
 
-      .room-header-summary.is-empty {
+      .room-header-summary.is-empty{
         min-height: 0 !important;
         padding: 0 !important;
       }
 
-      .room-summary-item {
+      .room-summary-item{
         min-height: 30px !important;
         font-size: 12px;
         line-height: 1 !important;
       }
 
-      button.room-summary-item {
+      button.room-summary-item{
         min-width: 46px !important;
         padding: 6px 10px !important;
       }
 
-      .room-summary-item ha-icon {
+      .room-summary-item ha-icon{
         --mdc-icon-size: 17px !important;
       }
 
-      .room-ui-v2 .room-header .area-header-metrics {
-        align-self: center !important;
-        justify-content: center !important;
-        gap: 4px !important;
-        margin: 0 !important;
-        padding: 0 !important;
-      }
-
-      .room-ui-v2 .room-header .area-header-metric {
-        min-height: 47px !important;
-        height: 47px !important;
-        padding: 4px 10px !important;
-        gap: 7px !important;
-      }
-
-      .room-ui-v2 .room-header .area-header-metric .metric-ring {
-        width: 30px !important;
-        height: 30px !important;
-      }
-
-      .room-ui-v2 .room-header .area-header-metric .metric-label {
-        font-size: 8px !important;
-        line-height: 1 !important;
-      }
-
-      .room-ui-v2 .room-header .area-header-metric .metric-reading {
-        font-size: 14px !important;
-        line-height: 1.05 !important;
-      }
-
-      .room-header-actions {
+      .room-header-actions{
         height: 150px !important;
         align-self: center !important;
         justify-content: flex-start !important;
@@ -11977,38 +11422,38 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .room-header-actions .dd-edit-toggle,
-      .room-header-actions .unavailable-entities-icon {
+.room-header-actions .unavailable-entities-icon{
         width: 38px;
         height: 38px;
         margin: 0 !important;
       }
     }
 
-    .room-header-title-row {
+    .room-header-title-row{
       min-width: 0;
       display: flex;
       align-items: center;
       gap: 7px;
     }
 
-    .room-header-title-row .area-title {
+    .room-header-title-row .area-title{
       min-width: 0;
       margin: 0;
     }
 
     @media (max-width: 768px) {
-      .room-header-title-row .room-header-home-link {
+      .room-header-title-row .room-header-home-link{
         display: none;
       }
     }
 
     /* Final polish for global meta, Favorites and expandable room sections. */
     @media (min-width: 769px) {
-      .global-header {
+      .global-header{
         padding-right: 28px;
       }
 
-      .header-time-weather {
+      .header-time-weather{
         min-width: 204px;
         height: 50px;
         flex: 0 0 auto;
@@ -12018,7 +11463,7 @@ export class DwainsLayoutCard extends LitElement {
         gap: 10px;
       }
 
-      .header-time-section {
+      .header-time-section{
         min-width: 82px;
         align-items: flex-end;
         justify-content: center;
@@ -12026,37 +11471,31 @@ export class DwainsLayoutCard extends LitElement {
         line-height: 1;
       }
 
-      .header-time {
+      .header-time{
         font-size: 18px;
         line-height: 1.05;
       }
 
-      .header-date {
+      .header-date{
         font-size: 10px;
         line-height: 1.05;
       }
 
-      .weather-compact {
+      .weather-compact{
         min-height: 30px;
         padding: 3px 9px;
         box-sizing: border-box;
       }
     }
 
-    .room-ui-v2 > .room-favorites-block,
-    .room-ui-v2 > .room-header {
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    .room-favorites-block {
+    .room-favorites-block{
       position: relative;
       box-sizing: border-box;
       overflow: visible !important;
       margin-bottom: 11px !important;
     }
 
-    .room-favorites-block::after {
+    .room-favorites-block::after{
       content: "";
       position: absolute;
       left: 10px;
@@ -12070,52 +11509,28 @@ export class DwainsLayoutCard extends LitElement {
       pointer-events: none;
     }
 
-    .room-favorites-content .favorites-grid {
+    .room-favorites-content .favorites-grid{
       gap: 6px;
     }
 
-    .room-favorites-content .favorite-tile-wrapper {
+    .room-favorites-content .favorite-tile-wrapper{
       --row-size: 54px;
       --ha-card-border-radius: 8px;
       min-height: 54px;
       font-size: 0.94em;
     }
 
-    .room-favorites-content .favorite-tile-wrapper > hui-tile-card {
+    .room-favorites-content .favorite-tile-wrapper > hui-tile-card{
       --row-size: 54px;
       --ha-card-border-radius: 8px;
       min-height: 54px;
     }
 
-    .room-ui-v2 .mobile-domain-header.expandable-header {
-      position: relative;
-      width: 100%;
-      box-sizing: border-box;
-      cursor: pointer;
-      transition:
-        background-color 0.15s ease,
-        box-shadow 0.15s ease;
-    }
-
-    .room-ui-v2 .mobile-domain-header.expandable-header:hover {
-      background: color-mix(in srgb, var(--primary-color) 6%, var(--card-background-color));
-    }
-
-    .room-ui-v2 .mobile-domain-header.expandable-header:active {
-      background: color-mix(in srgb, var(--primary-color) 9%, var(--card-background-color));
-    }
-
-    .room-ui-v2 .mobile-domain-header.expandable-header:focus-visible {
-      outline: 2px solid color-mix(in srgb, var(--primary-color) 55%, transparent);
-      outline-offset: 2px;
-    }
-
-    .room-ui-v2 .mobile-domain-title,
-    .room-favorites-title {
+    .room-favorites-title{
       pointer-events: none;
     }
 
-    .mobile-domain-center-chevron {
+    .mobile-domain-center-chevron{
       position: absolute;
       left: 50%;
       top: 50%;
@@ -12127,47 +11542,24 @@ export class DwainsLayoutCard extends LitElement {
       opacity: 0.78;
     }
 
-    .room-ui-v2 .mobile-domain-header-actions {
-      position: relative;
-      z-index: 2;
-    }
-
-    .mobile-domain-title-chevron {
+    .mobile-domain-title-chevron{
       display: none !important;
     }
 
     @media (max-width: 768px) {
       .room-favorites-content .favorite-tile-wrapper,
-      .room-favorites-content .favorite-tile-wrapper > hui-tile-card {
+.room-favorites-content .favorite-tile-wrapper > hui-tile-card{
         --row-size: 50px;
         min-height: 50px;
       }
     }
 
 
-    /* Keep expandable headers visually centered and use a single, consistent leading chevron. */
-    .room-ui-v2 .mobile-domain-header.expandable-header {
+    /* Keep expandable headers visually centered and use a single{
       min-height: 38px;
     }
 
-    .room-ui-v2 .mobile-domain-title {
-      min-height: 24px;
-      align-items: center;
-      gap: 6px;
-      line-height: 1;
-    }
-
-    .room-ui-v2 .mobile-domain-title-copy {
-      align-items: center;
-      line-height: 1;
-    }
-
-    .room-ui-v2 .mobile-domain-title-label,
-    .room-ui-v2 .mobile-domain-count {
-      line-height: 1;
-    }
-
-    .mobile-domain-leading-chevron {
+    .mobile-domain-leading-chevron{
       flex: 0 0 auto;
       color: var(--secondary-text-color);
       --mdc-icon-size: 14px;
@@ -12175,7 +11567,7 @@ export class DwainsLayoutCard extends LitElement {
       pointer-events: none;
     }
 
-    .mobile-domain-leading-drag-handle {
+    .mobile-domain-leading-drag-handle{
       width: 24px;
       height: 24px;
       padding: 0;
@@ -12191,30 +11583,30 @@ export class DwainsLayoutCard extends LitElement {
       touch-action: none;
     }
 
-    .mobile-domain-leading-drag-handle:hover {
+    .mobile-domain-leading-drag-handle:hover{
       background: color-mix(in srgb, var(--primary-color) 8%, transparent);
       color: var(--primary-color);
     }
 
-    .mobile-domain-leading-drag-handle:active {
+    .mobile-domain-leading-drag-handle:active{
       cursor: grabbing;
     }
 
-    .mobile-domain-leading-drag-handle ha-icon {
+    .mobile-domain-leading-drag-handle ha-icon{
       --mdc-icon-size: 17px;
     }
 
     .mobile-domain-center-chevron,
-    .mobile-domain-title-chevron {
+.mobile-domain-title-chevron{
       display: none !important;
     }
 
     /* Compact Favorites row with a quiet divider before the room header. */
-    .room-favorites-block {
+    .room-favorites-block{
       margin-bottom: 12px !important;
     }
 
-    .room-favorites-block::after {
+    .room-favorites-block::after{
       left: 12px;
       right: 12px;
       bottom: -7px;
@@ -12225,51 +11617,53 @@ export class DwainsLayoutCard extends LitElement {
       opacity: 0.42;
     }
 
-    /* Compact sidebar: denser rooms, slimmer badges, vertically centered badge contents. */
-    .sidebar .floor-section {
+    /* Compact sidebar: denser rooms,
+slimmer badges,
+vertically centered badge contents. */
+    .sidebar .floor-section{
       margin: 0 0 10px;
     }
 
-    .sidebar .floor-header {
+    .sidebar .floor-header{
       padding: 5px 8px 3px;
       margin-bottom: 2px;
     }
 
-    .sidebar .floor-areas {
+    .sidebar .floor-areas{
       gap: 4px;
     }
 
-    .sidebar .area-button.home-button {
+    .sidebar .area-button.home-button{
       margin-bottom: 10px !important;
     }
 
     @media (min-width: 769px) {
-      .sidebar .room-area-button {
+      .sidebar .room-area-button{
         margin-bottom: 0;
       }
 
-      .sidebar .room-area-button .area-content {
+      .sidebar .room-area-button .area-content{
         gap: 5px;
       }
 
       .sidebar .room-area-button .area-name,
-      .sidebar .room-area-button.has-picture .area-name {
+.sidebar .room-area-button.has-picture .area-name{
         font-size: 14px;
       }
 
       .sidebar .room-area-button .area-sensors,
-      .sidebar .room-area-button.has-picture .area-sensors {
+.sidebar .room-area-button.has-picture .area-sensors{
         margin-top: 2px;
         font-size: 11px;
       }
 
-      .sidebar .room-area-button .area-info-badges {
+      .sidebar .room-area-button .area-info-badges{
         gap: 3px;
         min-height: 20px;
       }
 
       .sidebar .room-area-button .info-badge,
-      .sidebar .room-area-button.has-picture .info-badge {
+.sidebar .room-area-button.has-picture .info-badge{
         min-width: 22px;
         height: 19px;
         padding: 0 4px;
@@ -12282,7 +11676,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .sidebar .room-area-button .info-badge ha-icon,
-      .sidebar .room-area-button.has-picture .info-badge ha-icon {
+.sidebar .room-area-button.has-picture .info-badge ha-icon{
         width: 11px;
         height: 11px;
         display: block;
@@ -12293,7 +11687,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .sidebar .room-area-button .badge-count,
-      .sidebar .room-area-button.has-picture .badge-count {
+.sidebar .room-area-button.has-picture .badge-count{
         height: 11px;
         display: flex;
         align-items: center;
@@ -12307,7 +11701,7 @@ export class DwainsLayoutCard extends LitElement {
 
     /* Desktop meta uses the available horizontal space: time/date stacked, weather beside it. */
     @media (min-width: 769px) {
-      .header-time-weather {
+      .header-time-weather{
         min-width: 176px;
         height: 50px;
         flex-direction: row;
@@ -12316,7 +11710,7 @@ export class DwainsLayoutCard extends LitElement {
         gap: 10px;
       }
 
-      .header-time-section {
+      .header-time-section{
         min-width: 76px;
         align-items: flex-end;
         justify-content: center;
@@ -12327,120 +11721,43 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow: none;
       }
 
-      .header-time {
+      .header-time{
         font-size: 18px;
         line-height: 1.05;
       }
 
-      .header-date {
+      .header-date{
         font-size: 10px;
         line-height: 1.05;
       }
 
-      .weather-compact {
+      .weather-compact{
         min-height: 30px;
         padding: 3px 9px;
       }
 
-      .weather-icon-compact ha-icon {
+      .weather-icon-compact ha-icon{
         --mdc-icon-size: 18px;
       }
 
-      .weather-temp-compact {
+      .weather-temp-compact{
         font-size: 11px;
       }
     }
 
-    /* Edit mode keeps exactly the same card footprint as the normal room view. */
-    .room-ui-v2 .dd-generated-card-wrap.editing {
-      width: 100%;
-      min-width: 0;
-      min-height: 62px;
-      height: auto;
-      flex: none;
-      border-radius: 8px;
-    }
-
-    .room-ui-v2 .dd-generated-card-wrap.editing > .mobile-entity-card {
-      min-height: 62px !important;
-      height: 100% !important;
-    }
-
-    .room-ui-v2 .mobile-entity-rail .dd-domain-add-card-final,
-    .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-rail .dd-domain-add-card-final {
-      min-height: 62px !important;
-      height: 62px;
-      opacity: 0.72;
-      border-radius: 8px;
-    }
-
-    .room-ui-v2 .dd-generated-card-toolbar {
-      display: none !important;
-    }
-
-    @media (max-width: 768px) {
-      .room-ui-v2 .mobile-domain-header.expandable-header {
-        width: 100%;
-        padding: 6px 7px;
-      }
-
-      .room-ui-v2 .dd-generated-card-wrap.editing,
-      .room-ui-v2 .dd-generated-card-wrap.editing > .mobile-entity-card,
-      .room-ui-v2 .mobile-entity-rail .dd-domain-add-card-final {
-        min-height: 58px !important;
-      }
-
-      .room-ui-v2 .mobile-entity-rail .dd-domain-add-card-final {
-        height: 58px;
-      }
-    }
-
     /* Room follow-up: restore functional group drag handles. The title was intentionally
-       non-interactive in normal mode, which also swallowed pointer events for the new handle. */
-    .room-ui-v2 .mobile-domain-group.group-editing .mobile-domain-title {
+       non-interactive in normal mode{
       pointer-events: auto;
-    }
-
-    .room-ui-v2 .mobile-domain-group.group-editing .mobile-domain-title-copy,
-    .room-ui-v2 .mobile-domain-group.group-editing .room-domain-icon {
-      pointer-events: none;
-    }
-
-    .room-ui-v2 .mobile-domain-leading-drag-handle {
-      pointer-events: auto;
-      user-select: none;
-      -webkit-user-select: none;
-      -webkit-user-drag: element;
     }
 
     /* Expanded favorites content keeps the same inset as generated room content. */
-    .room-favorites-content {
+    .room-favorites-content{
       padding: 6px 9px 9px;
-    }
-
-    .room-ui-v2 .mobile-domain-header.room-favorites-header.expandable-header {
-      min-height: 32px;
-      padding: 3px 9px;
-      border-radius: 7px;
-    }
-
-    .room-ui-v2 .room-favorites-title {
-      min-height: 20px;
-    }
-
-    .room-ui-v2 .room-favorites-title .room-domain-icon {
-      width: 19px;
-      height: 19px;
-    }
-
-    .room-ui-v2 .room-favorites-title .room-domain-icon ha-icon {
-      --mdc-icon-size: 16px;
     }
 
     /* Final mobile room-view pass: compact room header and desktop-like area picker cards. */
     @media (max-width: 768px) {
-      /* Room header: top row for navigation/identity/actions, full-width metric row below. */
-      .room-ui-v2 .room-header {
+      /* Room header: top row for navigation/identity/actions{
         min-height: 0 !important;
         padding: 10px !important;
         grid-template-columns: 42px 60px minmax(0, 1fr) 76px !important;
@@ -12453,106 +11770,9 @@ export class DwainsLayoutCard extends LitElement {
         align-items: center !important;
       }
 
-      .room-ui-v2 .room-header-back {
-        grid-area: back !important;
-        align-self: center !important;
-      }
-
-      .room-ui-v2 .room-header-media {
-        grid-area: media !important;
-        width: 60px !important;
-        height: 60px !important;
-        align-self: center !important;
-      }
-
-      .room-ui-v2 .room-header-copy {
-        grid-area: copy !important;
-        min-width: 0 !important;
-        height: auto !important;
-        align-self: center !important;
-        justify-content: center !important;
-        gap: 3px !important;
-        overflow: hidden;
-      }
-
-      .room-ui-v2 .room-header .area-title {
-        display: block !important;
-        width: 100%;
-        margin: 0 !important;
-        overflow: hidden;
-        color: var(--primary-text-color);
-        font-size: 20px !important;
-        font-weight: 850 !important;
-        line-height: 1.05 !important;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-
-      .room-ui-v2 .room-header-device-count {
-        display: block !important;
-        width: 100%;
-        overflow: hidden;
-        font-size: 10px !important;
-        line-height: 1.15 !important;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-
-      .room-ui-v2 .room-header-summary {
-        width: 100%;
-        min-height: 18px;
-        margin-top: 1px;
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        gap: 4px !important;
-        overflow: hidden;
-      }
-
-      .room-ui-v2 .room-header-actions {
-        grid-area: actions !important;
-        width: 76px;
-        margin: 0 !important;
-        align-self: center !important;
-        justify-self: end !important;
-        display: grid !important;
-        grid-template-columns: repeat(2, 34px);
-        align-items: center;
-        justify-content: end;
-        gap: 6px !important;
-      }
-
-      .room-ui-v2 .room-header .area-header-metrics {
-        grid-area: metrics !important;
-        width: 100% !important;
-        min-width: 0 !important;
-        margin: 0 !important;
-        display: grid !important;
-        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-        align-items: center !important;
-        gap: 7px !important;
-      }
-
-      .room-ui-v2 .room-header .area-header-metric {
-        width: 100% !important;
-        min-width: 0 !important;
-        min-height: 34px !important;
-        padding: 4px 7px !important;
-        box-sizing: border-box;
-        justify-content: flex-start !important;
-        overflow: hidden;
-      }
-
-      .room-ui-v2 .room-header .area-header-metric .metric-reading {
-        overflow: hidden;
-        font-size: 11px !important;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-
       /* Area picker sheet: compact chrome and enough clearance above the bottom navigation. */
       .layout-container > .sidebar,
-      .sidebar {
+.sidebar{
         left: 16px !important;
         right: 16px !important;
         bottom: calc(94px + env(safe-area-inset-bottom, 0px)) !important;
@@ -12561,49 +11781,49 @@ export class DwainsLayoutCard extends LitElement {
         border-radius: 12px !important;
       }
 
-      .mobile-area-picker-head {
+      .mobile-area-picker-head{
         min-height: 34px !important;
         margin: 0 2px 8px !important;
       }
 
-      .mobile-area-picker-title {
+      .mobile-area-picker-title{
         font-size: 18px !important;
         line-height: 1.1 !important;
       }
 
-      .mobile-area-picker-close {
+      .mobile-area-picker-close{
         width: 34px !important;
         height: 34px !important;
       }
 
-      .sidebar::before {
+      .sidebar::before{
         margin-bottom: 7px !important;
       }
 
-      .sidebar .area-list {
+      .sidebar .area-list{
         gap: 6px !important;
       }
 
-      .sidebar .floor-section {
+      .sidebar .floor-section{
         gap: 5px !important;
         margin-bottom: 8px !important;
       }
 
-      .sidebar .floor-areas {
+      .sidebar .floor-areas{
         gap: 5px !important;
       }
 
-      .sidebar .floor-header {
+      .sidebar .floor-header{
         padding: 4px 6px 2px !important;
       }
 
-      .sidebar .floor-header h3 {
+      .sidebar .floor-header h3{
         font-size: 13px !important;
         font-weight: 760 !important;
       }
 
       /* Mobile room cards mirror the compact information hierarchy of the desktop sidebar. */
-      .sidebar .room-area-button {
+      .sidebar .room-area-button{
         min-height: 72px !important;
         height: auto !important;
         padding: 8px 10px !important;
@@ -12615,7 +11835,7 @@ export class DwainsLayoutCard extends LitElement {
         border-radius: 9px !important;
       }
 
-      .sidebar .room-area-button .area-media {
+      .sidebar .room-area-button .area-media{
         grid-column: 1 !important;
         grid-row: 1 !important;
         position: relative !important;
@@ -12628,12 +11848,12 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .sidebar .room-area-button .area-media-icon,
-      .sidebar .room-area-button .area-media-picture {
+.sidebar .room-area-button .area-media-picture{
         width: 100% !important;
         height: 100% !important;
       }
 
-      .sidebar .room-area-button .area-media-icon {
+      .sidebar .room-area-button .area-media-icon{
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -12641,11 +11861,11 @@ export class DwainsLayoutCard extends LitElement {
         color: var(--primary-color) !important;
       }
 
-      .sidebar .room-area-button .area-media-icon ha-icon {
+      .sidebar .room-area-button .area-media-icon ha-icon{
         --mdc-icon-size: 26px !important;
       }
 
-      .sidebar .room-area-button .area-content {
+      .sidebar .room-area-button .area-content{
         grid-column: 2 !important;
         grid-row: 1 !important;
         min-width: 0 !important;
@@ -12656,7 +11876,7 @@ export class DwainsLayoutCard extends LitElement {
         column-gap: 8px !important;
       }
 
-      .sidebar .room-area-button .area-top-section {
+      .sidebar .room-area-button .area-top-section{
         grid-column: 1 !important;
         width: 100% !important;
         min-width: 0 !important;
@@ -12667,7 +11887,7 @@ export class DwainsLayoutCard extends LitElement {
         gap: 3px !important;
       }
 
-      .sidebar .room-area-button .area-name {
+      .sidebar .room-area-button .area-name{
         width: 100% !important;
         margin: 0 !important;
         overflow: hidden;
@@ -12678,7 +11898,7 @@ export class DwainsLayoutCard extends LitElement {
         white-space: nowrap;
       }
 
-      .sidebar .room-area-button .area-sensors {
+      .sidebar .room-area-button .area-sensors{
         width: 100% !important;
         margin-top: 3px !important;
         overflow: hidden;
@@ -12689,7 +11909,7 @@ export class DwainsLayoutCard extends LitElement {
         white-space: nowrap;
       }
 
-      .sidebar .room-area-button .area-info-badges {
+      .sidebar .room-area-button .area-info-badges{
         grid-column: 2 !important;
         position: static !important;
         width: auto !important;
@@ -12702,26 +11922,26 @@ export class DwainsLayoutCard extends LitElement {
         gap: 4px !important;
       }
 
-      .sidebar .room-area-button .area-info-badges:has(.info-badge:nth-child(5)) {
+      .sidebar .room-area-button .area-info-badges:has(.info-badge:nth-child(5)){
         grid-template-columns: repeat(3, max-content) !important;
         max-width: 108px !important;
       }
 
-      .sidebar .room-area-button .info-badge {
+      .sidebar .room-area-button .info-badge{
         min-width: 22px !important;
         height: 19px !important;
         padding: 0 5px !important;
       }
 
-      .sidebar .room-area-button .info-badge ha-icon {
+      .sidebar .room-area-button .info-badge ha-icon{
         --mdc-icon-size: 11px !important;
       }
 
-      .sidebar .room-area-button .badge-count {
+      .sidebar .room-area-button .badge-count{
         font-size: 9px !important;
       }
 
-      .sidebar .room-area-button.selected {
+      .sidebar .room-area-button.selected{
         border-color: color-mix(in srgb, var(--primary-color) 52%, transparent) !important;
         background: color-mix(in srgb, var(--card-background-color) 94%, var(--primary-color) 6%) !important;
         box-shadow:
@@ -12731,7 +11951,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       /* Home row stays compact and visually subordinate to room cards. */
-      .sidebar .area-button.home-button {
+      .sidebar .area-button.home-button{
         min-height: 54px !important;
         height: 54px !important;
         padding: 7px 10px !important;
@@ -12742,7 +11962,7 @@ export class DwainsLayoutCard extends LitElement {
         margin: 0 0 7px !important;
       }
 
-      .sidebar .area-button.home-button .area-icon {
+      .sidebar .area-button.home-button .area-icon{
         position: relative !important;
         left: auto !important;
         top: auto !important;
@@ -12752,12 +11972,12 @@ export class DwainsLayoutCard extends LitElement {
         border-radius: 8px !important;
       }
 
-      .sidebar .area-button.home-button .area-info {
+      .sidebar .area-button.home-button .area-info{
         grid-column: 2 !important;
         min-width: 0 !important;
       }
 
-      .sidebar .area-button.home-button .area-menu-chevron {
+      .sidebar .area-button.home-button .area-menu-chevron{
         grid-column: 3 !important;
         justify-self: end !important;
       }
@@ -12765,11 +11985,11 @@ export class DwainsLayoutCard extends LitElement {
 
     /* 1.8.10x desktop density and hierarchy follow-up */
     @media (min-width: 769px) {
-      .content-area {
+      .content-area{
         scrollbar-gutter: stable;
       }
 
-      .welcome-notification-action {
+      .welcome-notification-action{
         width: 48px;
         height: 48px;
         border-radius: 999px;
@@ -12777,34 +11997,34 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow: none;
       }
 
-      .welcome-notification-action ha-icon {
+      .welcome-notification-action ha-icon{
         --mdc-icon-size: 26px;
       }
 
-      .welcome-settings-action {
+      .welcome-settings-action{
         width: 44px;
         height: 44px;
         border-radius: 999px;
       }
 
-      .home-status-grid {
+      .home-status-grid{
         align-items: start;
       }
 
-      .home-status-card {
+      .home-status-card{
         min-height: 104px;
         padding: 12px;
       }
 
-      .home-status-card .status-card-icon {
+      .home-status-card .status-card-icon{
         width: 42px;
         height: 42px;
         margin-bottom: 10px;
       }
 
       .home-status-card.house-persons-card,
-      .home-status-card.house-climate-card,
-      .home-status-card.house-power-card {
+.home-status-card.house-climate-card,
+.home-status-card.house-power-card{
         min-height: 0;
         height: auto;
         align-self: start;
@@ -12812,63 +12032,63 @@ export class DwainsLayoutCard extends LitElement {
         gap: 8px;
       }
 
-      .house-persons-grid {
+      .house-persons-grid{
         margin-top: 2px;
       }
 
-      .house-climate-grid {
+      .house-climate-grid{
         gap: 7px;
       }
 
-      .house-climate-metric {
+      .house-climate-metric{
         min-height: 42px;
         padding: 6px 8px;
       }
 
-      .house-power-list {
+      .house-power-list{
         margin-top: 2px;
       }
 
-      .global-header.room-context .room-favorites-block {
+      .global-header.room-context .room-favorites-block{
         border-color: color-mix(in srgb, var(--primary-color) 12%, var(--divider-color));
         background: color-mix(in srgb, var(--primary-color) 3%, var(--card-background-color));
       }
 
-      .global-header.room-context .room-favorites-header {
+      .global-header.room-context .room-favorites-header{
         min-height: 38px !important;
         padding: 7px 9px !important;
       }
 
-      .global-header.room-context .room-favorites-title {
+      .global-header.room-context .room-favorites-title{
         min-height: 24px !important;
       }
 
-      .global-header.room-context .room-favorites-title .mobile-domain-title-label {
+      .global-header.room-context .room-favorites-title .mobile-domain-title-label{
         font-size: 15px !important;
         font-weight: 850 !important;
         line-height: 1 !important;
       }
 
-      .global-header.room-context .room-favorites-title .mobile-domain-count {
+      .global-header.room-context .room-favorites-title .mobile-domain-count{
         font-size: 10px !important;
         font-weight: 650 !important;
         line-height: 1 !important;
       }
 
-      .global-header.room-context .room-favorites-title .room-domain-icon {
+      .global-header.room-context .room-favorites-title .room-domain-icon{
         width: 22px !important;
         height: 22px !important;
       }
 
-      .global-header.room-context .room-favorites-title .room-domain-icon ha-icon {
+      .global-header.room-context .room-favorites-title .room-domain-icon ha-icon{
         --mdc-icon-size: 18px !important;
       }
 
-      .room-header-title-row {
+      .room-header-title-row{
         gap: 5px;
       }
 
-      .room-header-home-link {
+      .room-header-home-link{
         width: 28px;
         height: 28px;
         border-radius: 999px;
@@ -12876,15 +12096,15 @@ export class DwainsLayoutCard extends LitElement {
         color: var(--primary-color);
       }
 
-      .room-header-home-link:hover {
+      .room-header-home-link:hover{
         background: color-mix(in srgb, var(--primary-color) 14%, transparent);
       }
 
-      .room-header-home-link ha-icon {
+      .room-header-home-link ha-icon{
         --mdc-icon-size: 19px;
       }
 
-      .room-header-home-chevron {
+      .room-header-home-chevron{
         flex: 0 0 auto;
         color: var(--secondary-text-color);
         --mdc-icon-size: 16px;
@@ -12893,7 +12113,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     @media (max-width: 768px) {
-      .room-header-home-chevron {
+      .room-header-home-chevron{
         display: none;
       }
     }
@@ -12902,11 +12122,11 @@ export class DwainsLayoutCard extends LitElement {
     @media (min-width: 769px) {
       /* House information uses two intentional heights:
          detailed summary cards are equal; simple active-status cards are compact and equal. */
-      .home-status-grid {
+      .home-status-grid{
         align-items: start;
       }
 
-      .home-status-card {
+      .home-status-card{
         box-sizing: border-box;
         height: 94px;
         min-height: 94px;
@@ -12915,29 +12135,29 @@ export class DwainsLayoutCard extends LitElement {
         gap: 7px;
       }
 
-      .home-status-card .status-card-icon {
+      .home-status-card .status-card-icon{
         width: 38px;
         height: 38px;
         margin: 0;
       }
 
-      .home-status-card .status-card-icon ha-icon {
+      .home-status-card .status-card-icon ha-icon{
         --mdc-icon-size: 21px;
       }
 
-      .home-status-card .status-card-title {
+      .home-status-card .status-card-title{
         margin: 0;
         font-size: 14px;
         line-height: 1.1;
       }
 
-      .home-status-card.has-value .status-card-value {
+      .home-status-card.has-value .status-card-value{
         margin: 0;
       }
 
       .home-status-card.house-persons-card,
-      .home-status-card.house-climate-card,
-      .home-status-card.house-power-card {
+.home-status-card.house-climate-card,
+.home-status-card.house-power-card{
         height: 162px;
         min-height: 162px;
         padding: 12px;
@@ -12945,46 +12165,47 @@ export class DwainsLayoutCard extends LitElement {
         overflow: hidden;
       }
 
-      .house-person-mini {
+      .house-person-mini{
         min-height: 36px;
         padding: 4px 6px;
       }
 
-      .house-person-avatar {
+      .house-person-avatar{
         width: 24px;
         height: 24px;
       }
 
-      .house-climate-metric {
+      .house-climate-metric{
         min-height: 44px;
       }
 
-      .house-power-list {
+      .house-power-list{
         gap: 3px;
       }
 
-      .house-power-room {
+      .house-power-room{
         grid-template-columns: 20px minmax(0, 1fr) auto;
         column-gap: 6px;
         row-gap: 2px;
       }
 
-      .house-power-room-icon {
+      .house-power-room-icon{
         width: 20px;
         height: 20px;
         border-radius: 7px;
       }
 
-      .house-power-room-icon ha-icon {
+      .house-power-room-icon ha-icon{
         --mdc-icon-size: 13px;
       }
 
-      .house-power-bar {
+      .house-power-bar{
         height: 3px;
       }
 
-      /* The Home affordance should read as navigation, not as a second room tile. */
-      .room-header-home-link {
+      /* The Home affordance should read as navigation,
+not as a second room tile. */
+      .room-header-home-link{
         width: 24px;
         height: 24px;
         padding: 0;
@@ -12994,22 +12215,23 @@ export class DwainsLayoutCard extends LitElement {
         color: var(--primary-color);
       }
 
-      .room-header-home-link:hover {
+      .room-header-home-link:hover{
         background: color-mix(in srgb, var(--primary-color) 8%, transparent);
       }
 
-      .room-header-home-link ha-icon {
+      .room-header-home-link ha-icon{
         --mdc-icon-size: 18px;
       }
 
-      /* Favorites matches the generated type header in height, typography and interaction. */
-      .global-header.room-context .room-favorites-block {
+      /* Favorites matches the generated type header in height,
+typography and interaction. */
+      .global-header.room-context .room-favorites-block{
         background: var(--card-background-color);
         border-color: color-mix(in srgb, var(--primary-text-color) 7%, transparent);
         box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
       }
 
-      .global-header.room-context .room-favorites-header {
+      .global-header.room-context .room-favorites-header{
         height: 38px !important;
         min-height: 38px !important;
         padding: 7px 9px !important;
@@ -13017,35 +12239,35 @@ export class DwainsLayoutCard extends LitElement {
         transition: background-color 0.16s ease, box-shadow 0.16s ease;
       }
 
-      .global-header.room-context .room-favorites-header:hover {
+      .global-header.room-context .room-favorites-header:hover{
         background: color-mix(in srgb, var(--primary-color) 5%, transparent);
         box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 10%, transparent);
       }
 
-      .global-header.room-context .room-favorites-title {
+      .global-header.room-context .room-favorites-title{
         min-height: 24px !important;
         align-items: center !important;
         line-height: 1 !important;
       }
 
       .global-header.room-context .room-favorites-title .mobile-domain-leading-chevron,
-      .global-header.room-context .room-favorites-title .room-domain-icon,
-      .global-header.room-context .room-favorites-title .mobile-domain-title-copy,
-      .global-header.room-context .room-favorites-title .mobile-domain-count {
+.global-header.room-context .room-favorites-title .room-domain-icon,
+.global-header.room-context .room-favorites-title .mobile-domain-title-copy,
+.global-header.room-context .room-favorites-title .mobile-domain-count{
         align-self: center;
       }
 
-      .global-header.room-context .room-favorites-title .mobile-domain-title-copy {
+      .global-header.room-context .room-favorites-title .mobile-domain-title-copy{
         align-items: center !important;
         line-height: 1 !important;
       }
 
       /* Keep the title block at the same vertical position even when no active room badge exists. */
-      .room-header-summary {
+      .room-header-summary{
         min-height: 22px;
       }
 
-      .room-header-summary.is-empty {
+      .room-header-summary.is-empty{
         visibility: hidden;
         pointer-events: none;
       }
@@ -13055,24 +12277,24 @@ export class DwainsLayoutCard extends LitElement {
     @media (min-width: 769px) {
       /* Normalize section rhythm across Home. */
       .home-status-section,
-      .home-favorites-section,
-      .home-summaries-section,
-      .home-camera-section,
-      .home-todos-section,
-      .home-custom-cards-section {
+.home-favorites-section,
+.home-summaries-section,
+.home-camera-section,
+.home-todos-section,
+.home-custom-cards-section{
         margin-bottom: 36px;
       }
 
       /* Detailed Home information cards stay equal in outer height. */
       .home-status-card.house-persons-card,
-      .home-status-card.house-climate-card,
-      .home-status-card.house-power-card {
+.home-status-card.house-climate-card,
+.home-status-card.house-power-card{
         height: 162px;
         min-height: 162px;
       }
 
       /* Simple active-status cards are exactly half the detailed-card height. */
-      .home-status-card:not(.house-persons-card):not(.house-climate-card):not(.house-power-card) {
+      .home-status-card:not(.house-persons-card):not(.house-climate-card):not(.house-power-card){
         height: 81px;
         min-height: 81px;
         padding: 9px 11px 7px;
@@ -13082,18 +12304,18 @@ export class DwainsLayoutCard extends LitElement {
         gap: 0;
       }
 
-      .home-status-card:not(.house-persons-card):not(.house-climate-card):not(.house-power-card) .status-card-icon {
+      .home-status-card:not(.house-persons-card):not(.house-climate-card):not(.house-power-card) .status-card-icon{
         width: 34px;
         height: 34px;
         margin: 0;
         align-self: start;
       }
 
-      .home-status-card:not(.house-persons-card):not(.house-climate-card):not(.house-power-card) .status-card-icon ha-icon {
+      .home-status-card:not(.house-persons-card):not(.house-climate-card):not(.house-power-card) .status-card-icon ha-icon{
         --mdc-icon-size: 19px;
       }
 
-      .home-status-card:not(.house-persons-card):not(.house-climate-card):not(.house-power-card) .status-card-title {
+      .home-status-card:not(.house-persons-card):not(.house-climate-card):not(.house-power-card) .status-card-title{
         width: 100%;
         min-height: 30px;
         margin: 0;
@@ -13104,23 +12326,23 @@ export class DwainsLayoutCard extends LitElement {
         line-height: 1.05;
       }
 
-      .home-status-card:not(.house-persons-card):not(.house-climate-card):not(.house-power-card).has-value {
+      .home-status-card:not(.house-persons-card):not(.house-climate-card):not(.house-power-card).has-value{
         grid-template-rows: 30px auto minmax(0, 1fr);
       }
 
-      .home-status-card:not(.house-persons-card):not(.house-climate-card):not(.house-power-card).has-value .status-card-value {
+      .home-status-card:not(.house-persons-card):not(.house-climate-card):not(.house-power-card).has-value .status-card-value{
         margin: 0;
         font-size: 17px;
         line-height: 1;
       }
 
-      .home-status-card:not(.house-persons-card):not(.house-climate-card):not(.house-power-card).has-value .status-card-title {
+      .home-status-card:not(.house-persons-card):not(.house-climate-card):not(.house-power-card).has-value .status-card-title{
         min-height: 18px;
         font-size: 10px;
       }
 
       /* Compact status count pills like the room badges: smaller and shifted outward. */
-      .home-status-card .status-card-badge {
+      .home-status-card .status-card-badge{
         top: -5px;
         right: -14px;
         min-width: 20px;
@@ -13132,7 +12354,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       /* Person grid fills the available matrix according to the actual HA person count. */
-      .house-persons-grid {
+      .house-persons-grid{
         flex: 1 1 auto;
         min-height: 0;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -13140,65 +12362,65 @@ export class DwainsLayoutCard extends LitElement {
         gap: 7px;
       }
 
-      .house-persons-card.persons-1 .house-persons-grid {
+      .house-persons-card.persons-1 .house-persons-grid{
         grid-template-columns: minmax(0, 1fr);
         grid-template-rows: minmax(0, 1fr);
       }
 
-      .house-persons-card.persons-2 .house-persons-grid {
+      .house-persons-card.persons-2 .house-persons-grid{
         grid-template-columns: repeat(2, minmax(0, 1fr));
         grid-template-rows: minmax(0, 1fr);
       }
 
-      .house-persons-card.persons-3 .house-persons-grid {
+      .house-persons-card.persons-3 .house-persons-grid{
         grid-template-columns: repeat(2, minmax(0, 1fr));
         grid-template-rows: repeat(2, minmax(0, 1fr));
       }
 
-      .house-persons-card.persons-3 .house-person-mini:last-child {
+      .house-persons-card.persons-3 .house-person-mini:last-child{
         grid-column: 1 / -1;
       }
 
-      .house-person-mini {
+      .house-person-mini{
         min-height: 0;
         height: 100%;
         padding: 6px 8px;
       }
 
-      .house-persons-card.persons-1 .house-person-mini {
+      .house-persons-card.persons-1 .house-person-mini{
         justify-content: center;
       }
 
-      .house-persons-card.persons-1 .house-person-avatar {
+      .house-persons-card.persons-1 .house-person-avatar{
         width: 34px;
         height: 34px;
       }
 
-      .house-persons-card.persons-1 .house-person-mini-name {
+      .house-persons-card.persons-1 .house-person-mini-name{
         font-size: 13px;
       }
 
-      .house-persons-card.persons-1 .house-person-mini-state {
+      .house-persons-card.persons-1 .house-person-mini-state{
         font-size: 11px;
       }
 
       /* Climate metrics consume the full remaining body height when only one or two metrics exist. */
-      .house-climate-grid {
+      .house-climate-grid{
         flex: 1 1 auto;
         min-height: 0;
         align-items: stretch;
       }
 
-      .house-climate-card.metrics-1 .house-climate-grid {
+      .house-climate-card.metrics-1 .house-climate-grid{
         grid-template-columns: minmax(0, 1fr);
       }
 
-      .house-climate-card.metrics-2 .house-climate-grid {
+      .house-climate-card.metrics-2 .house-climate-grid{
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .house-climate-card.metrics-1 .house-climate-metric,
-      .house-climate-card.metrics-2 .house-climate-metric {
+.house-climate-card.metrics-2 .house-climate-metric{
         min-height: 0;
         height: 100%;
         padding: 10px 12px;
@@ -13207,29 +12429,29 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .house-climate-card.metrics-1 .house-climate-metric-icon,
-      .house-climate-card.metrics-2 .house-climate-metric-icon {
+.house-climate-card.metrics-2 .house-climate-metric-icon{
         width: 34px;
         height: 34px;
         border-radius: 10px;
       }
 
       .house-climate-card.metrics-1 .house-climate-metric-icon ha-icon,
-      .house-climate-card.metrics-2 .house-climate-metric-icon ha-icon {
+.house-climate-card.metrics-2 .house-climate-metric-icon ha-icon{
         --mdc-icon-size: 19px;
       }
 
       .house-climate-card.metrics-1 .house-climate-metric-value,
-      .house-climate-card.metrics-2 .house-climate-metric-value {
+.house-climate-card.metrics-2 .house-climate-metric-value{
         font-size: 18px;
       }
 
       .house-climate-card.metrics-1 .house-climate-metric-label,
-      .house-climate-card.metrics-2 .house-climate-metric-label {
+.house-climate-card.metrics-2 .house-climate-metric-label{
         font-size: 11px;
       }
 
       /* Power keeps a stable card height; empty state sits in the visual center of the body. */
-      .house-power-empty {
+      .house-power-empty{
         flex: 1 1 auto;
         min-height: 0;
         width: 100%;
@@ -13241,7 +12463,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       /* Home Favorites uses the same section-header language as the other Home sections. */
-      .home-favorites-section .favorites-header {
+      .home-favorites-section .favorites-header{
         min-height: 30px;
         margin: 0 0 14px;
         padding: 0;
@@ -13255,7 +12477,7 @@ export class DwainsLayoutCard extends LitElement {
         line-height: 1.1;
       }
 
-      .home-favorites-section .favorites-header ha-icon {
+      .home-favorites-section .favorites-header ha-icon{
         width: 30px;
         height: 30px;
         display: inline-flex;
@@ -13268,7 +12490,7 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow: inset 0 0 0 1px color-mix(in srgb, #f59e0b 9%, transparent);
       }
 
-      .home-favorites-section .favorites-header span {
+      .home-favorites-section .favorites-header span{
         display: inline-flex;
         align-items: center;
         min-height: 30px;
@@ -13278,7 +12500,7 @@ export class DwainsLayoutCard extends LitElement {
     /* Final visual consistency pass for Home and room header. */
     @media (min-width: 769px) {
       /* Home status count badges match the compact room/header badge proportions. */
-      .home-status-card .status-card-badge {
+      .home-status-card .status-card-badge{
         top: -6px;
         right: -11px;
         min-width: 18px;
@@ -13294,7 +12516,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       /* Place simple status labels in the exact visual center between icon tile and accent line. */
-      .home-status-card:not(.house-persons-card):not(.house-climate-card):not(.house-power-card):not(.has-value) .status-card-title {
+      .home-status-card:not(.house-persons-card):not(.house-climate-card):not(.house-power-card):not(.has-value) .status-card-title{
         position: absolute;
         left: 11px;
         right: 11px;
@@ -13308,12 +12530,12 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       /* Room meta: time/date equals status-card height; weather is slightly larger but still secondary. */
-      .global-header.room-context .header-time-weather {
+      .global-header.room-context .header-time-weather{
         height: 50px;
         gap: 12px;
       }
 
-      .global-header.room-context .header-time-section {
+      .global-header.room-context .header-time-section{
         width: 94px;
         min-width: 94px;
         height: 50px;
@@ -13324,39 +12546,39 @@ export class DwainsLayoutCard extends LitElement {
         justify-content: center;
       }
 
-      .global-header.room-context .header-time {
+      .global-header.room-context .header-time{
         font-size: 24px;
         line-height: 1;
       }
 
-      .global-header.room-context .header-date {
+      .global-header.room-context .header-date{
         margin-top: 3px;
         font-size: 11px;
         line-height: 1;
       }
 
-      .global-header.room-context .weather-compact {
+      .global-header.room-context .weather-compact{
         min-height: 38px;
         padding: 0 12px;
         gap: 7px;
         border-radius: 999px;
       }
 
-      .global-header.room-context .weather-icon-compact ha-icon {
+      .global-header.room-context .weather-icon-compact ha-icon{
         --mdc-icon-size: 18px;
       }
 
-      .global-header.room-context .weather-temp-compact {
+      .global-header.room-context .weather-temp-compact{
         font-size: 13px;
       }
 
       /* Filled Home breadcrumb reads like navigation but remains distinct from the large room icon. */
-      .room-header-home-link ha-icon {
+      .room-header-home-link ha-icon{
         --mdc-icon-size: 19px;
       }
 
       /* Sidebar Home follows the room-card rhythm while remaining a special global destination. */
-      .sidebar .area-button.home-button {
+      .sidebar .area-button.home-button{
         min-height: 68px !important;
         height: 68px !important;
         padding: 8px 10px !important;
@@ -13366,23 +12588,23 @@ export class DwainsLayoutCard extends LitElement {
         background: color-mix(in srgb, var(--primary-color) 4%, var(--card-background-color)) !important;
       }
 
-      .sidebar .area-button.home-button .area-icon {
+      .sidebar .area-button.home-button .area-icon{
         width: 50px !important;
         height: 50px !important;
         border-radius: 9px !important;
         background: color-mix(in srgb, var(--primary-color) 12%, var(--card-background-color)) !important;
       }
 
-      .sidebar .area-button.home-button .area-icon ha-icon {
+      .sidebar .area-button.home-button .area-icon ha-icon{
         --mdc-icon-size: 25px !important;
       }
 
-      .sidebar .area-button.home-button .area-name {
+      .sidebar .area-button.home-button .area-name{
         font-size: 14px;
         font-weight: 850;
       }
 
-      .sidebar .area-button.home-button.selected {
+      .sidebar .area-button.home-button.selected{
         background: color-mix(in srgb, var(--primary-color) 9%, var(--card-background-color)) !important;
         box-shadow:
           inset 3px 0 0 var(--primary-color),
@@ -13390,8 +12612,7 @@ export class DwainsLayoutCard extends LitElement {
           0 6px 14px rgba(15, 23, 42, 0.06) !important;
       }
 
-      /* Room metric pills: direct icons, no nested circular icon background. */
-      .room-ui-v2 .area-header-metric .metric-ring.metric-icon {
+      /* Room metric pills: direct icons{
         width: 24px !important;
         height: 30px !important;
         border-radius: 0 !important;
@@ -13399,33 +12620,32 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow: none !important;
       }
 
-      .room-ui-v2 .area-header-metric .metric-ring.metric-icon ha-icon {
-        --mdc-icon-size: 20px !important;
-      }
-
       /* Climate card uses exactly the same temperature/humidity colors as the room view. */
-      .house-climate-metric.temperature { --metric-color: #7c67c7 !important; }
-      .house-climate-metric.humidity { --metric-color: #34a6d8 !important; }
+      .house-climate-metric.temperature{ --metric-color: #7c67c7 !important; }
+      .house-climate-metric.humidity{ --metric-color: #34a6d8 !important; }
 
-      /* Climate metric icons are direct, slightly larger icons without a second circle. */
-      .house-climate-metric-icon {
+      /* Climate metric icons are direct,
+slightly larger icons without a second circle. */
+      .house-climate-metric-icon{
         width: 28px !important;
         height: 34px !important;
         border-radius: 0 !important;
         background: transparent !important;
       }
 
-      .house-climate-metric-icon ha-icon {
+      .house-climate-metric-icon ha-icon{
         --mdc-icon-size: 21px !important;
       }
 
-      /* Desktop section headings are labels, not buttons: color only, no chip/background. */
+      /* Desktop section headings are labels,
+not buttons: color only,
+no chip/background. */
       .home-status-heading ha-icon,
-      .home-camera-section .home-status-heading ha-icon,
-      .home-summaries-section .home-status-heading ha-icon,
-      .home-todos-section .home-status-heading ha-icon,
-      .home-custom-cards-section .home-status-heading ha-icon,
-      .home-favorites-section .favorites-header ha-icon {
+.home-camera-section .home-status-heading ha-icon,
+.home-summaries-section .home-status-heading ha-icon,
+.home-todos-section .home-status-heading ha-icon,
+.home-custom-cards-section .home-status-heading ha-icon,
+.home-favorites-section .favorites-header ha-icon{
         width: 24px !important;
         height: 24px !important;
         border-radius: 0 !important;
@@ -13433,16 +12653,16 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow: none !important;
       }
 
-      .home-status-heading ha-icon { color: var(--primary-color); }
-      .home-camera-section .home-status-heading ha-icon { color: #ef4444; }
-      .home-summaries-section .home-status-heading ha-icon { color: #c56f12; }
-      .home-todos-section .home-status-heading ha-icon { color: #7c3aed; }
-      .home-custom-cards-section .home-status-heading ha-icon { color: #0ea5a8; }
-      .home-favorites-section .favorites-header ha-icon { color: #f59e0b; }
+      .home-status-heading ha-icon{ color: var(--primary-color); }
+      .home-camera-section .home-status-heading ha-icon{ color: #ef4444; }
+      .home-summaries-section .home-status-heading ha-icon{ color: #c56f12; }
+      .home-todos-section .home-status-heading ha-icon{ color: #7c3aed; }
+      .home-custom-cards-section .home-status-heading ha-icon{ color: #0ea5a8; }
+      .home-favorites-section .favorites-header ha-icon{ color: #f59e0b; }
     }
 
     /* House power detail dialog mirrors the local Climate-dialog workflow instead of navigating away. */
-    .house-power-dialog-overlay {
+    .house-power-dialog-overlay{
       position: fixed;
       inset: 0;
       z-index: 1200;
@@ -13455,7 +12675,7 @@ export class DwainsLayoutCard extends LitElement {
       -webkit-backdrop-filter: blur(5px);
     }
 
-    .house-power-dialog {
+    .house-power-dialog{
       width: min(720px, calc(100vw - 32px));
       max-height: min(78vh, 760px);
       padding: 16px;
@@ -13468,7 +12688,7 @@ export class DwainsLayoutCard extends LitElement {
       outline: none;
     }
 
-    .house-power-dialog-head {
+    .house-power-dialog-head{
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -13476,14 +12696,14 @@ export class DwainsLayoutCard extends LitElement {
       margin-bottom: 14px;
     }
 
-    .house-power-dialog-title-wrap {
+    .house-power-dialog-title-wrap{
       min-width: 0;
       display: flex;
       align-items: center;
       gap: 10px;
     }
 
-    .house-power-dialog-icon {
+    .house-power-dialog-icon{
       width: 40px;
       height: 40px;
       flex: 0 0 auto;
@@ -13495,11 +12715,11 @@ export class DwainsLayoutCard extends LitElement {
       background: color-mix(in srgb, #d88e20 12%, var(--card-background-color));
     }
 
-    .house-power-dialog-icon ha-icon { --mdc-icon-size: 23px; }
-    .house-power-dialog-title { font-size: 20px; font-weight: 900; line-height: 1.05; }
-    .house-power-dialog-subtitle { margin-top: 3px; color: var(--secondary-text-color); font-size: 12px; font-weight: 700; }
+    .house-power-dialog-icon ha-icon{ --mdc-icon-size: 23px; }
+    .house-power-dialog-title{ font-size: 20px; font-weight: 900; line-height: 1.05; }
+    .house-power-dialog-subtitle{ margin-top: 3px; color: var(--secondary-text-color); font-size: 12px; font-weight: 700; }
 
-    .house-power-dialog-close {
+    .house-power-dialog-close{
       width: 38px;
       height: 38px;
       padding: 0;
@@ -13513,7 +12733,7 @@ export class DwainsLayoutCard extends LitElement {
       cursor: pointer;
     }
 
-    .house-power-dialog-total {
+    .house-power-dialog-total{
       min-height: 72px;
       margin-bottom: 12px;
       padding: 12px 14px;
@@ -13525,25 +12745,25 @@ export class DwainsLayoutCard extends LitElement {
       box-shadow: inset 0 0 0 1px color-mix(in srgb, #d88e20 14%, transparent);
     }
 
-    .house-power-dialog-total span { font-size: 28px; font-weight: 950; line-height: 1; }
-    .house-power-dialog-total small { margin-top: 4px; color: var(--secondary-text-color); font-size: 11px; font-weight: 750; }
+    .house-power-dialog-total span{ font-size: 28px; font-weight: 950; line-height: 1; }
+    .house-power-dialog-total small{ margin-top: 4px; color: var(--secondary-text-color); font-size: 11px; font-weight: 750; }
 
-    .house-power-dialog-areas { display: grid; gap: 10px; }
-    .house-power-dialog-area {
+    .house-power-dialog-areas{ display: grid; gap: 10px; }
+    .house-power-dialog-area{
       padding: 11px 12px;
       border-radius: 10px;
       background: color-mix(in srgb, var(--primary-background-color) 72%, var(--card-background-color));
       box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 6%, transparent);
     }
 
-    .house-power-dialog-area-head {
+    .house-power-dialog-area-head{
       display: grid;
       grid-template-columns: 30px minmax(0, 1fr) auto;
       align-items: center;
       gap: 8px;
     }
 
-    .house-power-dialog-area-icon {
+    .house-power-dialog-area-icon{
       width: 30px;
       height: 30px;
       display: inline-flex;
@@ -13554,10 +12774,10 @@ export class DwainsLayoutCard extends LitElement {
       background: color-mix(in srgb, #d88e20 10%, transparent);
     }
 
-    .house-power-dialog-area-icon ha-icon { --mdc-icon-size: 17px; }
-    .house-power-dialog-area-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 850; }
+    .house-power-dialog-area-icon ha-icon{ --mdc-icon-size: 17px; }
+    .house-power-dialog-area-name{ min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 850; }
 
-    .house-power-dialog-bar {
+    .house-power-dialog-bar{
       position: relative;
       height: 5px;
       margin: 8px 0 6px 38px;
@@ -13566,7 +12786,7 @@ export class DwainsLayoutCard extends LitElement {
       background: color-mix(in srgb, #d88e20 10%, var(--secondary-background-color));
     }
 
-    .house-power-dialog-bar span {
+    .house-power-dialog-bar span{
       position: absolute;
       inset: 0 auto 0 0;
       width: var(--power-width, 0%);
@@ -13575,13 +12795,13 @@ export class DwainsLayoutCard extends LitElement {
       background: linear-gradient(90deg, #d88e20, #f4c34d);
     }
 
-    .house-power-dialog-entities {
+    .house-power-dialog-entities{
       margin-left: 38px;
       display: grid;
       gap: 2px;
     }
 
-    .house-power-dialog-entity {
+    .house-power-dialog-entity{
       width: 100%;
       min-height: 30px;
       padding: 4px 6px;
@@ -13598,11 +12818,11 @@ export class DwainsLayoutCard extends LitElement {
       cursor: pointer;
     }
 
-    .house-power-dialog-entity:hover {
+    .house-power-dialog-entity:hover{
       background: color-mix(in srgb, #d88e20 7%, transparent);
     }
 
-    .house-power-dialog-entity span {
+    .house-power-dialog-entity span{
       min-width: 0;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -13611,8 +12831,8 @@ export class DwainsLayoutCard extends LitElement {
       font-size: 12px;
     }
 
-    .house-power-dialog-entity strong { font-size: 12px; white-space: nowrap; }
-    .house-power-dialog-empty {
+    .house-power-dialog-entity strong{ font-size: 12px; white-space: nowrap; }
+    .house-power-dialog-empty{
       min-height: 88px;
       display: flex;
       align-items: center;
@@ -13622,12 +12842,12 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     @media (max-width: 768px) {
-      .house-power-dialog-overlay {
+      .house-power-dialog-overlay{
         align-items: flex-end;
         padding: 12px 12px calc(96px + env(safe-area-inset-bottom, 0px));
       }
 
-      .house-power-dialog {
+      .house-power-dialog{
         width: 100%;
         max-height: 68vh;
         border-radius: 18px;
@@ -13637,40 +12857,40 @@ export class DwainsLayoutCard extends LitElement {
     /* Desktop Home alignment and section rhythm. */
     @media (min-width: 769px) {
       .home-view,
-      .home-welcome,
-      .home-status-section,
-      .home-favorites-section,
-      .home-summaries-section,
-      .home-camera-section,
-      .home-todos-section,
-      .home-custom-cards-section {
+.home-welcome,
+.home-status-section,
+.home-favorites-section,
+.home-summaries-section,
+.home-camera-section,
+.home-todos-section,
+.home-custom-cards-section{
         width: 100%;
         max-width: none;
         box-sizing: border-box;
       }
 
       .home-status-heading,
-      .home-favorites-section .favorites-header {
+.home-favorites-section .favorites-header{
         margin-bottom: 10px !important;
       }
 
       .home-status-section,
-      .home-favorites-section,
-      .home-summaries-section,
-      .home-camera-section,
-      .home-todos-section,
-      .home-custom-cards-section {
+.home-favorites-section,
+.home-summaries-section,
+.home-camera-section,
+.home-todos-section,
+.home-custom-cards-section{
         margin-bottom: 28px !important;
       }
 
-      .home-welcome {
+      .home-welcome{
         margin-bottom: 28px !important;
       }
 
       /* One shared three-column master grid for prominent Home content. */
       .home-status-primary-grid,
-      .favorites-grid,
-      .home-summary-list {
+.favorites-grid,
+.home-summary-list{
         width: 100%;
         max-width: none !important;
         display: grid;
@@ -13679,13 +12899,13 @@ export class DwainsLayoutCard extends LitElement {
         align-items: stretch;
       }
 
-      .home-status-primary-grid > .home-status-card {
+      .home-status-primary-grid > .home-status-card{
         width: 100%;
         min-width: 0;
         grid-column: auto !important;
       }
 
-      .home-status-stack {
+      .home-status-stack{
         min-width: 0;
         height: 162px;
         display: grid;
@@ -13693,14 +12913,15 @@ export class DwainsLayoutCard extends LitElement {
         gap: 8px;
       }
 
-      .home-status-stack .home-status-card.compact-status {
+      .home-status-stack .home-status-card.compact-status{
         width: 100%;
         height: auto;
         min-height: 0;
       }
 
-      /* Once status cards move below the primary row, they use the six-column compact grid. */
-      .home-status-secondary-grid {
+      /* Once status cards move below the primary row,
+they use the six-column compact grid. */
+      .home-status-secondary-grid{
         width: 100%;
         margin-top: 12px;
         display: grid;
@@ -13708,7 +12929,7 @@ export class DwainsLayoutCard extends LitElement {
         gap: 10px;
       }
 
-      .home-status-secondary-grid .home-status-card.compact-status {
+      .home-status-secondary-grid .home-status-card.compact-status{
         width: 100%;
         min-width: 0;
         height: 81px;
@@ -13716,18 +12937,20 @@ export class DwainsLayoutCard extends LitElement {
 
       /* Favorites/Summary cards use the same column width as a primary House Information card. */
       .home-favorites-section .favorite-card-wrapper,
-      .home-summary-list .home-summary-card {
+.home-summary-list .home-summary-card{
         width: 100%;
         min-width: 0;
       }
 
-      /* Room Favorites: hard vertical centering across chevron, star, text and count. */
-      .global-header.room-context .room-favorites-header {
+      /* Room Favorites: hard vertical centering across chevron,
+star,
+text and count. */
+      .global-header.room-context .room-favorites-header{
         display: flex !important;
         align-items: center !important;
       }
 
-      .global-header.room-context .room-favorites-title {
+      .global-header.room-context .room-favorites-title{
         height: 24px !important;
         min-height: 24px !important;
         display: flex !important;
@@ -13736,28 +12959,30 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .global-header.room-context .room-favorites-title > *,
-      .global-header.room-context .room-favorites-title .mobile-domain-title-copy,
-      .global-header.room-context .room-favorites-title .mobile-domain-title-label,
-      .global-header.room-context .room-favorites-title .mobile-domain-count {
+.global-header.room-context .room-favorites-title .mobile-domain-title-copy,
+.global-header.room-context .room-favorites-title .mobile-domain-title-label,
+.global-header.room-context .room-favorites-title .mobile-domain-count{
         margin-top: 0 !important;
         margin-bottom: 0 !important;
         align-self: center !important;
         line-height: 1 !important;
       }
 
-      .global-header.room-context .room-favorites-title .mobile-domain-leading-chevron {
+      .global-header.room-context .room-favorites-title .mobile-domain-leading-chevron{
         transform: translateY(0) !important;
       }
 
-      .global-header.room-context .room-favorites-title .room-domain-icon {
+      .global-header.room-context .room-favorites-title .room-domain-icon{
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
         transform: translateY(0) !important;
       }
 
-      /* Home sidebar item: no photo-like icon tile, stronger global distinction, readable selection. */
-      .sidebar .area-button.home-button .area-icon {
+      /* Home sidebar item: no photo-like icon tile,
+stronger global distinction,
+readable selection. */
+      .sidebar .area-button.home-button .area-icon{
         width: 32px !important;
         height: 32px !important;
         border: 0 !important;
@@ -13766,33 +12991,34 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow: none !important;
       }
 
-      .sidebar .area-button.home-button .area-icon ha-icon {
+      .sidebar .area-button.home-button .area-icon ha-icon{
         --mdc-icon-size: 25px !important;
         color: var(--primary-color) !important;
       }
 
-      .sidebar .area-button.home-button {
+      .sidebar .area-button.home-button{
         background: color-mix(in srgb, var(--primary-color) 7%, var(--card-background-color)) !important;
         border-color: color-mix(in srgb, var(--primary-color) 24%, var(--divider-color)) !important;
       }
 
-      .sidebar .area-button.home-button.selected {
+      .sidebar .area-button.home-button.selected{
         color: var(--primary-text-color) !important;
         background: color-mix(in srgb, var(--primary-color) 18%, var(--card-background-color)) !important;
         border-color: color-mix(in srgb, var(--primary-color) 42%, var(--divider-color)) !important;
       }
 
       .sidebar .area-button.home-button.selected .area-name,
-      .sidebar .area-button.home-button.selected .area-menu-chevron {
+.sidebar .area-button.home-button.selected .area-menu-chevron{
         color: var(--primary-text-color) !important;
       }
 
-      .sidebar .area-button.home-button.selected .area-icon ha-icon {
+      .sidebar .area-button.home-button.selected .area-icon ha-icon{
         color: var(--primary-color) !important;
       }
 
-      /* Status counts match room badges: near-circle, never pill-shaped for 1–2 digits. */
-      .home-status-card .status-card-badge {
+      /* Status counts match room badges: near-circle,
+never pill-shaped for 1–2 digits. */
+      .home-status-card .status-card-badge{
         min-width: 20px !important;
         width: 20px !important;
         height: 20px !important;
@@ -13802,18 +13028,18 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     /* Richer power dialog mirrors the Devices > Energy information density. */
-    .house-power-dialog {
+    .house-power-dialog{
       width: min(900px, calc(100vw - 32px));
     }
 
-    .house-power-dialog-overview {
+    .house-power-dialog-overview{
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px;
       margin-bottom: 12px;
     }
 
-    .house-power-dialog-overview-card {
+    .house-power-dialog-overview-card{
       min-width: 0;
       padding: 13px;
       border-radius: 11px;
@@ -13823,14 +13049,14 @@ export class DwainsLayoutCard extends LitElement {
         0 8px 22px rgba(15, 23, 42, 0.04);
     }
 
-    .house-power-dialog-overview-head {
+    .house-power-dialog-overview-head{
       display: grid;
       grid-template-columns: 38px minmax(0, 1fr) auto;
       align-items: center;
       gap: 9px;
     }
 
-    .house-power-dialog-overview-icon {
+    .house-power-dialog-overview-icon{
       width: 38px;
       height: 38px;
       display: inline-flex;
@@ -13841,12 +13067,12 @@ export class DwainsLayoutCard extends LitElement {
       background: color-mix(in srgb, #d88e20 10%, transparent);
     }
 
-    .house-power-dialog-overview-icon ha-icon { --mdc-icon-size: 21px; }
-    .house-power-dialog-overview-head strong { display: block; font-size: 14px; font-weight: 850; }
-    .house-power-dialog-overview-head small { display: block; margin-top: 3px; color: var(--secondary-text-color); font-size: 11px; font-weight: 700; }
-    .house-power-dialog-overview-head b { font-size: 20px; font-weight: 950; white-space: nowrap; }
+    .house-power-dialog-overview-icon ha-icon{ --mdc-icon-size: 21px; }
+    .house-power-dialog-overview-head strong{ display: block; font-size: 14px; font-weight: 850; }
+    .house-power-dialog-overview-head small{ display: block; margin-top: 3px; color: var(--secondary-text-color); font-size: 11px; font-weight: 700; }
+    .house-power-dialog-overview-head b{ font-size: 20px; font-weight: 950; white-space: nowrap; }
 
-    .house-power-statistics-card {
+    .house-power-statistics-card{
       display: block;
       min-height: 132px;
       margin-top: 10px;
@@ -13859,13 +13085,13 @@ export class DwainsLayoutCard extends LitElement {
       --ha-card-border-radius: 10px;
     }
 
-    .house-power-dialog-top-entities {
+    .house-power-dialog-top-entities{
       margin-top: 10px;
       display: grid;
       gap: 5px;
     }
 
-    .house-power-dialog-top-entities button {
+    .house-power-dialog-top-entities button{
       min-height: 30px;
       padding: 0 9px;
       border: 0;
@@ -13880,7 +13106,7 @@ export class DwainsLayoutCard extends LitElement {
       cursor: pointer;
     }
 
-    .house-power-dialog-entity.detailed {
+    .house-power-dialog-entity.detailed{
       display: grid;
       grid-template-columns: 32px minmax(0, 1fr) auto;
       align-items: center;
@@ -13889,7 +13115,7 @@ export class DwainsLayoutCard extends LitElement {
       padding: 5px 6px;
     }
 
-    .house-power-dialog-entity-icon {
+    .house-power-dialog-entity-icon{
       width: 32px;
       height: 32px;
       display: inline-flex;
@@ -13900,15 +13126,15 @@ export class DwainsLayoutCard extends LitElement {
       background: color-mix(in srgb, #d88e20 9%, transparent);
     }
 
-    .house-power-dialog-entity-icon ha-icon { --mdc-icon-size: 17px; }
+    .house-power-dialog-entity-icon ha-icon{ --mdc-icon-size: 17px; }
 
-    .house-power-dialog-entity-copy {
+    .house-power-dialog-entity-copy{
       min-width: 0;
       display: grid;
       gap: 2px;
     }
 
-    .house-power-dialog-entity-copy > strong {
+    .house-power-dialog-entity-copy > strong{
       min-width: 0;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -13916,12 +13142,12 @@ export class DwainsLayoutCard extends LitElement {
       font-size: 12px;
     }
 
-    .house-power-dialog-entity-copy > small {
+    .house-power-dialog-entity-copy > small{
       color: var(--secondary-text-color);
       font-size: 10px;
     }
 
-    .house-power-dialog-entity-bar {
+    .house-power-dialog-entity-bar{
       position: relative;
       height: 3px;
       overflow: hidden;
@@ -13929,7 +13155,7 @@ export class DwainsLayoutCard extends LitElement {
       background: color-mix(in srgb, #d88e20 10%, var(--secondary-background-color));
     }
 
-    .house-power-dialog-entity-bar span {
+    .house-power-dialog-entity-bar span{
       position: absolute;
       inset: 0 auto 0 0;
       width: var(--entity-power-width, 0%);
@@ -13938,46 +13164,46 @@ export class DwainsLayoutCard extends LitElement {
       background: #d88e20;
     }
 
-    .house-power-dialog-entity.detailed > b {
+    .house-power-dialog-entity.detailed > b{
       font-size: 12px;
       white-space: nowrap;
     }
 
     @media (max-width: 1100px) and (min-width: 769px) {
       .home-status-primary-grid,
-      .favorites-grid,
-      .home-summary-list {
+.favorites-grid,
+.home-summary-list{
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
-      .home-status-secondary-grid {
+      .home-status-secondary-grid{
         grid-template-columns: repeat(4, minmax(0, 1fr));
       }
     }
 
     @media (max-width: 768px) {
       .home-status-primary-grid,
-      .home-status-secondary-grid {
+.home-status-secondary-grid{
         display: contents;
       }
 
-      .home-status-stack {
+      .home-status-stack{
         display: contents;
       }
 
-      .house-power-dialog-overview {
+      .house-power-dialog-overview{
         grid-template-columns: 1fr;
       }
     }
 
     /* Compact Home Favorites and clearer sidebar Home state. */
     @media (min-width: 769px) {
-      .home-favorites-section .favorites-grid {
+      .home-favorites-section .favorites-grid{
         grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
         gap: 10px !important;
       }
 
-      .home-favorites-section .favorite-card-wrapper {
+      .home-favorites-section .favorite-card-wrapper{
         min-height: 81px !important;
         height: 81px !important;
         padding: 9px 10px !important;
@@ -13988,18 +13214,18 @@ export class DwainsLayoutCard extends LitElement {
         gap: 9px !important;
       }
 
-      .home-favorites-section .favorite-icon {
+      .home-favorites-section .favorite-icon{
         width: 38px !important;
         height: 38px !important;
         margin: 0 !important;
         align-self: center !important;
       }
 
-      .home-favorites-section .favorite-icon ha-icon {
+      .home-favorites-section .favorite-icon ha-icon{
         --mdc-icon-size: 21px !important;
       }
 
-      .home-favorites-section .favorite-body {
+      .home-favorites-section .favorite-body{
         min-width: 0;
         display: flex !important;
         flex-direction: column;
@@ -14007,20 +13233,20 @@ export class DwainsLayoutCard extends LitElement {
         gap: 3px;
       }
 
-      .home-favorites-section .favorite-name {
+      .home-favorites-section .favorite-name{
         margin: 0 !important;
         font-size: 13px !important;
         line-height: 1.05 !important;
         -webkit-line-clamp: 1 !important;
       }
 
-      .home-favorites-section .favorite-area {
+      .home-favorites-section .favorite-area{
         margin: 0 !important;
         font-size: 9px !important;
         line-height: 1 !important;
       }
 
-      .home-favorites-section .favorite-end {
+      .home-favorites-section .favorite-end{
         min-width: 48px;
         height: 100%;
         display: flex;
@@ -14030,14 +13256,14 @@ export class DwainsLayoutCard extends LitElement {
         gap: 4px;
       }
 
-      .home-favorites-section .favorite-quick-action {
+      .home-favorites-section .favorite-quick-action{
         width: 38px !important;
         height: 22px !important;
         flex: 0 0 auto;
       }
 
       .home-favorites-section .favorite-end-state,
-      .home-favorites-section .favorite-info-state {
+.home-favorites-section .favorite-info-state{
         max-width: 76px;
         color: var(--secondary-text-color);
         font-size: 9px;
@@ -14049,17 +13275,17 @@ export class DwainsLayoutCard extends LitElement {
         white-space: nowrap;
       }
 
-      .home-favorites-section .favorite-info-state {
+      .home-favorites-section .favorite-info-state{
         font-size: 12px;
         color: var(--primary-text-color);
       }
 
-      .home-favorites-section .favorite-state {
+      .home-favorites-section .favorite-state{
         display: none !important;
       }
 
       /* Unselected Home must not resemble a selected room. */
-      .sidebar .area-button.home-button {
+      .sidebar .area-button.home-button{
         background: var(--card-background-color) !important;
         border-color: color-mix(in srgb, var(--primary-color) 16%, var(--divider-color)) !important;
         box-shadow:
@@ -14067,7 +13293,7 @@ export class DwainsLayoutCard extends LitElement {
           0 5px 12px rgba(15, 23, 42, 0.04) !important;
       }
 
-      .sidebar .area-button.home-button.selected {
+      .sidebar .area-button.home-button.selected{
         background: color-mix(in srgb, var(--primary-color) 18%, var(--card-background-color)) !important;
         border-color: color-mix(in srgb, var(--primary-color) 46%, var(--divider-color)) !important;
         box-shadow:
@@ -14076,25 +13302,25 @@ export class DwainsLayoutCard extends LitElement {
           0 8px 18px color-mix(in srgb, var(--primary-color) 10%, transparent) !important;
       }
 
-      .sidebar .room-area-button.selected {
+      .sidebar .room-area-button.selected{
         background: color-mix(in srgb, var(--card-background-color) 94%, var(--primary-color) 6%) !important;
       }
     }
 
     @media (max-width: 1250px) and (min-width: 769px) {
-      .home-favorites-section .favorites-grid {
+      .home-favorites-section .favorites-grid{
         grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
       }
     }
 
-    .house-power-dialog-actions {
+    .house-power-dialog-actions{
       display: flex;
       align-items: center;
       gap: 8px;
       flex: 0 0 auto;
     }
 
-    .house-power-dialog-energy-link {
+    .house-power-dialog-energy-link{
       min-height: 36px;
       padding: 0 11px;
       border: 0;
@@ -14112,20 +13338,20 @@ export class DwainsLayoutCard extends LitElement {
       cursor: pointer;
     }
 
-    .house-power-dialog-energy-link:hover {
+    .house-power-dialog-energy-link:hover{
       background: color-mix(in srgb, #d88e20 15%, var(--card-background-color));
     }
 
-    .house-power-dialog-energy-link ha-icon {
+    .house-power-dialog-energy-link ha-icon{
       --mdc-icon-size: 17px;
     }
 
     @media (max-width: 768px) {
-      .house-power-dialog-energy-link span {
+      .house-power-dialog-energy-link span{
         display: none;
       }
 
-      .house-power-dialog-energy-link {
+      .house-power-dialog-energy-link{
         width: 36px;
         padding: 0;
       }
@@ -14133,23 +13359,23 @@ export class DwainsLayoutCard extends LitElement {
 
     /* Final Home polish: compact Favorites, clear Home state, exact room-Favorites centering. */
     @media (min-width: 769px) {
-      .home-favorites-section .favorite-card-wrapper {
+      .home-favorites-section .favorite-card-wrapper{
         height: 84px !important;
         min-height: 84px !important;
         grid-template-columns: 34px minmax(0, 1fr) 46px !important;
         gap: 8px !important;
         padding: 9px 10px !important;
       }
-      .home-favorites-section .favorite-icon {
+      .home-favorites-section .favorite-icon{
         width: 34px !important;
         height: 34px !important;
       }
-      .home-favorites-section .favorite-icon ha-icon { --mdc-icon-size: 19px !important; }
-      .home-favorites-section .favorite-body {
+      .home-favorites-section .favorite-icon ha-icon{ --mdc-icon-size: 19px !important; }
+      .home-favorites-section .favorite-body{
         gap: 2px !important;
         overflow: visible !important;
       }
-      .home-favorites-section .favorite-name {
+      .home-favorites-section .favorite-name{
         display: -webkit-box !important;
         overflow: hidden !important;
         text-overflow: clip !important;
@@ -14160,27 +13386,27 @@ export class DwainsLayoutCard extends LitElement {
         font-size: 12px !important;
         line-height: 1.08 !important;
       }
-      .home-favorites-section .favorite-area {
+      .home-favorites-section .favorite-area{
         overflow: hidden !important;
         text-overflow: clip !important;
         white-space: nowrap !important;
       }
-      .home-favorites-section .favorite-end {
+      .home-favorites-section .favorite-end{
         width: 46px !important;
         min-width: 46px !important;
         align-items: center !important;
         justify-content: center !important;
         gap: 3px !important;
       }
-      .home-favorites-section .favorite-quick-action { margin: 0 auto !important; }
-      .home-favorites-section .favorite-end-state {
+      .home-favorites-section .favorite-quick-action{ margin: 0 auto !important; }
+      .home-favorites-section .favorite-end-state{
         width: 100% !important;
         max-width: none !important;
         text-align: center !important;
         font-size: 9px !important;
         line-height: 1 !important;
       }
-      .home-favorites-section .favorite-info-state {
+      .home-favorites-section .favorite-info-state{
         width: 100% !important;
         max-width: none !important;
         text-align: center !important;
@@ -14190,29 +13416,29 @@ export class DwainsLayoutCard extends LitElement {
         line-height: 1 !important;
       }
 
-      .sidebar .area-button.home-button {
+      .sidebar .area-button.home-button{
         background: color-mix(in srgb, var(--primary-color) 7%, var(--card-background-color)) !important;
         border: 1px solid color-mix(in srgb, var(--primary-color) 20%, var(--divider-color)) !important;
         box-shadow: 0 5px 12px rgba(15, 23, 42, 0.045) !important;
       }
-      .sidebar .area-button.home-button.selected {
+      .sidebar .area-button.home-button.selected{
         background: color-mix(in srgb, var(--primary-color) 18%, var(--card-background-color)) !important;
         border-color: color-mix(in srgb, var(--primary-color) 48%, var(--divider-color)) !important;
         box-shadow:
           inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 10%, transparent),
           0 8px 18px color-mix(in srgb, var(--primary-color) 11%, transparent) !important;
       }
-      .sidebar .room-area-button.selected {
+      .sidebar .room-area-button.selected{
         background: color-mix(in srgb, var(--primary-color) 7%, var(--card-background-color)) !important;
       }
     }
 
     .room-favorites-title,
-    .room-favorites-title .mobile-domain-leading-chevron,
-    .room-favorites-title .room-domain-icon,
-    .room-favorites-title .mobile-domain-title-copy,
-    .room-favorites-title .mobile-domain-title-label,
-    .room-favorites-title .mobile-domain-count {
+.room-favorites-title .mobile-domain-leading-chevron,
+.room-favorites-title .room-domain-icon,
+.room-favorites-title .mobile-domain-title-copy,
+.room-favorites-title .mobile-domain-title-label,
+.room-favorites-title .mobile-domain-count{
       height: 24px !important;
       min-height: 24px !important;
       margin: 0 !important;
@@ -14224,34 +13450,34 @@ export class DwainsLayoutCard extends LitElement {
       vertical-align: middle !important;
       transform: none !important;
     }
-    .room-favorites-title {
+    .room-favorites-title{
       gap: 6px !important;
     }
-    .room-favorites-title .mobile-domain-title-copy {
+    .room-favorites-title .mobile-domain-title-copy{
       gap: 5px !important;
     }
 
-    .house-power-dialog-title-wrap {
+    .house-power-dialog-title-wrap{
       display: flex !important;
       align-items: center !important;
       gap: 9px !important;
       flex-wrap: wrap;
       min-width: 0;
     }
-    .house-power-dialog-energy-link {
+    .house-power-dialog-energy-link{
       min-height: 30px !important;
       padding: 0 10px !important;
       margin-left: 2px !important;
       font-size: 11px !important;
     }
     @media (max-width: 768px) {
-      .house-power-dialog-energy-link span { display: inline !important; }
-      .house-power-dialog-energy-link { width: auto !important; }
+      .house-power-dialog-energy-link span{ display: inline !important; }
+      .house-power-dialog-energy-link{ width: auto !important; }
     }
 
     /* Final visual cleanup for Home favorites and room Favorites header. */
     @media (min-width: 769px) {
-      .home-favorites-section .favorite-card-wrapper {
+      .home-favorites-section .favorite-card-wrapper{
         min-height: 84px !important;
         height: 84px !important;
         padding: 9px 10px !important;
@@ -14260,13 +13486,13 @@ export class DwainsLayoutCard extends LitElement {
         gap: 9px !important;
       }
 
-      .home-favorites-section .favorite-body {
+      .home-favorites-section .favorite-body{
         min-width: 0 !important;
         align-self: center !important;
         gap: 3px !important;
       }
 
-      .home-favorites-section .favorite-name {
+      .home-favorites-section .favorite-name{
         max-width: 100% !important;
         margin: 0 !important;
         display: -webkit-box !important;
@@ -14280,7 +13506,7 @@ export class DwainsLayoutCard extends LitElement {
         line-height: 1.08 !important;
       }
 
-      .home-favorites-section .favorite-area {
+      .home-favorites-section .favorite-area{
         max-width: 100% !important;
         overflow: hidden !important;
         text-overflow: clip !important;
@@ -14289,7 +13515,7 @@ export class DwainsLayoutCard extends LitElement {
         line-height: 1.05 !important;
       }
 
-      .home-favorites-section .favorite-end {
+      .home-favorites-section .favorite-end{
         width: 50px !important;
         min-width: 50px !important;
         height: 48px !important;
@@ -14300,13 +13526,13 @@ export class DwainsLayoutCard extends LitElement {
         gap: 2px !important;
       }
 
-      .home-favorites-section .favorite-quick-action {
+      .home-favorites-section .favorite-quick-action{
         width: 40px !important;
         height: 24px !important;
         margin: 0 !important;
       }
 
-      .home-favorites-section .favorite-end-state {
+      .home-favorites-section .favorite-end-state{
         width: 100% !important;
         max-width: none !important;
         margin: 0 !important;
@@ -14319,7 +13545,7 @@ export class DwainsLayoutCard extends LitElement {
         white-space: nowrap !important;
       }
 
-      .home-favorites-section .favorite-info-state {
+      .home-favorites-section .favorite-info-state{
         width: 100% !important;
         max-width: none !important;
         height: 48px !important;
@@ -14335,13 +13561,13 @@ export class DwainsLayoutCard extends LitElement {
         white-space: nowrap !important;
       }
 
-      .sidebar .area-button.home-button {
+      .sidebar .area-button.home-button{
         background: color-mix(in srgb, var(--secondary-background-color) 72%, var(--card-background-color)) !important;
         border: 1px solid color-mix(in srgb, var(--primary-text-color) 10%, var(--divider-color)) !important;
         box-shadow: 0 5px 12px rgba(15, 23, 42, 0.05) !important;
       }
 
-      .sidebar .area-button.home-button.selected {
+      .sidebar .area-button.home-button.selected{
         background: color-mix(in srgb, var(--primary-color) 14%, var(--card-background-color)) !important;
         border-color: color-mix(in srgb, var(--primary-color) 38%, var(--divider-color)) !important;
         box-shadow:
@@ -14350,7 +13576,7 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
-    .room-favorites-header {
+    .room-favorites-header{
       min-height: 38px !important;
       height: 38px !important;
       padding-top: 0 !important;
@@ -14359,7 +13585,7 @@ export class DwainsLayoutCard extends LitElement {
       align-items: center !important;
     }
 
-    .room-favorites-title {
+    .room-favorites-title{
       min-height: 20px !important;
       height: 20px !important;
       display: inline-flex !important;
@@ -14371,7 +13597,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .room-favorites-title .mobile-domain-leading-chevron,
-    .room-favorites-title .room-domain-icon {
+.room-favorites-title .room-domain-icon{
       width: 18px !important;
       height: 18px !important;
       min-height: 18px !important;
@@ -14384,15 +13610,15 @@ export class DwainsLayoutCard extends LitElement {
       transform: none !important;
     }
 
-    .room-favorites-title .mobile-domain-leading-chevron {
+    .room-favorites-title .mobile-domain-leading-chevron{
       --mdc-icon-size: 16px !important;
     }
 
-    .room-favorites-title .room-favorites-icon ha-icon {
+    .room-favorites-title .room-favorites-icon ha-icon{
       --mdc-icon-size: 18px !important;
     }
 
-    .room-favorites-title .mobile-domain-title-copy {
+    .room-favorites-title .mobile-domain-title-copy{
       min-height: 20px !important;
       height: 20px !important;
       display: inline-flex !important;
@@ -14403,7 +13629,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .room-favorites-title .mobile-domain-title-label,
-    .room-favorites-title .mobile-domain-count {
+.room-favorites-title .mobile-domain-count{
       min-height: 20px !important;
       height: 20px !important;
       display: inline-flex !important;
@@ -14414,23 +13640,23 @@ export class DwainsLayoutCard extends LitElement {
       transform: translateY(0.5px) !important;
     }
 
-    .room-favorites-title .mobile-domain-title-label {
+    .room-favorites-title .mobile-domain-title-label{
       font-size: 15px !important;
     }
 
-    .room-favorites-title .mobile-domain-count {
+    .room-favorites-title .mobile-domain-count{
       font-size: 10px !important;
     }
 
 
     /* 2026-09 Home polish: readable favorites, clear Home state, exact Favorites header alignment. */
     @media (min-width: 769px) {
-      .home-favorites-section .favorites-grid {
+      .home-favorites-section .favorites-grid{
         grid-template-columns: repeat(auto-fit, minmax(245px, 1fr)) !important;
         gap: 10px !important;
       }
 
-      .home-favorites-section .favorite-card-wrapper {
+      .home-favorites-section .favorite-card-wrapper{
         min-height: 86px !important;
         height: auto !important;
         padding: 10px 12px !important;
@@ -14440,14 +13666,14 @@ export class DwainsLayoutCard extends LitElement {
         gap: 10px !important;
       }
 
-      .home-favorites-section .favorite-icon {
+      .home-favorites-section .favorite-icon{
         width: 40px !important;
         height: 40px !important;
         margin: 0 !important;
         align-self: center !important;
       }
 
-      .home-favorites-section .favorite-body {
+      .home-favorites-section .favorite-body{
         min-width: 0 !important;
         overflow: visible !important;
         align-self: center !important;
@@ -14455,7 +13681,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .home-favorites-section .favorite-name,
-      .home-favorites-section .favorite-area {
+.home-favorites-section .favorite-area{
         max-width: 100% !important;
         display: block !important;
         overflow: visible !important;
@@ -14466,19 +13692,19 @@ export class DwainsLayoutCard extends LitElement {
         -webkit-box-orient: initial !important;
       }
 
-      .home-favorites-section .favorite-name {
+      .home-favorites-section .favorite-name{
         margin: 0 !important;
         font-size: 13px !important;
         line-height: 1.12 !important;
       }
 
-      .home-favorites-section .favorite-area {
+      .home-favorites-section .favorite-area{
         margin: 0 !important;
         font-size: 10px !important;
         line-height: 1.12 !important;
       }
 
-      .home-favorites-section .favorite-end {
+      .home-favorites-section .favorite-end{
         width: auto !important;
         min-width: 0 !important;
         height: auto !important;
@@ -14489,7 +13715,7 @@ export class DwainsLayoutCard extends LitElement {
         gap: 8px !important;
       }
 
-      .home-favorites-section .favorite-end-state {
+      .home-favorites-section .favorite-end-state{
         width: auto !important;
         max-width: none !important;
         margin: 0 !important;
@@ -14502,14 +13728,14 @@ export class DwainsLayoutCard extends LitElement {
         white-space: nowrap !important;
       }
 
-      .home-favorites-section .favorite-quick-action {
+      .home-favorites-section .favorite-quick-action{
         width: 40px !important;
         height: 24px !important;
         margin: 0 !important;
         flex: 0 0 auto !important;
       }
 
-      .home-favorites-section .favorite-info-state {
+      .home-favorites-section .favorite-info-state{
         width: auto !important;
         max-width: none !important;
         height: auto !important;
@@ -14523,13 +13749,13 @@ export class DwainsLayoutCard extends LitElement {
         white-space: nowrap !important;
       }
 
-      .sidebar .area-button.home-button {
+      .sidebar .area-button.home-button{
         background: color-mix(in srgb, var(--primary-color) 9%, var(--secondary-background-color)) !important;
         border: 1px solid color-mix(in srgb, var(--primary-color) 22%, var(--divider-color)) !important;
         box-shadow: 0 5px 12px rgba(15, 23, 42, 0.045) !important;
       }
 
-      .sidebar .area-button.home-button.selected {
+      .sidebar .area-button.home-button.selected{
         background: color-mix(in srgb, var(--primary-color) 20%, var(--card-background-color)) !important;
         border-color: color-mix(in srgb, var(--primary-color) 46%, var(--divider-color)) !important;
         box-shadow:
@@ -14538,7 +13764,7 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
-    .room-favorites-header {
+    .room-favorites-header{
       min-height: 40px !important;
       height: 40px !important;
       padding-top: 0 !important;
@@ -14548,7 +13774,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .room-favorites-title,
-    .room-favorites-title .mobile-domain-title-copy {
+.room-favorites-title .mobile-domain-title-copy{
       min-height: 0 !important;
       height: auto !important;
       margin: 0 !important;
@@ -14560,16 +13786,16 @@ export class DwainsLayoutCard extends LitElement {
       transform: none !important;
     }
 
-    .room-favorites-title {
+    .room-favorites-title{
       gap: 6px !important;
     }
 
-    .room-favorites-title .mobile-domain-title-copy {
+    .room-favorites-title .mobile-domain-title-copy{
       gap: 5px !important;
     }
 
     .room-favorites-title .mobile-domain-leading-chevron,
-    .room-favorites-title .room-domain-icon {
+.room-favorites-title .room-domain-icon{
       width: 18px !important;
       height: 18px !important;
       min-height: 18px !important;
@@ -14584,7 +13810,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .room-favorites-title .mobile-domain-title-label,
-    .room-favorites-title .mobile-domain-count {
+.room-favorites-title .mobile-domain-count{
       min-height: 0 !important;
       height: auto !important;
       margin: 0 !important;
@@ -14601,13 +13827,13 @@ export class DwainsLayoutCard extends LitElement {
     /* 2026-09-30 final entity-card system: compact favorites + four-column room controls. */
     @media (min-width: 769px) {
       .home-favorites-section .favorites-grid,
-      .room-favorites-content .favorites-grid {
+.room-favorites-content .favorites-grid{
         grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
         gap: 8px !important;
       }
 
       .home-favorites-section .favorite-card-wrapper,
-      .room-favorites-content .favorite-card-wrapper {
+.room-favorites-content .favorite-card-wrapper{
         width: 100% !important;
         height: 58px !important;
         min-height: 58px !important;
@@ -14623,7 +13849,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .home-favorites-section .favorite-icon,
-      .room-favorites-content .favorite-icon {
+.room-favorites-content .favorite-icon{
         width: 36px !important;
         height: 36px !important;
         margin: 0 !important;
@@ -14632,12 +13858,12 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .home-favorites-section .favorite-icon ha-icon,
-      .room-favorites-content .favorite-icon ha-icon {
+.room-favorites-content .favorite-icon ha-icon{
         --mdc-icon-size: 19px !important;
       }
 
       .home-favorites-section .favorite-body,
-      .room-favorites-content .favorite-body {
+.room-favorites-content .favorite-body{
         min-width: 0 !important;
         height: 36px !important;
         align-self: center !important;
@@ -14649,7 +13875,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .home-favorites-section .favorite-name,
-      .room-favorites-content .favorite-name {
+.room-favorites-content .favorite-name{
         min-width: 0 !important;
         width: 100% !important;
         margin: 0 !important;
@@ -14664,7 +13890,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .home-favorites-section .favorite-meta,
-      .room-favorites-content .favorite-meta {
+.room-favorites-content .favorite-meta{
         min-width: 0 !important;
         display: flex !important;
         align-items: center !important;
@@ -14677,7 +13903,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .home-favorites-section .favorite-area,
-      .room-favorites-content .favorite-area {
+.room-favorites-content .favorite-area{
         min-width: 0 !important;
         margin: 0 !important;
         overflow: hidden !important;
@@ -14689,32 +13915,32 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .home-favorites-section .favorite-meta-separator,
-      .room-favorites-content .favorite-meta-separator {
+.room-favorites-content .favorite-meta-separator{
         flex: 0 0 auto !important;
         color: color-mix(in srgb, var(--secondary-text-color) 72%, transparent) !important;
       }
 
       .home-favorites-section .favorite-inline-state,
-      .room-favorites-content .favorite-inline-state {
+.room-favorites-content .favorite-inline-state{
         flex: 0 0 auto !important;
         color: var(--favorite-color) !important;
         font-weight: 850 !important;
       }
 
       .home-favorites-section .favorite-card-wrapper.is-off .favorite-inline-state,
-      .home-favorites-section .favorite-card-wrapper.is-idle .favorite-inline-state,
-      .room-favorites-content .favorite-card-wrapper.is-off .favorite-inline-state,
-      .room-favorites-content .favorite-card-wrapper.is-idle .favorite-inline-state {
+.home-favorites-section .favorite-card-wrapper.is-idle .favorite-inline-state,
+.room-favorites-content .favorite-card-wrapper.is-off .favorite-inline-state,
+.room-favorites-content .favorite-card-wrapper.is-idle .favorite-inline-state{
         color: var(--secondary-text-color) !important;
       }
 
       .home-favorites-section .favorite-card-wrapper.favorite-cover,
-      .room-favorites-content .favorite-card-wrapper.favorite-cover {
+.room-favorites-content .favorite-card-wrapper.favorite-cover{
         --favorite-color: #D66A1F !important;
       }
 
       .home-favorites-section .favorite-end,
-      .room-favorites-content .favorite-end {
+.room-favorites-content .favorite-end{
         width: auto !important;
         min-width: 0 !important;
         height: 36px !important;
@@ -14727,13 +13953,13 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .home-favorites-section .favorite-quick-action,
-      .room-favorites-content .favorite-quick-action {
+.room-favorites-content .favorite-quick-action{
         width: 38px !important;
         height: 22px !important;
         margin: 0 !important;
       }
 
-      .favorite-cover-actions {
+      .favorite-cover-actions{
         min-height: 30px;
         padding: 2px;
         display: inline-flex;
@@ -14746,7 +13972,7 @@ export class DwainsLayoutCard extends LitElement {
           0 4px 10px rgba(15, 23, 42, 0.06);
       }
 
-      .favorite-cover-action {
+      .favorite-cover-action{
         width: 25px;
         height: 25px;
         padding: 0;
@@ -14760,93 +13986,14 @@ export class DwainsLayoutCard extends LitElement {
         cursor: pointer;
       }
 
-      .favorite-cover-action ha-icon { --mdc-icon-size: 15px; }
+      .favorite-cover-action ha-icon{ --mdc-icon-size: 15px; }
 
-      .favorite-cover-action.active {
+      .favorite-cover-action.active{
         color: #fff;
         background: var(--favorite-color);
       }
 
-      .room-ui-v2 .mobile-entity-rail,
-      .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-rail {
-        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-        gap: 8px !important;
-      }
-
-      .room-ui-v2 .mobile-entity-card,
-      .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-card {
-        min-height: 62px !important;
-        padding: 8px 10px !important;
-        justify-content: center !important;
-        overflow: hidden !important;
-      }
-
-      .room-ui-v2 .mobile-entity-card.has-light-controls,
-      .room-ui-v2 .mobile-entity-card.has-cover-position {
-        min-height: 104px !important;
-        justify-content: flex-start !important;
-      }
-
-      .room-ui-v2 .mobile-entity-main {
-        grid-template-columns: 36px minmax(0, 1fr) auto !important;
-        gap: 9px !important;
-        align-items: center !important;
-      }
-
-      .room-ui-v2 .mobile-entity-content {
-        min-width: 0 !important;
-        height: 36px !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: center !important;
-        gap: 3px !important;
-        overflow: hidden !important;
-      }
-
-      .room-ui-v2 .mobile-entity-name {
-        min-width: 0 !important;
-        width: 100% !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        white-space: nowrap !important;
-        font-size: 12px !important;
-        line-height: 1.08 !important;
-        letter-spacing: -0.1px !important;
-      }
-
-      .room-ui-v2 .mobile-entity-state {
-        margin: 0 !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        white-space: nowrap !important;
-        font-size: 10.5px !important;
-        font-weight: 800 !important;
-        line-height: 1 !important;
-      }
-
-      .room-ui-v2 .mobile-entity-right {
-        min-width: max-content !important;
-        max-width: 86px !important;
-        margin-left: 4px !important;
-        align-self: center !important;
-      }
-
-      .room-ui-v2 .mobile-entity-cover {
-        --entity-color: #D66A1F !important;
-      }
-
-      .room-ui-v2 .mobile-cover-actions {
-        min-height: 30px !important;
-        padding: 2px !important;
-        gap: 2px !important;
-      }
-
-      .room-ui-v2 .mobile-cover-action {
-        width: 25px !important;
-        height: 25px !important;
-      }
-
-      .mobile-light-control-row {
+      .mobile-light-control-row{
         width: 100%;
         min-width: 0;
         margin-top: 8px;
@@ -14856,13 +14003,13 @@ export class DwainsLayoutCard extends LitElement {
         gap: 8px;
       }
 
-      .mobile-light-mode-buttons {
+      .mobile-light-mode-buttons{
         display: inline-flex;
         align-items: center;
         gap: 4px;
       }
 
-      .mobile-light-mode-button {
+      .mobile-light-mode-button{
         width: 28px;
         height: 28px;
         padding: 0;
@@ -14877,16 +14024,16 @@ export class DwainsLayoutCard extends LitElement {
         cursor: pointer;
       }
 
-      .mobile-light-mode-button ha-icon { --mdc-icon-size: 16px; }
+      .mobile-light-mode-button ha-icon{ --mdc-icon-size: 16px; }
 
-      .mobile-light-mode-button.active {
+      .mobile-light-mode-button.active{
         color: var(--entity-color);
         background: color-mix(in srgb, var(--entity-color) 15%, var(--card-background-color));
         box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--entity-color) 24%, transparent);
       }
 
       .mobile-light-control-slider,
-      .mobile-cover-position input[type="range"] {
+.mobile-cover-position input[type="range"]{
         appearance: none;
         width: 100%;
         height: 5px;
@@ -14898,15 +14045,15 @@ export class DwainsLayoutCard extends LitElement {
         cursor: pointer;
       }
 
-      .mobile-light-control-row.mode-brightness .mobile-light-control-slider {
+      .mobile-light-control-row.mode-brightness .mobile-light-control-slider{
         background: linear-gradient(90deg, #e1a129 0%, #f0bd45 100%);
       }
 
-      .mobile-light-control-row.mode-color_temp .mobile-light-control-slider {
+      .mobile-light-control-row.mode-color_temp .mobile-light-control-slider{
         background: linear-gradient(90deg, #f4a340 0%, #ffe4aa 43%, #d9ecff 66%, #7eb9ff 100%);
       }
 
-      .mobile-light-control-row.mode-color .mobile-light-control-slider {
+      .mobile-light-control-row.mode-color .mobile-light-control-slider{
         background: linear-gradient(
           90deg,
           #ff3b30 0%,
@@ -14922,7 +14069,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .mobile-light-control-slider::-webkit-slider-thumb,
-      .mobile-cover-position input[type="range"]::-webkit-slider-thumb {
+.mobile-cover-position input[type="range"]::-webkit-slider-thumb{
         appearance: none;
         width: 15px;
         height: 15px;
@@ -14933,7 +14080,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .mobile-light-control-slider::-moz-range-thumb,
-      .mobile-cover-position input[type="range"]::-moz-range-thumb {
+.mobile-cover-position input[type="range"]::-moz-range-thumb{
         width: 13px;
         height: 13px;
         border: 2px solid var(--entity-color);
@@ -14941,16 +14088,16 @@ export class DwainsLayoutCard extends LitElement {
         background: var(--card-background-color);
       }
 
-      .mobile-cover-position {
+      .mobile-cover-position{
         width: 100%;
         margin-top: 10px;
       }
 
-      .mobile-cover-position input[type="range"] {
+      .mobile-cover-position input[type="range"]{
         background: linear-gradient(90deg, #D66A1F 0%, #E98A3B 100%) !important;
       }
 
-      .mobile-entity-brightness {
+      .mobile-entity-brightness{
         display: none !important;
       }
     }
@@ -14960,126 +14107,120 @@ export class DwainsLayoutCard extends LitElement {
     @media (min-width: 769px) {
       /* Favorites: identical component in Home and room header; use every pixel for text. */
       .home-favorites-section .favorite-card-wrapper,
-      .header-favorites .favorite-card-wrapper,
-      .room-favorites-content .favorite-card-wrapper {
+.header-favorites .favorite-card-wrapper,
+.room-favorites-content .favorite-card-wrapper{
         grid-template-columns: 32px minmax(0, 1fr) auto !important;
         gap: 5px !important;
         padding: 6px 7px !important;
       }
 
       .home-favorites-section .favorite-icon,
-      .header-favorites .favorite-icon,
-      .room-favorites-content .favorite-icon {
+.header-favorites .favorite-icon,
+.room-favorites-content .favorite-icon{
         width: 32px !important;
         height: 32px !important;
       }
 
       .home-favorites-section .favorite-body,
-      .header-favorites .favorite-body,
-      .room-favorites-content .favorite-body {
+.header-favorites .favorite-body,
+.room-favorites-content .favorite-body{
         height: 32px !important;
         gap: 2px !important;
       }
 
       .home-favorites-section .favorite-name,
-      .header-favorites .favorite-name,
-      .room-favorites-content .favorite-name {
+.header-favorites .favorite-name,
+.room-favorites-content .favorite-name{
         font-size: 10px !important;
         letter-spacing: -0.2px !important;
       }
 
       .home-favorites-section .favorite-name.is-long,
-      .header-favorites .favorite-name.is-long,
-      .room-favorites-content .favorite-name.is-long {
+.header-favorites .favorite-name.is-long,
+.room-favorites-content .favorite-name.is-long{
         font-size: 9px !important;
         letter-spacing: -0.28px !important;
       }
 
       .home-favorites-section .favorite-name.is-very-long,
-      .header-favorites .favorite-name.is-very-long,
-      .room-favorites-content .favorite-name.is-very-long {
+.header-favorites .favorite-name.is-very-long,
+.room-favorites-content .favorite-name.is-very-long{
         font-size: 8px !important;
         letter-spacing: -0.32px !important;
       }
 
       .home-favorites-section .favorite-meta,
-      .header-favorites .favorite-meta,
-      .room-favorites-content .favorite-meta {
+.header-favorites .favorite-meta,
+.room-favorites-content .favorite-meta{
         font-size: 8.7px !important;
         gap: 2px !important;
       }
 
       .home-favorites-section .favorite-quick-action,
-      .header-favorites .favorite-quick-action,
-      .room-favorites-content .favorite-quick-action {
+.header-favorites .favorite-quick-action,
+.room-favorites-content .favorite-quick-action{
         width: 36px !important;
         height: 21px !important;
       }
 
       .home-favorites-section .favorite-end,
-      .header-favorites .favorite-end,
-      .room-favorites-content .favorite-end {
+.header-favorites .favorite-end,
+.room-favorites-content .favorite-end{
         height: 32px !important;
         margin-left: 2px !important;
       }
 
       .header-favorites .favorites-grid,
-      .room-favorites-content .favorites-grid {
+.room-favorites-content .favorites-grid{
         grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
         gap: 8px !important;
       }
 
-      /* Light controls: only rendered while ON. Keep cards compact and place icons after slider. */
-      .room-ui-v2 .mobile-entity-card.has-light-controls,
-      .room-ui-v2 .mobile-entity-card.has-cover-position {
-        min-height: 94px !important;
-        padding-bottom: 6px !important;
-      }
-
-      .mobile-light-control-row {
+      .mobile-light-control-row{
         margin-top: 6px !important;
         grid-template-columns: minmax(0, 1fr) auto !important;
         gap: 7px !important;
       }
 
-      .mobile-light-mode-buttons {
+      .mobile-light-mode-buttons{
         order: 2;
         gap: 3px !important;
       }
 
-      .mobile-light-control-slider {
+      .mobile-light-control-slider{
         order: 1;
       }
 
-      .mobile-light-mode-button {
+      .mobile-light-mode-button{
         width: 27px !important;
         height: 27px !important;
       }
 
       /* Slightly stronger sliders/thumbs for lights and covers. */
       .mobile-light-control-slider,
-      .mobile-cover-position input[type="range"] {
+.mobile-cover-position input[type="range"]{
         height: 6px !important;
       }
 
       .mobile-light-control-slider::-webkit-slider-thumb,
-      .mobile-cover-position input[type="range"]::-webkit-slider-thumb {
+.mobile-cover-position input[type="range"]::-webkit-slider-thumb{
         width: 16px !important;
         height: 16px !important;
       }
 
       .mobile-light-control-slider::-moz-range-thumb,
-      .mobile-cover-position input[type="range"]::-moz-range-thumb {
+.mobile-cover-position input[type="range"]::-moz-range-thumb{
         width: 14px !important;
         height: 14px !important;
       }
 
-      .mobile-cover-position {
+      .mobile-cover-position{
         margin-top: 7px !important;
       }
 
-      /* A cover percentage describes the open position, so fill from the left up to that value. */
-      .mobile-cover-position input[type="range"] {
+      /* A cover percentage describes the open position,
+so fill from the left up to that value. */
+      .mobile-cover-position input[type="range"]{
         background: linear-gradient(
           90deg,
           #D66A1F 0%,
@@ -15088,91 +14229,13 @@ export class DwainsLayoutCard extends LitElement {
           color-mix(in srgb, var(--primary-text-color) 13%, transparent) 100%
         ) !important;
       }
-
-      /* Select/input-select: keep the entity icon in its normal slot and the chevron inside the select. */
-      .room-ui-v2 .mobile-entity-card.has-inline-select {
-        min-height: 102px !important;
-        padding: 8px 10px 7px !important;
-        justify-content: flex-start !important;
-        gap: 6px !important;
-      }
-
-      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-main {
-        width: 100% !important;
-        align-items: center !important;
-      }
-
-      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-icon {
-        position: static !important;
-        inset: auto !important;
-        transform: none !important;
-        align-self: center !important;
-      }
-
-      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-content {
-        margin-top: 0 !important;
-        align-self: center !important;
-      }
-
-      .room-ui-v2 .mobile-entity-select {
-        position: relative !important;
-        width: 100% !important;
-        margin-top: 2px !important;
-      }
-
-      .room-ui-v2 .mobile-entity-select .mobile-select-chevron {
-        position: absolute !important;
-        top: 50% !important;
-        right: 11px !important;
-        left: auto !important;
-        bottom: auto !important;
-        margin: 0 !important;
-        transform: translateY(-50%) !important;
-        --mdc-icon-size: 16px !important;
-        pointer-events: none !important;
-      }
     }
 
 
     /* 2026-10-01 entity/favorites refinement: compact vertical rhythm and clean controls. */
     @media (min-width: 769px) {
-      /* Room entity cards: slightly larger content with symmetric 10px inner spacing. */
-      .room-ui-v2 .mobile-entity-card,
-      .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-card {
-        min-height: 60px !important;
-        padding: 10px !important;
-        box-sizing: border-box !important;
-      }
 
-      .room-ui-v2 .mobile-entity-main {
-        min-height: 38px !important;
-        align-items: center !important;
-      }
-
-      .room-ui-v2 .mobile-entity-icon {
-        width: 38px !important;
-        height: 38px !important;
-      }
-
-      .room-ui-v2 .mobile-entity-content {
-        height: 38px !important;
-      }
-
-      /* Expanded control cards: vertical spacing above and below the control row is equal. */
-      .room-ui-v2 .mobile-entity-card.has-light-controls,
-      .room-ui-v2 .mobile-entity-card.has-cover-position {
-        min-height: 0 !important;
-        height: auto !important;
-        padding: 8px 10px !important;
-        justify-content: flex-start !important;
-      }
-
-      .room-ui-v2 .mobile-entity-card.has-light-controls .mobile-entity-main,
-      .room-ui-v2 .mobile-entity-card.has-cover-position .mobile-entity-main {
-        min-height: 38px !important;
-      }
-
-      .mobile-light-control-row {
+      .mobile-light-control-row{
         margin-top: 8px !important;
         margin-bottom: 0 !important;
         min-height: 27px !important;
@@ -15180,101 +14243,66 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .mobile-light-control-slider,
-      .mobile-cover-position input[type="range"] {
+.mobile-cover-position input[type="range"]{
         height: 8px !important;
       }
 
       .mobile-light-control-slider::-webkit-slider-runnable-track,
-      .mobile-cover-position input[type="range"]::-webkit-slider-runnable-track {
+.mobile-cover-position input[type="range"]::-webkit-slider-runnable-track{
         height: 8px !important;
         border-radius: 999px !important;
       }
 
       .mobile-light-control-slider::-moz-range-track,
-      .mobile-cover-position input[type="range"]::-moz-range-track {
+.mobile-cover-position input[type="range"]::-moz-range-track{
         height: 8px !important;
         border-radius: 999px !important;
       }
 
-      .mobile-light-control-slider::-moz-range-progress {
+      .mobile-light-control-slider::-moz-range-progress{
         height: 8px !important;
         border-radius: 999px !important;
       }
 
-      .mobile-cover-position {
+      .mobile-cover-position{
         margin-top: 8px !important;
         margin-bottom: 0 !important;
         min-height: 8px !important;
       }
 
-      .mobile-cover-position input[type="range"] {
+      .mobile-cover-position input[type="range"]{
         display: block !important;
       }
 
-      /* Select cards: the entity icon stays in the same 38px icon container as every other entity. */
-      .room-ui-v2 .mobile-entity-card.has-inline-select {
-        min-height: 102px !important;
-        height: auto !important;
-        padding: 8px 10px !important;
-        gap: 6px !important;
-      }
-
-      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-main {
-        min-height: 38px !important;
-        grid-template-columns: 38px minmax(0, 1fr) !important;
-        gap: 9px !important;
-      }
-
-      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-icon {
-        width: 38px !important;
-        height: 38px !important;
-        flex: 0 0 38px !important;
-        position: static !important;
-        inset: auto !important;
-        transform: none !important;
-        align-self: center !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-      }
-
-      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-icon ha-icon {
-        --mdc-icon-size: 20px !important;
-      }
-
-      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-right {
-        display: none !important;
-      }
-
       /* Favorites: same compact rhythm on Home and in rooms. */
-      .home-favorites-section .favorites-header {
+      .home-favorites-section .favorites-header{
         margin-bottom: 8px !important;
       }
 
-      .home-favorites-section .favorites-grid {
+      .home-favorites-section .favorites-grid{
         overflow: visible !important;
         padding: 2px 0 4px !important;
       }
 
       .home-favorites-section .favorites-section,
-      .home-favorites-section .favorite-card-wrapper,
-      .room-favorites-content .favorites-section,
-      .room-favorites-content .favorite-card-wrapper {
+.home-favorites-section .favorite-card-wrapper,
+.room-favorites-content .favorites-section,
+.room-favorites-content .favorite-card-wrapper{
         overflow: visible !important;
       }
 
-      .room-favorites-content {
+      .room-favorites-content{
         padding-top: 2px !important;
       }
 
       .home-favorites-section .favorite-card-wrapper,
-      .room-favorites-content .favorite-card-wrapper {
+.room-favorites-content .favorite-card-wrapper{
         overflow: visible !important;
       }
 
       /* A value-only favorite uses exactly the same visual slot as the light toggle. */
       .home-favorites-section .favorite-status-pill,
-      .room-favorites-content .favorite-status-pill {
+.room-favorites-content .favorite-status-pill{
         width: 38px !important;
         height: 22px !important;
         box-sizing: border-box !important;
@@ -15294,24 +14322,25 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .home-favorites-section .favorite-end,
-      .room-favorites-content .favorite-end {
+.room-favorites-content .favorite-end{
         min-width: 38px !important;
       }
 
-      /* With a toggle, the area line is the only secondary text; no duplicate state. */
+      /* With a toggle,
+the area line is the only secondary text; no duplicate state. */
       .home-favorites-section .favorite-meta,
-      .room-favorites-content .favorite-meta {
+.room-favorites-content .favorite-meta{
         gap: 0 !important;
       }
 
       /* Keep the same title-to-card distance as the other generated entity groups. */
-      .room-favorites-content .favorites-grid {
+      .room-favorites-content .favorites-grid{
         padding-top: 2px !important;
       }
 
       /* Preserve the shadow around the Home cards instead of clipping it at the card edge. */
       .home-favorites-section .favorite-card-wrapper,
-      .room-favorites-content .favorite-card-wrapper {
+.room-favorites-content .favorite-card-wrapper{
         clip-path: none !important;
       }
     }
@@ -15320,74 +14349,63 @@ export class DwainsLayoutCard extends LitElement {
     /* 2026-10-01: restore the 1.9.0 slider geometry and final room/home rhythm. */
     @media (min-width: 769px) {
       .mobile-light-control-slider,
-      .mobile-cover-position input[type="range"] {
+.mobile-cover-position input[type="range"]{
         height: 5px !important;
       }
 
       .mobile-light-control-slider::-webkit-slider-runnable-track,
-      .mobile-cover-position input[type="range"]::-webkit-slider-runnable-track {
+.mobile-cover-position input[type="range"]::-webkit-slider-runnable-track{
         height: 5px !important;
         border-radius: 999px !important;
       }
 
       .mobile-light-control-slider::-moz-range-track,
-      .mobile-cover-position input[type="range"]::-moz-range-track {
+.mobile-cover-position input[type="range"]::-moz-range-track{
         height: 5px !important;
         border-radius: 999px !important;
       }
 
-      .mobile-light-control-slider::-moz-range-progress {
+      .mobile-light-control-slider::-moz-range-progress{
         height: 5px !important;
         border-radius: 999px !important;
       }
 
       .mobile-light-control-slider::-webkit-slider-thumb,
-      .mobile-cover-position input[type="range"]::-webkit-slider-thumb {
+.mobile-cover-position input[type="range"]::-webkit-slider-thumb{
         width: 15px !important;
         height: 15px !important;
       }
 
       .mobile-light-control-slider::-moz-range-thumb,
-      .mobile-cover-position input[type="range"]::-moz-range-thumb {
+.mobile-cover-position input[type="range"]::-moz-range-thumb{
         width: 13px !important;
         height: 13px !important;
       }
 
-      /* One tall entity must not stretch its siblings; all cards stay top-aligned. */
-      .room-ui-v2 .mobile-entity-rail,
-      .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-rail {
-        align-items: start !important;
-      }
-
-      .room-ui-v2 .mobile-entity-card,
-      .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-card {
-        align-self: start !important;
-      }
-
-      /* Favorites sit close to their header, with the same compact rhythm as entity groups. */
-      .home-favorites-section {
+      /* Favorites sit close to their header,
+with the same compact rhythm as entity groups. */
+      .home-favorites-section{
         overflow: visible !important;
       }
 
-      .home-favorites-section .favorites-header {
+      .home-favorites-section .favorites-header{
         margin-bottom: 6px !important;
       }
 
       .home-favorites-section .favorites-grid,
-      .room-favorites-content .favorites-grid {
+.room-favorites-content .favorites-grid{
         padding-top: 0 !important;
         overflow: visible !important;
       }
 
       .home-favorites-section .favorite-card-wrapper,
-      .room-favorites-content .favorite-card-wrapper {
+.room-favorites-content .favorite-card-wrapper{
         overflow: visible !important;
       }
 
-      /* One consistent light-orange cover color for blinds, shading and gates. */
-      .room-ui-v2 .mobile-entity-cover,
-      .home-favorites-section .favorite-card-wrapper.favorite-cover,
-      .room-favorites-content .favorite-card-wrapper.favorite-cover {
+      /* One consistent light-orange cover color for blinds,
+.home-favorites-section .favorite-card-wrapper.favorite-cover,
+.room-favorites-content .favorite-card-wrapper.favorite-cover{
         --entity-color: #E98A3B !important;
         --favorite-color: #E98A3B !important;
       }
@@ -15397,18 +14415,20 @@ export class DwainsLayoutCard extends LitElement {
     /* 2026-10-01: restore 1.9.0 controls + final favorites spacing/shadows. */
     @media (min-width: 769px) {
       /*
-       * Keep the 1.9.6 implementation code available, but do not render the
+       * Keep the 1.9.6 implementation code available,
+but do not render the
        * added light sliders/mode buttons or the cover-position slider.
        * This restores the visible control behavior of 1.9.0:
-       * lights = normal toggle, covers = open/stop/close buttons.
+       * lights = normal toggle,
+covers = open/stop/close buttons.
        */
 
-      .room-favorites-block:not(.is-collapsed) .room-favorites-header {
+      .room-favorites-block:not(.is-collapsed) .room-favorites-header{
         margin-bottom: 2px !important;
       }
 
       .room-favorites-content,
-      .room-favorites-content .favorites-grid {
+.room-favorites-content .favorites-grid{
         padding-top: 0 !important;
         margin-top: 0 !important;
       }
@@ -15419,118 +14439,51 @@ export class DwainsLayoutCard extends LitElement {
        * and is not clipped at the bottom.
        */
       .home-view .home-favorites-section,
-      .home-view .home-favorites-section .favorites-grid,
-      .home-view .home-favorites-section .favorite-card-wrapper {
+.home-view .home-favorites-section .favorites-grid,
+.home-view .home-favorites-section .favorite-card-wrapper{
         overflow: visible !important;
       }
 
-      .home-view .home-favorites-section .favorite-card-wrapper {
+      .home-view .home-favorites-section .favorite-card-wrapper{
         clip-path: none !important;
       }
     }
 
     /* 2026-10-01: definitive room-grid/favorite spacing pass. */
     @media (min-width: 769px) {
-      /*
-       * Slider geometry: use the original 5px track / 15px thumb geometry
-       * used by the first light-control implementation. Do not change the
-       * control layout here; only restore the slider proportions.
-       */
-      .room-ui-v2 .mobile-light-control-slider,
-      .room-ui-v2 .mobile-cover-position input[type="range"] {
-        height: 5px !important;
-      }
-
-      .room-ui-v2 .mobile-light-control-slider::-webkit-slider-runnable-track,
-      .room-ui-v2 .mobile-cover-position input[type="range"]::-webkit-slider-runnable-track {
-        height: 5px !important;
-        min-height: 5px !important;
-        max-height: 5px !important;
-        border-radius: 999px !important;
-      }
-
-      .room-ui-v2 .mobile-light-control-slider::-moz-range-track,
-      .room-ui-v2 .mobile-cover-position input[type="range"]::-moz-range-track {
-        height: 5px !important;
-        min-height: 5px !important;
-        max-height: 5px !important;
-        border-radius: 999px !important;
-      }
-
-      .room-ui-v2 .mobile-light-control-slider::-moz-range-progress {
-        height: 5px !important;
-        min-height: 5px !important;
-        max-height: 5px !important;
-        border-radius: 999px !important;
-      }
-
-      .room-ui-v2 .mobile-light-control-slider::-webkit-slider-thumb,
-      .room-ui-v2 .mobile-cover-position input[type="range"]::-webkit-slider-thumb {
-        width: 15px !important;
-        height: 15px !important;
-      }
-
-      .room-ui-v2 .mobile-light-control-slider::-moz-range-thumb,
-      .room-ui-v2 .mobile-cover-position input[type="range"]::-moz-range-thumb {
-        width: 13px !important;
-        height: 13px !important;
-      }
 
       /*
-       * A tall card must not define the height of its siblings.
-       * Explicitly size grid rows to content and opt every entity card out
-       * of the grid's default stretch behaviour.
-       */
-      .room-ui-v2 .mobile-entity-rail,
-      .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-rail {
-        align-items: start !important;
-        grid-auto-rows: max-content !important;
-      }
-
-      .room-ui-v2 .mobile-entity-rail > .mobile-entity-card,
-      .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-rail > .mobile-entity-card {
-        align-self: start !important;
-        height: fit-content !important;
-      }
-
-      .room-ui-v2 .mobile-entity-card.has-light-controls,
-      .room-ui-v2 .mobile-entity-card.has-cover-position {
-        height: auto !important;
-      }
-
-      /*
-       * Favorites: the room header has its own 6px content padding, which
+       * Favorites: the room header has its own 6px content padding,
+which
        * doubled the intended header-to-card distance. Remove only that
        * top padding; the other insets remain unchanged.
        */
-      .room-favorites-content {
+      .room-favorites-content{
         padding-top: 0 !important;
       }
 
-      .room-favorites-content .favorites-grid {
+      .room-favorites-content .favorites-grid{
         padding-top: 0 !important;
       }
 
-      .home-favorites-section .favorites-header {
+      .home-favorites-section .favorites-header{
         margin-bottom: 6px !important;
       }
     }
 
     /* 2026-10-01: match the 1.9.0 favorite spacing and shadow behavior. */
     @media (min-width: 769px) {
-      .room-ui-v2 .room-favorites-block:not(.is-collapsed) .room-favorites-header {
-        margin-bottom: 0 !important;
-      }
 
-      /* Home favorites must not use paint containment, otherwise their card shadows are clipped. */
-      .home-favorites-section {
+      /* Home favorites must not use paint containment,
+otherwise their card shadows are clipped. */
+      .home-favorites-section{
         content-visibility: visible !important;
         contain: layout style !important;
         overflow: visible !important;
       }
 
       .home-favorites-section .favorites-grid,
-      .home-favorites-section .favorite-card-wrapper {
+.home-favorites-section .favorite-card-wrapper{
         overflow: visible !important;
       }
     }
@@ -15538,21 +14491,22 @@ export class DwainsLayoutCard extends LitElement {
     /* 2026-10-01: Favorites spacing and Home card-shadow fix. */
     @media (min-width: 769px) {
       /* Cards directly follow the room Favorites header. */
-      .room-favorites-block:not(.is-collapsed) .room-favorites-header {
+      .room-favorites-block:not(.is-collapsed) .room-favorites-header{
         margin-bottom: 0 !important;
       }
       .room-favorites-content,
-      .room-favorites-content .favorites-grid {
+.room-favorites-content .favorites-grid{
         padding-top: 0 !important;
       }
 
-      /* Home Favorites: keep individual card shadows visible, as on room pages. */
+      /* Home Favorites: keep individual card shadows visible,
+as on room pages. */
       .home-favorites-section,
-      .home-favorites-section .favorites-grid,
-      .home-favorites-section .favorites-section {
+.home-favorites-section .favorites-grid,
+.home-favorites-section .favorites-section{
         overflow: visible !important;
       }
-      .home-favorites-section .favorite-card-wrapper {
+      .home-favorites-section .favorite-card-wrapper{
         overflow: visible !important;
         clip-path: none !important;
       }
@@ -15561,27 +14515,27 @@ export class DwainsLayoutCard extends LitElement {
 
     /* 2026-10-01: Home favorites should match the room-card shadow treatment. */
     @media (min-width: 769px) {
-      .home-favorites-section .favorites-header {
+      .home-favorites-section .favorites-header{
         margin-bottom: 0 !important;
       }
 
-      .home-favorites-section .favorites-grid {
+      .home-favorites-section .favorites-grid{
         margin-top: 0 !important;
         padding-top: 0 !important;
       }
 
       /* Do not let Home-section paint/content containment clip card shadows. */
-      .home-favorites-section {
+      .home-favorites-section{
         content-visibility: visible !important;
         contain: none !important;
         overflow: visible !important;
       }
 
-      .home-favorites-section .favorites-grid {
+      .home-favorites-section .favorites-grid{
         overflow: visible !important;
       }
 
-      .home-favorites-section .favorite-card-wrapper {
+      .home-favorites-section .favorite-card-wrapper{
         contain: layout style !important;
         overflow: visible !important;
       }
@@ -15590,26 +14544,26 @@ export class DwainsLayoutCard extends LitElement {
 
     /* 2026-10-01: Home favorites should match the room-card shadow treatment. */
     @media (min-width: 769px) {
-      .home-favorites-section .favorites-header {
+      .home-favorites-section .favorites-header{
         margin-bottom: 0 !important;
       }
 
-      .home-favorites-section .favorites-grid {
+      .home-favorites-section .favorites-grid{
         margin-top: 0 !important;
         padding-top: 0 !important;
       }
 
-      .home-favorites-section {
+      .home-favorites-section{
         content-visibility: visible !important;
         contain: none !important;
         overflow: visible !important;
       }
 
-      .home-favorites-section .favorites-grid {
+      .home-favorites-section .favorites-grid{
         overflow: visible !important;
       }
 
-      .home-favorites-section .favorite-card-wrapper {
+      .home-favorites-section .favorite-card-wrapper{
         contain: layout style !important;
         overflow: visible !important;
       }
@@ -15617,195 +14571,9 @@ export class DwainsLayoutCard extends LitElement {
 
     /* 2026-10-01: desktop room/entity scale — 20% larger, four columns. */
     @media (min-width: 769px) {
-      /* Keep four columns. The available desktop width is used for wider cards. */
-      .room-ui-v2 .mobile-entity-rail,
-      .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-rail {
-        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-        gap: 10px !important;
-      }
-
-      .room-ui-v2 .mobile-entity-card,
-      .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-card {
-        min-height: 72px !important;
-        padding: 12px !important;
-        border-radius: 10px !important;
-        box-sizing: border-box !important;
-      }
-
-      .room-ui-v2 .mobile-entity-main {
-        min-height: 46px !important;
-        grid-template-columns: 46px minmax(0, 1fr) auto !important;
-        gap: 11px !important;
-      }
-
-      .room-ui-v2 .mobile-entity-main.editing-inline {
-        grid-template-columns: 29px 46px minmax(0, 1fr) 42px !important;
-        gap: 8px !important;
-      }
-
-      .room-ui-v2 .mobile-entity-icon {
-        width: 46px !important;
-        height: 46px !important;
-        border-radius: 10px !important;
-      }
-
-      .room-ui-v2 .mobile-entity-icon ha-icon {
-        --mdc-icon-size: 24px !important;
-      }
-
-      .room-ui-v2 .mobile-entity-content {
-        height: 46px !important;
-        gap: 3px !important;
-      }
-
-      .room-ui-v2 .mobile-entity-name {
-        font-size: 14.4px !important;
-        line-height: 1.15 !important;
-      }
-
-      .room-ui-v2 .mobile-entity-state {
-        font-size: 12.7px !important;
-        line-height: 1.1 !important;
-      }
-
-      .room-ui-v2 .mobile-entity-right {
-        gap: 5px !important;
-        max-width: 104px !important;
-      }
-
-      .room-ui-v2 .mobile-entity-toggle {
-        width: 46px !important;
-        height: 27px !important;
-      }
-
-      .room-ui-v2 .mobile-entity-toggle::before {
-        width: 21px !important;
-        height: 21px !important;
-        margin-left: 3px !important;
-      }
-
-      .room-ui-v2 .mobile-entity-card.is-active .mobile-entity-toggle::before {
-        transform: translateX(19px) !important;
-      }
-
-      .room-ui-v2 .mobile-entity-card.has-light-controls,
-      .room-ui-v2 .mobile-entity-card.has-cover-position {
-        min-height: 112px !important;
-        padding: 9px 12px !important;
-      }
-
-      .room-ui-v2 .mobile-entity-card.has-light-controls .mobile-entity-main,
-      .room-ui-v2 .mobile-entity-card.has-cover-position .mobile-entity-main {
-        min-height: 46px !important;
-      }
-
-      .room-ui-v2 .mobile-light-control-row {
-        margin-top: 9px !important;
-        min-height: 32px !important;
-      }
-
-      .room-ui-v2 .mobile-light-control-slider,
-      .room-ui-v2 .mobile-cover-position input[type="range"] {
-        height: 6px !important;
-      }
-
-      .room-ui-v2 .mobile-light-control-slider::-webkit-slider-runnable-track,
-      .room-ui-v2 .mobile-cover-position input[type="range"]::-webkit-slider-runnable-track,
-      .room-ui-v2 .mobile-light-control-slider::-moz-range-track,
-      .room-ui-v2 .mobile-cover-position input[type="range"]::-moz-range-track,
-      .room-ui-v2 .mobile-light-control-slider::-moz-range-progress {
-        height: 6px !important;
-      }
-
-      .room-ui-v2 .mobile-light-control-slider::-webkit-slider-thumb,
-      .room-ui-v2 .mobile-cover-position input[type="range"]::-webkit-slider-thumb {
-        width: 18px !important;
-        height: 18px !important;
-      }
-
-      .room-ui-v2 .mobile-light-control-slider::-moz-range-thumb,
-      .room-ui-v2 .mobile-cover-position input[type="range"]::-moz-range-thumb {
-        width: 16px !important;
-        height: 16px !important;
-      }
-
-      .room-ui-v2 .mobile-light-mode-buttons { gap: 5px !important; }
-      .room-ui-v2 .mobile-light-mode-button {
-        width: 34px !important;
-        height: 34px !important;
-        border-radius: 9px !important;
-      }
-      .room-ui-v2 .mobile-light-mode-button ha-icon { --mdc-icon-size: 20px !important; }
-
-      .room-ui-v2 .mobile-cover-actions {
-        min-height: 36px !important;
-        padding: 3px !important;
-        gap: 3px !important;
-      }
-      .room-ui-v2 .mobile-cover-action { width: 31px !important; height: 31px !important; }
-      .room-ui-v2 .mobile-cover-action ha-icon { --mdc-icon-size: 20px !important; }
-
-      .room-ui-v2 .mobile-entity-card.has-inline-select {
-        min-height: 123px !important;
-        padding: 9px 12px !important;
-        gap: 7px !important;
-      }
-
-      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-main {
-        min-height: 46px !important;
-        grid-template-columns: 46px minmax(0, 1fr) !important;
-        gap: 11px !important;
-        align-items: center !important;
-      }
-
-      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-icon {
-        position: static !important;
-        inset: auto !important;
-        left: auto !important;
-        right: auto !important;
-        top: auto !important;
-        bottom: auto !important;
-        grid-column: 1 !important;
-        grid-row: 1 !important;
-        width: 46px !important;
-        height: 46px !important;
-        flex: 0 0 46px !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        transform: none !important;
-        color: var(--entity-color) !important;
-      }
-
-      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-icon ha-icon {
-        --mdc-icon-size: 24px !important;
-      }
-
-      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-content {
-        grid-column: 2 !important;
-        grid-row: 1 !important;
-        margin: 0 !important;
-        align-self: center !important;
-      }
-
-      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-right {
-        display: none !important;
-      }
-
-      .room-ui-v2 .mobile-entity-select { margin-top: 3px !important; }
-      .room-ui-v2 .mobile-entity-select select {
-        height: 42px !important;
-        padding: 0 42px 0 15px !important;
-        font-size: 14.4px !important;
-        line-height: 42px !important;
-      }
-      .room-ui-v2 .mobile-entity-select .mobile-select-chevron {
-        right: 12px !important;
-        --mdc-icon-size: 20px !important;
-      }
 
       /* Sidebar room tiles: target the actual room tile class; do not override generic area buttons. */
-      .sidebar .room-area-button {
+      .sidebar .room-area-button{
         display: grid !important;
         grid-template-columns: 89px minmax(0, 1fr) !important;
         align-items: stretch !important;
@@ -15817,50 +14585,50 @@ export class DwainsLayoutCard extends LitElement {
         border-radius: 12px !important;
       }
 
-      .sidebar .room-area-button .area-media {
+      .sidebar .room-area-button .area-media{
         width: 89px !important;
         height: 89px !important;
         align-self: center !important;
       }
-      .sidebar .room-area-button .area-media-icon {
+      .sidebar .room-area-button .area-media-icon{
         width: 89px !important;
         height: 89px !important;
       }
-      .sidebar .room-area-button .area-media-icon ha-icon {
+      .sidebar .room-area-button .area-media-icon ha-icon{
         --mdc-icon-size: 41px !important;
       }
 
-      .sidebar .room-area-button .area-content {
+      .sidebar .room-area-button .area-content{
         min-width: 0 !important;
         height: 100% !important;
         justify-content: center !important;
         gap: 8px !important;
       }
-      .sidebar .room-area-button .area-name {
+      .sidebar .room-area-button .area-name{
         font-size: 16.8px !important;
         line-height: 1.1 !important;
       }
-      .sidebar .room-area-button .area-sensors {
+      .sidebar .room-area-button .area-sensors{
         margin-top: 4px !important;
         font-size: 13.2px !important;
         line-height: 1.1 !important;
       }
-      .sidebar .room-area-button .area-info-badges {
+      .sidebar .room-area-button .area-info-badges{
         gap: 5px !important;
         max-width: 100% !important;
         min-width: 0 !important;
         overflow: hidden !important;
       }
-      .sidebar .room-area-button .info-badge {
+      .sidebar .room-area-button .info-badge{
         min-width: 32px !important;
         height: 25px !important;
         padding: 0 8px !important;
         font-size: 13px !important;
         flex: 0 0 auto !important;
       }
-      .sidebar .room-area-button .info-badge ha-icon { --mdc-icon-size: 15px !important; }
-      .sidebar .room-area-button .badge-count { font-size: 13px !important; }
-      .sidebar .room-area-button .info-badge-overflow {
+      .sidebar .room-area-button .info-badge ha-icon{ --mdc-icon-size: 15px !important; }
+      .sidebar .room-area-button .badge-count{ font-size: 13px !important; }
+      .sidebar .room-area-button .info-badge-overflow{
         min-width: 20px !important;
         width: 20px !important;
         padding: 0 !important;
@@ -15873,173 +14641,32 @@ export class DwainsLayoutCard extends LitElement {
         letter-spacing: 1px !important;
       }
 
-      /* Room header status badges: about 30% larger, including their own tile height. */
-      .room-ui-v2 .room-header-summary {
+      /* Room header status badges: about 30% larger{
         min-height: 24px !important;
         gap: 5px !important;
         align-items: center !important;
       }
-      .room-ui-v2 .room-summary-item.status {
-        min-height: 23px !important;
-        padding: 3px 8px !important;
-        gap: 4px !important;
-        box-sizing: border-box !important;
-        border-radius: 999px !important;
-        font-size: 13px !important;
-        line-height: 1 !important;
-      }
-      .room-ui-v2 .room-summary-item.status ha-icon { --mdc-icon-size: 18px !important; }
-      .room-ui-v2 .room-header-copy {
-        align-self: center !important;
-        justify-content: center !important;
-      }
-
-      /* Lower room sections must use exactly the same outer width as the room header/favorites. */
-      .room-ui-v2 .mobile-entities-section,
-      .room-ui-v2 .mobile-domain-group {
-        width: 100% !important;
-        align-self: stretch !important;
-        box-sizing: border-box !important;
-      }
 
       /* Room-view time/weather: move the cluster slightly left and keep the Home weather treatment. */
-      .global-header.room-context { padding-right: 20px !important; }
-      .global-header.room-context .header-time-weather { gap: 6px !important; }
-      .global-header.room-context .weather-compact {
+      .global-header.room-context{ padding-right: 20px !important; }
+      .global-header.room-context .header-time-weather{ gap: 6px !important; }
+      .global-header.room-context .weather-compact{
         background: var(--secondary-background-color) !important;
         color: var(--primary-text-color) !important;
       }
-      .global-header.room-context .weather-compact ha-icon { color: var(--primary-text-color) !important; }
+      .global-header.room-context .weather-compact ha-icon{ color: var(--primary-text-color) !important; }
     }
     /* 2026-10-01: desktop room-view follow-up — final scoped overrides. */
     @media (min-width: 769px) {
-      /* The room content must span exactly the same available width as the global room header. */
-      .area-view.room-ui-v2 {
-        width: 100% !important;
-        max-width: none !important;
-        margin: 0 !important;
-        box-sizing: border-box !important;
-      }
-      .area-view.room-ui-v2 > .mobile-entities-section,
-      .area-view.room-ui-v2 > .mobile-entities-section > .mobile-domain-group,
-      .area-view.room-ui-v2 > .mobile-entities-section > .mobile-domain-group > .mobile-entity-rail {
-        width: 100% !important;
-        max-width: none !important;
-        box-sizing: border-box !important;
-      }
-
-      /* Status badges: another ~30% increase over the previous room-view size. */
-      .room-ui-v2 .room-header-summary {
-        min-height: 30px !important;
-        gap: 6px !important;
-        align-items: center !important;
-      }
-      .room-ui-v2 .room-summary-item.status {
-        min-height: 30px !important;
-        padding: 5px 10px !important;
-        gap: 5px !important;
-        font-size: 14px !important;
-        line-height: 1 !important;
-        box-sizing: border-box !important;
-      }
-      .room-ui-v2 .room-summary-item.status ha-icon {
-        --mdc-icon-size: 21px !important;
-      }
-
-      /* Select/input_select: strict two-row layout. Row 1 = icon + name; row 2 = selector. */
-      .room-ui-v2 .mobile-entity-card.has-inline-select {
-        display: grid !important;
-        grid-template-columns: minmax(0, 1fr) !important;
-        grid-template-rows: 46px 42px !important;
-        align-content: center !important;
-        gap: 7px !important;
-        min-height: 123px !important;
-        height: auto !important;
-        padding: 9px 12px !important;
-        overflow: hidden !important;
-      }
-      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-main {
-        grid-column: 1 !important;
-        grid-row: 1 !important;
-        width: 100% !important;
-        min-width: 0 !important;
-        min-height: 46px !important;
-        height: 46px !important;
-        display: grid !important;
-        grid-template-columns: 46px minmax(0, 1fr) !important;
-        gap: 11px !important;
-        align-items: center !important;
-        position: relative !important;
-        z-index: 2 !important;
-      }
-      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-icon {
-        position: static !important;
-        inset: auto !important;
-        grid-column: 1 !important;
-        grid-row: 1 !important;
-        width: 46px !important;
-        height: 46px !important;
-        min-width: 46px !important;
-        min-height: 46px !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        align-self: center !important;
-        transform: none !important;
-        z-index: 3 !important;
-      }
-      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-icon ha-icon {
-        --mdc-icon-size: 24px !important;
-      }
-      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-content {
-        grid-column: 2 !important;
-        grid-row: 1 !important;
-        min-width: 0 !important;
-        height: 46px !important;
-        margin: 0 !important;
-        align-self: center !important;
-        justify-content: center !important;
-      }
-      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-right {
-        display: none !important;
-      }
-      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-select {
-        grid-column: 1 !important;
-        grid-row: 2 !important;
-        position: relative !important;
-        width: 100% !important;
-        height: 42px !important;
-        min-height: 42px !important;
-        margin: 0 !important;
-        z-index: 1 !important;
-      }
-      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-select select {
-        position: relative !important;
-        z-index: 1 !important;
-        width: 100% !important;
-        height: 42px !important;
-        box-sizing: border-box !important;
-      }
-      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-select-chevron {
-        position: absolute !important;
-        top: 50% !important;
-        right: 12px !important;
-        left: auto !important;
-        bottom: auto !important;
-        z-index: 2 !important;
-        transform: translateY(-50%) !important;
-      }
 
       /* Sidebar: reserve one slot for the ellipsis whenever badges are hidden. */
-      .sidebar .room-area-button .area-info-badges {
+      .sidebar .room-area-button .area-info-badges{
         min-width: 0 !important;
         max-width: 100% !important;
         overflow: visible !important;
         flex-wrap: nowrap !important;
       }
-      .sidebar .room-area-button .info-badge-overflow {
+      .sidebar .room-area-button .info-badge-overflow{
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -16060,29 +14687,29 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       /* Room header meta: move the whole time/weather cluster slightly left and tighten the gap. */
-      .global-header.room-context {
+      .global-header.room-context{
         padding-right: 36px !important;
       }
-      .global-header.room-context .header-time-weather {
+      .global-header.room-context .header-time-weather{
         gap: 5px !important;
         transform: translateX(-2px) !important;
       }
-      .global-header.room-context .weather-compact {
+      .global-header.room-context .weather-compact{
         background: var(--secondary-background-color) !important;
         color: var(--primary-text-color) !important;
         box-shadow: none !important;
       }
-      .global-header.room-context .weather-compact .weather-icon-compact ha-icon {
+      .global-header.room-context .weather-compact .weather-icon-compact ha-icon{
         color: var(--primary-text-color) !important;
       }
     }
     /* 2026-10-01: header status carousel. */
-    .header-status-section {
+    .header-status-section{
       position: relative;
       min-width: 0;
     }
 
-    .header-status-section .header-status-scroll {
+    .header-status-section .header-status-scroll{
       min-width: 0;
       overflow-x: auto;
       overflow-y: hidden;
@@ -16091,11 +14718,11 @@ export class DwainsLayoutCard extends LitElement {
       overscroll-behavior-x: contain;
     }
 
-    .header-status-section .header-status-scroll::-webkit-scrollbar {
+    .header-status-section .header-status-scroll::-webkit-scrollbar{
       display: none;
     }
 
-    .header-status-scroll-button {
+    .header-status-scroll-button{
       position: absolute;
       top: 50%;
       z-index: 4;
@@ -16114,70 +14741,41 @@ export class DwainsLayoutCard extends LitElement {
       cursor: pointer;
     }
 
-    .header-status-scroll-button:hover {
+    .header-status-scroll-button:hover{
       background: var(--secondary-background-color);
     }
 
-    .header-status-scroll-button ha-icon {
+    .header-status-scroll-button ha-icon{
       --mdc-icon-size: 17px;
     }
 
-    .header-status-scroll-button-left {
+    .header-status-scroll-button-left{
       left: 2px;
     }
 
-    .header-status-scroll-button-right {
+    .header-status-scroll-button-right{
       right: 2px;
     }
 
-    .header-status-section.can-scroll-left .header-status-scroll {
+    .header-status-section.can-scroll-left .header-status-scroll{
       padding-left: 30px;
     }
 
-    .header-status-section.can-scroll-right .header-status-scroll {
+    .header-status-section.can-scroll-right .header-status-scroll{
       padding-right: 30px;
     }
 
-    .header-status-section.can-scroll-left.can-scroll-right .header-status-scroll {
+    .header-status-section.can-scroll-left.can-scroll-right .header-status-scroll{
       padding-left: 30px;
       padding-right: 30px;
-    }
-
-    .room-ui-v2 .room-header-summary {
-      max-width: 100%;
-      cursor: default;
-      -webkit-overflow-scrolling: touch;
     }
 
 
     /* 2026-10-01: final responsive room/sidebar follow-up. */
     @media (min-width: 769px) {
-      /* Room header media scales with the actual room-view width. */
-      .room-ui-v2 .room-header {
-        container-type: inline-size;
-        grid-template-columns: clamp(150px, 20cqw, 220px) minmax(0, 1fr) auto auto !important;
-        min-height: clamp(96px, 11cqw, 116px) !important;
-      }
-
-      .room-ui-v2 .room-header-media {
-        width: 100% !important;
-        height: clamp(80px, 9cqw, 104px) !important;
-        min-height: 80px !important;
-        max-height: 104px !important;
-      }
-
-      .room-ui-v2 .room-header-icon ha-icon {
-        --mdc-icon-size: clamp(40px, 4.5cqw, 50px) !important;
-      }
-
-      /* Exactly five entity columns in the desktop room view. */
-      .room-ui-v2 .mobile-entity-rail,
-      .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-rail {
-        grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-      }
 
       /* Sidebar room tile and icon scale continuously with the tile width. */
-      .sidebar .room-area-button {
+      .sidebar .room-area-button{
         container-type: inline-size;
         grid-template-columns: clamp(64px, 30cqw, 110px) minmax(0, 1fr) !important;
         min-height: clamp(82px, 36cqw, 120px) !important;
@@ -16186,18 +14784,18 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .sidebar .room-area-button .area-media,
-      .sidebar .room-area-button .area-media-icon {
+.sidebar .room-area-button .area-media-icon{
         width: 100% !important;
         height: 100% !important;
       }
 
-      .sidebar .room-area-button .area-media-icon ha-icon {
+      .sidebar .room-area-button .area-media-icon ha-icon{
         --mdc-icon-size: clamp(28px, 11cqw, 42px) !important;
       }
 
       /* The badge row uses the full remaining width; the TS calculation decides
          how many badges plus the overflow marker are rendered. */
-      .sidebar .room-area-button .area-info-badges {
+      .sidebar .room-area-button .area-info-badges{
         width: 100% !important;
         max-width: none !important;
         display: flex !important;
@@ -16207,32 +14805,13 @@ export class DwainsLayoutCard extends LitElement {
         overflow: hidden !important;
       }
 
-      /* Status pills are about 30% larger than the previous room-view size. */
-      .room-ui-v2 .room-header-summary {
-        min-height: 39px !important;
-        gap: 7px !important;
-      }
-
-      .room-ui-v2 .room-summary-item.status {
-        min-height: 39px !important;
-        padding: 5px 10px !important;
-        gap: 5px !important;
-        font-size: 16.9px !important;
-        line-height: 1 !important;
-        box-sizing: border-box !important;
-      }
-
-      .room-ui-v2 .room-summary-item.status ha-icon {
-        --mdc-icon-size: 23px !important;
-      }
-
       /* Keep room meta and favorites aligned with the right edge of the view. */
-      .global-header.room-context .header-time-weather {
+      .global-header.room-context .header-time-weather{
         margin-left: auto !important;
         justify-self: end !important;
       }
 
-      .global-header.room-context .room-favorites-content .favorites-grid {
+      .global-header.room-context .room-favorites-content .favorites-grid{
         margin-left: 0 !important;
         margin-right: 0 !important;
         padding-left: 0 !important;
@@ -16241,22 +14820,21 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     /* The room weather pill must not fall back to HA's neutral secondary background. */
-    .global-header.room-context .weather-compact {
+    .global-header.room-context .weather-compact{
       background: color-mix(in srgb, var(--primary-color) 12%, var(--card-background-color)) !important;
       color: var(--primary-color) !important;
       box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 16%, transparent) !important;
     }
 
-    .global-header.room-context .weather-compact .weather-icon-compact ha-icon {
+    .global-header.room-context .weather-compact .weather-icon-compact ha-icon{
       color: var(--primary-color) !important;
     }
 
-    .global-header.room-context .weather-compact .weather-temp-compact {
+    .global-header.room-context .weather-compact .weather-temp-compact{
       color: var(--primary-text-color) !important;
     }
 
-    /* Selection lists: icon is always the leading element, on the left. */
-    .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-main {
+    /* Selection lists: icon is always the leading element{
       direction: ltr !important;
       display: grid !important;
       grid-template-columns: 46px minmax(0, 1fr) !important;
@@ -16264,106 +14842,24 @@ export class DwainsLayoutCard extends LitElement {
       align-items: center !important;
     }
 
-    .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-icon {
-      grid-area: icon !important;
-      justify-self: start !important;
-      order: 0 !important;
-    }
-
-    .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-content {
-      grid-area: content !important;
-      min-width: 0 !important;
-      order: 1 !important;
-    }
-
-    /* 2026-10-01: responsive room-view follow-up. */
-    @media (min-width: 769px) {
-      /* Room header media grows with the actual room-view width instead of staying at 142px. */
-      .room-ui-v2 .room-header {
-        container-type: inline-size;
-        grid-template-columns: clamp(142px, 18cqw, 190px) minmax(0, 1fr) auto auto !important;
-        min-height: clamp(96px, 10cqw, 112px) !important;
-      }
-
-      .room-ui-v2 .room-header-media {
-        width: 100% !important;
-        height: clamp(76px, 8cqw, 100px) !important;
-        min-height: 76px !important;
-        max-height: 100px !important;
-      }
-
-      .room-ui-v2 .room-header-icon ha-icon {
-        --mdc-icon-size: clamp(38px, 4cqw, 48px) !important;
-      }
-
-      /* Room entity cards: exactly five columns on desktop. */
-      .room-ui-v2 .mobile-entity-rail,
-      .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-rail {
-        grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-      }
-
-      /* Room status pills: 30% larger than the previous 30px version. */
-      .room-ui-v2 .room-header-summary {
-        min-height: 39px !important;
-        gap: 7px !important;
-      }
-
-      .room-ui-v2 .room-summary-item.status {
-        min-height: 39px !important;
-        padding: 5px 10px !important;
-        gap: 5px !important;
-        font-size: 16.9px !important;
-        line-height: 1 !important;
-      }
-
-      .room-ui-v2 .room-summary-item.status ha-icon {
-        --mdc-icon-size: 23px !important;
-      }
-    }
-
     /* Weather should use the dashboard accent instead of the neutral gray pill. */
-    .global-header .weather-compact {
+    .global-header .weather-compact{
       background: color-mix(in srgb, var(--primary-color) 12%, var(--card-background-color)) !important;
       color: var(--primary-color) !important;
       box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 16%, transparent) !important;
     }
 
-    .global-header .weather-compact .weather-icon-compact ha-icon {
+    .global-header .weather-compact .weather-icon-compact ha-icon{
       color: var(--primary-color) !important;
     }
 
-    .global-header .weather-compact .weather-temp-compact {
+    .global-header .weather-compact .weather-temp-compact{
       color: var(--primary-text-color) !important;
-    }
-
-    /* Select/input_select cards: keep the entity icon explicitly in the leading slot. */
-    .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-main {
-      direction: ltr !important;
-      grid-template-columns: 46px minmax(0, 1fr) !important;
-    }
-
-    .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-icon {
-      grid-column: 1 !important;
-      grid-row: 1 !important;
-      order: 0 !important;
-      justify-self: start !important;
-      align-self: center !important;
-    }
-
-    .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-content {
-      grid-column: 2 !important;
-      grid-row: 1 !important;
-      order: 1 !important;
-      min-width: 0 !important;
-    }
-
-    .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-right {
-      display: none !important;
     }
 
     /* Sidebar room tiles: badge overflow follows the continuously calculated width. */
     @media (min-width: 769px) {
-      .sidebar .room-area-button .area-info-badges {
+      .sidebar .room-area-button .area-info-badges{
         width: 100% !important;
         max-width: none !important;
         display: flex !important;
@@ -16377,32 +14873,9 @@ export class DwainsLayoutCard extends LitElement {
 
     /* 2026-10-01: final responsive room-view overrides. */
     @media (min-width: 769px) {
-      /* Room header media grows with the available room-view width. */
-      .room-ui-v2 .room-header {
-        container-type: inline-size !important;
-        grid-template-columns: clamp(150px, 20cqw, 220px) minmax(0, 1fr) auto auto !important;
-        min-height: clamp(96px, 11cqw, 116px) !important;
-      }
-
-      .room-ui-v2 .room-header-media {
-        width: 100% !important;
-        height: clamp(80px, 9cqw, 104px) !important;
-        min-height: 80px !important;
-        max-height: 104px !important;
-      }
-
-      .room-ui-v2 .room-header-icon ha-icon {
-        --mdc-icon-size: clamp(40px, 4.5cqw, 50px) !important;
-      }
-
-      /* Exactly five columns in the desktop room view. */
-      .room-ui-v2 .mobile-entity-rail,
-      .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-rail {
-        grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-      }
 
       /* Sidebar room tiles scale with their actual width. */
-      .sidebar .room-area-button {
+      .sidebar .room-area-button{
         container-type: inline-size !important;
         grid-template-columns: clamp(64px, 30cqw, 110px) minmax(0, 1fr) !important;
         min-height: clamp(82px, 36cqw, 120px) !important;
@@ -16411,17 +14884,17 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .sidebar .room-area-button .area-media,
-      .sidebar .room-area-button .area-media-icon {
+.sidebar .room-area-button .area-media-icon{
         width: 100% !important;
         height: 100% !important;
       }
 
-      .sidebar .room-area-button .area-media-icon ha-icon {
+      .sidebar .room-area-button .area-media-icon ha-icon{
         --mdc-icon-size: clamp(28px, 11cqw, 42px) !important;
       }
 
       /* The TS calculation controls how many badges fit; CSS no longer caps the row. */
-      .sidebar .room-area-button .area-info-badges {
+      .sidebar .room-area-button .area-info-badges{
         width: 100% !important;
         max-width: none !important;
         display: flex !important;
@@ -16431,32 +14904,13 @@ export class DwainsLayoutCard extends LitElement {
         overflow: hidden !important;
       }
 
-      /* The three room status pills are about 30% larger. */
-      .room-ui-v2 .room-header-summary {
-        min-height: 39px !important;
-        gap: 7px !important;
-      }
-
-      .room-ui-v2 .room-summary-item.status {
-        min-height: 39px !important;
-        padding: 5px 10px !important;
-        gap: 5px !important;
-        font-size: 16.9px !important;
-        line-height: 1 !important;
-        box-sizing: border-box !important;
-      }
-
-      .room-ui-v2 .room-summary-item.status ha-icon {
-        --mdc-icon-size: 23px !important;
-      }
-
       /* Keep weather/time and favorites aligned to the right edge. */
-      .global-header.room-context .header-time-weather {
+      .global-header.room-context .header-time-weather{
         margin-left: auto !important;
         justify-self: end !important;
       }
 
-      .global-header.room-context .room-favorites-content .favorites-grid {
+      .global-header.room-context .room-favorites-content .favorites-grid{
         margin-left: 0 !important;
         margin-right: 0 !important;
         padding-left: 0 !important;
@@ -16465,146 +14919,34 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     /* Weather must keep the accent treatment; later room-specific rules must not turn it gray. */
-    .global-header.room-context .weather-compact {
+    .global-header.room-context .weather-compact{
       background: color-mix(in srgb, var(--primary-color) 12%, var(--card-background-color)) !important;
       color: var(--primary-color) !important;
       box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 16%, transparent) !important;
     }
 
-    .global-header.room-context .weather-compact .weather-icon-compact ha-icon {
+    .global-header.room-context .weather-compact .weather-icon-compact ha-icon{
       color: var(--primary-color) !important;
     }
 
-    .global-header.room-context .weather-compact .weather-temp-compact {
+    .global-header.room-context .weather-compact .weather-temp-compact{
       color: var(--primary-text-color) !important;
-    }
-
-    /* Selection-list icon is always the leading element on the left. */
-    .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-main {
-      direction: ltr !important;
-      display: grid !important;
-      grid-template-columns: 46px minmax(0, 1fr) !important;
-      grid-template-areas: "icon content" !important;
-      align-items: center !important;
-    }
-
-    .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-icon {
-      grid-area: icon !important;
-      justify-self: start !important;
-      order: 0 !important;
-    }
-
-    .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-content {
-      grid-area: content !important;
-      min-width: 0 !important;
-      order: 1 !important;
     }
 
 
     /* 2026-10-02: refine room tile proportions and unify weather styling. */
     @media (min-width: 769px) {
       /*
-       * Room-header metric pills: keep the larger, readable sizing.
-       */
-      .room-ui-v2 .room-header .area-header-metrics {
+       * Room-header metric pills: keep the larger{
         gap: 8px !important;
       }
 
-      .room-ui-v2 .room-header .area-header-metric {
-        min-width: 126px !important;
-        min-height: 41px !important;
-        padding: 5px 9px !important;
-        gap: 6px !important;
-      }
-
-      .room-ui-v2 .room-header .area-header-metric .metric-ring {
-        width: 29px !important;
-        height: 29px !important;
-      }
-
-      .room-ui-v2 .room-header .area-header-metric .metric-label {
-        font-size: 9px !important;
-      }
-
-      .room-ui-v2 .room-header .area-header-metric .metric-reading {
-        font-size: 13px !important;
-      }
-
       /*
-       * Keep the room-header image at the original 142:76 geometry.
-       * The text stack next to it must fit inside the same 76px height.
-       */
-      .room-ui-v2 .room-header {
-        grid-template-columns: 142px minmax(0, 1fr) auto auto !important;
-        min-height: 96px !important;
-      }
-
-      .room-ui-v2 .room-header-media {
-        width: 142px !important;
-        height: 76px !important;
-        min-width: 142px !important;
-        min-height: 76px !important;
-        max-width: 142px !important;
-        max-height: 76px !important;
-        aspect-ratio: 142 / 76 !important;
-      }
-
-      .room-ui-v2 .room-header-icon ha-icon {
-        --mdc-icon-size: 38px !important;
-      }
-
-      .room-ui-v2 .room-header-copy {
-        height: 76px !important;
-        min-height: 0 !important;
-        justify-content: center !important;
-        gap: 2px !important;
-        overflow: hidden !important;
-      }
-
-      .room-ui-v2 .room-header .area-title {
-        font-size: 26px !important;
-        line-height: 1 !important;
-      }
-
-      .room-ui-v2 .room-header-device-count {
-        font-size: 10px !important;
-        line-height: 1 !important;
-      }
-
-      /*
-       * Room-view status badges: 20% smaller while keeping icon and count
-       * centered as one unit. The complete name/count/badge stack stays
-       * inside the 76px media height.
-       */
-      .room-ui-v2 .room-header-summary {
-        min-height: 29px !important;
-        height: 29px !important;
-        gap: 6px !important;
-        margin-top: 1px !important;
-        overflow: hidden !important;
-      }
-
-      .room-ui-v2 .room-summary-item.status {
-        min-height: 29px !important;
-        height: 29px !important;
-        padding: 3px 7px !important;
-        gap: 4px !important;
-        justify-content: center !important;
-        font-size: 12px !important;
-        line-height: 1 !important;
-        box-sizing: border-box !important;
-        flex: 0 0 auto !important;
-      }
-
-      .room-ui-v2 .room-summary-item.status ha-icon {
-        --mdc-icon-size: 17px !important;
-      }
-
-      /*
-       * Sidebar room tiles: make the card less cramped, but keep the media
+       * Sidebar room tiles: make the card less cramped,
+but keep the media
        * slot fixed so resizing the sidebar never changes the room icon size.
        */
-      .sidebar .room-area-button {
+      .sidebar .room-area-button{
         container-type: normal !important;
         display: grid !important;
         grid-template-columns: 74px minmax(0, 1fr) !important;
@@ -16615,7 +14957,7 @@ export class DwainsLayoutCard extends LitElement {
         padding: 7px !important;
       }
 
-      .sidebar .room-area-button .area-media {
+      .sidebar .room-area-button .area-media{
         grid-column: 1 !important;
         grid-row: 1 !important;
         width: 74px !important;
@@ -16627,12 +14969,12 @@ export class DwainsLayoutCard extends LitElement {
         align-self: center !important;
       }
 
-      .sidebar .room-area-button .area-media-icon {
+      .sidebar .room-area-button .area-media-icon{
         width: 74px !important;
         height: 74px !important;
       }
 
-      .sidebar .room-area-button .area-media-icon ha-icon {
+      .sidebar .room-area-button .area-media-icon ha-icon{
         --mdc-icon-size: 31px !important;
       }
 
@@ -16644,7 +14986,7 @@ export class DwainsLayoutCard extends LitElement {
        *
        * Equal 4px gaps above and below the values row keep the stack balanced.
        */
-      .sidebar .room-area-button .area-content {
+      .sidebar .room-area-button .area-content{
         grid-column: 2 !important;
         grid-row: 1 !important;
         min-width: 0 !important;
@@ -16658,7 +15000,7 @@ export class DwainsLayoutCard extends LitElement {
         overflow: hidden !important;
       }
 
-      .sidebar .room-area-button .area-top-section {
+      .sidebar .room-area-button .area-top-section{
         min-width: 0 !important;
         width: 100% !important;
         margin: 0 !important;
@@ -16666,7 +15008,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .sidebar .room-area-button .area-name,
-      .sidebar .room-area-button.has-picture .area-name {
+.sidebar .room-area-button.has-picture .area-name{
         min-width: 0 !important;
         max-width: 100% !important;
         margin: 0 !important;
@@ -16681,7 +15023,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .sidebar .room-area-button .area-sensors,
-      .sidebar .room-area-button.has-picture .area-sensors {
+.sidebar .room-area-button.has-picture .area-sensors{
         min-width: 0 !important;
         max-width: 100% !important;
         margin: 0 !important;
@@ -16695,7 +15037,7 @@ export class DwainsLayoutCard extends LitElement {
         white-space: nowrap !important;
       }
 
-      .sidebar .room-area-button .area-info-badges {
+      .sidebar .room-area-button .area-info-badges{
         position: static !important;
         width: 100% !important;
         max-width: none !important;
@@ -16709,11 +15051,12 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       /*
-       * Sidebar badges: slightly larger than the previous version, with the
+       * Sidebar badges: slightly larger than the previous version,
+with the
        * icon and count centered together.
        */
       .sidebar .room-area-button .info-badge,
-      .sidebar .room-area-button.has-picture .info-badge {
+.sidebar .room-area-button.has-picture .info-badge{
         min-width: 24px !important;
         height: 18px !important;
         padding: 0 5px !important;
@@ -16727,16 +15070,16 @@ export class DwainsLayoutCard extends LitElement {
         box-sizing: border-box !important;
       }
 
-      .sidebar .room-area-button .info-badge ha-icon {
+      .sidebar .room-area-button .info-badge ha-icon{
         --mdc-icon-size: 10px !important;
       }
 
-      .sidebar .room-area-button .badge-count {
+      .sidebar .room-area-button .badge-count{
         font-size: 9.5px !important;
         line-height: 1 !important;
       }
 
-      .sidebar .room-area-button .info-badge-overflow {
+      .sidebar .room-area-button .info-badge-overflow{
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -16759,7 +15102,7 @@ export class DwainsLayoutCard extends LitElement {
        * Startseite and room-view weather use the same compact blue-accent pill.
        */
       .global-header .weather-compact,
-      .global-header.room-context .weather-compact {
+.global-header.room-context .weather-compact{
         min-height: 38px !important;
         height: 38px !important;
         padding: 0 12px !important;
@@ -16772,13 +15115,13 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .global-header .weather-compact .weather-icon-compact ha-icon,
-      .global-header.room-context .weather-compact .weather-icon-compact ha-icon {
+.global-header.room-context .weather-compact .weather-icon-compact ha-icon{
         --mdc-icon-size: 18px !important;
         color: var(--primary-color) !important;
       }
 
       .global-header .weather-compact .weather-temp-compact,
-      .global-header.room-context .weather-compact .weather-temp-compact {
+.global-header.room-context .weather-compact .weather-temp-compact{
         font-size: 13px !important;
         color: var(--primary-text-color) !important;
         line-height: 1 !important;
@@ -16788,37 +15131,37 @@ export class DwainsLayoutCard extends LitElement {
        * Keep the corrected favorites icon column so favorite names cannot
        * overlap their icons.
        */
-      .room-favorites-content .favorites-grid {
+      .room-favorites-content .favorites-grid{
         grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
         gap: 8px !important;
         width: 100% !important;
       }
 
       .home-favorites-section .favorite-card-wrapper,
-      .room-favorites-content .favorite-card-wrapper {
+.room-favorites-content .favorite-card-wrapper{
         grid-template-columns: 41px minmax(0, 1fr) auto !important;
       }
 
       .home-favorites-section .favorite-icon,
-      .room-favorites-content .favorite-icon {
+.room-favorites-content .favorite-icon{
         width: 41px !important;
         height: 41px !important;
       }
 
       .home-favorites-section .favorite-icon ha-icon,
-      .room-favorites-content .favorite-icon ha-icon {
+.room-favorites-content .favorite-icon ha-icon{
         --mdc-icon-size: 22px !important;
       }
 
       .home-favorites-section .favorite-body,
-      .room-favorites-content .favorite-body {
+.room-favorites-content .favorite-body{
         height: 41px !important;
         min-width: 0 !important;
         overflow: hidden !important;
       }
 
       .home-favorites-section .favorite-name,
-      .room-favorites-content .favorite-name {
+.room-favorites-content .favorite-name{
         min-width: 0 !important;
         max-width: 100% !important;
         font-size: 12.1px !important;
@@ -16828,9 +15171,9 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .home-favorites-section .favorite-meta,
-      .room-favorites-content .favorite-meta,
-      .home-favorites-section .favorite-area,
-      .room-favorites-content .favorite-area {
+.room-favorites-content .favorite-meta,
+.home-favorites-section .favorite-area,
+.room-favorites-content .favorite-area{
         min-width: 0 !important;
         max-width: 100% !important;
         font-size: 10.9px !important;
@@ -16845,7 +15188,7 @@ export class DwainsLayoutCard extends LitElement {
      * Match the desktop component rhythm while retaining mobile rail/grid switching.
      */
     @media (max-width: 768px) {
-      .home-status-section .home-status-grid {
+      .home-status-section .home-status-grid{
         display: flex !important;
         align-items: stretch !important;
         gap: 10px !important;
@@ -16858,11 +15201,11 @@ export class DwainsLayoutCard extends LitElement {
         scrollbar-width: none !important;
       }
 
-      .home-status-section .home-status-grid::-webkit-scrollbar {
+      .home-status-section .home-status-grid::-webkit-scrollbar{
         display: none !important;
       }
 
-      .home-status-section.layout-grid .home-status-grid {
+      .home-status-section.layout-grid .home-status-grid{
         display: grid !important;
         grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
         align-items: stretch !important;
@@ -16871,7 +15214,7 @@ export class DwainsLayoutCard extends LitElement {
         scroll-snap-type: none !important;
       }
 
-      .home-status-section .home-status-card.compact-status {
+      .home-status-section .home-status-card.compact-status{
         flex: 0 0 118px !important;
         width: 118px !important;
         min-width: 118px !important;
@@ -16880,7 +15223,7 @@ export class DwainsLayoutCard extends LitElement {
         border-radius: 15px !important;
       }
 
-      .home-status-section.layout-grid .home-status-card.compact-status {
+      .home-status-section.layout-grid .home-status-card.compact-status{
         width: 100% !important;
         min-width: 0 !important;
         min-height: 100px !important;
@@ -16888,8 +15231,8 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .home-status-section .home-status-card.house-persons-card,
-      .home-status-section .home-status-card.house-climate-card,
-      .home-status-section .home-status-card.house-power-card {
+.home-status-section .home-status-card.house-climate-card,
+.home-status-section .home-status-card.house-power-card{
         flex: 0 0 238px !important;
         width: 238px !important;
         min-width: 238px !important;
@@ -16898,31 +15241,31 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .home-status-section.layout-grid .home-status-card.house-persons-card,
-      .home-status-section.layout-grid .home-status-card.house-climate-card,
-      .home-status-section.layout-grid .home-status-card.house-power-card {
+.home-status-section.layout-grid .home-status-card.house-climate-card,
+.home-status-section.layout-grid .home-status-card.house-power-card{
         grid-column: 1 / -1 !important;
         width: 100% !important;
         min-width: 0 !important;
         flex: none !important;
       }
 
-      .home-status-section .home-status-card.compact-status .status-card-icon {
+      .home-status-section .home-status-card.compact-status .status-card-icon{
         width: 38px !important;
         height: 38px !important;
         margin-bottom: 10px !important;
         border-radius: 11px !important;
       }
 
-      .home-status-section .home-status-card.compact-status .status-card-icon ha-icon {
+      .home-status-section .home-status-card.compact-status .status-card-icon ha-icon{
         --mdc-icon-size: 20px !important;
       }
 
-      .home-status-section .home-status-card.compact-status .status-card-title {
+      .home-status-section .home-status-card.compact-status .status-card-title{
         font-size: 13px !important;
         line-height: 1.12 !important;
       }
 
-      .mobile-area-card {
+      .mobile-area-card{
         flex-basis: 148px !important;
         min-height: 116px !important;
         height: 116px !important;
@@ -16930,27 +15273,27 @@ export class DwainsLayoutCard extends LitElement {
         border-radius: 16px !important;
       }
 
-      .mobile-area-card.has-picture {
+      .mobile-area-card.has-picture{
         min-height: 116px !important;
         height: 116px !important;
       }
 
-      .mobile-home-section.layout-grid .mobile-area-card {
+      .mobile-home-section.layout-grid .mobile-area-card{
         height: 118px !important;
         min-height: 118px !important;
       }
 
-      .mobile-area-icon {
+      .mobile-area-icon{
         width: 38px !important;
         height: 38px !important;
         border-radius: 12px !important;
       }
 
-      .mobile-area-icon ha-icon {
+      .mobile-area-icon ha-icon{
         --mdc-icon-size: 21px !important;
       }
 
-      .mobile-area-badges {
+      .mobile-area-badges{
         display: grid !important;
         grid-template-columns: repeat(2, max-content) !important;
         grid-auto-rows: 22px !important;
@@ -16961,7 +15304,7 @@ export class DwainsLayoutCard extends LitElement {
         overflow: visible !important;
       }
 
-      .mobile-area-badge {
+      .mobile-area-badge{
         min-width: 22px !important;
         height: 22px !important;
         padding: 0 6px !important;
@@ -16969,20 +15312,20 @@ export class DwainsLayoutCard extends LitElement {
         font-size: 10px !important;
       }
 
-      .mobile-area-badge ha-icon {
+      .mobile-area-badge ha-icon{
         --mdc-icon-size: 13px !important;
       }
 
-      .mobile-area-name {
+      .mobile-area-name{
         font-size: 14px !important;
       }
 
-      .mobile-area-meta {
+      .mobile-area-meta{
         margin-top: 3px !important;
         font-size: 11px !important;
       }
 
-      .home-favorites-section .favorite-card-wrapper {
+      .home-favorites-section .favorite-card-wrapper{
         display: grid !important;
         grid-template-columns: 38px minmax(0, 1fr) auto !important;
         grid-template-rows: 1fr !important;
@@ -16994,7 +15337,7 @@ export class DwainsLayoutCard extends LitElement {
         overflow: visible !important;
       }
 
-      .home-favorites-section .favorite-icon {
+      .home-favorites-section .favorite-icon{
         grid-column: 1 !important;
         grid-row: 1 !important;
         width: 38px !important;
@@ -17003,11 +15346,11 @@ export class DwainsLayoutCard extends LitElement {
         margin: 0 !important;
       }
 
-      .home-favorites-section .favorite-icon ha-icon {
+      .home-favorites-section .favorite-icon ha-icon{
         --mdc-icon-size: 21px !important;
       }
 
-      .home-favorites-section .favorite-body {
+      .home-favorites-section .favorite-body{
         grid-column: 2 !important;
         grid-row: 1 !important;
         min-width: 0 !important;
@@ -17015,7 +15358,7 @@ export class DwainsLayoutCard extends LitElement {
         padding-top: 1px !important;
       }
 
-      .home-favorites-section .favorite-end {
+      .home-favorites-section .favorite-end{
         grid-column: 3 !important;
         grid-row: 1 !important;
         align-self: start !important;
@@ -17024,18 +15367,18 @@ export class DwainsLayoutCard extends LitElement {
         padding: 0 !important;
       }
 
-      .home-favorites-section .favorite-name {
+      .home-favorites-section .favorite-name{
         margin-top: 0 !important;
         font-size: 14px !important;
         line-height: 1.08 !important;
       }
 
-      .home-favorites-section .favorite-area {
+      .home-favorites-section .favorite-area{
         margin-top: 5px !important;
         font-size: 10px !important;
       }
 
-      .sidebar .room-area-button {
+      .sidebar .room-area-button{
         display: grid !important;
         grid-template-columns: 54px minmax(0, 1fr) !important;
         align-items: center !important;
@@ -17048,7 +15391,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .sidebar .room-area-button .area-media,
-      .sidebar .room-area-button .area-media-icon {
+.sidebar .room-area-button .area-media-icon{
         position: relative !important;
         width: 54px !important;
         height: 54px !important;
@@ -17060,11 +15403,11 @@ export class DwainsLayoutCard extends LitElement {
         align-self: center !important;
       }
 
-      .sidebar .room-area-button .area-media-icon ha-icon {
+      .sidebar .room-area-button .area-media-icon ha-icon{
         --mdc-icon-size: 26px !important;
       }
 
-      .sidebar .room-area-button .area-content {
+      .sidebar .room-area-button .area-content{
         display: grid !important;
         grid-template-columns: minmax(0, 1fr) auto !important;
         grid-template-rows: 1fr !important;
@@ -17074,7 +15417,7 @@ export class DwainsLayoutCard extends LitElement {
         height: 100% !important;
       }
 
-      .sidebar .room-area-button .area-top-section {
+      .sidebar .room-area-button .area-top-section{
         grid-column: 1 !important;
         grid-row: 1 !important;
         min-width: 0 !important;
@@ -17082,7 +15425,7 @@ export class DwainsLayoutCard extends LitElement {
         align-self: center !important;
       }
 
-      .sidebar .room-area-button .area-name {
+      .sidebar .room-area-button .area-name{
         margin: 0 !important;
         font-size: 15px !important;
         line-height: 1.08 !important;
@@ -17091,7 +15434,7 @@ export class DwainsLayoutCard extends LitElement {
         white-space: nowrap !important;
       }
 
-      .sidebar .room-area-button .area-sensors {
+      .sidebar .room-area-button .area-sensors{
         margin-top: 5px !important;
         font-size: 11.5px !important;
         line-height: 1.05 !important;
@@ -17100,7 +15443,7 @@ export class DwainsLayoutCard extends LitElement {
         white-space: nowrap !important;
       }
 
-      .sidebar .room-area-button .area-info-badges {
+      .sidebar .room-area-button .area-info-badges{
         position: relative !important;
         grid-column: 2 !important;
         grid-row: 1 !important;
@@ -17116,7 +15459,7 @@ export class DwainsLayoutCard extends LitElement {
         overflow: visible !important;
       }
 
-      .sidebar .room-area-button .info-badge {
+      .sidebar .room-area-button .info-badge{
         min-width: 25px !important;
         height: 22px !important;
         padding: 0 7px !important;
@@ -17125,22 +15468,22 @@ export class DwainsLayoutCard extends LitElement {
         box-sizing: border-box !important;
       }
 
-      .sidebar .room-area-button .info-badge ha-icon {
+      .sidebar .room-area-button .info-badge ha-icon{
         --mdc-icon-size: 13px !important;
       }
 
-      .sidebar .room-area-button .badge-count {
+      .sidebar .room-area-button .badge-count{
         font-size: 10.5px !important;
       }
 
-      .sidebar .room-area-button .info-badge-overflow {
+      .sidebar .room-area-button .info-badge-overflow{
         min-width: 22px !important;
         width: 22px !important;
         height: 22px !important;
         font-size: 16px !important;
       }
 
-      .sidebar .room-area-button .area-menu-chevron {
+      .sidebar .room-area-button .area-menu-chevron{
         display: none !important;
       }
     }
@@ -17154,7 +15497,7 @@ export class DwainsLayoutCard extends LitElement {
        * - room-view header and all of its contents grow by roughly 10%;
        * - the weather pill uses the same explicit treatment on Home and rooms.
        */
-      .sidebar .room-area-button {
+      .sidebar .room-area-button{
         grid-template-columns: 74px minmax(0, 1fr) !important;
         min-height: 88px !important;
         height: 88px !important;
@@ -17163,7 +15506,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .sidebar .room-area-button .area-media,
-      .sidebar .room-area-button .area-media-icon {
+.sidebar .room-area-button .area-media-icon{
         width: 74px !important;
         height: 74px !important;
         min-width: 74px !important;
@@ -17172,26 +15515,26 @@ export class DwainsLayoutCard extends LitElement {
         max-height: 74px !important;
       }
 
-      .sidebar .room-area-button .area-content {
+      .sidebar .room-area-button .area-content{
         width: 100% !important;
         height: 74px !important;
         gap: 4px !important;
       }
 
       .sidebar .room-area-button .area-name,
-      .sidebar .room-area-button.has-picture .area-name {
+.sidebar .room-area-button.has-picture .area-name{
         font-size: 15px !important;
         line-height: 1 !important;
       }
 
       .sidebar .room-area-button .area-sensors,
-      .sidebar .room-area-button.has-picture .area-sensors {
+.sidebar .room-area-button.has-picture .area-sensors{
         font-size: 11.5px !important;
         line-height: 1 !important;
       }
 
       .sidebar .room-area-button .info-badge,
-      .sidebar .room-area-button.has-picture .info-badge {
+.sidebar .room-area-button.has-picture .info-badge{
         min-width: 27px !important;
         height: 20px !important;
         padding: 0 6px !important;
@@ -17199,81 +15542,20 @@ export class DwainsLayoutCard extends LitElement {
         font-size: 10px !important;
       }
 
-      .sidebar .room-area-button .info-badge ha-icon {
+      .sidebar .room-area-button .info-badge ha-icon{
         --mdc-icon-size: 11px !important;
       }
 
-      .sidebar .room-area-button .badge-count {
+      .sidebar .room-area-button .badge-count{
         font-size: 10px !important;
       }
 
       /*
        * Room header: increase the current responsive geometry by about 10%.
-       * Keep the same proportions between media, copy, metrics and badges.
-       */
-      .room-ui-v2 .room-header {
+       * Keep the same proportions between media,
+copy{
         grid-template-columns: clamp(165px, 22cqw, 242px) minmax(0, 1fr) auto auto !important;
         min-height: clamp(106px, 12.1cqw, 128px) !important;
-      }
-
-      .room-ui-v2 .room-header-media {
-        height: clamp(88px, 9.9cqw, 114px) !important;
-        min-height: 88px !important;
-        max-height: 114px !important;
-      }
-
-      .room-ui-v2 .room-header-icon ha-icon {
-        --mdc-icon-size: clamp(44px, 5cqw, 55px) !important;
-      }
-
-      .room-ui-v2 .room-header-copy {
-        height: clamp(88px, 9.9cqw, 114px) !important;
-      }
-
-      .room-ui-v2 .room-header .area-title {
-        font-size: clamp(28px, 1.87vw, 33px) !important;
-      }
-
-      .room-ui-v2 .room-header-device-count {
-        font-size: 11px !important;
-      }
-
-      .room-ui-v2 .room-header-summary {
-        min-height: 32px !important;
-        height: 32px !important;
-        gap: 7px !important;
-      }
-
-      .room-ui-v2 .room-summary-item.status {
-        min-height: 32px !important;
-        height: 32px !important;
-        padding: 4px 8px !important;
-        gap: 4px !important;
-        font-size: 13.2px !important;
-      }
-
-      .room-ui-v2 .room-summary-item.status ha-icon {
-        --mdc-icon-size: 19px !important;
-      }
-
-      .room-ui-v2 .room-header .area-header-metric {
-        min-width: 139px !important;
-        min-height: 45px !important;
-        padding: 6px 10px !important;
-        gap: 7px !important;
-      }
-
-      .room-ui-v2 .room-header .area-header-metric .metric-ring {
-        width: 32px !important;
-        height: 32px !important;
-      }
-
-      .room-ui-v2 .room-header .area-header-metric .metric-label {
-        font-size: 10px !important;
-      }
-
-      .room-ui-v2 .room-header .area-header-metric .metric-reading {
-        font-size: 14px !important;
       }
 
       /*
@@ -17281,7 +15563,7 @@ export class DwainsLayoutCard extends LitElement {
        * container as well. This prevents the Home weather pill from falling
        * back to the generic gray .weather-compact styling.
        */
-      .global-header .header-time-weather .weather-compact {
+      .global-header .header-time-weather .weather-compact{
         min-height: 38px !important;
         height: 38px !important;
         padding: 0 12px !important;
@@ -17293,116 +15575,38 @@ export class DwainsLayoutCard extends LitElement {
         box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 16%, transparent) !important;
       }
 
-      .global-header .header-time-weather .weather-compact .weather-icon-compact ha-icon {
+      .global-header .header-time-weather .weather-compact .weather-icon-compact ha-icon{
         --mdc-icon-size: 18px !important;
         color: var(--primary-color) !important;
       }
 
-      .global-header .header-time-weather .weather-compact .weather-temp-compact {
+      .global-header .header-time-weather .weather-compact .weather-temp-compact{
         font-size: 13px !important;
         line-height: 1 !important;
         color: var(--primary-text-color) !important;
-      }
-
-      /*
-       * Select/input_select: use flex for the first row rather than the
-       * repeatedly overridden grid. The icon is therefore physically the
-       * first item and cannot jump into the content/right column.
-       */
-      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-main {
-        display: flex !important;
-        flex-direction: row !important;
-        align-items: center !important;
-        justify-content: flex-start !important;
-        width: 100% !important;
-        min-width: 0 !important;
-        height: 46px !important;
-        min-height: 46px !important;
-        gap: 11px !important;
-        direction: ltr !important;
-      }
-
-      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-icon {
-        position: static !important;
-        inset: auto !important;
-        order: 0 !important;
-        flex: 0 0 46px !important;
-        width: 46px !important;
-        min-width: 46px !important;
-        height: 46px !important;
-        min-height: 46px !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        align-self: center !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        transform: none !important;
-      }
-
-      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-icon ha-icon {
-        --mdc-icon-size: 24px !important;
-      }
-
-      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-content {
-        order: 1 !important;
-        flex: 1 1 auto !important;
-        width: auto !important;
-        min-width: 0 !important;
-        height: 46px !important;
-        margin: 0 !important;
-        align-self: center !important;
       }
     }
 
     
     /* 2026-10-03: restore stable desktop room geometry and final responsive overrides. */
     @media (min-width: 769px) {
-      /* Keep the room header media fixed; the grid column must use the same width
-         so the image cannot become narrow inside a wider empty column. */
-      .room-ui-v2 .room-header {
-        grid-template-columns: 142px minmax(0, 1fr) auto auto !important;
-        min-height: 96px !important;
-        gap: 16px !important;
-      }
-
-      .room-ui-v2 .room-header-media {
-        width: 142px !important;
-        height: 76px !important;
-        min-width: 142px !important;
-        min-height: 76px !important;
-        max-width: 142px !important;
-        max-height: 76px !important;
-        aspect-ratio: 142 / 76 !important;
-      }
-
-      .room-ui-v2 .room-header-copy {
-        height: 76px !important;
-        min-height: 0 !important;
-      }
-
-      /* Four entity cards per row on every desktop width. */
-      .room-ui-v2 .mobile-entity-rail,
-      .room-ui-v2 .mobile-entities-section.layout-grid .mobile-entity-rail {
-        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-      }
 
       /* Sidebar room content should nearly fill the height of the media tile. */
       .sidebar .room-area-button .area-name,
-      .sidebar .room-area-button.has-picture .area-name {
+.sidebar .room-area-button.has-picture .area-name{
         font-size: 16px !important;
         line-height: 1.08 !important;
       }
 
       .sidebar .room-area-button .area-sensors,
-      .sidebar .room-area-button.has-picture .area-sensors {
+.sidebar .room-area-button.has-picture .area-sensors{
         font-size: 13px !important;
         line-height: 1.12 !important;
         margin-top: 2px !important;
       }
 
       .sidebar .room-area-button .info-badge,
-      .sidebar .room-area-button.has-picture .info-badge {
+.sidebar .room-area-button.has-picture .info-badge{
         min-width: 29px !important;
         height: 22px !important;
         padding: 0 6px !important;
@@ -17410,17 +15614,15 @@ export class DwainsLayoutCard extends LitElement {
         font-size: 11px !important;
       }
 
-      .sidebar .room-area-button .info-badge ha-icon {
+      .sidebar .room-area-button .info-badge ha-icon{
         --mdc-icon-size: 12px !important;
       }
 
-      .sidebar .room-area-button .badge-count {
+      .sidebar .room-area-button .badge-count{
         font-size: 11px !important;
       }
 
-      /* Make the select/input_select icon physically first, independent of
-         earlier grid overrides. */
-      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-main {
+      /* Make the select/input_select icon physically first{
         display: flex !important;
         flex-direction: row !important;
         direction: ltr !important;
@@ -17432,42 +15634,12 @@ export class DwainsLayoutCard extends LitElement {
         min-height: 46px !important;
         gap: 11px !important;
       }
-
-      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-icon {
-        order: 0 !important;
-        flex: 0 0 46px !important;
-        width: 46px !important;
-        min-width: 46px !important;
-        height: 46px !important;
-        min-height: 46px !important;
-        margin: 0 !important;
-        position: static !important;
-        inset: auto !important;
-        transform: none !important;
-      }
-
-      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-content {
-        order: 1 !important;
-        flex: 1 1 auto !important;
-        width: auto !important;
-        min-width: 0 !important;
-        margin: 0 !important;
-      }
-
-      .room-ui-v2 .mobile-entity-card.has-inline-select .mobile-entity-right {
-        display: none !important;
-      }
     }
 
 
     @media (min-width: 769px) {
       /*
-       * Select/input_select: the wrapper was already in the correct left slot,
-       * but the HA icon itself could still be displaced by competing ha-icon
-       * rules. Pin the actual icon element inside its wrapper.
-       */
-      .room-ui-v2 .mobile-entity-card.has-inline-select
-      .mobile-entity-icon > .mobile-entity-leading-select-icon {
+       * Select/input_select: the wrapper was already in the correct left slot{
         position: static !important;
         inset: auto !important;
         top: auto !important;
@@ -17497,134 +15669,8 @@ export class DwainsLayoutCard extends LitElement {
      * experiments above cannot override the current design again.
      */
     @media (min-width: 769px) {
-      .room-ui-v2 .room-header {
-        min-height: 162px !important;
-        padding: 6px 12px !important;
-        gap: 12px !important;
-        align-items: center !important;
-        overflow: visible !important;
-      }
 
-      .room-ui-v2 .room-header.has-camera {
-        grid-template-columns: 190px minmax(260px, 1fr) minmax(240px, 300px) 205px 42px !important;
-        grid-template-areas: "media copy camera metrics actions" !important;
-      }
-
-      .room-ui-v2 .room-header.no-camera {
-        grid-template-columns: 190px minmax(300px, 1fr) 205px 42px !important;
-        grid-template-areas: "media copy metrics actions" !important;
-      }
-
-      /* Left block: same visual height as the complete three-pill stack. */
-      .room-ui-v2 .room-header-media {
-        grid-area: media !important;
-        width: 190px !important;
-        min-width: 190px !important;
-        max-width: 190px !important;
-        height: 150px !important;
-        min-height: 150px !important;
-        max-height: 150px !important;
-        aspect-ratio: auto !important;
-        align-self: center !important;
-        border-radius: 10px !important;
-      }
-
-      .room-ui-v2 .room-header-icon ha-icon {
-        --mdc-icon-size: 46px !important;
-      }
-
-      .room-ui-v2 .room-header-copy {
-        grid-area: copy !important;
-        height: 150px !important;
-        min-height: 150px !important;
-        max-height: 150px !important;
-        padding: 0 !important;
-        align-self: center !important;
-        justify-content: flex-start !important;
-        gap: 4px !important;
-        overflow: visible !important;
-      }
-
-      .room-ui-v2 .room-header-title-row {
-        min-height: 38px !important;
-        display: flex !important;
-        flex-wrap: nowrap !important;
-        align-items: center !important;
-        gap: 6px !important;
-      }
-
-      .room-ui-v2 .room-header-title-row .room-header-home-link {
-        flex: 0 0 30px !important;
-        width: 30px !important;
-        height: 30px !important;
-      }
-
-      .room-ui-v2 .room-header-title-row .room-header-home-link ha-icon {
-        --mdc-icon-size: 20px !important;
-      }
-
-      .room-ui-v2 .room-header .area-title {
-        margin: 0 !important;
-        font-size: clamp(29px, 2vw, 35px) !important;
-        line-height: 1.05 !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-      }
-
-      .room-ui-v2 .room-header-device-count {
-        margin: 0 !important;
-        font-size: 13px !important;
-        line-height: 1.15 !important;
-      }
-
-      /* Status badges must never be clipped at the lower edge. */
-      .room-ui-v2 .room-header-summary {
-        width: 100% !important;
-        min-height: 34px !important;
-        height: auto !important;
-        margin: 2px 0 0 !important;
-        padding: 2px 0 3px !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: flex-start !important;
-        flex-wrap: wrap !important;
-        gap: 7px !important;
-        overflow: visible !important;
-      }
-
-      .room-ui-v2 .room-header-summary.is-empty {
-        min-height: 0 !important;
-        padding: 0 !important;
-      }
-
-      .room-ui-v2 .room-summary-item.status {
-        min-height: 30px !important;
-        height: 30px !important;
-        padding: 5px 9px !important;
-        gap: 4px !important;
-        box-sizing: border-box !important;
-        font-size: 12px !important;
-        line-height: 1 !important;
-      }
-
-      .room-ui-v2 .room-summary-item.status ha-icon {
-        --mdc-icon-size: 17px !important;
-      }
-
-      /* Camera fills the same vertical band as the left identity block. */
-      .room-ui-v2 .room-header-camera-preview {
-        grid-area: camera !important;
-        width: 100% !important;
-        height: 150px !important;
-        min-height: 150px !important;
-        max-height: 150px !important;
-        align-self: center !important;
-        border-radius: 10px !important;
-      }
-
-      /* Three compact pills: ~10% smaller, almost no vertical dead space. */
-      .room-ui-v2 .room-header .area-header-metrics {
+      /* Three compact pills: ~10% smaller{
         grid-area: metrics !important;
         width: 205px !important;
         min-width: 205px !important;
@@ -17638,61 +15684,6 @@ export class DwainsLayoutCard extends LitElement {
         gap: 3px !important;
         align-self: center !important;
       }
-
-      .room-ui-v2 .room-header .area-header-metric {
-        width: 100% !important;
-        min-width: 0 !important;
-        min-height: 46px !important;
-        height: 46px !important;
-        padding: 4px 10px !important;
-        gap: 7px !important;
-        box-sizing: border-box !important;
-      }
-
-      .room-ui-v2 .room-header .area-header-metric .metric-ring {
-        width: 30px !important;
-        height: 30px !important;
-      }
-
-      .room-ui-v2 .room-header .area-header-metric .metric-label {
-        font-size: 8px !important;
-        line-height: 1 !important;
-      }
-
-      .room-ui-v2 .room-header .area-header-metric .metric-reading {
-        font-size: 14px !important;
-        line-height: 1.05 !important;
-      }
-
-      .room-ui-v2 .room-header .area-header-metric .metric-chevron {
-        display: none !important;
-      }
-
-      /* Edit + unavailable aligned with the title at the top of the 150px band. */
-      .room-ui-v2 .room-header-actions {
-        grid-area: actions !important;
-        width: 42px !important;
-        min-width: 42px !important;
-        height: 150px !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        justify-content: flex-start !important;
-        align-self: center !important;
-        gap: 8px !important;
-      }
-
-      .room-ui-v2 .room-header-actions .dd-edit-toggle,
-      .room-ui-v2 .room-header-actions .unavailable-entities-icon {
-        width: 38px !important;
-        height: 38px !important;
-        min-width: 38px !important;
-        min-height: 38px !important;
-        margin: 0 !important;
-        flex: 0 0 38px !important;
-      }
     }
 
 
@@ -17701,188 +15692,10 @@ export class DwainsLayoutCard extends LitElement {
      * One 132px band: image, camera and complete metric stack align exactly.
      */
     @media (min-width: 769px) {
-      .room-ui-v2 .room-header {
-        min-height: 160px !important;
-        padding: 14px 20px !important;
-        gap: 14px !important;
-        align-items: center !important;
-        overflow: visible !important;
-        box-sizing: border-box !important;
-      }
-
-      .room-ui-v2 .room-header.has-camera {
-        grid-template-columns: 190px minmax(300px, 1fr) 210px 145px 42px !important;
-        grid-template-areas: "media copy camera metrics actions" !important;
-      }
-
-      .room-ui-v2 .room-header.no-camera {
-        grid-template-columns: 190px minmax(340px, 1fr) 145px 42px !important;
-        grid-template-areas: "media copy metrics actions" !important;
-      }
-
-      .room-ui-v2 .room-header-media,
-      .room-ui-v2 .room-header-camera-preview {
-        height: 132px !important;
-        min-height: 132px !important;
-        max-height: 132px !important;
-        align-self: center !important;
-        border-radius: 10px !important;
-      }
-
-      .room-ui-v2 .room-header-media {
-        grid-area: media !important;
-        width: 190px !important;
-        min-width: 190px !important;
-        max-width: 190px !important;
-      }
-
-      .room-ui-v2 .room-header-camera-preview {
-        grid-area: camera !important;
-        width: 210px !important;
-        min-width: 210px !important;
-        max-width: 210px !important;
-      }
-
-      .room-ui-v2 .room-header-icon ha-icon { --mdc-icon-size: 42px !important; }
-
-      .room-ui-v2 .room-header-copy {
-        grid-area: copy !important;
-        height: 132px !important;
-        min-height: 132px !important;
-        max-height: 132px !important;
-        padding: 0 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: center !important;
-        align-items: stretch !important;
-        gap: 6px !important;
-        overflow: visible !important;
-      }
-
-      .room-ui-v2 .room-header-title-row {
-        min-height: 34px !important;
-        margin: 0 !important;
-        gap: 6px !important;
-        align-items: center !important;
-      }
-
-      .room-ui-v2 .room-header-title-row .room-header-home-link {
-        flex: 0 0 28px !important;
-        width: 28px !important;
-        height: 28px !important;
-      }
-
-      .room-ui-v2 .room-header-title-row .room-header-home-link ha-icon {
-        --mdc-icon-size: 19px !important;
-      }
-
-      .room-ui-v2 .room-header .area-title {
-        margin: 0 !important;
-        font-size: clamp(28px, 1.9vw, 33px) !important;
-        line-height: 1.05 !important;
-      }
-
-      .room-ui-v2 .room-header-device-count {
-        margin: 0 !important;
-        font-size: 12px !important;
-        line-height: 1.1 !important;
-      }
-
-      .room-ui-v2 .room-header-summary {
-        min-height: 30px !important;
-        height: 30px !important;
-        margin: 1px 0 0 !important;
-        padding: 0 !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: flex-start !important;
-        flex-wrap: nowrap !important;
-        gap: 7px !important;
-        overflow: visible !important;
-      }
-
-      .room-ui-v2 .room-summary-item.status {
-        min-height: 30px !important;
-        height: 30px !important;
-        padding: 5px 9px !important;
-      }
-
-      .room-ui-v2 .room-header-camera-stream { display: none !important; }
-
-      .room-ui-v2 .room-header .area-header-metrics {
-        grid-area: metrics !important;
-        width: 145px !important;
-        min-width: 145px !important;
-        max-width: 145px !important;
-        height: 132px !important;
-        min-height: 132px !important;
-        max-height: 132px !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: stretch !important;
-        justify-content: flex-start !important;
-        gap: 12px !important;
-        align-self: center !important;
-      }
-
-      .room-ui-v2 .room-header .area-header-metric {
-        width: 145px !important;
-        min-width: 145px !important;
-        max-width: 145px !important;
-        min-height: 36px !important;
-        height: 36px !important;
-        padding: 3px 8px !important;
-        gap: 6px !important;
-        box-sizing: border-box !important;
-      }
-
-      .room-ui-v2 .room-header .area-header-metric .metric-ring {
-        width: 22px !important;
-        height: 22px !important;
-      }
-
-      .room-ui-v2 .room-header .area-header-metric .metric-label {
-        font-size: 7px !important;
-        line-height: 1 !important;
-      }
-
-      .room-ui-v2 .room-header .area-header-metric .metric-reading {
-        font-size: 12px !important;
-        line-height: 1.02 !important;
-      }
-
-      .room-ui-v2 .room-header .area-header-metric .metric-chevron { display: none !important; }
-
-      .room-ui-v2 .room-header-actions {
-        grid-area: actions !important;
-        width: 42px !important;
-        min-width: 42px !important;
-        height: 132px !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        justify-content: flex-start !important;
-        align-self: center !important;
-        gap: 8px !important;
-      }
-
-      .room-ui-v2 .room-header-actions .dd-edit-toggle,
-      .room-ui-v2 .room-header-actions .unavailable-entities-icon {
-        width: 38px !important;
-        height: 38px !important;
-        min-width: 38px !important;
-        min-height: 38px !important;
-        margin: 0 !important;
-        flex: 0 0 38px !important;
-      }
 
       .dd-page-card,
-      .dd-page-card > *,
-      .dd-page-card dwains-dashboard-next-card-host {
+.dd-page-card > *,
+.dd-page-card dwains-dashboard-next-card-host{
         width: 100% !important;
         max-width: none !important;
         min-width: 0 !important;
@@ -17890,10 +15703,12 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
+    ${roomAreaStyles}
+
     ${pageHeaderStyles}
 
     /* Room header: exact v1.11.0 header styling with only the two requested structural deviations. */
-    .dd-page-header-with-media {
+    .dd-page-header-with-media{
       display: grid;
       grid-template-columns: 220px minmax(0, 1fr);
       gap: 18px;
@@ -17901,7 +15716,7 @@ export class DwainsLayoutCard extends LitElement {
       min-width: 0;
     }
 
-    .dd-page-header-media-tile {
+    .dd-page-header-media-tile{
       position: relative;
       width: 220px;
       min-height: 176px;
@@ -17910,7 +15725,7 @@ export class DwainsLayoutCard extends LitElement {
       background: color-mix(in srgb, var(--ph-accent) 10%, var(--ph-surface));
     }
 
-    .dd-page-header-room-picture {
+    .dd-page-header-room-picture{
       position: absolute;
       inset: 0;
       background-position: center;
@@ -17918,7 +15733,7 @@ export class DwainsLayoutCard extends LitElement {
       background-repeat: no-repeat;
     }
 
-    .dd-page-header-room-icon {
+    .dd-page-header-room-icon{
       width: 100%;
       height: 100%;
       min-height: 176px;
@@ -17929,11 +15744,11 @@ export class DwainsLayoutCard extends LitElement {
       color: var(--ph-accent);
     }
 
-    .dd-page-header-room-icon ha-icon {
+    .dd-page-header-room-icon ha-icon{
       --mdc-icon-size: 52px;
     }
 
-    .dd-page-header-main {
+    .dd-page-header-main{
       min-width: 0;
       display: flex;
       flex-direction: column;
@@ -17941,82 +15756,82 @@ export class DwainsLayoutCard extends LitElement {
       gap: 16px;
     }
 
-    .dd-page-header-title-row {
+    .dd-page-header-title-row{
       min-width: 0;
       display: flex;
       align-items: center;
       gap: 10px;
     }
 
-    .dd-page-header-title-row .dd-page-header-title {
+    .dd-page-header-title-row .dd-page-header-title{
       min-width: 0;
     }
 
-    .dd-page-header-home {
+    .dd-page-header-home{
       width: 36px;
       height: 36px;
     }
 
-    .dd-page-header-home ha-icon {
+    .dd-page-header-home ha-icon{
       --mdc-icon-size: 21px;
     }
 
     @media (max-width: 768px) {
-      .dd-page-header-with-media {
+      .dd-page-header-with-media{
         grid-template-columns: 78px minmax(0, 1fr);
         gap: 12px;
         align-items: start;
       }
 
-      .dd-page-header-media-tile {
+      .dd-page-header-media-tile{
         width: 78px;
         min-height: 78px;
         height: 78px;
         border-radius: 14px;
       }
 
-      .dd-page-header-room-icon {
+      .dd-page-header-room-icon{
         min-height: 78px;
       }
 
-      .dd-page-header-room-icon ha-icon {
+      .dd-page-header-room-icon ha-icon{
         --mdc-icon-size: 34px;
       }
 
-      .dd-page-header-main {
+      .dd-page-header-main{
         gap: 12px;
       }
 
-      .dd-page-header-main .dd-page-header-top {
+      .dd-page-header-main .dd-page-header-top{
         flex-wrap: wrap;
         row-gap: 14px;
       }
 
-      .dd-page-header-main .dd-page-header-identity {
+      .dd-page-header-main .dd-page-header-identity{
         order: 1;
         flex: 1 1 auto;
         flex-basis: auto;
       }
 
-      .dd-page-header-main .dd-page-header-actions {
+      .dd-page-header-main .dd-page-header-actions{
         order: 2;
         margin-left: auto;
       }
 
-      .dd-page-header-main .dd-page-header-strip {
+      .dd-page-header-main .dd-page-header-strip{
         margin-left: calc(-78px - 12px);
       }
 
-      .dd-page-header-title-row {
+      .dd-page-header-title-row{
         gap: 7px;
       }
 
-      .dd-page-header-home {
+      .dd-page-header-home{
         width: 32px;
         height: 32px;
       }
 
-      .dd-room-compact .dd-page-header-home {
+      .dd-room-compact .dd-page-header-home{
         width: 38px;
         height: 38px;
       }
@@ -21848,9 +19663,7 @@ export class DwainsLayoutCard extends LitElement {
 
         ${!this._isMobile ? this._renderNowPlayingBar(false) : nothing}
         ${this._renderCustomCardSlot(area.area_id, 'top', this._t('layout.custom_cards_top'))}
-        <div class="room-ui-v2 room-entities-legacy">
-          ${this._renderMobileEntitiesSection(area, areaEntities)}
-        </div>
+        ${this._renderMobileEntitiesSection(area, areaEntities)}
         ${this._renderCustomCardSlot(area.area_id, 'bottom', this._t('layout.custom_cards_bottom'))}
       </div>
     `;
