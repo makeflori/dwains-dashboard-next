@@ -518,8 +518,9 @@ export class DwainsLayoutCard extends LitElement {
       margin: 0 0 18px;
     }
     .room-header dwains-dashboard-next-area-thermostat{
-      flex: 0 1 320px;
-      min-width: 220px;
+      flex: 0 0 auto;
+      min-width: 0;
+      max-width: 100%;
     }
     @media (max-width: 768px) {
       dwains-dashboard-next-now-playing.floating{
@@ -15812,6 +15813,55 @@ copy{
 
 
 
+
+    /* 2026-10-05 room-view follow-up: shared edges, intrinsic status widths and tighter meta spacing. */
+    @media (min-width: 769px) {
+      .global-header.room-context{
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+      }
+
+      .global-header.room-context .header-status-scroll{
+        padding-inline: 0 !important;
+        scroll-padding-inline: 0 !important;
+      }
+
+      .global-header.room-context .header-status-scroll-button-left{
+        left: -10px !important;
+      }
+
+      .global-header.room-context .header-status-scroll-button-right{
+        right: -10px !important;
+      }
+
+      .global-header.room-context .status-card-compact{
+        width: max-content !important;
+        min-width: 140px !important;
+        max-width: none !important;
+        grid-template-columns: 32px max-content !important;
+      }
+
+      .global-header.room-context .status-card-compact .status-card-title-compact{
+        overflow: visible !important;
+        text-overflow: clip !important;
+        white-space: nowrap !important;
+      }
+
+      .global-header.room-context .header-time-weather{
+        gap: 3px !important;
+        transform: none !important;
+      }
+
+      .global-header.room-context .room-favorites-block,
+      .global-header.room-context .room-favorites-content,
+      .global-header.room-context .room-favorites-content .favorites-section,
+      .global-header.room-context .room-favorites-content .favorites-grid{
+        width: 100% !important;
+        max-width: none !important;
+        box-sizing: border-box !important;
+      }
+    }
+
     /* 2026-10-05 room/home consistency pass. */
     .favorite-name {
       display: block !important;
@@ -18935,7 +18985,7 @@ copy{
       value,
       count: values.length,
       icon: kind === 'temperature' ? getDeviceClassIcon('sensor', 'temperature') : getDeviceClassIcon('sensor', 'humidity'),
-      color: kind === 'temperature' ? getDomainColor('sensor', 'temperature') : getDomainColor('sensor', 'humidity'),
+      color: getDomainColor('sensor', kind),
       entityIds: [...new Set(values.flatMap(item => item.entityIds))],
     };
   }
@@ -20448,9 +20498,15 @@ copy{
           const groupDeviceClass = group.entities[0]
             ? this.hass.states[group.entities[0].entity_id]?.attributes?.device_class
             : undefined;
-          const groupColor = group.key === 'switch'
-            ? getDomainColor('switch')
-            : getDomainColor(groupDomain, groupDeviceClass);
+          const groupColor = group.key === 'cover_openings'
+            ? getDomainColor('binary_sensor', 'opening')
+            : group.key === 'cover_shading'
+              ? getDomainColor('cover')
+              : group.key === 'motion'
+                ? getDomainColor('binary_sensor', 'motion')
+                : group.key === 'safety'
+                  ? getDomainColor('binary_sensor', 'smoke')
+                  : getDomainColor(groupDomain, groupDeviceClass);
           const renderedEntities = this._isMobile && !this._editMode && !this._renderAllMobileAreaEntities && group.entities.length > MOBILE_INITIAL_ENTITY_CARDS
             ? group.entities.slice(0, MOBILE_INITIAL_ENTITY_CARDS)
             : group.entities;
@@ -20776,7 +20832,7 @@ copy{
       if (!grouped[groupKey]) grouped[groupKey] = [];
     });
 
-    const order = ['light', 'switch', 'cover_openings', 'cover_shading', 'climate', 'todo', 'scene', 'event', 'motion', 'binary_sensor', 'sensor', 'media_player', 'fan', 'lock', 'camera', 'vacuum'];
+    const order = ['light', 'switch', 'input_boolean', 'cover_openings', 'cover_shading', 'climate', 'todo', 'scene', 'event', 'motion', 'safety', 'binary_sensor', 'sensor', 'media_player', 'fan', 'lock', 'camera', 'vacuum'];
 
     return Object.entries(grouped)
       .sort(([a], [b]) => {
@@ -21181,19 +21237,17 @@ copy{
   }
 
   private _mobileGroupName(key: string): string {
-    if (key === 'cover_openings') {
-      return `${getDeviceClassName(this.hass, 'window')} & ${getDeviceClassName(this.hass, 'door')}`;
-    }
-    if (key === 'cover_shading') {
-      return String(this.hass?.language || this.hass?.locale?.language || '').toLowerCase().startsWith('de')
-        ? 'Beschattung & Tore'
-        : 'Shading & gates';
-    }
+    const german = String(this.hass?.language || this.hass?.locale?.language || '').toLowerCase().startsWith('de');
+    if (key === 'cover_openings') return german ? 'Fenster & Türen' : 'Windows & doors';
+    if (key === 'cover_shading') return german ? 'Beschattung & Tore' : 'Shading & gates';
+    if (key === 'motion') return german ? 'Bewegung & Präsenz' : 'Motion & presence';
+    if (key === 'safety') return german ? 'Sicherheit & Warnmelder' : 'Safety & alarms';
     return getDomainName(this.hass, key);
   }
 
   private _mobileGroupIcon(key: string): string {
     if (key === 'motion') return 'mdi:motion-sensor';
+    if (key === 'safety') return 'mdi:shield-alert-outline';
     if (key === 'cover_openings') return 'mdi:door-open';
     if (key === 'cover_shading') return 'mdi:blinds-horizontal';
     return getDomainIcon(key);
