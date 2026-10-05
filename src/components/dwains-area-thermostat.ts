@@ -32,8 +32,8 @@ const ACTIVITY_ICONS: Record<ThermostatActivity, string> = {
   dry: 'mdi:water-percent',
   fan: 'mdi:fan',
   auto: 'mdi:thermostat-auto',
-  idle: 'mdi:thermostat',
-  off: 'mdi:power',
+  idle: 'mdi:power',
+  off: 'mdi:power-off',
 };
 
 /**
@@ -268,7 +268,6 @@ export class DwainsAreaThermostat extends LitElement {
           @click=${this._openMoreInfo}
         >
           <ha-icon icon=${ACTIVITY_ICONS[activity]}></ha-icon>
-          <span class="mode-label">${activityLabel}</span>
         </button>
       </div>
     `;
@@ -450,15 +449,17 @@ export class DwainsAreaThermostat extends LitElement {
     }
 
     .mode {
+      width: 36px;
       min-width: 36px;
-      max-width: 132px;
+      max-width: 36px;
       min-height: 36px;
       margin-left: 1px;
-      padding: 0 9px 0 8px;
+      padding: 0;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      flex: 0 1 auto;
+      justify-content: center;
+      gap: 0;
+      flex: 0 0 36px;
       border-radius: 10px;
       background: color-mix(in srgb, var(--thermostat-color) 15%, transparent);
       color: color-mix(in srgb, var(--thermostat-color) 78%, var(--tile-text));
@@ -471,13 +472,6 @@ export class DwainsAreaThermostat extends LitElement {
       --mdc-icon-size: 17px;
       width: 17px;
       height: 17px;
-    }
-
-    .mode-label {
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
     }
 
     @media (pointer: coarse) {
