@@ -44,3 +44,5 @@ Dwains Dashboard Next follows semantic versioning.
 - Release builds must remove obsolete files from previous packaging layouts before Rollup runs.
 
 - Keep the v1.11.0 bootstrap strategy imports static in `src/index.ts`; do not move dashboard/view strategy loading back to dynamic imports without an explicit compatibility review.
+
+- The generated entry must retain the v1.11.0-style static bootstrap chunk (`./chunks/index-*.js`) rather than directly dynamically importing all runtime strategy/UI chunks from the entry file.
