@@ -15,9 +15,9 @@ Dwains Dashboard Next follows semantic versioning.
 - Every public release uses a `vX.Y.Z` Git tag.
 - Keep `package.json`, `package-lock.json` and the built file in `dist/` in sync.
 - Keep release notes on the GitHub release page, not in the main README.
-- HACS users receive published GitHub releases, so every release must contain a complete standalone `dist/dwains-dashboard-next.js`.
+- HACS users receive published GitHub releases, so every release must contain `dist/dwains-dashboard-next.js` and all generated split chunks.
 - For this fork, every dev change intended for HACS testing is published as a new release.
-- Do not ship runtime chunk dependencies for the HACS plugin build; Rollup must inline dynamic imports into `dwains-dashboard-next.js`.
+- Preserve the v1.11.0 code-splitting/lazy-loading architecture. For HACS compatibility, generated chunks are emitted directly into `dist/` beside `dwains-dashboard-next.js`, because HACS dashboard-plugin downloads do not recurse into `dist/chunks/`.
 - The HACS manifest must continue to point to `dwains-dashboard-next.js`.
 - Use a minor release when user-facing features are added, even if bug fixes are included in the same release.
 - Use a patch release only when there are no new user-facing features.
@@ -29,9 +29,9 @@ Dwains Dashboard Next follows semantic versioning.
 3. Update `README.md` with the current release when needed.
 4. Run `npm run type-check`.
 5. Run `npm run build`.
-6. Confirm `dist/dwains-dashboard-next.js` changed when source changed and that it contains no `./chunks/` imports.
+6. Confirm `dist/dwains-dashboard-next.js` changed when source changed and that all generated chunk files are present directly in `dist/`.
 7. Commit with `Release X.Y.Z`.
 8. Create tag `vX.Y.Z`.
 9. Push the commit and tag.
 10. Create the GitHub release with English release notes.
-11. Verify the built `dwains-dashboard-next.js` is standalone before testing through HACS.
+11. Verify the built entry file and all generated chunks are present in `dist/` before testing through HACS.
