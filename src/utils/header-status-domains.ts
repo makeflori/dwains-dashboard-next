@@ -165,7 +165,6 @@ export function getStatusDomains(hass: HomeAssistant, config: any): DomainCount[
   });
 
   const coverStatusCounts: Record<string, { total: number; on: number; entities: string[]; deviceClass?: string; statusKind: 'window' | 'door' | 'gate' | 'shading'; name: string; icon: string }> = {};
-  const shadingCoverClasses = new Set(['awning', 'blind', 'curtain', 'shade', 'shutter']);
   const gateCoverClasses = new Set(['garage', 'garage_door', 'gate']);
 
   const addOn = (bucket: { on: number; entities: string[] }, id: string) => {
