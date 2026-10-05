@@ -1331,6 +1331,40 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           </div>
           ${this._showAlarmPicker ? this._renderAlarmPicker() : nothing}
         </div>
+        ${this._renderNowPlayingSettings()}
+      </div>
+    `;
+  }
+
+  private _renderNowPlayingSettings() {
+    const mode = normalizeNowPlayingMode(this._config?.settings?.now_playing_bar);
+    const modes: Array<{ value: NowPlayingMode; icon: string; label: string }> = [
+      { value: 'off', icon: 'mdi:music-off', label: this._t('now_playing.mode_off') },
+      { value: 'home', icon: 'mdi:home-outline', label: this._t('now_playing.mode_home') },
+      { value: 'all', icon: 'mdi:view-dashboard-outline', label: this._t('now_playing.mode_all') },
+    ];
+    return html`
+      <div class="dd-header-feature">
+        <div class="dd-header-feature-row">
+          <span class="dd-setting-row-icon"><ha-icon icon="mdi:music-circle-outline"></ha-icon></span>
+          <span class="dd-setting-row-copy">
+            <strong>${this._t('now_playing.setting_title')}</strong>
+            <small>${this._t('now_playing.setting_description')}</small>
+          </span>
+        </div>
+        <div class="area-sort-segmented" role="radiogroup" aria-label=${this._t('now_playing.setting_title')}>
+          ${modes.map(item => html`
+            <button
+              type="button"
+              class="area-sort-segment ${mode === item.value ? 'selected' : ''}"
+              role="radio"
+              aria-checked=${mode === item.value ? 'true' : 'false'}
+              @click=${() => this._setNowPlayingMode(item.value)}
+            >
+              <ha-icon icon=${item.icon}></ha-icon><span>${item.label}</span>
+            </button>
+          `)}
+        </div>
       </div>
     `;
   }
@@ -1427,6 +1461,13 @@ export class DwainsDashboardStrategyEditor extends LitElement {
               this._config?.settings?.hide_unavailable_entities !== false,
               this._toggleHideUnavailableAreaEntities
             )}
+            ${this._renderToggleSetting(
+              "mdi:thermostat",
+              this._t('thermostat.setting_label'),
+              this._t('thermostat.setting_description'),
+              this._config?.settings?.show_area_thermostat !== false,
+              this._toggleAreaThermostat
+            )}
           </div>
           ${this._renderAreasConfiguration()}
         </div>
@@ -1434,6 +1475,21 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     );
   }
 
+  private _toggleAreaThermostat = (event: Event): void => {
+    if (!this._config) return;
+    this._fireConfigChanged({
+      ...this._config,
+      settings: { ...this._config.settings, show_area_thermostat: (event.target as any).checked },
+    });
+  };
+
+  private _setNowPlayingMode(mode: NowPlayingMode): void {
+    if (!this._config) return;
+    this._fireConfigChanged({
+      ...this._config,
+      settings: { ...this._config.settings, now_playing_bar: mode },
+    });
+  }
   private _renderAreasConfiguration() {
     if (!this.hass || !this._config) return nothing;
 
