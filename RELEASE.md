@@ -15,10 +15,11 @@ Dwains Dashboard Next follows semantic versioning.
 - Every public release uses a `vX.Y.Z` Git tag.
 - Keep `package.json`, `package-lock.json` and the built file in `dist/` in sync.
 - Keep release notes on the GitHub release page, not in the main README.
-- HACS users receive published GitHub releases, so every release must contain `dist/dwains-dashboard-next.js` and all generated split chunks.
+- HACS users receive published GitHub releases. Every release must attach `dist/dwains-dashboard-next.js` and every generated split chunk as individual `.js` release assets so HACS installs the complete runtime set.
 - For this fork, every dev change intended for HACS testing is published as a new release.
 - Preserve the v1.11.0 code-splitting/lazy-loading architecture. For HACS compatibility, generated chunks are emitted directly into `dist/` beside `dwains-dashboard-next.js`, because HACS dashboard-plugin downloads do not recurse into `dist/chunks/`.
 - Chunked HACS builds must keep all runtime-imported files at the top level of `dist/`.
+- Do not attach a ZIP asset: HACS treats release assets as downloadable plugin files. Attach the main JS file and all chunk JS files individually.
 - The HACS manifest must continue to point to `dwains-dashboard-next.js`.
 - Use a minor release when user-facing features are added, even if bug fixes are included in the same release.
 - Use a patch release only when there are no new user-facing features.
@@ -34,5 +35,5 @@ Dwains Dashboard Next follows semantic versioning.
 7. Commit with `Release X.Y.Z`.
 8. Create tag `vX.Y.Z`.
 9. Push the commit and tag.
-10. Create the GitHub release with English release notes.
+10. Create the GitHub release with English release notes and attach every `dist/*.js` file individually.
 11. Verify the built entry file and all generated chunks are present in `dist/` before testing through HACS.
