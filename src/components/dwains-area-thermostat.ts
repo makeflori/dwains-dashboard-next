@@ -37,9 +37,9 @@ const ACTIVITY_ICONS: Record<ThermostatActivity, string> = {
 };
 
 /**
- * Compact thermostat for the room header: current temperature, the target
- * with minus and plus, and a chip with what the thermostat is doing. The chip
- * and the current temperature open Home Assistant's more-info dialog.
+ * Compact thermostat for the room header: climate type, labelled target
+ * temperature with minus/plus controls, and Home Assistant-style activity.
+ * The type and activity buttons open Home Assistant's more-info dialog.
  */
 @customElement('dwains-dashboard-next-area-thermostat')
 export class DwainsAreaThermostat extends LitElement {
@@ -90,17 +90,6 @@ export class DwainsAreaThermostat extends LitElement {
 
   private _formatValue(value: number, decimals: number, unit: string): string {
     return `${formatTemperatureNumber(value, decimals, ddLocale(this.hass))} ${unit}`;
-  }
-
-  private _formatCurrent(stateObj: HassEntity, model: ThermostatModel): string | undefined {
-    if (model.current === undefined) return undefined;
-    try {
-      const formatted = this.hass?.formatEntityAttributeValue?.(stateObj, 'current_temperature');
-      if (formatted) return formatted;
-    } catch {
-      // Older Home Assistant versions: fall back to our own formatting.
-    }
-    return this._formatValue(model.current, Number.isInteger(model.current) ? 0 : 1, model.unit);
   }
 
   private _activityLabel(stateObj: HassEntity): string {
