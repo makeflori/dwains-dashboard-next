@@ -115,6 +115,27 @@ describe('isEntityVisibleInArea', () => {
   });
 });
 
+describe('cover status semantics', () => {
+  it('shows a deployed template cover without device_class as shading', () => {
+    const config = baseConfig({
+      entities: [{ entity_id: 'cover.test_blind', area_id: 'living' }],
+    });
+    const hass = hassWithStates([
+      entityState('cover.test_blind', 'closed', { current_position: 0 }),
+    ], {
+      entities: {
+        'cover.test_blind': { entity_id: 'cover.test_blind', area_id: 'living' },
+      },
+    });
+
+    const shading = getStatusDomains(hass, config).find(
+      (item) => item.domain === 'cover' && item.statusKind === 'shading'
+    );
+    expect(shading?.count).toBe(1);
+    expect(shading?.entities).toEqual(['cover.test_blind']);
+  });
+});
+
 describe('group entities', () => {
   it('reads group members of the same domain', () => {
     const group = entityState('cover.all_blinds', 'open', {
