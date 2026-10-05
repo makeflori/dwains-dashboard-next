@@ -50,32 +50,14 @@ export const getDomainIcon = (domain: string): string => {
 
 export const getDomainColor = (domain: string, deviceClass?: string): string => {
   // DD Next semantic colour families:
-  // amber = light/energy, blue = controls, orange = openings/mechanics,
-  // cyan = climate/air, violet = media, slate = neutral information,
-  // red = genuine hazards/alarms.
+  // red = hazards, amber/gold = light/energy, blue = controls,
+  // orange = openings/mechanics, steel blue = general sensors,
+  // green = presence/running, slate = neutral activity,
+  // violet = media/events, light blue = climate/temperature,
+  // cyan = air/humidity, turquoise = camera/connectivity.
   if (domain === 'binary_sensor') {
     const deviceClassColors: Record<string, string> = {
-      // Openings / mechanics
-      window: '#D98928',
-      door: '#D98928',
-      opening: '#D98928',
-      garage_door: '#D98928',
-
-      // Neutral presence / activity
-      motion: '#6D7891',
-      occupancy: '#6D7891',
-      presence: '#6D7891',
-      vibration: '#6D7891',
-      sound: '#6D7891',
-      connectivity: '#6D7891',
-
-      // Controls / electrical states
-      lock: '#2F6FD6',
-      plug: '#2F6FD6',
-      power: '#2F6FD6',
-      light: '#E1A129',
-
-      // Genuine warning / hazard states
+      // Red — genuine warnings / hazards (10 incl. alarm domain below)
       moisture: '#DF5B63',
       smoke: '#DF5B63',
       gas: '#DF5B63',
@@ -86,11 +68,39 @@ export const getDomainColor = (domain: string, deviceClass?: string): string => 
       heat: '#DF5B63',
       cold: '#DF5B63',
 
-      // Informational states
+      // Amber / gold — light and electrical activity
+      light: '#E1A129',
+      plug: '#D88E20',
+      power: '#D88E20',
+
+      // Blue — controls
+      lock: '#2F6FD6',
+
+      // Orange — openings / mechanics
+      window: '#D98928',
+      door: '#D98928',
+      opening: '#D98928',
+      garage_door: '#D98928',
+
+      // Steel blue — informational sensors
       battery: '#4F79A7',
       battery_charging: '#4F79A7',
       update: '#4F79A7',
-      running: '#4F79A7',
+
+      // Green — presence / active process
+      occupancy: '#3F9B6D',
+      presence: '#3F9B6D',
+      running: '#3F9B6D',
+
+      // Slate — neutral activity
+      motion: '#6D7891',
+      vibration: '#6D7891',
+
+      // Violet — media-like signal/event state
+      sound: '#7C67C7',
+
+      // Turquoise — connectivity
+      connectivity: '#1494AA',
     };
     if (deviceClass && deviceClassColors[deviceClass]) {
       return deviceClassColors[deviceClass]!;
@@ -98,41 +108,49 @@ export const getDomainColor = (domain: string, deviceClass?: string): string => 
   }
 
   const colors: Record<string, string> = {
-    // Light / warmth / energy
+    // Red — alarm / danger
+    alarm_control_panel: '#DF5B63',
+
+    // Amber / gold — light / energy
     light: '#E1A129',
     wattage: '#D88E20',
     energy: '#D88E20',
-    temperature: '#D98928',
 
-    // Controls
+    // Blue — controls
     switch: '#2F6FD6',
     lock: '#2F6FD6',
     select: '#2F6FD6',
     button: '#2F6FD6',
     remote: '#2F6FD6',
 
-    // Openings / mechanics
+    // Orange — openings / mechanics
     cover: '#D98928',
 
-    // Climate / air / water
-    climate: '#34A6D8',
-    humidity: '#34A6D8',
-    fan: '#16A6B6',
-    camera: '#0EA5C6',
-
-    // Media / entertainment
-    media_player: '#7C67C7',
-
-    // Neutral information / devices
-    person: '#6D7891',
-    binary_sensor: '#6D7891',
+    // Steel blue — general sensors / updates
     sensor: '#4F79A7',
-    vacuum: '#4F79A7',
-    event: '#6D7891',
     update: '#4F79A7',
 
-    // Alarm / danger
-    alarm_control_panel: '#DF5B63',
+    // Green — people / presence
+    person: '#3F9B6D',
+
+    // Slate — neutral device/activity
+    binary_sensor: '#6D7891',
+    vacuum: '#6D7891',
+
+    // Violet — media / events
+    media_player: '#7C67C7',
+    event: '#7C67C7',
+
+    // Light blue — climate / temperature
+    climate: '#34A6D8',
+    temperature: '#34A6D8',
+
+    // Cyan — air / humidity
+    fan: '#16A6B6',
+    humidity: '#16A6B6',
+
+    // Turquoise — camera / connectivity
+    camera: '#1494AA',
   };
 
   return colors[domain] || '#6D7891';
