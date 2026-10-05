@@ -17,7 +17,7 @@ import { restrictNonAdminDashboardSettings } from '../utils/security';
 import { AREA_STRATEGY_GROUPS, getAreaEntityGroupKey, getLegacyAreaGroupKey, sortAreas, type AreaStrategyGroup } from '../utils/area-entities';
 import { navigateHomeAssistant } from '../utils/navigation';
 import { isHassDarkTheme } from '../utils/theme';
-import { normalizeHiddenHomeInformationCards, normalizeHiddenHomeSections, normalizeHomeSectionsOrder } from '../utils/home-sections';
+import { HOME_SECTION_META, normalizeHiddenHomeInformationCards, normalizeHiddenHomeSections, normalizeHomeSectionsOrder } from '../utils/home-sections';
 import { buildHousePowerUsage } from '../utils/power-usage';
 import { normalizeHomeScenes, resolveHomeSceneItems, type HomeSceneItem } from '../utils/home-scenes';
 import { getEntityRegistry } from '../utils/entity-registry';
