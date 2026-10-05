@@ -68,6 +68,12 @@ export default {
     dir: 'dist',
     entryFileNames: 'dwains-dashboard-next.js',
     chunkFileNames: 'chunks/[name]-[hash].js',
+    manualChunks: {
+      index: [
+        'src/strategies/dashboard-strategy.ts',
+        'src/strategies/view-strategy.ts'
+      ]
+    },
     format: 'es',
     sourcemap: !production
   },
