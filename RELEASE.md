@@ -40,3 +40,5 @@ Dwains Dashboard Next follows semantic versioning.
 - The HACS distribution layout must remain identical to upstream v1.11.0 unless an upstream release changes it.
 
 - Always clean the complete `dist/` directory before release builds so obsolete top-level chunks from previous packaging experiments cannot survive into a v1.11.0-style build.
+
+- Release builds must remove obsolete files from previous packaging layouts before Rollup runs.
