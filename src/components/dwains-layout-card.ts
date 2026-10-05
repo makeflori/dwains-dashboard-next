@@ -922,11 +922,11 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .status-card-compact.binary_sensor .status-card-icon-compact {
-      background: color-mix(in srgb, var(--status-color, #df5b63) 15%, transparent);
+      background: color-mix(in srgb, var(--status-color, #6d7891) 15%, transparent);
     }
 
     .status-card-compact.binary_sensor ha-icon {
-      color: var(--status-color, #df5b63);
+      color: var(--status-color, #6d7891);
     }
 
     .status-card-compact.person .status-card-icon-compact {
@@ -2874,18 +2874,18 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .info-badge.cover {
-      background: color-mix(in srgb, var(--badge-color, #1494aa) 10%, var(--card-background-color));
-      color: var(--badge-color, #1494aa);
+      background: color-mix(in srgb, var(--badge-color, #d98928) 10%, var(--card-background-color));
+      color: var(--badge-color, #d98928);
     }
 
     .info-badge.fan {
-      background: color-mix(in srgb, var(--badge-color, #2b8fcb) 10%, var(--card-background-color));
-      color: var(--badge-color, #2b8fcb);
+      background: color-mix(in srgb, var(--badge-color, #16a6b6) 10%, var(--card-background-color));
+      color: var(--badge-color, #16a6b6);
     }
 
     .info-badge.motion {
-      background: color-mix(in srgb, var(--badge-color, #df5b63) 10%, var(--card-background-color));
-      color: var(--badge-color, #df5b63);
+      background: color-mix(in srgb, var(--badge-color, #6d7891) 10%, var(--card-background-color));
+      color: var(--badge-color, #6d7891);
     }
 
     /* Sidebar info badges (smaller) */
@@ -4636,12 +4636,12 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .favorite-card-wrapper.favorite-cover {
-      --favorite-color: #1494aa;
+      --favorite-color: #d98928;
     }
 
     .favorite-card-wrapper.favorite-binary_sensor,
     .favorite-card-wrapper.favorite-motion {
-      --favorite-color: #df5b63;
+      --favorite-color: #6d7891;
     }
 
     .favorite-card-wrapper.favorite-climate,
@@ -4654,7 +4654,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .favorite-card-wrapper.favorite-person {
-      --favorite-color: #6d7891;
+      --favorite-color: #3f9b6d;
     }
 
     .favorite-card-wrapper.favorite-sun {
@@ -5212,15 +5212,15 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .area-badge.motion.active {
-      background: color-mix(in srgb, var(--area-badge-color, #df5b63) 10%, var(--card-background-color));
-      color: var(--area-badge-color, #df5b63);
-      border-color: color-mix(in srgb, var(--area-badge-color, #df5b63) 20%, transparent);
+      background: color-mix(in srgb, var(--area-badge-color, #6d7891) 10%, var(--card-background-color));
+      color: var(--area-badge-color, #6d7891);
+      border-color: color-mix(in srgb, var(--area-badge-color, #6d7891) 20%, transparent);
     }
 
     .area-badge.cover {
-      background: color-mix(in srgb, var(--area-badge-color, #1494aa) 10%, var(--card-background-color));
-      color: var(--area-badge-color, #1494aa);
-      border-color: color-mix(in srgb, var(--area-badge-color, #1494aa) 20%, transparent);
+      background: color-mix(in srgb, var(--area-badge-color, #d98928) 10%, var(--card-background-color));
+      color: var(--area-badge-color, #d98928);
+      border-color: color-mix(in srgb, var(--area-badge-color, #d98928) 20%, transparent);
     }
 
     .area-badge.media_player {
@@ -5449,14 +5449,14 @@ export class DwainsLayoutCard extends LitElement {
 
     .home-status-card.cover,
     .status-card-compact.cover {
-      --status-color: #1494aa;
+      --status-color: #d98928;
     }
 
     .home-status-card.binary_sensor,
     .home-status-card.motion,
     .status-card-compact.binary_sensor,
     .status-card-compact.motion {
-      --status-color: #df5b63;
+      --status-color: #6d7891;
     }
 
     .home-status-card.light,
@@ -5477,7 +5477,7 @@ export class DwainsLayoutCard extends LitElement {
 
     .home-status-card.person,
     .status-card-compact.person {
-      --status-color: #6d7891;
+      --status-color: #3f9b6d;
     }
 
     .home-status-card.media_player,
@@ -5487,7 +5487,7 @@ export class DwainsLayoutCard extends LitElement {
 
     .home-status-card.fan,
     .status-card-compact.fan {
-      --status-color: #2b8fcb;
+      --status-color: #16a6b6;
     }
 
     .home-status-card.wattage,
@@ -6429,11 +6429,11 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .mobile-area-badge.cover {
-        --area-badge-color: #1494aa;
+        --area-badge-color: #d98928;
       }
 
       .mobile-area-badge.motion {
-        --area-badge-color: #df5b63;
+        --area-badge-color: #6d7891;
       }
 
       .mobile-area-name {
@@ -6721,13 +6721,13 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .area-badge.cover {
-      background: color-mix(in srgb, var(--area-badge-color, #1494aa) 12%, var(--card-background-color));
-      border-color: color-mix(in srgb, var(--area-badge-color, #1494aa) 22%, transparent);
-      color: var(--area-badge-color, #1494aa);
+      background: color-mix(in srgb, var(--area-badge-color, #d98928) 12%, var(--card-background-color));
+      border-color: color-mix(in srgb, var(--area-badge-color, #d98928) 22%, transparent);
+      color: var(--area-badge-color, #d98928);
     }
 
     .area-badge.cover ha-icon {
-      color: var(--area-badge-color, #1494aa);
+      color: var(--area-badge-color, #d98928);
     }
 
     .area-badge.light-toggle,
