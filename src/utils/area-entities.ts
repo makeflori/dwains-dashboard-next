@@ -6,7 +6,8 @@ import type { AreasDisplay, AreaSortMode, EntitiesDisplay } from '../types/strat
 export const AREA_STRATEGY_GROUPS = [
   'light',
   'switch',
-  'cover',
+  'cover_openings',
+  'cover_shading',
   'climate',
   'todo',
   'scene',
@@ -39,7 +40,8 @@ export const AREA_STRATEGY_GROUPS = [
 export const AREA_STRATEGY_GROUP_ICONS: Record<AreaStrategyGroup, string> = {
   light: 'mdi:lightbulb',
   switch: 'mdi:toggle-switch',
-  cover: 'mdi:blinds-horizontal',
+  cover_openings: 'mdi:door-open',
+  cover_shading: 'mdi:blinds-horizontal',
   climate: 'mdi:thermostat',
   todo: 'mdi:clipboard-list-outline',
   scene: 'mdi:palette-outline',
@@ -72,7 +74,8 @@ export const AREA_STRATEGY_GROUP_ICONS: Record<AreaStrategyGroup, string> = {
 export const AREA_STRATEGY_GROUP_TITLES: Record<AreaStrategyGroup, string> = {
   light: 'Lights',
   switch: 'Switches',
-  cover: 'Covers',
+  cover_openings: 'Windows & doors',
+  cover_shading: 'Shading',
   climate: 'Climate',
   todo: 'To-do lists',
   scene: 'Scenes',
@@ -118,6 +121,11 @@ function emptyGroups(): AreaEntitiesByGroup {
 
 export function getAreaEntityGroupKey(entityId: string, hass: HomeAssistant): AreaStrategyGroup | undefined {
   const domain = entityId.split('.')[0] || '';
+  if (domain === 'cover') {
+    const deviceClass = String(hass.states[entityId]?.attributes?.device_class || '').toLowerCase();
+    const openingClasses = new Set(['door', 'garage', 'garage_door', 'gate', 'window']);
+    return openingClasses.has(deviceClass) ? 'cover_openings' : 'cover_shading';
+  }
   if (domain === 'binary_sensor') {
     const deviceClass = String(hass.states[entityId]?.attributes?.device_class || '');
     if (['motion', 'occupancy', 'presence'].includes(deviceClass)) return 'motion';
@@ -133,7 +141,7 @@ export function getAreaEntityGroupKey(entityId: string, hass: HomeAssistant): Ar
 export function getLegacyAreaGroupKey(group: AreaStrategyGroup): string {
   if (group === 'light') return 'lights';
   if (['climate', 'humidifier', 'water_heater', 'fan'].includes(group)) return 'climate';
-  if (group === 'cover') return 'covers';
+  if (group === 'cover_openings' || group === 'cover_shading') return 'covers';
   if (group === 'media_player') return 'media_players';
   if (['alarm_control_panel', 'lock', 'camera', 'binary_sensor'].includes(group)) return 'security';
   if (group === 'motion') return 'motion';
@@ -145,7 +153,13 @@ function optionsForGroup(
   displayOptions: AreaGroupsDisplayOptions | undefined,
   group: AreaStrategyGroup
 ): EntitiesDisplay | undefined {
-  return displayOptions?.[group] || displayOptions?.[getLegacyAreaGroupKey(group)];
+  const direct = displayOptions?.[group];
+  if (direct) return direct;
+  if (group === 'cover_openings' || group === 'cover_shading') {
+    const formerCover = displayOptions?.cover;
+    if (formerCover) return formerCover;
+  }
+  return displayOptions?.[getLegacyAreaGroupKey(group)];
 }
 
 function groupEntities(
