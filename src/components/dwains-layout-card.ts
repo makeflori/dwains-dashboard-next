@@ -12887,9 +12887,20 @@ no chip/background. */
         margin-bottom: 28px !important;
       }
 
-      /* One shared three-column master grid for prominent Home content. */
-      .home-status-primary-grid,
-.favorites-grid,
+      /* House information uses one six-column master grid:
+       * large summary cards are exactly two columns wide; status cards one.
+       * This keeps every status tile at half the width of a large card. */
+      .home-status-primary-grid{
+        width: 100%;
+        max-width: none !important;
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        grid-auto-rows: 77px;
+        gap: 8px 10px;
+        align-items: stretch;
+      }
+
+      .favorites-grid,
 .home-summary-list{
         width: 100%;
         max-width: none !important;
@@ -12899,40 +12910,20 @@ no chip/background. */
         align-items: stretch;
       }
 
-      .home-status-primary-grid > .home-status-card{
+      .home-status-primary-grid > .home-status-card:not(.compact-status){
         width: 100%;
         min-width: 0;
-        grid-column: auto !important;
+        grid-column: span 2 !important;
+        grid-row: span 2;
       }
 
-      .home-status-stack{
-        min-width: 0;
-        height: 162px;
-        display: grid;
-        grid-template-rows: repeat(2, minmax(0, 1fr));
-        gap: 8px;
-      }
-
-      .home-status-stack .home-status-card.compact-status{
+      .home-status-primary-grid > .home-status-card.compact-status{
         width: 100%;
-        height: auto;
+        min-width: 0;
         min-height: 0;
-      }
-
-      /* Once status cards move below the primary row,
-they use the six-column compact grid. */
-      .home-status-secondary-grid{
-        width: 100%;
-        margin-top: 12px;
-        display: grid;
-        grid-template-columns: repeat(6, minmax(0, 1fr));
-        gap: 10px;
-      }
-
-      .home-status-secondary-grid .home-status-card.compact-status{
-        width: 100%;
-        min-width: 0;
-        height: 81px;
+        height: auto;
+        grid-column: span 1 !important;
+        grid-row: span 1;
       }
 
       /* Favorites/Summary cards use the same column width as a primary House Information card. */
@@ -13170,14 +13161,13 @@ never pill-shaped for 1–2 digits. */
     }
 
     @media (max-width: 1100px) and (min-width: 769px) {
-      .home-status-primary-grid,
-.favorites-grid,
-.home-summary-list{
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+      .home-status-primary-grid{
+        grid-template-columns: repeat(4, minmax(0, 1fr));
       }
 
-      .home-status-secondary-grid{
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+      .favorites-grid,
+.home-summary-list{
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
 
@@ -13936,7 +13926,7 @@ never pill-shaped for 1–2 digits. */
 
       .home-favorites-section .favorite-card-wrapper.favorite-cover,
 .room-favorites-content .favorite-card-wrapper.favorite-cover{
-        --favorite-color: #D66A1F !important;
+        --favorite-color: var(--entity-color) !important;
       }
 
       .home-favorites-section .favorite-end,
@@ -14094,7 +14084,7 @@ never pill-shaped for 1–2 digits. */
       }
 
       .mobile-cover-position input[type="range"]{
-        background: linear-gradient(90deg, #D66A1F 0%, #E98A3B 100%) !important;
+        background: linear-gradient(90deg, var(--entity-color) 0%, var(--entity-color) 100%) !important;
       }
 
       .mobile-entity-brightness{
@@ -14223,8 +14213,8 @@ so fill from the left up to that value. */
       .mobile-cover-position input[type="range"]{
         background: linear-gradient(
           90deg,
-          #D66A1F 0%,
-          #D66A1F var(--cover-position),
+          var(--entity-color) 0%,
+          var(--entity-color) var(--cover-position),
           color-mix(in srgb, var(--primary-text-color) 13%, transparent) var(--cover-position),
           color-mix(in srgb, var(--primary-text-color) 13%, transparent) 100%
         ) !important;
@@ -14406,8 +14396,8 @@ with the same compact rhythm as entity groups. */
       /* One consistent light-orange cover color for blinds,
 .home-favorites-section .favorite-card-wrapper.favorite-cover,
 .room-favorites-content .favorite-card-wrapper.favorite-cover{
-        --entity-color: #E98A3B !important;
-        --favorite-color: #E98A3B !important;
+        --entity-color: var(--entity-color) !important;
+        --favorite-color: var(--entity-color) !important;
       }
     }
 
@@ -14713,9 +14703,16 @@ as on room pages. */
       min-width: 0;
       overflow-x: auto;
       overflow-y: hidden;
+      padding-inline: 30px;
       scrollbar-width: none;
-      scroll-behavior: smooth;
       overscroll-behavior-x: contain;
+      scroll-snap-type: x proximity;
+      scroll-padding-inline: 30px;
+    }
+
+    .header-status-section .header-status-scroll > .status-card-compact{
+      flex: 0 0 auto;
+      scroll-snap-align: start;
     }
 
     .header-status-section .header-status-scroll::-webkit-scrollbar{
@@ -14757,18 +14754,6 @@ as on room pages. */
       right: 2px;
     }
 
-    .header-status-section.can-scroll-left .header-status-scroll{
-      padding-left: 30px;
-    }
-
-    .header-status-section.can-scroll-right .header-status-scroll{
-      padding-right: 30px;
-    }
-
-    .header-status-section.can-scroll-left.can-scroll-right .header-status-scroll{
-      padding-left: 30px;
-      padding-right: 30px;
-    }
 
 
     /* 2026-10-01: final responsive room/sidebar follow-up. */
@@ -15863,6 +15848,18 @@ copy{
       align-items: flex-start;
     }
 
+    .dd-page-header-title-row {
+      display: flex;
+      align-items: center;
+      min-height: 26px;
+      line-height: 1;
+    }
+
+    .dd-page-header-title-row .dd-page-header-title {
+      margin: 0;
+      align-self: center;
+    }
+
     .dd-page-header-title-row .dd-page-header-home {
       width: 26px;
       height: 26px;
@@ -16089,6 +16086,18 @@ copy{
     this._scheduleHeaderStatusScrollState();
   };
 
+  private _handleHeaderStatusWheel = (event: WheelEvent): void => {
+    const scrollContainer = event.currentTarget as HTMLElement | null;
+    if (!scrollContainer || scrollContainer.scrollWidth <= scrollContainer.clientWidth) return;
+
+    // A vertical mouse wheel should move the horizontal status rail directly.
+    // Trackpads that already provide a horizontal delta keep their native axis.
+    if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
+      event.preventDefault();
+      scrollContainer.scrollLeft += event.deltaY;
+    }
+  };
+
   private _scrollHeaderStatus(direction: -1 | 1): void {
     const scrollContainer = this.shadowRoot?.querySelector('.header-status-scroll') as HTMLElement | null;
     if (!scrollContainer) return;
@@ -16098,10 +16107,11 @@ copy{
 
     const styles = getComputedStyle(scrollContainer);
     const gap = Number.parseFloat(styles.columnGap || styles.gap || '0') || 0;
-    const step = firstCard.getBoundingClientRect().width + gap;
+    const cardStep = firstCard.getBoundingClientRect().width + gap;
+    const pageStep = Math.max(cardStep, scrollContainer.clientWidth * 0.72);
 
     scrollContainer.scrollBy({
-      left: direction * step,
+      left: direction * pageStep,
       behavior: 'smooth',
     });
   }
@@ -17516,6 +17526,7 @@ copy{
         <div
           class="header-status-scroll"
           @scroll=${this._handleHeaderStatusScroll}
+          @wheel=${this._handleHeaderStatusWheel}
         >
           ${repeat(
             domains,
@@ -18242,17 +18253,6 @@ copy{
       this._homeInformationCardVisible('power') ? this._renderHousePowerStatusCard() : nothing,
     ].filter(card => card !== nothing);
 
-    const primaryRemainder = primaryCards.length % 3;
-    const openPrimarySlots = primaryCards.length > 0 && primaryRemainder !== 0
-      ? 3 - primaryRemainder
-      : 0;
-    const promotedStatusCount = Math.min(visibleDomains.length, openPrimarySlots * 2);
-    const promotedStatuses = visibleDomains.slice(0, promotedStatusCount);
-    const remainingStatuses = visibleDomains.slice(promotedStatusCount);
-    const promotedStacks = Array.from({ length: Math.ceil(promotedStatuses.length / 2) }, (_, index) =>
-      promotedStatuses.slice(index * 2, index * 2 + 2)
-    );
-
     if (!primaryCards.length && !visibleDomains.length) return nothing;
 
     const heading = html`
@@ -18302,18 +18302,8 @@ copy{
 
         <div class="home-status-primary-grid">
           ${primaryCards}
-          ${promotedStacks.map(stack => html`
-            <div class="home-status-stack">
-              ${stack.map(renderStatusCard)}
-            </div>
-          `)}
+          ${visibleDomains.map(renderStatusCard)}
         </div>
-
-        ${remainingStatuses.length ? html`
-          <div class="home-status-secondary-grid ${primaryCards.length ? '' : 'is-only-row'}">
-            ${remainingStatuses.map(renderStatusCard)}
-          </div>
-        ` : nothing}
       </div>
     `;
   }
@@ -18457,6 +18447,7 @@ copy{
     return html`
       <div
         class="home-status-card house-power-card wattage ${powerUsage.sensorCount ? 'has-power' : 'is-empty'}"
+        style=${this._domainStatusStyle('wattage')}
         @click=${this._openHousePowerDialog}
         @keydown=${this._handleHousePowerKeydown}
         data-domain="wattage"
@@ -18501,6 +18492,7 @@ copy{
     return html`
       <div
         class="home-status-card house-climate-card sensor ${scope} metrics-${Math.min(climate.metrics.length, 4)}"
+        style=${this._domainStatusStyle('climate')}
         @click=${() => this._showHouseClimateEntities(undefined, scope)}
         @keydown=${(event: KeyboardEvent) => this._handleHouseClimateKeydown(event, scope)}
         data-domain="sensor"
@@ -18757,6 +18749,7 @@ copy{
     return html`
       <div
         class="home-status-card house-persons-card person persons-${Math.min(personEntities.length, 4)}"
+        style=${this._domainStatusStyle('person')}
         @click=${() => this._showPersonEntities()}
         data-domain="person"
       >
@@ -19162,7 +19155,7 @@ copy{
             ? 'wattage'
             : domain;
     const favoriteColor = favoriteColorDomain === 'opening'
-      ? '#D66A1F'
+      ? getDomainColor('binary_sensor', 'opening')
       : getDomainColor(favoriteColorDomain, deviceClass);
     const classes = [
       'favorite-card-wrapper',
@@ -20467,9 +20460,7 @@ copy{
           const groupDeviceClass = group.entities[0]
             ? this.hass.states[group.entities[0].entity_id]?.attributes?.device_class
             : undefined;
-          const groupColor = groupDomain === 'cover'
-            ? '#E98A3B'
-            : getDomainColor(groupDomain, groupDeviceClass);
+          const groupColor = getDomainColor(groupDomain, groupDeviceClass);
           const renderedEntities = this._isMobile && !this._editMode && !this._renderAllMobileAreaEntities && group.entities.length > MOBILE_INITIAL_ENTITY_CARDS
             ? group.entities.slice(0, MOBILE_INITIAL_ENTITY_CARDS)
             : group.entities;
@@ -21875,7 +21866,7 @@ copy{
   }
 
   private _mobileEntityColor(domain: string, deviceClass?: string): string {
-    if (domain === 'cover') return '#E98A3B';
+    if (domain === 'cover') return getDomainColor('cover', deviceClass);
     if (domain === 'sensor' && (deviceClass === 'temperature' || deviceClass === 'humidity')) {
       return getDomainColor(deviceClass, deviceClass);
     }
@@ -22066,10 +22057,12 @@ copy{
 
   private _isEntityRegistryExcluded(entityId: string): boolean {
     const registry = this.hass.entities?.[entityId] as any;
-    if (registry?.hidden_by || registry?.disabled_by || registry?.entity_category === 'config') return true;
-    if (registry?.entity_category !== 'diagnostic') return false;
-    const deviceClass = String(this.hass.states?.[entityId]?.attributes?.device_class || '').toLowerCase();
-    return !['battery', 'battery_charging'].includes(deviceClass);
+    return Boolean(
+      registry?.hidden_by ||
+      registry?.disabled_by ||
+      registry?.entity_category === 'config' ||
+      registry?.entity_category === 'diagnostic'
+    );
   }
 
   private _getAreaEntities(areaId: string): EntityConfig[] {
