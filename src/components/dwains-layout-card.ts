@@ -20448,7 +20448,9 @@ copy{
           const groupDeviceClass = group.entities[0]
             ? this.hass.states[group.entities[0].entity_id]?.attributes?.device_class
             : undefined;
-          const groupColor = getDomainColor(groupDomain, groupDeviceClass);
+          const groupColor = group.key === 'switch'
+            ? getDomainColor('switch')
+            : getDomainColor(groupDomain, groupDeviceClass);
           const renderedEntities = this._isMobile && !this._editMode && !this._renderAllMobileAreaEntities && group.entities.length > MOBILE_INITIAL_ENTITY_CARDS
             ? group.entities.slice(0, MOBILE_INITIAL_ENTITY_CARDS)
             : group.entities;
