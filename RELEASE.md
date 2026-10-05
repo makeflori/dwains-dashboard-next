@@ -32,3 +32,8 @@ Dwains Dashboard Next follows semantic versioning.
 8. Create tag `vX.Y.Z`.
 9. Push the commit and tag.
 10. Create the GitHub release with English release notes.
+
+
+### HACS release package
+
+Fork releases include `dwains-dashboard-next.zip` containing the complete `dist` output, including the `chunks/` directory required by DD Next 1.10+.
