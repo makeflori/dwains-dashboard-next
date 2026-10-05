@@ -12,6 +12,7 @@ export interface DomainCount {
   icon: string;
   value?: string;
   deviceClass?: string;
+  statusKind?: 'window' | 'door' | 'gate' | 'shading';
   entities?: string[]; // de 'aan'-entiteiten van dit domein
 }
 
@@ -162,7 +163,7 @@ export function getStatusDomains(hass: HomeAssistant, config: any): DomainCount[
     binarySensorCounts[deviceClass] = { total: 0, on: 0, entities: [] };
   });
 
-  const coverStatusCounts: Record<string, { total: number; on: number; entities: string[]; deviceClass?: string; name: string; icon: string }> = {};
+  const coverStatusCounts: Record<string, { total: number; on: number; entities: string[]; deviceClass?: string; statusKind: 'window' | 'door' | 'gate' | 'shading'; name: string; icon: string }> = {};
   const shadingCoverClasses = new Set(['awning', 'blind', 'curtain', 'shade', 'shutter']);
   const gateCoverClasses = new Set(['garage', 'garage_door', 'gate']);
 
@@ -229,6 +230,7 @@ export function getStatusDomains(hass: HomeAssistant, config: any): DomainCount[
           on: 0,
           entities: [],
           deviceClass,
+          statusKind: groupKey as 'window' | 'door' | 'gate' | 'shading',
           name,
           icon,
         };
@@ -371,6 +373,7 @@ export function getStatusDomains(hass: HomeAssistant, config: any): DomainCount[
       result.push({
         domain: 'cover',
         deviceClass: data.deviceClass,
+        statusKind: data.statusKind,
         count: data.on,
         name: data.name,
         icon: data.icon,
