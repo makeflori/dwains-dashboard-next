@@ -57,32 +57,28 @@ safeDefine('ll-strategy-view-dwains-view', createViewStrategyElement());
 
 async function loadUiElements(): Promise<void> {
   try {
+    // Only dashboard runtime elements are loaded up front. Editors and dialogs
+    // stay in separate chunks and are loaded by the code path that opens them.
     const [
       { DwainsDashboardCard },
-      { DwainsDashboardCardEditor },
       { DwainsFlexboxCard },
       { DwainsHeadingCard },
     ] = await Promise.all([
       import('./components/dwains-dashboard-card'),
-      import('./components/dwains-dashboard-card-editor'),
       import('./components/cards/dwains-flexbox-card'),
       import('./components/cards/dwains-heading-card'),
       import('./components/dwains-layout-card'),
-      import('./components/dwains-domain-entities-dialog'),
-      import('./components/dwains-dashboard-strategy-editor'),      import('./components/dwains-page-card'),
+      import('./components/dwains-page-card'),
       import('./components/dwains-devices-card'),
       import('./components/dwains-bottom-nav'),
-      import('./components/dwains-replacement-manager-dialog'),
     ]);
 
     safeDefine(DASHBOARD_CARD_TYPE, DwainsDashboardCard);
-    safeDefine('dwains-dashboard-next-card-editor', DwainsDashboardCardEditor);
     safeDefine('dwains-flexbox-card', class extends DwainsFlexboxCard {});
     safeDefine('dwains-heading-card', DwainsHeadingCard);
 
     // Legacy card aliases for early Next configs when old DD is not installed.
     safeDefine('dwains-dashboard-card', class extends DwainsDashboardCard {});
-    safeDefine('dwains-dashboard-card-editor', class extends DwainsDashboardCardEditor {});
 
     console.log('✓ Registered custom card: dwains-dashboard-next-card');
     console.log('Dwains Dashboard Next - Loaded successfully!');
