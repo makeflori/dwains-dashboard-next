@@ -45,6 +45,11 @@ jobs:
           SHOULD_RELEASE=false
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.ref }}" == "refs/heads/dev" && "${{ inputs.publish_release }}" == "true" ]]; then
             SHOULD_RELEASE=true
+          elif [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/dev" ]]; then
+            MESSAGE=$(git log -1 --pretty=%s)
+            if [[ "$MESSAGE" =~ ^Release: ]]; then
+              SHOULD_RELEASE=true
+            fi
           fi
           echo "should_release=$SHOULD_RELEASE" >> "$GITHUB_OUTPUT"
 
@@ -104,7 +109,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add package.json package-lock.json README.md dist/dwains-dashboard-next.js
+          git add package.json package-lock.json README.md dist/dwains-dashboard-next.js dist/chunks
           git commit -m "Build release v$VERSION"
           git push origin HEAD:dev
 
