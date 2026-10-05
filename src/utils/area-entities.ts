@@ -124,6 +124,7 @@ export function getAreaEntityGroupKey(entityId: string, hass: HomeAssistant): Ar
     return openingClasses.has(deviceClass) ? 'cover_openings' : 'cover_shading';
   }
   if (domain === 'input_select') return 'select';
+  if (domain === 'input_boolean') return 'switch';
   if (domain === 'binary_sensor') {
     const deviceClass = String(hass.states[entityId]?.attributes?.device_class || '');
     if (['motion', 'occupancy', 'presence'].includes(deviceClass)) return 'motion';
@@ -164,6 +165,18 @@ function optionsForGroup(
     if (direct) return direct;
     if (legacyInputSelect) return legacyInputSelect;
   }
+  if (group === 'switch') {
+    const legacyInputBoolean = displayOptions?.input_boolean;
+    if (direct && legacyInputBoolean) {
+      return {
+        ...direct,
+        hidden: Array.from(new Set([...(direct.hidden || []), ...(legacyInputBoolean.hidden || [])])),
+        order: [...(direct.order || []), ...(legacyInputBoolean.order || []).filter(id => !(direct.order || []).includes(id))],
+      };
+    }
+    if (direct) return direct;
+    if (legacyInputBoolean) return legacyInputBoolean;
+  }
   if (direct) return direct;
   if (group === 'cover_openings' || group === 'cover_shading') {
     const formerCover = displayOptions?.cover;
@@ -184,12 +197,9 @@ function groupEntities(
     if (!state) return;
 
     const entityRegistry = hass.entities?.[entityId];
-    const deviceClass = String(state.attributes?.device_class || '').toLowerCase();
-    const allowedDiagnostic = entityRegistry?.entity_category === 'diagnostic' &&
-      ['battery', 'battery_charging'].includes(deviceClass);
     if (entityRegistry?.hidden_by ||
         entityRegistry?.entity_category === 'config' ||
-        (entityRegistry?.entity_category === 'diagnostic' && !allowedDiagnostic)) {
+        entityRegistry?.entity_category === 'diagnostic') {
       return;
     }
 
