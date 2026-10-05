@@ -612,7 +612,7 @@ export const de = {
   'domain.button': 'Buttons',
   'domain.number': 'Zahlen',
   'domain.select': 'Auswahllisten',
-  'domain.input_boolean': 'Schalter',
+  'domain.input_boolean': 'Boolesche Eingaben',
   'domain.input_number': 'Zahlen',
   'domain.input_select': 'Auswahllisten',
   'domain.input_button': 'Buttons',
