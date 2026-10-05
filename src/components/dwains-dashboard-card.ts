@@ -9,8 +9,20 @@ import './dwains-layout-card';  // Import the file to register the custom elemen
  * Simple Custom Card wrapper for DwainsLayoutCard
  * Based on the original dwains-dashboard-layout.js approach
  */
+async function loadCardEditor(): Promise<void> {
+  const { DwainsDashboardCardEditor } = await import('./dwains-dashboard-card-editor');
+  if (!customElements.get('dwains-dashboard-next-card-editor')) {
+    customElements.define('dwains-dashboard-next-card-editor', DwainsDashboardCardEditor);
+  }
+  // Legacy editor alias for early Next configs when old DD is not installed.
+  if (!customElements.get('dwains-dashboard-card-editor')) {
+    customElements.define('dwains-dashboard-card-editor', class extends DwainsDashboardCardEditor {});
+  }
+}
+
 export class DwainsDashboardCard extends LitElement {
-  static getConfigElement() {
+  static async getConfigElement() {
+    await loadCardEditor();
     return document.createElement("dwains-dashboard-next-card-editor");
   }
 
@@ -50,8 +62,6 @@ export class DwainsDashboardCard extends LitElement {
         this.hass.callWS<{ entity_id: string; area_id: string | null; device_id: string | null; hidden_by: string | null; entity_category: string | null; created_at?: string | null }[]>({ type: 'config/entity_registry/list' }),
         this.hass.callWS<{ floor_id: string; name: string; icon: string | null; level: number }[]>({ type: 'config/floor_registry/list' }).catch(() => [])
       ]);
-
-      console.log(`Custom Card: Found ${areas.length} areas, ${devices.length} devices, ${entities.length} entities, ${floors.length} floors`);
 
       // Convert to our format
       const areaConfigs: AreaConfig[] = areas.map(area => ({
@@ -179,7 +189,6 @@ export class DwainsDashboardCard extends LitElement {
       layoutCard._selectedView = 'home';
       layoutCard._selectedArea = null;
       layoutCard.requestUpdate();
-      console.log('Custom Card: Navigated to home view');
     }
   }
 

@@ -27,6 +27,7 @@ Configure which status information appears in the header:
 - Notifications
 - Alarm entity
 - Home summary text
+- Now playing bar: **Off**, **Home only** (default) or **All pages**
 
 If no alarm entity is selected, no alarm chip is shown.
 
@@ -46,6 +47,7 @@ Configure:
 - Area icons
 - Area entity ordering
 - Whether unavailable area entities are shown
+- Whether rooms with one climate entity show a thermostat in the room header (on by default)
 
 Custom order supports dragging on desktop and move up/down controls on touch devices. New areas that are added later are appended without changing the order of existing areas. The selected order is used consistently in the desktop sidebar, mobile area menu and area overviews.
 
@@ -68,3 +70,7 @@ Restrict what non-admin users can see or edit.
 ## Support
 
 Configure support links and SmartHomeShop links.
+
+## Wall Tablet (This Device)
+
+Turn the current browser into a wall tablet: hide the Home Assistant header and sidebar, return to Home after inactivity and show a screensaver with a clock, an image or a slideshow of your photos. These settings are stored on this device only and are applied right away, without saving. See [Wall tablet mode](wall-tablet.html).

@@ -1,16 +1,34 @@
 import {
+  loadTranslations,
   SUPPORTED_LANGUAGES,
   TRANSLATIONS,
   type SupportedLanguage,
   type TranslationKey,
 } from '../i18n';
+import { getPluralRules } from './intl-cache';
+
+// ddLocalize runs a few hundred times per render, so the resolved language is
+// cached per raw Home Assistant language string.
+const resolvedLanguages = new Map<string, SupportedLanguage>();
 
 /**
  * Resolve the Home Assistant locale to a supported dashboard language.
  * Regional variants progressively fall back, for example de-DE -> de.
  */
 export function ddLang(hass: any): SupportedLanguage {
-  const raw = String(hass?.locale?.language || hass?.language || 'en')
+  const input = hass?.locale?.language || hass?.language || 'en';
+  if (typeof input !== 'string') return resolveLanguage(String(input));
+
+  let lang = resolvedLanguages.get(input);
+  if (!lang) {
+    lang = resolveLanguage(input);
+    resolvedLanguages.set(input, lang);
+  }
+  return lang;
+}
+
+function resolveLanguage(input: string): SupportedLanguage {
+  const raw = input
     .trim()
     .toLowerCase()
     .replace(/_/g, '-');
@@ -43,8 +61,10 @@ export function ddLocalize(
   vars?: Record<string, string | number>
 ): string {
   const lang = ddLang(hass);
-  const dict = TRANSLATIONS[lang] || TRANSLATIONS.en;
-  const localized = dict as Record<string, string>;
+  const dict = TRANSLATIONS[lang];
+  // Not loaded yet: fall back to English and load it for the next render.
+  if (!dict) void loadTranslations(lang);
+  const localized = (dict || TRANSLATIONS.en) as Record<string, string>;
   const english = TRANSLATIONS.en as Record<string, string>;
   let str = localized[key] ?? english[key] ?? key;
   if (vars) {
@@ -61,7 +81,7 @@ export function ddLocalizePlural(
   count: number,
   vars?: Record<string, string | number>
 ): string {
-  const category = new Intl.PluralRules(ddLocale(hass)).select(count);
+  const category = getPluralRules(ddLocale(hass)).select(count);
   return ddLocalize(hass, `${key}.${category === 'one' ? 'one' : 'other'}`, {
     count,
     ...vars,
