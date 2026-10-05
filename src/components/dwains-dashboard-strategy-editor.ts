@@ -60,8 +60,12 @@ import {
   type HomeSceneCandidate,
 } from "../utils/home-scenes";
 import { getEntityRegistry } from "../utils/entity-registry";
-import { dashboardSegmentFromPath, readWallTabletPrefs } from "../utils/wall-tablet";
-import "./dwains-wall-tablet-settings";
+import { dashboardSegmentFromPath } from "../utils/wall-tablet";
+import {
+  commitPendingWallTabletPrefs,
+  discardPendingWallTabletPrefs,
+  readPendingWallTabletPrefs,
+} from "./dwains-wall-tablet-settings";
 import { DD_NEXT_VERSION } from "../version";
 import {
   MASTER_ACTION_CONFIRMATION_DOMAINS,
@@ -690,7 +694,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         color: "#0f9f8f",
         title: this._t('kiosk.title'),
         description: this._t('kiosk.description'),
-        summary: readWallTabletPrefs(dashboardSegmentFromPath(window.location.pathname)).enabled
+        summary: readPendingWallTabletPrefs(dashboardSegmentFromPath(window.location.pathname)).enabled
           ? this._t('kiosk.summary_on')
           : this._t('kiosk.summary_off'),
       },
@@ -777,6 +781,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     if (this._area) this._collapsedAreaEntityGroups = new Set(AREA_STRATEGY_GROUPS);
     this._closeInlinePickers();
     this._emitSettingsPageContext();
+  }
+
+  public _commitDeviceSettings(): void {
+    commitPendingWallTabletPrefs(dashboardSegmentFromPath(window.location.pathname));
+  }
+
+  public _discardDeviceSettings(): void {
+    discardPendingWallTabletPrefs(dashboardSegmentFromPath(window.location.pathname));
   }
 
   public _backToSettingsOverview = (): void => {
