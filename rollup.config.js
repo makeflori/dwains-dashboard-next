@@ -62,12 +62,12 @@ const production = !process.env.ROLLUP_WATCH;
 export default {
   input: 'src/index.ts',
   output: {
-    // Keep the v1.11.0 code-splitting architecture. HACS only downloads files
-    // directly inside dist for dashboard plugins, so chunks must live beside
-    // the entry file instead of in a nested dist/chunks directory.
+    // The entry keeps its fixed name for HACS. Editors, dialogs and languages
+    // become separate chunks that are only loaded when needed. HACS downloads
+    // everything under dist/, subfolders included.
     dir: 'dist',
     entryFileNames: 'dwains-dashboard-next.js',
-    chunkFileNames: '[name]-[hash].js',
+    chunkFileNames: 'chunks/[name]-[hash].js',
     format: 'es',
     sourcemap: !production
   },
