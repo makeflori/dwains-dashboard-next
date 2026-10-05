@@ -114,6 +114,14 @@ jobs:
           git commit -m "Build release v$VERSION"
           git push origin HEAD:dev
 
+      - name: Package HACS release
+        if: steps.dev_release.outputs.should_release == 'true'
+        shell: bash
+        run: |
+          rm -f dwains-dashboard-next.zip
+          cd dist
+          zip -r ../dwains-dashboard-next.zip dwains-dashboard-next.js chunks
+
       - name: Create tagged GitHub release
         if: steps.dev_release.outputs.should_release == 'true'
         env:
@@ -163,4 +171,5 @@ jobs:
           gh release create "$TAG" \
             --target "$RELEASE_SHA" \
             --title "$TAG" \
-            --notes-file "$NOTES_FILE"
+            --notes-file "$NOTES_FILE" \
+            dwains-dashboard-next.zip
