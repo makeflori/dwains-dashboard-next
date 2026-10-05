@@ -13924,11 +13924,6 @@ never pill-shaped for 1–2 digits. */
         color: var(--secondary-text-color) !important;
       }
 
-      .home-favorites-section .favorite-card-wrapper.favorite-cover,
-.room-favorites-content .favorite-card-wrapper.favorite-cover{
-        --favorite-color: var(--entity-color) !important;
-      }
-
       .home-favorites-section .favorite-end,
 .room-favorites-content .favorite-end{
         width: auto !important;
@@ -14393,14 +14388,7 @@ with the same compact rhythm as entity groups. */
         overflow: visible !important;
       }
 
-      /* One consistent light-orange cover color for blinds,
-.home-favorites-section .favorite-card-wrapper.favorite-cover,
-.room-favorites-content .favorite-card-wrapper.favorite-cover{
-        --entity-color: var(--entity-color) !important;
-        --favorite-color: var(--entity-color) !important;
-      }
     }
-
 
     /* 2026-10-01: restore 1.9.0 controls + final favorites spacing/shadows. */
     @media (min-width: 769px) {
