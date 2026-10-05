@@ -23882,13 +23882,6 @@ export class DwainsLayoutCard extends LitElement {
     `;
   }
 
-  private _numericValue(value: string): number | null {
-    const match = String(value).replace(',', '.').match(/-?\d+(\.\d+)?/);
-    if (!match) return null;
-    const parsed = Number(match[0]);
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-
   private _renderToast() {
     // TODO: Implement toast state management
     return nothing;
