@@ -22085,7 +22085,6 @@ copy{
       this.config.entities.forEach(entity => {
         if (entity.area_id === areaId ||
             (entity.device_id && areaDevices.has(entity.device_id))) {
-          const registry = this.hass.entities?.[entity.entity_id];
           if (!this.hass.states[entity.entity_id] || this._isEntityRegistryExcluded(entity.entity_id)) {
             return;
           }
@@ -22099,7 +22098,6 @@ copy{
     Object.values(this.hass.states).forEach(state => {
       if (!processedEntities.has(state.entity_id) &&
           state.attributes?.area_id === areaId) {
-        const registry = this.hass.entities?.[state.entity_id];
         if (this._isEntityRegistryExcluded(state.entity_id)) {
           return;
         }
