@@ -24,6 +24,24 @@ import {
 import './dwains-media-picker';
 import type { MediaPickedDetail } from './dwains-media-picker';
 
+const pendingWallTabletPrefs = new Map<string, Readonly<WallTabletPrefs>>();
+
+export function readPendingWallTabletPrefs(segment: string): Readonly<WallTabletPrefs> {
+  return pendingWallTabletPrefs.get(segment) || readWallTabletPrefs(segment);
+}
+
+export function commitPendingWallTabletPrefs(segment: string): Readonly<WallTabletPrefs> {
+  const pending = pendingWallTabletPrefs.get(segment);
+  if (!pending) return readWallTabletPrefs(segment);
+  pendingWallTabletPrefs.delete(segment);
+  return updateWallTabletPrefs(segment, pending);
+}
+
+export function discardPendingWallTabletPrefs(segment: string): Readonly<WallTabletPrefs> {
+  pendingWallTabletPrefs.delete(segment);
+  return readWallTabletPrefs(segment);
+}
+
 interface Choice<T extends string | number = number> {
   value: T;
   label: string;
@@ -42,15 +60,15 @@ interface PhotoPreview {
 
 /**
  * dwains-dashboard-next-wall-tablet-settings: the "Wall tablet" page of the
- * dashboard settings. These preferences belong to this device only: they are
- * stored in the browser and applied right away, never through the dashboard
- * config, so they do not mark the settings page as changed.
+ * dashboard settings. These preferences belong to this device only. Changes
+ * are staged locally while the settings page is open and are written to this
+ * browser only when the dashboard Settings Save button is pressed.
  */
 @customElement('dwains-dashboard-next-wall-tablet-settings')
 export class DwainsWallTabletSettings extends LitElement {
   private _hass?: HomeAssistant;
   private _segment = dashboardSegmentFromPath(window.location.pathname);
-  @state() private _prefs: Readonly<WallTabletPrefs> = readWallTabletPrefs(this._segment);
+  @state() private _prefs: Readonly<WallTabletPrefs> = readPendingWallTabletPrefs(this._segment);
   /** Which media picker is open below its row. */
   @state() private _picker: 'image' | 'folder' | null = null;
   @state() private _preview?: PhotoPreview;
@@ -74,7 +92,7 @@ export class DwainsWallTabletSettings extends LitElement {
   connectedCallback(): void {
     super.connectedCallback();
     this._segment = dashboardSegmentFromPath(window.location.pathname);
-    this._prefs = readWallTabletPrefs(this._segment);
+    this._prefs = readPendingWallTabletPrefs(this._segment);
     window.addEventListener(WALL_TABLET_CHANGED_EVENT, this._handleChanged);
     this._refreshPreview();
   }
@@ -85,6 +103,7 @@ export class DwainsWallTabletSettings extends LitElement {
   }
 
   private _handleChanged = (): void => {
+    if (pendingWallTabletPrefs.has(this._segment)) return;
     this._prefs = readWallTabletPrefs(this._segment);
     this._refreshPreview();
   };
@@ -131,13 +150,48 @@ export class DwainsWallTabletSettings extends LitElement {
   }
 
   private _update(patch: Partial<WallTabletPrefs>): void {
-    this._prefs = updateWallTabletPrefs(this._segment, patch);
-    // Saved right away on this device; let the settings page confirm it.
-    this.dispatchEvent(new CustomEvent('dwains-dashboard-next-device-settings-saved', { bubbles: true, composed: true }));
+    const saved = readWallTabletPrefs(this._segment);
+    const next = Object.freeze({ ...this._prefs, ...patch }) as Readonly<WallTabletPrefs>;
+    const dirty = JSON.stringify(next) !== JSON.stringify(saved);
+    this._prefs = next;
+
+    if (dirty) pendingWallTabletPrefs.set(this._segment, next);
+    else pendingWallTabletPrefs.delete(this._segment);
+
+    this._preview = undefined;
+    this._refreshPreview();
+    this.dispatchEvent(new CustomEvent('dwains-dashboard-next-device-settings-changed', {
+      bubbles: true,
+      composed: true,
+      detail: { dirty },
+    }));
+  }
+
+  public commitPendingChanges(): void {
+    this._prefs = commitPendingWallTabletPrefs(this._segment);
+    this._preview = undefined;
+    this._refreshPreview();
+    this.dispatchEvent(new CustomEvent('dwains-dashboard-next-device-settings-changed', {
+      bubbles: true,
+      composed: true,
+      detail: { dirty: false },
+    }));
+  }
+
+  public discardPendingChanges(): void {
+    this._prefs = discardPendingWallTabletPrefs(this._segment);
+    this._linkInvalid = false;
+    this._picker = null;
+    this._preview = undefined;
+    this._refreshPreview();
+    this.dispatchEvent(new CustomEvent('dwains-dashboard-next-device-settings-changed', {
+      bubbles: true,
+      composed: true,
+      detail: { dirty: false },
+    }));
   }
 
   private _toggleEnabled = (event: Event): void => {
-    // Not a dashboard config change: keep it away from the settings page.
     event.stopPropagation();
     this._update({ enabled: Boolean((event.target as HTMLInputElement | null)?.checked) });
   };
@@ -150,7 +204,6 @@ export class DwainsWallTabletSettings extends LitElement {
   }
 
   private _handleLinkChange = (event: Event): void => {
-    // Not a dashboard config change: keep it away from the settings page.
     event.stopPropagation();
     const input = event.target as HTMLInputElement;
     const typed = input.value.trim();

@@ -266,6 +266,7 @@ describe('area entity grouping', () => {
       entityState('binary_sensor.smoke', 'off', { device_class: 'smoke' }),
       entityState('binary_sensor.leak', 'off', { device_class: 'moisture' }),
       entityState('binary_sensor.generic', 'off'),
+      entityState('alarm_control_panel.house', 'disarmed'),
     ]);
 
     expect(getAreaEntityGroupKey('binary_sensor.window', semanticHass)).toBe('cover_openings');
@@ -274,6 +275,7 @@ describe('area entity grouping', () => {
     expect(getAreaEntityGroupKey('binary_sensor.smoke', semanticHass)).toBe('safety');
     expect(getAreaEntityGroupKey('binary_sensor.leak', semanticHass)).toBe('safety');
     expect(getAreaEntityGroupKey('binary_sensor.generic', semanticHass)).toBe('binary_sensor');
+    expect(getAreaEntityGroupKey('alarm_control_panel.house', semanticHass)).toBe('safety');
   });
 
   it('keeps diagnostic battery entities hidden like v1.11.0', () => {

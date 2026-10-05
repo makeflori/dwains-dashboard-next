@@ -227,6 +227,7 @@ export class DwainsLayoutCard extends LitElement {
   @state() private _renderAllMobileAreaEntities = false;
   @state() private _collapsedAreaGroups: Record<string, boolean> = {};
   @state() private _settingsDirty = false;
+  @state() private _deviceSettingsDirty = false;
   @state() private _settingsSavePending = false;
   @state() private _settingsSaveError = '';
   @state() private _settingsPageKey = 'overview';
@@ -348,7 +349,7 @@ export class DwainsLayoutCard extends LitElement {
     window.dispatchEvent(new CustomEvent('dwains-dashboard-next-area-context-changed', {
       detail: {
         areaId: this._selectedView === 'area' ? this._selectedArea : null,
-        icon: settingsSelected ? 'mdi:tune-variant' : area ? getAreaIcon(area) : 'mdi:home',
+        icon: settingsSelected ? 'mdi:pencil' : area ? getAreaIcon(area) : 'mdi:home',
         name: settingsSelected ? this._t('sidebar.dashboard_settings') : area?.name || this._t('sidebar.home'),
         view: this._selectedView || 'home',
       },
@@ -12622,8 +12623,8 @@ typography and interaction. */
       }
 
       /* Climate card uses exactly the same temperature/humidity colors as the room view. */
-      .house-climate-metric.temperature{ --metric-color: #7c67c7 !important; }
-      .house-climate-metric.humidity{ --metric-color: #34a6d8 !important; }
+      .house-climate-metric.temperature{ --metric-color: #34a6d8 !important; }
+      .house-climate-metric.humidity{ --metric-color: #16a6b6 !important; }
 
       /* Climate metric icons are direct,
 slightly larger icons without a second circle. */
@@ -15848,8 +15849,22 @@ copy{
       }
 
       .global-header.room-context .header-time-weather{
-        gap: 3px !important;
+        gap: 2px !important;
         transform: none !important;
+      }
+
+      .global-header.room-context .header-time-section{
+        width: auto !important;
+        min-width: 0 !important;
+      }
+
+      .global-header.room-context .header-content,
+      .global-header.room-context .room-favorites-block{
+        width: 100% !important;
+        max-width: 1400px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        box-sizing: border-box !important;
       }
 
       .global-header.room-context .room-favorites-block,
@@ -18226,7 +18241,7 @@ copy{
                     title=${this._t('sidebar.dashboard_settings')}
                     @click=${this._openDashboardSettings}
                   >
-                    <ha-icon icon="mdi:tune-variant"></ha-icon>
+                    <ha-icon icon="mdi:pencil"></ha-icon>
                   </button>
                 ` : nothing}
               </div>
@@ -22435,7 +22450,10 @@ copy{
   }
 
   private _clearSettingsEditState(): void {
+    const editor = this.renderRoot?.querySelector('dwains-dashboard-next-strategy-editor') as any;
+    editor?._discardDeviceSettings?.();
     this._pendingSettingsConfig = undefined;
+    this._deviceSettingsDirty = false;
     this._settingsDirty = false;
     this._settingsSaveError = '';
     this._settingsSavePending = false;
@@ -22465,6 +22483,7 @@ copy{
       this._rememberAreaEditMode(null);
       this._updateUrlArea(null);
       this._pendingSettingsConfig = undefined;
+      this._deviceSettingsDirty = false;
       this._settingsDirty = false;
       this._settingsSaveError = '';
       this._settingsEditorInitialized = false;
@@ -22779,7 +22798,15 @@ copy{
     event.stopPropagation();
     const detail = (event as CustomEvent<{ config?: Partial<DwainsDashboardConfig> }>).detail;
     this._pendingSettingsConfig = detail?.config;
-    this._settingsDirty = Boolean(this._pendingSettingsConfig);
+    this._settingsDirty = Boolean(this._pendingSettingsConfig) || this._deviceSettingsDirty;
+    this._settingsSaveError = '';
+  };
+
+  private _handleDeviceSettingsChanged = (event: Event): void => {
+    event.stopPropagation();
+    const detail = (event as CustomEvent<{ dirty?: boolean }>).detail;
+    this._deviceSettingsDirty = Boolean(detail?.dirty);
+    this._settingsDirty = Boolean(this._pendingSettingsConfig) || this._deviceSettingsDirty;
     this._settingsSaveError = '';
   };
 
@@ -22811,7 +22838,7 @@ copy{
   };
 
   private async _saveSettingsPage(): Promise<void> {
-    if (!this._pendingSettingsConfig || this._settingsSavePending || !this.hass) return;
+    if ((!this._pendingSettingsConfig && !this._deviceSettingsDirty) || this._settingsSavePending || !this.hass) return;
     if (!this._canManageDashboard()) return;
 
     this._settingsSavePending = true;
@@ -22819,26 +22846,33 @@ copy{
     this._setSettingsHistoryState(true);
 
     try {
-      const urlPath = this._getDashboardUrlPath();
-      const base = urlPath ? { url_path: urlPath } : {};
-      const lovelaceConfig: any = await this.hass.callWS({ type: 'lovelace/config', ...base });
-      const strategy = lovelaceConfig?.strategy || {};
-      const nextStrategy = {
-        ...strategy,
-        ...this._pendingSettingsConfig,
-      };
-      const nextConfig = {
-        ...lovelaceConfig,
-        strategy: nextStrategy,
-      };
+      if (this._pendingSettingsConfig) {
+        const urlPath = this._getDashboardUrlPath();
+        const base = urlPath ? { url_path: urlPath } : {};
+        const lovelaceConfig: any = await this.hass.callWS({ type: 'lovelace/config', ...base });
+        const strategy = lovelaceConfig?.strategy || {};
+        const nextStrategy = {
+          ...strategy,
+          ...this._pendingSettingsConfig,
+        };
+        const nextConfig = {
+          ...lovelaceConfig,
+          strategy: nextStrategy,
+        };
 
-      await this.hass.callWS({ type: 'lovelace/config/save', ...base, config: nextConfig });
+        await this.hass.callWS({ type: 'lovelace/config/save', ...base, config: nextConfig });
 
-      this.config = {
-        ...this.config,
-        ...this._pendingSettingsConfig,
-      };
+        this.config = {
+          ...this.config,
+          ...this._pendingSettingsConfig,
+        };
+      }
+
+      const editor = this.renderRoot?.querySelector('dwains-dashboard-next-strategy-editor') as any;
+      editor?._commitDeviceSettings?.();
+
       this._pendingSettingsConfig = undefined;
+      this._deviceSettingsDirty = false;
       this._settingsDirty = false;
       this._settingsSaveError = '';
       this._settingsEditorInitialized = false;
@@ -22900,6 +22934,7 @@ copy{
         <div
           class="settings-page-editor"
           @config-changed=${this._handleSettingsConfigChanged}
+          @dwains-dashboard-next-device-settings-changed=${this._handleDeviceSettingsChanged}
           @dd-settings-page-changed=${this._handleSettingsPageChanged}
         >
           <dwains-dashboard-next-strategy-editor></dwains-dashboard-next-strategy-editor>

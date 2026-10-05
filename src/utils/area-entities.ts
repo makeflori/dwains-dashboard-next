@@ -128,6 +128,7 @@ export function getAreaEntityGroupKey(entityId: string, hass: HomeAssistant): Ar
   }
   if (domain === 'input_select') return 'select';
   if (domain === 'input_boolean') return 'input_boolean';
+  if (domain === 'alarm_control_panel') return 'safety';
   if (domain === 'binary_sensor') {
     const deviceClass = String(hass.states[entityId]?.attributes?.device_class || '').toLowerCase();
     if (['door', 'window', 'opening', 'garage_door'].includes(deviceClass)) return 'cover_openings';
