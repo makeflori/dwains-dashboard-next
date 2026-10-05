@@ -38,3 +38,5 @@ Dwains Dashboard Next follows semantic versioning.
 11. Verify the built entry file and all generated chunks are present in `dist/chunks/` before testing through HACS.
 
 - The HACS distribution layout must remain identical to upstream v1.11.0 unless an upstream release changes it.
+
+- Always clean the complete `dist/` directory before release builds so obsolete top-level chunks from previous packaging experiments cannot survive into a v1.11.0-style build.
