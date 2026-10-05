@@ -42,3 +42,5 @@ Dwains Dashboard Next follows semantic versioning.
 - Always clean the complete `dist/` directory before release builds so obsolete top-level chunks from previous packaging experiments cannot survive into a v1.11.0-style build.
 
 - Release builds must remove obsolete files from previous packaging layouts before Rollup runs.
+
+- Keep the v1.11.0 bootstrap strategy imports static in `src/index.ts`; do not move dashboard/view strategy loading back to dynamic imports without an explicit compatibility review.
