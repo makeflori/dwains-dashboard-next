@@ -13,12 +13,20 @@ import {
 } from '@mdi/js';
 import type { DwainsDashboardSettings } from '../types/strategy';
 import { ddLocalize } from '../utils/localize';
+import { TRANSLATIONS_LOADED_EVENT } from '../i18n';
 import { navigateHomeAssistant } from '../utils/navigation';
 import { isHassDarkTheme } from '../utils/theme';
 import {
   restrictNonAdminDashboardSettings,
   restrictNonAdminHaSidebar,
 } from '../utils/security';
+import {
+  WALL_TABLET_CHANGED_EVENT,
+  WALL_TABLET_RESET_EVENT,
+  isWallTabletEnabled,
+  wallTabletHaMenuPeek,
+} from '../utils/wall-tablet';
+import { ensureWallTablet } from './dwains-wall-tablet';
 
 interface NavItem {
   path: string;
@@ -114,16 +122,22 @@ export class DwainsBottomNav extends LitElement {
     this._sync();
     window.addEventListener('location-changed', this._sync);
     window.addEventListener('popstate', this._sync);
+    window.addEventListener(TRANSLATIONS_LOADED_EVENT, this._handleTranslationsLoaded);
     window.addEventListener('dwains-dashboard-next-area-context-changed', this._handleAreaContext as EventListener);
     window.addEventListener('dwains-dashboard-next-device-context-changed', this._handleDeviceContext as EventListener);
+    window.addEventListener(WALL_TABLET_CHANGED_EVENT, this._handleWallTabletChanged);
+    window.addEventListener(WALL_TABLET_RESET_EVENT, this._handleWallTabletReset);
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
     window.removeEventListener('location-changed', this._sync);
     window.removeEventListener('popstate', this._sync);
+    window.removeEventListener(TRANSLATIONS_LOADED_EVENT, this._handleTranslationsLoaded);
     window.removeEventListener('dwains-dashboard-next-area-context-changed', this._handleAreaContext as EventListener);
     window.removeEventListener('dwains-dashboard-next-device-context-changed', this._handleDeviceContext as EventListener);
+    window.removeEventListener(WALL_TABLET_CHANGED_EVENT, this._handleWallTabletChanged);
+    window.removeEventListener(WALL_TABLET_RESET_EVENT, this._handleWallTabletReset);
   }
 
   private _sync = () => {
@@ -137,6 +151,21 @@ export class DwainsBottomNav extends LitElement {
       this._restrictedMenuOpen = false;
     }
     if (!this._isHaMenuRestricted()) this._restrictedMenuOpen = false;
+  };
+
+  private _handleWallTabletChanged = (): void => {
+    _syncHaShell(this._hass, this._settings, this.dashSegment, true);
+    this.requestUpdate();
+  };
+
+  private _handleWallTabletReset = (): void => {
+    this._pagesOpen = false;
+    this._restrictedMenuOpen = false;
+  };
+
+  private _handleTranslationsLoaded = (): void => {
+    if (this._hass) this._loadItems();
+    this.requestUpdate();
   };
 
   private _syncThemeAttribute(): void {
@@ -1131,6 +1160,7 @@ export function ensureBottomNav(hass: any, settings?: DwainsDashboardSettings): 
   // Onthoud het dashboard-segment waarop wij draaien (voor de zichtbaarheid).
   const seg = window.location.pathname.split('/')[1];
   el.dashSegment = seg && seg !== 'lovelace' ? seg : 'lovelace';
+  ensureWallTablet(hass, settings, el.dashSegment);
   el.dashboardSettings = settings;
   el.hass = hass;
 }
@@ -1155,6 +1185,7 @@ let _lastShellKey = '';
 let _lastShellSyncAt = 0;
 let _nativeHeaderTimer: number | undefined;
 let _sidebarRetryTimer: number | undefined;
+let _nativeHeaderHiddenOnAllWidths = false;
 
 function _shellKey(hass: any, settings: DwainsDashboardSettings | undefined, dashSegment?: string): string {
   return [
@@ -1164,6 +1195,7 @@ function _shellKey(hass: any, settings: DwainsDashboardSettings | undefined, das
     restrictNonAdminHaSidebar(hass, settings) ? 'restricted' : '',
     restrictNonAdminDashboardSettings(hass, settings) ? 'no-settings' : '',
     hass?.locale?.language || hass?.language || '',
+    _isWallTabletShellActive(dashSegment) ? (wallTabletHaMenuPeek() ? 'wall-tablet-menu' : 'wall-tablet') : '',
   ].join('|');
 }
 
@@ -1242,8 +1274,7 @@ function _hideNativeHeaderOnMobile(attempt = 0): void {
     .map((selector) => `:host-context(.${activeClass}) ${selector}`)
     .join(',\n      ');
 
-  const css = `
-    @media (max-width: 768px) {
+  const rules = `
       html.${activeClass},
       body.${activeClass} {
         overflow-x: hidden !important;
@@ -1304,8 +1335,8 @@ function _hideNativeHeaderOnMobile(attempt = 0): void {
         padding-top: 0 !important;
         margin-top: 0 !important;
       }
-    }
   `;
+  const css = _nativeHeaderHiddenOnAllWidths ? rules : `@media (max-width: 768px) {${rules}}`;
   roots.forEach((root) => {
     const host = root instanceof Document ? root.head || root.documentElement : root;
     let style = root.querySelector(`#${HIDE_NATIVE_HEADER_STYLE_ID}`) as HTMLStyleElement | null;
@@ -1474,8 +1505,15 @@ function _isMobileNavActive(dashSegment?: string): boolean {
   return _isOnDashboard(dashSegment) && _isMobileViewport();
 }
 
+function _isWallTabletShellActive(dashSegment?: string): boolean {
+  return Boolean(dashSegment) && _isOnDashboard(dashSegment) && isWallTabletEnabled(dashSegment!);
+}
+
 function _syncHaShellForBottomNav(dashSegment?: string, withRetries = true): void {
-  const active = _isMobileNavActive(dashSegment);
+  const mobileNavActive = _isMobileNavActive(dashSegment);
+  const wallTablet = _isWallTabletShellActive(dashSegment);
+  const active = mobileNavActive || wallTablet;
+  _nativeHeaderHiddenOnAllWidths = wallTablet;
   document.documentElement.classList.toggle(MOBILE_NAV_ACTIVE_CLASS, active);
   document.body?.classList.toggle(MOBILE_NAV_ACTIVE_CLASS, active);
   if (active) {
@@ -1484,7 +1522,7 @@ function _syncHaShellForBottomNav(dashSegment?: string, withRetries = true): voi
     _setNativeHeaderElementsHidden(false);
   }
   _setDrawerPlacement('start');
-  if (!active) {
+  if (!mobileNavActive) {
     _removeSidebarSection();
   }
 }
@@ -1695,7 +1733,8 @@ function _applyHaSidebarRestriction(
 ): void {
   const currentSegment = window.location.pathname.split('/')[1] || 'lovelace';
   const onDashboard = !dashSegment || currentSegment === dashSegment;
-  const active = onDashboard && restrictNonAdminHaSidebar(hass, settings);
+  const wallTabletHidesSidebar = _isWallTabletShellActive(dashSegment) && !wallTabletHaMenuPeek();
+  const active = (onDashboard && restrictNonAdminHaSidebar(hass, settings)) || wallTabletHidesSidebar;
   const drawerVars = `
     --app-drawer-width: 0px !important;
     --mdc-drawer-width: 0px !important;
