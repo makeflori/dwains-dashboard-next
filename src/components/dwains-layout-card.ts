@@ -21620,6 +21620,13 @@ export class DwainsLayoutCard extends LitElement {
           ${areaData.humidity}
         </span>
       ` : nothing,
+      areaData.wattage ? html`
+        <span class="dd-page-header-reading wattage" title=${this._t('entity.power_usage')}>
+          <ha-icon icon="mdi:flash" aria-hidden="true"></ha-icon>
+          <span class="dd-visually-hidden">${this._t('entity.power_usage')}</span>
+          ${areaData.wattage}
+        </span>
+      ` : nothing,
     ];
   }
 
@@ -21783,13 +21790,13 @@ export class DwainsLayoutCard extends LitElement {
           aria-label=${this._editMode ? this._t('layout.done_editing') : this._t('layout.edit_custom_cards')}
           @click=${this._toggleEditMode}
         >
-          <ha-icon icon=${this._editMode ? 'mdi:check' : 'mdi:pencil'}></ha-icon>
+          <ha-icon icon=${this._editMode ? 'mdi:check' : 'mdi:view-dashboard-edit-outline'}></ha-icon>
         </button>
       ` : nothing}
     `;
 
     return html`
-      <div class="area-view">
+      <div class="area-view room-ui-v2">
         ${this._isMobile
           ? this._renderAreaCompactBar(area, areaData, deviceLabel, homeButton, actions, tiles)
           : nothing}
@@ -24195,14 +24202,17 @@ export class DwainsLayoutCard extends LitElement {
       return nothing;
     }
 
+    const label = this._t('settings.hidden_unavailable_count', { count: totalUnavailable });
     return html`
       <button
-        class="unavailable-entities-icon"
+        class="dd-page-header-button is-warning"
+        type="button"
+        title=${label}
+        aria-label=${label}
         @click=${() => this._showUnavailableEntitiesModal(areaId)}
-        title=${this._t('settings.hidden_unavailable_count', { count: totalUnavailable })}
       >
-        <ha-icon icon="mdi:information-outline"></ha-icon>
-        <span class="unavailable-count">${totalUnavailable}</span>
+        <ha-icon icon="mdi:eye-off-outline"></ha-icon>
+        <span class="dd-page-header-badge" aria-hidden="true">${totalUnavailable}</span>
       </button>
     `;
   }
