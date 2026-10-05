@@ -15,10 +15,9 @@ Dwains Dashboard Next follows semantic versioning.
 - Every public release uses a `vX.Y.Z` Git tag.
 - Keep `package.json`, `package-lock.json` and the built file in `dist/` in sync.
 - Keep release notes on the GitHub release page, not in the main README.
-- HACS users receive published GitHub releases, so a release must include the built dashboard files: `dist/dwains-dashboard-next.js` and everything in `dist/chunks/`.
+- HACS users receive published GitHub releases, so every release must contain a complete standalone `dist/dwains-dashboard-next.js`.
 - For this fork, every dev change intended for HACS testing is published as a new release.
-- Every release must attach `dwains-dashboard-next.zip`. The archive contains `dwains-dashboard-next.js` plus the complete `chunks/` directory so HACS installs all dynamic imports together.
-- Keep the HACS plugin manifest filename as `dwains-dashboard-next.js`; the release ZIP is an attached asset, not the manifest filename.
+- Do not ship runtime chunk dependencies for the HACS plugin build; Rollup must inline dynamic imports into `dwains-dashboard-next.js`.
 - Use a minor release when user-facing features are added, even if bug fixes are included in the same release.
 - Use a patch release only when there are no new user-facing features.
 
@@ -29,10 +28,9 @@ Dwains Dashboard Next follows semantic versioning.
 3. Update `README.md` with the current release when needed.
 4. Run `npm run type-check`.
 5. Run `npm run build`.
-6. Confirm `dist/dwains-dashboard-next.js` and `dist/chunks/` changed when source changed. Stage removed chunks too (`git add -A dist`), because chunk names contain a content hash.
+6. Confirm `dist/dwains-dashboard-next.js` changed when source changed and that it contains no `./chunks/` imports.
 7. Commit with `Release X.Y.Z`.
 8. Create tag `vX.Y.Z`.
 9. Push the commit and tag.
-10. Create `dwains-dashboard-next.zip` from the contents of `dist/`, including the complete `chunks/` directory.
-11. Create the GitHub release with English release notes and attach the ZIP.
-12. Verify the release ZIP contains `chunks/` before testing through HACS.
+10. Create the GitHub release with English release notes.
+11. Verify the built `dwains-dashboard-next.js` is standalone before testing through HACS.
