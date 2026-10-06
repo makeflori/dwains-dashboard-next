@@ -587,6 +587,131 @@ export const pageHeaderStyles = css`
       display: none;
     }
 
+
+    /*
+     * Room header v2
+     *
+     * This is the canonical room-header layout. Keep it here instead of
+     * patching the layout card so desktop and mobile share one component
+     * contract and only change layout at the breakpoint.
+     */
+    .room-header {
+      padding: 16px;
+      gap: 0;
+    }
+
+    .room-header .dd-page-header-with-media {
+      min-width: 0;
+      display: grid;
+      grid-template-columns: 112px minmax(0, 1fr);
+      align-items: stretch;
+      gap: 18px;
+    }
+
+    .room-header .dd-page-header-media-tile {
+      width: 112px;
+      min-height: 112px;
+      align-self: stretch;
+      overflow: hidden;
+      border-radius: 16px;
+      background: color-mix(in srgb, var(--ph-accent) 10%, var(--ph-surface));
+    }
+
+    .room-header .dd-page-header-room-picture,
+    .room-header .dd-page-header-room-icon {
+      width: 100%;
+      height: 100%;
+      min-height: 112px;
+      border-radius: inherit;
+    }
+
+    .room-header .dd-page-header-room-picture {
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+    }
+
+    .room-header .dd-page-header-room-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--ph-accent);
+      background: color-mix(in srgb, var(--ph-accent) 12%, var(--ph-surface));
+    }
+
+    .room-header .dd-page-header-room-icon ha-icon {
+      --mdc-icon-size: 42px;
+    }
+
+    .room-header .dd-page-header-main {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .room-header .dd-page-header-top {
+      flex-wrap: nowrap;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .room-header .dd-page-header-identity {
+      min-width: 0;
+      align-items: flex-start;
+    }
+
+    .room-header .dd-page-header-copy {
+      min-width: 0;
+      width: 100%;
+    }
+
+    .room-header .dd-page-header-title-row {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .room-header .dd-page-header-title-row .dd-page-header-home {
+      width: 36px;
+      height: 36px;
+      flex: 0 0 36px;
+    }
+
+    .room-header .dd-page-header-title-chevron {
+      --mdc-icon-size: 20px;
+      flex: 0 0 auto;
+      color: var(--ph-muted);
+    }
+
+    .room-header .dd-page-header-title {
+      min-width: 0;
+      flex: 1 1 auto;
+      font-size: clamp(22px, 1.2vw + 14px, 30px);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .room-header .dd-page-header-subtitle {
+      margin-top: 6px;
+      gap: 4px 14px;
+    }
+
+    .room-header .dd-page-header-actions {
+      margin-left: auto;
+      align-self: flex-start;
+    }
+
+    .room-header .dd-page-header-strip {
+      min-width: 0;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
     @media (max-width: 768px) {
       .dd-page-header,
       .dd-room-compact {
@@ -789,6 +914,144 @@ export const pageHeaderStyles = css`
       .dd-room-compact .dd-room-tile-action {
         width: 32px;
         height: 32px;
+      }
+    }
+
+
+    @media (max-width: 768px) {
+      /*
+       * Room header v2 stays a real card on phones. The photo/icon and title
+       * share the first row; quick controls use the full width underneath.
+       */
+      .room-header {
+        margin: 0 0 14px;
+        padding: 12px;
+        gap: 0;
+        border: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 75%, transparent);
+        border-radius: 18px;
+        background: var(--ph-surface);
+        box-shadow:
+          0 1px 2px rgba(15, 23, 42, 0.04),
+          0 10px 26px rgba(15, 23, 42, 0.07);
+      }
+
+      :host([data-theme-dark]) .room-header {
+        box-shadow:
+          0 1px 2px rgba(0, 0, 0, 0.24),
+          0 10px 26px rgba(0, 0, 0, 0.20);
+      }
+
+      .room-header .dd-page-header-with-media {
+        grid-template-columns: 64px minmax(0, 1fr);
+        align-items: start;
+        gap: 10px;
+      }
+
+      .room-header .dd-page-header-media-tile {
+        width: 64px;
+        min-height: 64px;
+        height: 64px;
+        border-radius: 14px;
+      }
+
+      .room-header .dd-page-header-room-picture,
+      .room-header .dd-page-header-room-icon {
+        min-height: 64px;
+        height: 64px;
+      }
+
+      .room-header .dd-page-header-room-icon ha-icon {
+        --mdc-icon-size: 30px;
+      }
+
+      .room-header .dd-page-header-main {
+        display: contents;
+      }
+
+      .room-header .dd-page-header-top {
+        min-width: 0;
+        grid-column: 2;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: start;
+        gap: 8px;
+      }
+
+      .room-header .dd-page-header-identity {
+        min-width: 0;
+        display: block;
+        order: initial;
+        flex-basis: auto;
+      }
+
+      .room-header .dd-page-header-title-row {
+        gap: 6px;
+      }
+
+      .room-header .dd-page-header-title-row .dd-page-header-home {
+        width: 32px;
+        height: 32px;
+        flex-basis: 32px;
+      }
+
+      .room-header .dd-page-header-title-row .dd-page-header-home ha-icon {
+        --mdc-icon-size: 19px;
+      }
+
+      .room-header .dd-page-header-title-chevron {
+        display: none;
+      }
+
+      .room-header .dd-page-header-title {
+        font-size: 20px;
+        line-height: 1.15;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+      }
+
+      .room-header .dd-page-header-subtitle {
+        margin-top: 4px;
+        gap: 2px 9px;
+        font-size: 12px;
+        line-height: 1.25;
+      }
+
+      .room-header .dd-page-header-actions {
+        order: initial;
+        margin-left: 0;
+        gap: 5px;
+      }
+
+      .room-header .dd-page-header-actions .dd-page-header-button {
+        width: 34px;
+        height: 34px;
+      }
+
+      .room-header .dd-page-header-actions .dd-page-header-button ha-icon,
+      .room-header .dd-page-header-actions .dd-page-header-button .dd-static-icon {
+        --mdc-icon-size: 19px;
+        width: 19px;
+        height: 19px;
+      }
+
+      .room-header .dd-page-header-strip {
+        grid-column: 1 / -1;
+        margin-top: 10px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+
+      .room-header .dd-room-tiles {
+        margin: 0;
+        padding: 0 0 2px;
+        scroll-padding-inline: 0;
+      }
+
+      .room-header .dd-page-header-strip > dwains-dashboard-next-area-thermostat {
+        width: 100%;
       }
     }
 
