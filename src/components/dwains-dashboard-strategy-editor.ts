@@ -1048,15 +1048,17 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         <span class="dd-setting-row-icon"><ha-icon icon=${icon}></ha-icon></span>
         <span class="dd-setting-row-copy">
           <strong>${title}</strong>
-          ${description ? html`<small>${description}</small>` : nothing}
-          <button
-            class="dd-settings-inline-link"
-            type="button"
-            @click=${(event: Event) => {
-              event.stopPropagation();
-              this._openSettingsPage('favorites');
-            }}
-          >${this._t('settings.manage_favorites')}</button>
+          <small>
+            ${description}
+            <button
+              class="dd-settings-inline-link"
+              type="button"
+              @click=${(event: Event) => {
+                event.stopPropagation();
+                this._openSettingsPage('favorites');
+              }}
+            >${this._t('settings.manage_favorites')}</button>
+          </small>
         </span>
         <ha-switch .checked=${checked} @change=${onChange}></ha-switch>
       </div>
@@ -1288,7 +1290,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
           <div class="entity-picker dd-favorites-picker dd-favorites-list-card">
             <div class="dd-inline-action-row dd-favorites-list-head">
-              <strong>${this._t('favorites.title')}</strong>
+              <strong>${this._t('settings.manual_favorites')} ${this._t('favorites.title')}</strong>
               <button class="home-custom-card-add dd-favorites-add" type="button" @click=${this._addFavoriteEntity}>
                 <ha-icon icon="mdi:plus"></ha-icon>
                 ${this._t('common.add')}
@@ -2424,17 +2426,19 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                   <div class="home-section-icon"><ha-icon icon=${meta.icon}></ha-icon></div>
                   <div class="home-section-copy">
                     <div class="home-section-title">${this._t(meta.labelKey)}</div>
-                    <div class="home-section-description">${this._t(meta.descriptionKey)}</div>
-                    ${section === 'favorites' ? html`
-                      <button
-                        class="dd-settings-inline-link dd-home-favorites-link"
-                        type="button"
-                        @click=${(event: Event) => {
-                          event.stopPropagation();
-                          this._openSettingsPage('favorites');
-                        }}
-                      >${this._t('settings.manage_favorites')}</button>
-                    ` : nothing}
+                    <div class="home-section-description">
+                      ${this._t(meta.descriptionKey)}
+                      ${section === 'favorites' ? html`
+                        <button
+                          class="dd-settings-inline-link"
+                          type="button"
+                          @click=${(event: Event) => {
+                            event.stopPropagation();
+                            this._openSettingsPage('favorites');
+                          }}
+                        >${this._t('settings.manage_favorites')}</button>
+                      ` : nothing}
+                    </div>
                   </div>
                   <div class="home-section-actions" @click=${(event: Event) => event.stopPropagation()}>
                     <button
@@ -7763,8 +7767,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .dd-favorites-list-head > strong {
         color: var(--primary-text-color);
-        font-size: 13px;
+        font-family: var(--ha-font-family-body, inherit);
+        font-size: 15px;
         font-weight: 700;
+        line-height: 1.25;
       }
 
       .dd-favorites-list-card .selected-entities {
@@ -8062,16 +8068,18 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .dd-settings-inline-link {
-        width: max-content;
-        margin: 2px 0 0;
+        display: inline;
+        width: auto;
+        margin: 0 0 0 4px;
         padding: 0;
         border: 0;
         background: transparent;
         color: var(--primary-color);
         font: inherit;
-        font-size: 11px;
-        font-weight: 700;
-        line-height: 1.3;
+        font-size: inherit;
+        font-weight: 650;
+        line-height: inherit;
+        vertical-align: baseline;
         cursor: pointer;
       }
 
@@ -8081,10 +8089,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .dd-setting-row-with-link {
         cursor: default;
-      }
-
-      .dd-home-favorites-link {
-        margin-top: 3px;
       }
 
       .dd-icon-text-button {
