@@ -489,6 +489,7 @@ export const fr = {
   'settings.discard_action': 'Ignorer',
   'settings.show_suggested_favorites': "Afficher les favoris suggérés",
   'settings.suggested_favorites_description': "Ajoute des entités fréquemment utilisées suggérées par Home Assistant à vos propres favoris. Vos favoris sélectionnés manuellement sont toujours conservés.",
+  'settings.manage_favorites': "Gérer les favoris",
   'settings.show_area_favorites': "Afficher les favoris dans les vues des pièces",
   'settings.show_area_favorites_description': "Affiche la section Favoris au-dessus du contenu de la pièce.",
   'settings.add_entity': 'Ajouter une entité',
