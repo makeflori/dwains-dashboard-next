@@ -15830,7 +15830,7 @@ copy{
       flex-direction: column;
       justify-content: flex-start;
       gap: 14px;
-      padding-top: 8px;
+      padding-top: 0;
       box-sizing: border-box;
     }
 
@@ -15935,6 +15935,17 @@ copy{
         width: 100% !important;
         max-width: none !important;
         box-sizing: border-box !important;
+      }
+
+      .global-header.room-context .room-global-now-playing{
+        width: 100% !important;
+        max-width: 1400px !important;
+        margin: 8px auto 0 !important;
+        box-sizing: border-box !important;
+      }
+
+      .global-header.room-context .room-global-now-playing > dwains-dashboard-next-now-playing{
+        width: 100% !important;
       }
     }
 
@@ -17562,6 +17573,12 @@ copy{
         ${this._selectedView === 'area' && !this._isMobile && this.config?.settings?.show_area_favorites !== false
           ? this._renderRoomFavoritesBlock()
           : nothing}
+
+        ${this._selectedView === 'area' && !this._isMobile ? html`
+          <div class="room-global-now-playing">
+            ${this._renderNowPlayingBar(false)}
+          </div>
+        ` : nothing}
 
         ${favoriteCount && this._selectedView !== 'area' ? html`
           <button
@@ -19955,7 +19972,6 @@ copy{
           </div>
         </header>
 
-        ${!this._isMobile ? this._renderNowPlayingBar(false) : nothing}
         ${this._renderCustomCardSlot(area.area_id, 'top', this._t('layout.custom_cards_top'))}
         ${this._renderMobileEntitiesSection(area, areaEntities)}
         ${this._renderCustomCardSlot(area.area_id, 'bottom', this._t('layout.custom_cards_bottom'))}
