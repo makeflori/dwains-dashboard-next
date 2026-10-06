@@ -9025,12 +9025,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .persons-list .person-item {
         min-width: 0;
-        min-height: 72px;
+        min-height: 60px;
         display: grid;
-        grid-template-columns: 48px minmax(0, 1fr) 38px;
+        grid-template-columns: 44px minmax(0, 1fr) 36px;
         align-items: center;
-        gap: 9px;
-        padding: 8px 10px;
+        gap: 8px;
+        padding: 6px 10px;
         border: 1px solid var(--divider-color);
         border-radius: 10px;
         background: var(--card-background-color);
@@ -9041,8 +9041,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .person-avatar {
-        width: 48px;
-        height: 48px;
+        width: 44px;
+        height: 44px;
         display: grid;
         place-items: center;
         overflow: hidden;
@@ -9072,8 +9072,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .persons-list .dd-visibility-button {
-        width: 34px;
-        height: 34px;
+        width: 32px;
+        height: 32px;
       }
 
       .area-sort-segment {
