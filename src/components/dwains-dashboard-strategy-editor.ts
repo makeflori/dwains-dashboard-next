@@ -246,6 +246,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _dragOverEntitySection?: AreaStrategyGroup;
 
   @state()
+  private _areaGroupPreviewOrder?: AreaStrategyGroup[];
+
+  @state()
   private _collapsedAreaEntityGroups = new Set<AreaStrategyGroup>();
 
   @state()
@@ -582,11 +585,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     const hiddenPersonCount = new Set(this._config?.settings?.hidden_persons || []).size;
     const visiblePersonCount = Math.max(0, personCount - hiddenPersonCount);
     const totalHomeSections = this._getHomeSectionsOrder().length;
-    const headerActiveCount = [
+    const statusActiveCount = [
       this._config?.settings?.show_time !== false,
       this._config?.settings?.show_notifications !== false,
       this._config?.settings?.show_weather !== false,
       Boolean(this._config?.settings?.alarm_entity_id) && this._config?.settings?.show_alarm !== false,
+      visiblePersonCount > 0,
     ].filter(Boolean).length;
     const replacementCount = this._replacementCount();
     const protectedMasterActionCount = MASTER_ACTION_CONFIRMATION_DOMAINS
@@ -614,31 +618,31 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         summary: this._t('settings.visible_count', { visible: visibleHomeSections, total: totalHomeSections }),
       },
       {
-        page: "header",
+        page: "areas",
         group: "general",
-        icon: "mdi:card-account-details-star-outline",
+        icon: "mdi:floor-plan",
         color: "#3b82f6",
+        title: this._t('settings.areas'),
+        description: this._t('settings.areas_description'),
+        summary: this._tp('common.area', areaCount),
+      },
+      {
+        page: "devices",
+        group: "general",
+        icon: "mdi:format-list-bulleted-type",
+        color: "#3b82f6",
+        title: this._t('settings.devices_page'),
+        description: this._t('settings.devices_page_description'),
+        summary: this._t('settings.types_visible', { visible: deviceTypeCount - hiddenDeviceTypeCount, total: deviceTypeCount }),
+      },
+      {
+        page: "header",
+        group: "content",
+        icon: "mdi:information-outline",
+        color: "#8b5cf6",
         title: this._t('settings.header_status'),
         description: this._t('settings.header_status_description'),
-        summary: this._tp('common.active', headerActiveCount),
-      },
-      {
-        page: "controls",
-        group: "behavior",
-        icon: "mdi:gesture-tap-button",
-        color: "#0f9f8f",
-        title: this._t('settings.controls_confirmations'),
-        description: this._t('settings.controls_confirmations_description'),
-        summary: this._t('settings.controls_confirmations_summary', { count: protectedMasterActionCount }),
-      },
-      {
-        page: "people",
-        group: "content",
-        icon: "mdi:account-group-outline",
-        color: "#8b5cf6",
-        title: this._t('settings.people'),
-        description: this._t('settings.people_description'),
-        summary: this._tp('common.person', visiblePersonCount),
+        summary: this._tp('common.active', statusActiveCount),
       },
       {
         page: "favorites",
@@ -650,24 +654,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         summary: this._tp('common.favorite', favoriteCount),
       },
       {
-        page: "areas",
-        group: "content",
-        icon: "mdi:floor-plan",
-        color: "#8b5cf6",
-        title: this._t('settings.areas'),
-        description: this._t('settings.areas_description'),
-        summary: this._tp('common.area', areaCount),
-      },
-      {
-        page: "devices",
-        group: "content",
-        icon: "mdi:format-list-bulleted-type",
-        color: "#8b5cf6",
-        title: this._t('settings.devices_page'),
-        description: this._t('settings.devices_page_description'),
-        summary: this._t('settings.types_visible', { visible: deviceTypeCount - hiddenDeviceTypeCount, total: deviceTypeCount }),
-      },
-      {
         page: "replacements",
         group: "content",
         icon: "mdi:puzzle-edit-outline",
@@ -675,6 +661,15 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         title: this._t('settings.blueprint_replacements'),
         description: this._t('settings.blueprint_replacements_description'),
         summary: this._tp('common.active', replacementCount),
+      },
+      {
+        page: "controls",
+        group: "behavior",
+        icon: "mdi:gesture-tap-button",
+        color: "#0f9f8f",
+        title: this._t('settings.controls_confirmations'),
+        description: this._t('settings.controls_confirmations_description'),
+        summary: this._t('settings.controls_confirmations_summary', { count: protectedMasterActionCount }),
       },
       {
         page: "permissions",
@@ -1375,39 +1370,18 @@ export class DwainsDashboardStrategyEditor extends LitElement {
             ${this._showAlarmPicker ? this._renderAlarmPicker() : nothing}
           </div>
         </div>
-        ${this._renderNowPlayingSettings()}
-      </div>
-    `;
-  }
 
-  private _renderNowPlayingSettings() {
-    const mode = normalizeNowPlayingMode(this._config?.settings?.now_playing_bar);
-    const modes: Array<{ value: NowPlayingMode; icon: string; label: string }> = [
-      { value: 'off', icon: 'mdi:music-off', label: this._t('now_playing.mode_off') },
-      { value: 'home', icon: 'mdi:home-outline', label: this._t('now_playing.mode_home') },
-      { value: 'all', icon: 'mdi:view-dashboard-outline', label: this._t('now_playing.mode_all') },
-    ];
-    return html`
-      <div class="dd-now-playing-settings">
-        <div class="dd-header-feature-row dd-now-playing-heading">
-          <span class="dd-setting-row-icon dd-now-playing-icon"><ha-icon icon="mdi:music-circle-outline"></ha-icon></span>
-          <span class="dd-setting-row-copy">
-            <strong>${this._t('now_playing.setting_title')}</strong>
-            <small>${this._t('now_playing.setting_description')}</small>
-          </span>
-        </div>
-        <div class="area-sort-segmented dd-now-playing-segments" role="radiogroup" aria-label=${this._t('now_playing.setting_title')}>
-          ${modes.map(item => html`
-            <button
-              type="button"
-              class="area-sort-segment ${mode === item.value ? 'selected' : ''}"
-              role="radio"
-              aria-checked=${mode === item.value ? 'true' : 'false'}
-              @click=${() => this._setNowPlayingMode(item.value)}
-            >
-              <ha-icon icon=${item.icon}></ha-icon><span>${item.label}</span>
-            </button>
-          `)}
+        <div class="dd-status-people-card">
+          <div class="dd-header-feature-row dd-status-people-heading">
+            <span class="dd-setting-row-icon"><ha-icon icon="mdi:account-group-outline"></ha-icon></span>
+            <span class="dd-setting-row-copy">
+              <strong>${this._t('settings.people')}</strong>
+              <small>${this._t('settings.people_page_description')}</small>
+            </span>
+          </div>
+          <div class="dd-status-people-list">
+            ${this._renderPersonsConfiguration()}
+          </div>
         </div>
       </div>
     `;
@@ -1484,6 +1458,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   }
 
   private _renderAreasSettingsPanel() {
+    const areaNowPlayingEnabled = this._config?.settings?.show_area_now_playing ??
+      (normalizeNowPlayingMode(this._config?.settings?.now_playing_bar) === 'all');
+
     return this._renderSettingsPanel(
       "mdi:floor-plan",
       this._t('settings.areas'),
@@ -1513,6 +1490,13 @@ export class DwainsDashboardStrategyEditor extends LitElement {
               this._toggleAreaFavorites
             )}
             ${this._renderToggleSetting(
+              "mdi:music-circle-outline",
+              this._t('settings.show_area_now_playing'),
+              this._t('settings.show_area_now_playing_description'),
+              areaNowPlayingEnabled,
+              this._toggleAreaNowPlaying
+            )}
+            ${this._renderToggleSetting(
               "mdi:thermostat",
               this._t('thermostat.setting_label'),
               this._t('thermostat.setting_description'),
@@ -1538,6 +1522,18 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     });
   };
 
+  private _toggleAreaNowPlaying = (event: Event): void => {
+    if (!this._config) return;
+    const target = event.target as any;
+    this._fireConfigChanged({
+      ...this._config,
+      settings: {
+        ...this._config.settings,
+        show_area_now_playing: Boolean(target.checked),
+      },
+    });
+  };
+
   private _toggleAreaThermostat = (event: Event): void => {
     if (!this._config) return;
     this._fireConfigChanged({
@@ -1546,13 +1542,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     });
   };
 
-  private _setNowPlayingMode(mode: NowPlayingMode): void {
-    if (!this._config) return;
-    this._fireConfigChanged({
-      ...this._config,
-      settings: { ...this._config.settings, now_playing_bar: mode },
-    });
-  }
   private _renderAreasConfiguration() {
     if (!this.hass || !this._config) return nothing;
 
@@ -1906,7 +1895,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     const ungroupedOrder = areaOptions.entity_order || [];
     const sortedUngroupedEntities = this._sortEntityIds(allAreaEntityIds, ungroupedOrder);
     const customCards = this._getAreaEditorCustomCards();
-    const groupedSections = this._sortAreaStrategyGroups(
+    const baseGroupedSections = this._sortAreaStrategyGroups(
       AREA_STRATEGY_GROUPS.filter((group) =>
         (groups[group] || []).length > 0 || customCards.some((entry) =>
           entry.placement === `after:${group}` ||
@@ -1914,6 +1903,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         )
       )
     );
+    const groupedSections = this._draggedEntitySection && this._areaGroupPreviewOrder
+      ? this._areaGroupPreviewOrder.filter((group) => baseGroupedSections.includes(group))
+      : baseGroupedSections;
     const areaEntityLayoutIsDefault =
       areaOptions.entity_layout === undefined &&
       !(areaOptions.group_order?.length) &&
@@ -2066,19 +2058,20 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                 class="area-entity-section-card"
                 @click=${() => this._toggleAreaEntityGroup(group)}
               >
-                <div class="area-entity-section-header">
-                  <button
+                <div
+                  class="area-entity-section-header"
+                  draggable="true"
+                  @dragstart=${(event: DragEvent) => this._handleEntitySectionDragStart(event, group, groupedSections)}
+                  @dragend=${this._handleEntitySectionDragEnd}
+                >
+                  <div
                     class="area-entity-section-handle"
-                    type="button"
-                    draggable="true"
                     title=${this._t('layout.drag_group')}
                     aria-label=${this._t('layout.drag_group')}
                     @click=${(event: Event) => event.stopPropagation()}
-                    @dragstart=${(event: DragEvent) => this._handleEntitySectionDragStart(event, group)}
-                    @dragend=${this._handleEntitySectionDragEnd}
                   >
                     <ha-svg-icon .path=${mdiDrag}></ha-svg-icon>
-                  </button>
+                  </div>
                   <ha-icon
                     class="area-entity-section-icon"
                     icon=${AREA_STRATEGY_GROUP_ICONS[group]}
@@ -2198,7 +2191,17 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   }
 
   private _getHiddenHomeSections(): Set<HomeSectionKey> {
-    return new Set(normalizeHiddenHomeSections(this._config?.settings?.home_sections_hidden));
+    const hidden = new Set(normalizeHiddenHomeSections(this._config?.settings?.home_sections_hidden));
+    const settings = this._config?.settings;
+    const explicitlyManaged =
+      (settings?.home_sections_order || []).includes('now_playing') ||
+      (settings?.home_sections_hidden || []).includes('now_playing') ||
+      settings?.show_area_now_playing !== undefined;
+
+    if (!explicitlyManaged && normalizeNowPlayingMode(settings?.now_playing_bar) === 'off') {
+      hidden.add('now_playing');
+    }
+    return hidden;
   }
 
   private _getHiddenHomeInformationCards(): Set<HomeInformationCardKey> {
@@ -2314,6 +2317,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       ...this._config,
       settings: {
         ...this._config.settings,
+        home_sections_order: this._getHomeSectionsOrder(),
         home_sections_hidden: normalizeHiddenHomeSections([...hidden]),
       },
     };
@@ -4048,48 +4052,59 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     });
   }
 
-  private _handleEntitySectionDragStart(event: DragEvent, group: AreaStrategyGroup): void {
+  private _handleEntitySectionDragStart(
+    event: DragEvent,
+    group: AreaStrategyGroup,
+    orderedGroups: AreaStrategyGroup[]
+  ): void {
     event.stopPropagation();
     this._handleEntityDragEnd();
     this._handleAreaCustomCardDragEnd();
     this._draggedEntitySection = group;
     this._dragOverEntitySection = undefined;
+    this._areaGroupPreviewOrder = [...orderedGroups];
     event.dataTransfer?.setData('text/plain', group);
     if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
   }
 
   private _handleEntitySectionDragOver(event: DragEvent, group: AreaStrategyGroup): void {
-    if (!this._draggedEntitySection) return;
+    const dragged = this._draggedEntitySection;
+    if (!dragged) return;
     event.preventDefault();
     event.stopPropagation();
     if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+
+    const preview = [...(this._areaGroupPreviewOrder || [])];
+    const fromIndex = preview.indexOf(dragged);
+    const targetIndex = preview.indexOf(group);
+    if (fromIndex >= 0 && targetIndex >= 0 && fromIndex !== targetIndex) {
+      const [moved] = preview.splice(fromIndex, 1);
+      if (moved) preview.splice(targetIndex, 0, moved);
+      this._areaGroupPreviewOrder = preview;
+    }
     this._dragOverEntitySection = group;
   }
 
   private _handleEntitySectionDrop(
     event: DragEvent,
-    targetGroup: AreaStrategyGroup,
+    _targetGroup: AreaStrategyGroup,
     orderedGroups: AreaStrategyGroup[]
   ): void {
-    const draggedGroup = this._draggedEntitySection;
-    if (!draggedGroup) return;
+    if (!this._draggedEntitySection) return;
     event.preventDefault();
     event.stopPropagation();
 
-    const fromIndex = orderedGroups.indexOf(draggedGroup);
-    const targetIndex = orderedGroups.indexOf(targetGroup);
-    if (fromIndex >= 0 && targetIndex >= 0 && fromIndex !== targetIndex) {
-      const reordered = [...orderedGroups];
-      const [moved] = reordered.splice(fromIndex, 1);
-      if (moved) reordered.splice(targetIndex, 0, moved);
-      this._saveEntitySectionOrder(reordered);
-    }
+    const reordered = this._areaGroupPreviewOrder?.length
+      ? [...this._areaGroupPreviewOrder]
+      : [...orderedGroups];
+    this._saveEntitySectionOrder(reordered);
     this._handleEntitySectionDragEnd();
   }
 
   private _handleEntitySectionDragEnd = (): void => {
     this._draggedEntitySection = undefined;
     this._dragOverEntitySection = undefined;
+    this._areaGroupPreviewOrder = undefined;
   };
 
   private _handleAreaEditorDragOver(event: DragEvent, group: string, index: number): void {
@@ -8018,6 +8033,23 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         gap: 16px;
       }
 
+      .dd-status-people-card {
+        overflow: hidden;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: var(--card-background-color);
+      }
+
+      .dd-status-people-card .dd-status-people-heading {
+        min-height: 60px;
+      }
+
+      .dd-status-people-card .persons-list {
+        border: 0;
+        border-top: 1px solid var(--divider-color);
+        border-radius: 0;
+      }
+
       .dd-now-playing-settings {
         margin: 0;
         padding: 0 12px 12px;
@@ -8209,6 +8241,18 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         margin-right: 0;
         padding: 6px 2px;
         background: transparent;
+      }
+
+      .area-detail-editor .area-entity-section-header {
+        cursor: grab;
+      }
+
+      .area-detail-editor .area-entity-section-header:active {
+        cursor: grabbing;
+      }
+
+      .area-detail-editor .area-entity-section-handle {
+        cursor: inherit;
       }
 
       .area-settings-sortable .area-icon {
