@@ -596,6 +596,7 @@ export const pageHeaderStyles = css`
      * contract and only change layout at the breakpoint.
      */
     .room-header {
+      z-index: 20;
       padding: 16px;
       gap: 0;
     }
@@ -653,7 +654,7 @@ export const pageHeaderStyles = css`
       flex-direction: column;
       justify-content: flex-start;
       gap: 14px;
-      padding-top: 8px;
+      padding-top: 0;
       box-sizing: border-box;
     }
 
@@ -736,12 +737,19 @@ export const pageHeaderStyles = css`
     }
 
     .room-header .dd-page-header-strip {
+      position: relative;
+      z-index: 2;
       min-width: 0;
       min-height: 52px;
       flex-wrap: wrap;
       align-items: center;
       justify-content: flex-start;
       gap: 8px;
+    }
+
+    .room-header .dd-page-header-strip > dwains-dashboard-next-area-thermostat {
+      position: relative;
+      z-index: 3;
     }
 
     /* Rooms without quick controls reserve the exact same control-row height.
