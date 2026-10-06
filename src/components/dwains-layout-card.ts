@@ -15791,10 +15791,10 @@ copy{
     .dd-page-header-media-tile{
       position: relative;
       width: 220px;
-      height: 129px;
-      min-height: 129px;
-      max-height: 129px;
-      align-self: start;
+      height: 100%;
+      min-height: 130px;
+      max-height: none;
+      align-self: stretch;
       overflow: hidden;
       border-radius: 14px;
       background: color-mix(in srgb, var(--ph-accent) 10%, var(--ph-surface));
@@ -15811,7 +15811,7 @@ copy{
     .dd-page-header-room-icon{
       width: 100%;
       height: 100%;
-      min-height: 129px;
+      min-height: 130px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -15825,7 +15825,7 @@ copy{
 
     .dd-page-header-main{
       min-width: 0;
-      min-height: 129px;
+      min-height: 130px;
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
