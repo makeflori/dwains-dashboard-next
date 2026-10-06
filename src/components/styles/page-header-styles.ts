@@ -603,13 +603,13 @@ export const pageHeaderStyles = css`
     .room-header .dd-page-header-with-media {
       min-width: 0;
       display: grid;
-      grid-template-columns: 112px minmax(0, 1fr);
+      grid-template-columns: 132px minmax(0, 1fr);
       align-items: stretch;
       gap: 18px;
     }
 
     .room-header .dd-page-header-media-tile {
-      width: 112px;
+      width: 132px;
       min-height: 112px;
       align-self: stretch;
       overflow: hidden;
@@ -669,27 +669,37 @@ export const pageHeaderStyles = css`
 
     .room-header .dd-page-header-title-row {
       min-width: 0;
+      min-height: 30px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
+      line-height: 1;
     }
 
     .room-header .dd-page-header-title-row .dd-page-header-home {
-      width: 36px;
-      height: 36px;
-      flex: 0 0 36px;
+      width: 30px;
+      height: 30px;
+      flex: 0 0 30px;
+      display: inline-grid;
+      place-items: center;
     }
 
     .room-header .dd-page-header-title-chevron {
-      --mdc-icon-size: 20px;
-      flex: 0 0 auto;
+      --mdc-icon-size: 17px;
+      width: 17px;
+      height: 17px;
+      flex: 0 0 17px;
+      align-self: center;
       color: var(--ph-muted);
     }
 
     .room-header .dd-page-header-title {
       min-width: 0;
       flex: 1 1 auto;
+      margin: 0;
+      align-self: center;
       font-size: clamp(22px, 1.2vw + 14px, 30px);
+      line-height: 1.08;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -709,7 +719,12 @@ export const pageHeaderStyles = css`
       min-width: 0;
       flex-wrap: wrap;
       align-items: center;
-      gap: 10px;
+      justify-content: flex-start;
+      gap: 8px;
+    }
+
+    .room-header .dd-room-tiles {
+      flex: 0 1 auto;
     }
 
     @media (max-width: 768px) {
