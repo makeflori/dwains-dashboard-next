@@ -19802,7 +19802,6 @@ copy{
       : visibleAreaEntities;
     const areaData = this._getCachedAreaData(area);
     const hasPicture = Boolean(area.picture);
-    const pictureContrastClass = hasPicture ? this._getPictureContrastClass(area.picture) : '';
     const deviceCount = this._getAreaDeviceCount(area.area_id, visibleAreaEntities);
     const thermostatEntityId = this._areaThermostatEntityId(visibleAreaEntities);
     const quickControlEntities = thermostatEntityId
@@ -19843,53 +19842,56 @@ copy{
       ` : nothing}
     `;
 
-    const headerClasses = [
-      'dd-page-header',
-      'room-header',
-      hasPicture ? 'has-picture' : '',
-      pictureContrastClass,
-    ].filter(Boolean).join(' ');
-
     return html`
       <div class="area-view">
         ${this._isMobile
           ? this._renderAreaCompactBar(area, areaData, deviceLabel, homeButton, actions, tiles)
           : nothing}
 
-        <header class=${headerClasses}>
-          ${hasPicture ? html`
-            <div class="dd-page-header-media" style=${`background-image: url('${area.picture}');`}></div>
-          ` : nothing}
-
-          <div class="dd-page-header-top">
-            ${homeButton}
-            <div class="dd-page-header-identity">
-              <span class="dd-page-header-icon" aria-hidden="true">
-                <ha-icon icon=${getAreaIcon(area)}></ha-icon>
-              </span>
-              <div class="dd-page-header-copy">
-                <h1 class="dd-page-header-title">${area.name}</h1>
-                <div class="dd-page-header-subtitle">
-                  <span>${deviceLabel}</span>
-                  ${this._renderAreaHeaderReadings(areaData)}
-                </div>
-              </div>
+        <header class="dd-page-header room-header">
+          <div class="dd-page-header-with-media">
+            <div class="dd-page-header-media-tile" aria-hidden="true">
+              ${hasPicture
+                ? html`<div class="dd-page-header-room-picture" style=${`background-image: url('${area.picture}');`}></div>`
+                : html`
+                    <div class="dd-page-header-room-icon">
+                      <ha-icon icon=${getAreaIcon(area)}></ha-icon>
+                    </div>
+                  `}
             </div>
-            <div class="dd-page-header-actions">${actions}</div>
-          </div>
 
-          ${hasStrip ? html`
-            <div class="dd-page-header-strip">
-              ${tiles}
-              ${thermostatEntityId ? html`
-                <dwains-dashboard-next-area-thermostat
-                  .hass=${this.hass}
-                  .entityId=${thermostatEntityId}
-                  .roomName=${area.name}
-                ></dwains-dashboard-next-area-thermostat>
+            <div class="dd-page-header-main">
+              <div class="dd-page-header-top">
+                <div class="dd-page-header-identity">
+                  <div class="dd-page-header-copy">
+                    <div class="dd-page-header-title-row">
+                      ${homeButton}
+                      <ha-icon class="dd-page-header-title-chevron" icon="mdi:chevron-right" aria-hidden="true"></ha-icon>
+                      <h1 class="dd-page-header-title">${area.name}</h1>
+                    </div>
+                    <div class="dd-page-header-subtitle">
+                      <span>${deviceLabel}</span>
+                      ${this._renderAreaHeaderReadings(areaData)}
+                    </div>
+                  </div>
+                </div>
+                <div class="dd-page-header-actions">${actions}</div>
+              </div>
+
+              ${hasStrip ? html`
+                <div class="dd-page-header-strip">
+                  ${tiles}
+                  ${thermostatEntityId ? html`
+                    <dwains-dashboard-next-area-thermostat
+                      .hass=${this.hass}
+                      .entityId=${thermostatEntityId}
+                      .roomName=${area.name}
+                    ></dwains-dashboard-next-area-thermostat>
+                  ` : nothing}
+                </div>
               ` : nothing}
             </div>
-          ` : nothing}
+          </div>
         </header>
 
         ${!this._isMobile ? this._renderNowPlayingBar(false) : nothing}
