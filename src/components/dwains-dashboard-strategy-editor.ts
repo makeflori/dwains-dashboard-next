@@ -1020,14 +1020,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     onChange: (event: Event) => void
   ) {
     return html`
-      <label class="dd-setting-row">
+      <div class="dd-setting-row">
         <span class="dd-setting-row-icon"><ha-icon icon=${icon}></ha-icon></span>
         <span class="dd-setting-row-copy">
           <strong>${title}</strong>
           ${description ? html`<small>${description}</small>` : nothing}
         </span>
         <ha-switch .checked=${checked} @change=${onChange}></ha-switch>
-      </label>
+      </div>
     `;
   }
 
@@ -1585,13 +1585,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
             </button>
           `)}
         </div>
-      </section>
 
-      ${sortMode === 'custom' ? html`
-        <p class="area-order-list-hint">${this._t('settings.area_order_drag_hint')}</p>
-      ` : nothing}
+        ${sortMode === 'custom' ? html`
+          <p class="area-order-list-hint">${this._t('settings.area_order_drag_hint')}</p>
+        ` : nothing}
 
-      <div class="sortable-container area-settings-sortable ${sortMode === 'custom' ? 'is-custom-order' : ''} ${this._draggedAreaId ? 'dragging' : ''}">
+        <div class="sortable-container area-settings-sortable ${sortMode === 'custom' ? 'is-custom-order' : ''} ${this._draggedAreaId ? 'dragging' : ''}">
         ${repeat(
           sortedAreas,
           (area) => area.area_id,
@@ -1642,15 +1641,16 @@ export class DwainsDashboardStrategyEditor extends LitElement {
             `;
           }
         )}
-      </div>
-      <button
-        class="home-layout-reset area-list-reset"
-        type="button"
-        ?disabled=${hiddenAreas.size === 0 && sortMode === 'alphabetical'}
-        @click=${this._resetAreasConfiguration}
-      >
-        ${this._t('settings.reset_layout')}
-      </button>
+        </div>
+        <button
+          class="home-layout-reset area-list-reset"
+          type="button"
+          ?disabled=${hiddenAreas.size === 0 && sortMode === 'alphabetical'}
+          @click=${this._resetAreasConfiguration}
+        >
+          ${this._t('settings.reset_layout')}
+        </button>
+      </section>
     `;
   }
 
@@ -1961,7 +1961,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
               </span>
             </button>
           </div>
-        </section>
 
         ${entityLayout === 'ungrouped' ? html`
           <section class="area-free-order-section">
@@ -2182,6 +2181,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         >
           ${this._t('settings.reset_layout')}
         </button>
+        </section>
       </div>
     `;
   }
@@ -7178,10 +7178,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         border-top: 1px solid var(--divider-color);
       }
 
-      .person-item:hover {
-        background: var(--secondary-background-color);
-      }
-
       .person-item.hidden {
         opacity: 0.5;
         background: var(--disabled-background-color, var(--secondary-background-color));
@@ -7409,15 +7405,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         gap: 8px;
         padding: 8px 12px;
         box-sizing: border-box;
-        cursor: pointer;
+        cursor: default;
       }
 
       .dd-setting-row + .dd-setting-row {
         border-top: 1px solid var(--divider-color);
-      }
-
-      .dd-setting-row:hover {
-        background: color-mix(in srgb, var(--primary-color) 3%, transparent);
       }
 
       .dd-setting-row-icon ha-icon {
@@ -7448,6 +7440,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .dd-home-flat-layout {
         padding-top: 0;
+      }
+
+      .dd-home-flat-layout.home-layout-section {
+        padding-inline: 0;
       }
 
       .dd-home-section-block {
@@ -8202,6 +8198,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         padding: 14px;
         box-sizing: border-box;
         border-radius: 12px;
+      }
+
+      .area-order-settings .area-order-list-hint {
+        margin: 12px 0 0;
+      }
+
+      .area-order-settings .area-settings-sortable {
+        margin-top: 12px;
       }
 
       .area-settings-sortable {
@@ -9001,7 +9005,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .persons-list {
         overflow: visible;
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
         gap: 8px;
         border: 0;
         border-radius: 0;
@@ -9262,6 +9266,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         margin: 0 0 12px;
         padding: 14px;
         border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .area-detail-editor .area-entity-layout-settings > .area-entity-section,
+      .area-detail-editor .area-entity-layout-settings > .area-free-order-section {
+        margin-inline: 0;
       }
 
       .area-detail-editor .area-entity-section {
