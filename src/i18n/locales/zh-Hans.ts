@@ -489,6 +489,7 @@ export const zhHans = {
   'settings.discard_action': '舍弃',
   'settings.show_suggested_favorites': "显示建议收藏",
   'settings.suggested_favorites_description': "在你自己的收藏之外，加入 Home Assistant 建议的常用实体。你手动选择的收藏会始终保留。",
+  'settings.manage_favorites': "管理收藏",
   'settings.show_area_favorites': "在房间视图中显示收藏",
   'settings.show_area_favorites_description': "在房间内容上方显示“收藏”部分。",
   'settings.add_entity': '添加实体',
