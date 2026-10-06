@@ -15791,8 +15791,8 @@ copy{
     .dd-page-header-media-tile{
       position: relative;
       width: 220px;
-      height: 100%;
-      min-height: 130px;
+      height: auto;
+      min-height: 0;
       max-height: none;
       align-self: stretch;
       overflow: hidden;
@@ -15811,7 +15811,7 @@ copy{
     .dd-page-header-room-icon{
       width: 100%;
       height: 100%;
-      min-height: 130px;
+      min-height: 0;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -15825,7 +15825,7 @@ copy{
 
     .dd-page-header-main{
       min-width: 0;
-      min-height: 130px;
+      min-height: 0;
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
@@ -15940,12 +15940,13 @@ copy{
       .global-header.room-context .room-global-now-playing{
         width: 100% !important;
         max-width: 1400px !important;
-        margin: 8px auto 0 !important;
+        margin: 10px auto 0 !important;
         box-sizing: border-box !important;
       }
 
       .global-header.room-context .room-global-now-playing > dwains-dashboard-next-now-playing{
         width: 100% !important;
+        margin: 0 !important;
       }
     }
 
@@ -15961,7 +15962,7 @@ copy{
     }
 
     .dd-page-header-with-media {
-      align-items: start;
+      align-items: stretch;
     }
 
     .dd-page-header-main {
