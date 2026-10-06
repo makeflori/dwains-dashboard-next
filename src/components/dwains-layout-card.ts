@@ -26,7 +26,6 @@ import { pickAreaThermostatEntityId } from '../utils/thermostat';
 import './dwains-area-thermostat';
 import {
   isNowPlayingPlayerVisible,
-  isNowPlayingShownOn,
   normalizeNowPlayingMode,
   nowPlayingRoomName,
   pickNowPlayingEntityIds,
@@ -17139,8 +17138,32 @@ copy{
     `;
   }
 
+  private _homeNowPlayingEnabled(): boolean {
+    const settings = this.config?.settings;
+    const explicitlyManaged =
+      (settings?.home_sections_order || []).includes('now_playing') ||
+      (settings?.home_sections_hidden || []).includes('now_playing') ||
+      settings?.show_area_now_playing !== undefined;
+
+    if (explicitlyManaged) {
+      return !(settings?.home_sections_hidden || []).includes('now_playing');
+    }
+
+    return normalizeNowPlayingMode(settings?.now_playing_bar) !== 'off';
+  }
+
+  private _areaNowPlayingEnabled(): boolean {
+    const settings = this.config?.settings;
+    if (settings?.show_area_now_playing !== undefined) {
+      return settings.show_area_now_playing;
+    }
+    return normalizeNowPlayingMode(settings?.now_playing_bar) === 'all';
+  }
+
   private _nowPlayingShown(): boolean {
-    return isNowPlayingShownOn(normalizeNowPlayingMode(this.config?.settings?.now_playing_bar), this._selectedView);
+    if (this._selectedView === 'home') return this._homeNowPlayingEnabled();
+    if (this._selectedView === 'area') return this._areaNowPlayingEnabled();
+    return false;
   }
 
   private _getNowPlayingPlayers(): NowPlayingPlayer[] {
@@ -17575,7 +17598,7 @@ copy{
           ? this._renderRoomFavoritesBlock()
           : nothing}
 
-        ${this._selectedView === 'area' && !this._isMobile ? html`
+        ${this._selectedView === 'area' && !this._isMobile && this._areaNowPlayingEnabled() ? html`
           <div class="room-global-now-playing">
             ${this._renderNowPlayingBar(false)}
           </div>
@@ -17905,7 +17928,6 @@ copy{
     return html`
       <div class="home-view">
         ${this._renderHomeWelcome()}
-        ${!this._isMobile ? this._renderNowPlayingBar(false) : nothing}
         ${sections.map(section => this._renderHomeSection(section))}
       </div>
     `;
@@ -17928,6 +17950,8 @@ copy{
 
   private _renderHomeSection(section: HomeSectionKey) {
     switch (section) {
+      case 'now_playing':
+        return !this._isMobile ? this._renderNowPlayingBar(false) : nothing;
       case 'summaries':
         return this._renderHomeSummaries();
       case 'cameras':
