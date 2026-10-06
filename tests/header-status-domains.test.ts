@@ -115,6 +115,31 @@ describe('isEntityVisibleInArea', () => {
   });
 });
 
+describe('person presence summary', () => {
+  it('counts visible persons even when they have no HA area assignment', () => {
+    const config = baseConfig({
+      entities: [
+        { entity_id: 'person.alex' },
+        { entity_id: 'person.sam' },
+      ],
+    });
+    const hass = hassWithStates([
+      entityState('person.alex', 'home', { friendly_name: 'Alex' }),
+      entityState('person.sam', 'not_home', { friendly_name: 'Sam' }),
+    ], {
+      entities: {
+        'person.alex': { entity_id: 'person.alex' },
+        'person.sam': { entity_id: 'person.sam' },
+      },
+    });
+
+    const people = getStatusDomains(hass, config).find((item) => item.domain === 'person');
+    expect(people?.count).toBe(1);
+    expect(people?.name.toLowerCase()).toContain('1');
+    expect(people?.name.toLowerCase()).not.toContain('nobody');
+  });
+});
+
 describe('cover status semantics', () => {
   it('shows a deployed template cover without device_class as shading', () => {
     const config = baseConfig({
