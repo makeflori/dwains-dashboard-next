@@ -2,6 +2,7 @@ import type { HomeInformationCardKey, HomeSectionKey } from '../types/strategy';
 import type { TranslationKey } from '../i18n';
 
 export const DEFAULT_HOME_SECTIONS_ORDER: HomeSectionKey[] = [
+  'now_playing',
   'cameras',
   'areas',
   'devices',
@@ -19,6 +20,11 @@ interface LocalizedMeta {
 }
 
 export const HOME_SECTION_META: Record<HomeSectionKey, LocalizedMeta> = {
+  now_playing: {
+    labelKey: 'home_section.now_playing.label',
+    icon: 'mdi:music-circle-outline',
+    descriptionKey: 'home_section.now_playing.description',
+  },
   summaries: {
     labelKey: 'home_section.summaries.label',
     icon: 'mdi:clipboard-list-outline',
