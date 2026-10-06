@@ -602,15 +602,17 @@ export const pageHeaderStyles = css`
 
     .room-header .dd-page-header-with-media {
       min-width: 0;
+      min-height: 154px;
       display: grid;
-      grid-template-columns: 132px minmax(0, 1fr);
+      grid-template-columns: 170px minmax(0, 1fr);
       align-items: stretch;
       gap: 18px;
     }
 
     .room-header .dd-page-header-media-tile {
-      width: 132px;
-      min-height: 112px;
+      width: 170px;
+      min-height: 154px;
+      height: 100%;
       align-self: stretch;
       overflow: hidden;
       border-radius: 16px;
@@ -621,7 +623,7 @@ export const pageHeaderStyles = css`
     .room-header .dd-page-header-room-icon {
       width: 100%;
       height: 100%;
-      min-height: 112px;
+      min-height: 154px;
       border-radius: inherit;
     }
 
@@ -645,10 +647,13 @@ export const pageHeaderStyles = css`
 
     .room-header .dd-page-header-main {
       min-width: 0;
+      min-height: 154px;
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      justify-content: flex-start;
       gap: 14px;
+      padding-top: 8px;
+      box-sizing: border-box;
     }
 
     .room-header .dd-page-header-top {
