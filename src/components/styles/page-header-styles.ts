@@ -602,9 +602,8 @@ export const pageHeaderStyles = css`
     }
 
     .room-header .dd-page-header-with-media {
-      --room-header-content-min-height: 130px;
       min-width: 0;
-      min-height: var(--room-header-content-min-height);
+      min-height: 0;
       display: grid;
       grid-template-columns: 176px minmax(0, 1fr);
       align-items: stretch;
@@ -613,8 +612,8 @@ export const pageHeaderStyles = css`
 
     .room-header .dd-page-header-media-tile {
       width: 176px;
-      min-height: var(--room-header-content-min-height);
-      height: 100%;
+      min-height: 0;
+      height: auto;
       align-self: stretch;
       overflow: hidden;
       border-radius: 16px;
@@ -625,7 +624,7 @@ export const pageHeaderStyles = css`
     .room-header .dd-page-header-room-icon {
       width: 100%;
       height: 100%;
-      min-height: var(--room-header-content-min-height);
+      min-height: 0;
       border-radius: inherit;
     }
 
@@ -649,7 +648,7 @@ export const pageHeaderStyles = css`
 
     .room-header .dd-page-header-main {
       min-width: 0;
-      min-height: var(--room-header-content-min-height);
+      min-height: 0;
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
