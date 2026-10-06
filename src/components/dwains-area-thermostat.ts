@@ -186,6 +186,18 @@ export class DwainsAreaThermostat extends LitElement {
     if (this.entityId) fireEvent(this, 'hass-more-info', { entityId: this.entityId });
   };
 
+  private _handleThermostatKeydown = (event: KeyboardEvent): void => {
+    if (event.target !== event.currentTarget) return;
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    this._openMoreInfo();
+  };
+
+  private _handleStepClick(event: Event, direction: 1 | -1): void {
+    event.stopPropagation();
+    this._adjust(direction);
+  }
+
   private _icon(path: string) {
     return html`<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d=${path}></path></svg>`;
   }
@@ -202,17 +214,21 @@ export class DwainsAreaThermostat extends LitElement {
     const target = this._displayTarget(model);
     const detailsLabel = this._t('thermostat.details', { name, state: activityLabel });
 
+    const showCurrent = activity === 'idle' && model.current !== undefined;
+
     return html`
-      <div class="thermostat activity-${activity}">
-        <button
-          class="type-icon"
-          type="button"
-          title=${detailsLabel}
-          aria-label=${detailsLabel}
-          @click=${this._openMoreInfo}
-        >
-          <ha-icon icon="mdi:thermostat"></ha-icon>
-        </button>
+      <div
+        class="thermostat activity-${activity}"
+        role="button"
+        tabindex="0"
+        title=${detailsLabel}
+        aria-label=${detailsLabel}
+        @click=${this._openMoreInfo}
+        @keydown=${this._handleThermostatKeydown}
+      >
+        <span class="type-icon" aria-hidden="true">
+          <ha-icon icon=${ACTIVITY_ICONS[activity]}></ha-icon>
+        </span>
 
         ${model.mode === 'single' && target !== undefined ? html`
           <div class="target" role="group" aria-label=${this._t('thermostat.target_label', { name })}>
@@ -220,13 +236,19 @@ export class DwainsAreaThermostat extends LitElement {
               <span class="label">${this._t('thermostat.target')}</span>
               <span class="value" aria-live="polite">${this._formatValue(target, decimals, model.unit)}</span>
             </span>
+            ${showCurrent ? html`
+              <span class="copy current-copy">
+                <span class="label">${this._t('thermostat.current')}</span>
+                <span class="value">${this._formatValue(model.current!, decimals, model.unit)}</span>
+              </span>
+            ` : nothing}
             <button
               class="step"
               type="button"
               title=${this._t('thermostat.lower', { name })}
               aria-label=${this._t('thermostat.lower', { name })}
               ?disabled=${!canStepTemperature(target, -1, model)}
-              @click=${() => this._adjust(-1)}
+              @click=${(event: Event) => this._handleStepClick(event, -1)}
             >
               ${this._icon(mdiMinus)}
             </button>
@@ -236,19 +258,13 @@ export class DwainsAreaThermostat extends LitElement {
               title=${this._t('thermostat.raise', { name })}
               aria-label=${this._t('thermostat.raise', { name })}
               ?disabled=${!canStepTemperature(target, 1, model)}
-              @click=${() => this._adjust(1)}
+              @click=${(event: Event) => this._handleStepClick(event, 1)}
             >
               ${this._icon(mdiPlus)}
             </button>
           </div>
         ` : model.mode === 'range' && model.targetLow !== undefined && model.targetHigh !== undefined ? html`
-          <button
-            class="target-range"
-            type="button"
-            title=${detailsLabel}
-            aria-label=${`${this._t('thermostat.target')}: ${this._formatValue(model.targetLow, decimals, model.unit)} - ${this._formatValue(model.targetHigh, decimals, model.unit)}. ${detailsLabel}`}
-            @click=${this._openMoreInfo}
-          >
+          <div class="target-range">
             <span class="copy">
               <span class="label">${this._t('thermostat.target')}</span>
               <span class="value">
@@ -257,18 +273,8 @@ export class DwainsAreaThermostat extends LitElement {
                 ${this._formatValue(model.targetHigh, decimals, model.unit)}
               </span>
             </span>
-          </button>
+          </div>
         ` : nothing}
-
-        <button
-          class="mode"
-          type="button"
-          title=${detailsLabel}
-          aria-label=${detailsLabel}
-          @click=${this._openMoreInfo}
-        >
-          <ha-icon icon=${ACTIVITY_ICONS[activity]}></ha-icon>
-        </button>
       </div>
     `;
   }
@@ -284,7 +290,6 @@ export class DwainsAreaThermostat extends LitElement {
        from the page header, so the thermostat also follows a room picture. */
     .thermostat {
       --thermostat-color: var(--secondary-text-color, #6b7280);
-      --climate-color: #34a6d8;
       --tile-text: var(--ph-text, var(--primary-text-color));
       --tile-muted: var(--ph-muted, var(--secondary-text-color));
       box-sizing: border-box;
@@ -301,6 +306,21 @@ export class DwainsAreaThermostat extends LitElement {
       color: var(--tile-text);
       backdrop-filter: blur(16px) saturate(1.3);
       -webkit-backdrop-filter: blur(16px) saturate(1.3);
+      cursor: pointer;
+      transition: background-color 0.18s ease, transform 0.12s ease;
+    }
+
+    .thermostat:hover {
+      background: var(--ph-control-hover, color-mix(in srgb, var(--primary-text-color) 11%, transparent));
+    }
+
+    .thermostat:active {
+      transform: scale(0.98);
+    }
+
+    .thermostat:focus-visible {
+      outline: 2px solid var(--primary-color);
+      outline-offset: 2px;
     }
 
     .thermostat.activity-heat { --thermostat-color: var(--state-climate-heat-color, #ff8100); }
@@ -341,8 +361,8 @@ export class DwainsAreaThermostat extends LitElement {
       justify-content: center;
       flex: 0 0 auto;
       border-radius: 11px;
-      background: color-mix(in srgb, var(--climate-color) 16%, transparent);
-      color: var(--climate-color);
+      background: color-mix(in srgb, var(--thermostat-color) 16%, transparent);
+      color: color-mix(in srgb, var(--thermostat-color) 82%, var(--tile-text));
     }
 
     .type-icon ha-icon {
@@ -356,14 +376,6 @@ export class DwainsAreaThermostat extends LitElement {
       align-items: center;
       border-radius: 11px;
       transition: background-color 0.18s ease;
-    }
-
-    .target-range:hover {
-      background: color-mix(in srgb, var(--tile-text) 7%, transparent);
-    }
-
-    .mode:hover {
-      background: color-mix(in srgb, var(--thermostat-color) 22%, transparent);
     }
 
     .segment-icon {
@@ -416,10 +428,15 @@ export class DwainsAreaThermostat extends LitElement {
       border-radius: 11px;
     }
 
-    .target-copy {
+    .target-copy,
+    .current-copy {
       min-width: 58px;
       align-items: flex-start;
       text-align: left;
+    }
+
+    .current-copy {
+      min-width: 54px;
     }
 
     .step {
@@ -448,38 +465,7 @@ export class DwainsAreaThermostat extends LitElement {
       cursor: default;
     }
 
-    .mode {
-      width: 36px;
-      min-width: 36px;
-      max-width: 36px;
-      min-height: 36px;
-      margin-left: 1px;
-      padding: 0;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0;
-      flex: 0 0 36px;
-      border-radius: 10px;
-      background: color-mix(in srgb, var(--thermostat-color) 15%, transparent);
-      color: color-mix(in srgb, var(--thermostat-color) 78%, var(--tile-text));
-      font-size: 12px;
-      font-weight: 650;
-      transition: background-color 0.18s ease;
-    }
-
-    .mode ha-icon {
-      --mdc-icon-size: 17px;
-      width: 17px;
-      height: 17px;
-    }
-
     @media (pointer: coarse) {
-
-      .mode {
-        min-height: 40px;
-      }
-
       .step {
         width: 36px;
         height: 36px;
@@ -493,8 +479,8 @@ export class DwainsAreaThermostat extends LitElement {
     }
 
     @media (prefers-reduced-motion: reduce) {
+      .thermostat,
       .target-range,
-      .mode,
       .step {
         transition: none;
       }

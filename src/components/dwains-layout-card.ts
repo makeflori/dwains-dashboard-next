@@ -15815,11 +15815,27 @@ copy{
 
 
 
-    /* 2026-10-05 room-view follow-up: shared edges, intrinsic status widths and tighter meta spacing. */
+    /* 2026-10-06 room-view alignment follow-up.
+       The room content scrolls with a reserved scrollbar gutter, while the global
+       header does not. Reserve the same space on the header's right side so its
+       status rail and Favorites end on the same visual edge as the room cards. */
     @media (min-width: 769px) {
       .global-header.room-context{
         padding-left: 16px !important;
-        padding-right: 16px !important;
+        padding-right: 32px !important;
+      }
+
+      .global-header.room-context .header-content,
+      .global-header.room-context .room-favorites-block{
+        width: 100% !important;
+        max-width: 1400px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        box-sizing: border-box !important;
+      }
+
+      .global-header.room-context .header-status-section{
+        overflow: hidden !important;
       }
 
       .global-header.room-context .header-status-scroll{
@@ -15827,12 +15843,22 @@ copy{
         scroll-padding-inline: 0 !important;
       }
 
+      .global-header.room-context .header-status-section.can-scroll-left .header-status-scroll{
+        padding-left: 28px !important;
+        scroll-padding-left: 28px !important;
+      }
+
+      .global-header.room-context .header-status-section.can-scroll-right .header-status-scroll{
+        padding-right: 28px !important;
+        scroll-padding-right: 28px !important;
+      }
+
       .global-header.room-context .header-status-scroll-button-left{
-        left: -10px !important;
+        left: 2px !important;
       }
 
       .global-header.room-context .header-status-scroll-button-right{
-        right: -10px !important;
+        right: 2px !important;
       }
 
       .global-header.room-context .status-card-compact{
@@ -15849,22 +15875,13 @@ copy{
       }
 
       .global-header.room-context .header-time-weather{
-        gap: 2px !important;
+        gap: 8px !important;
         transform: none !important;
       }
 
       .global-header.room-context .header-time-section{
         width: auto !important;
         min-width: 0 !important;
-      }
-
-      .global-header.room-context .header-content,
-      .global-header.room-context .room-favorites-block{
-        width: 100% !important;
-        max-width: 1400px !important;
-        margin-left: auto !important;
-        margin-right: auto !important;
-        box-sizing: border-box !important;
       }
 
       .global-header.room-context .room-favorites-block,
