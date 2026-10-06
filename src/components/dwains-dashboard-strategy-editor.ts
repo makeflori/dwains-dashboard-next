@@ -1567,7 +1567,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     ];
 
     return html`
-      <section class="area-order-settings" aria-labelledby="area-order-title">
+      <section class="area-order-group">
+        <section class="area-order-settings" aria-labelledby="area-order-title">
         <div class="area-order-heading">
           <strong id="area-order-title">${this._t('settings.area_order_title')}</strong>
         </div>
@@ -1651,6 +1652,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       >
         ${this._t('settings.reset_layout')}
       </button>
+      </section>
     `;
   }
 
@@ -1935,7 +1937,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         ` : nothing}
 
 
-        <section class="area-entity-layout-settings">
+        <section class="area-entity-layout-group">
+          <section class="area-entity-layout-settings">
           <div class="area-entity-layout-heading">
             <strong>${this._t('settings.area_entity_layout_title')}</strong>
           </div>
@@ -2182,6 +2185,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         >
           ${this._t('settings.reset_layout')}
         </button>
+        </section>
       </div>
     `;
   }
@@ -9492,6 +9496,121 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       @media (max-width: 430px) {
         .persons-list {
           grid-template-columns: 1fr;
+        }
+      }
+
+
+      /* Settings polish: visually integrate people into their parent card. */
+      .dd-status-people-card .persons-list {
+        overflow: hidden;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 0;
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .dd-status-people-card .persons-list .person-item {
+        min-height: 72px;
+        border: 0;
+        border-radius: 0;
+      }
+
+      .dd-status-people-card .persons-list .person-item + .person-item {
+        border-top: 0;
+        border-left: 1px solid var(--divider-color);
+      }
+
+      /* Toggle setting rows are controls, but not navigational/clickable cards. */
+      .dd-setting-row {
+        cursor: default;
+      }
+
+      .dd-setting-row:hover {
+        background: transparent;
+      }
+
+      .dd-setting-row ha-switch {
+        cursor: pointer;
+      }
+
+      /* Room order is one setting: selector, hint, rooms and reset belong together. */
+      .area-order-group {
+        width: 100%;
+        display: grid;
+        gap: 10px;
+        padding: 14px;
+        box-sizing: border-box;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: var(--card-background-color);
+      }
+
+      .area-order-group > .area-order-settings {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+      }
+
+      .area-order-group > .area-order-list-hint,
+      .area-order-group > .area-list-reset {
+        margin: 0;
+      }
+
+      /* Entity grouping selector and the affected entity groups form one setting. */
+      .area-entity-layout-group {
+        width: 100%;
+        display: grid;
+        gap: 8px;
+        padding: 14px;
+        box-sizing: border-box;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: var(--card-background-color);
+      }
+
+      .area-detail-editor .area-entity-layout-group > .area-entity-layout-settings {
+        margin: 0 0 2px;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+      }
+
+      .area-detail-editor .area-entity-layout-group > .area-entity-section,
+      .area-detail-editor .area-entity-layout-group > .area-free-order-section,
+      .area-detail-editor .area-entity-layout-group > .area-list-reset {
+        margin: 0;
+      }
+
+      /* Startseite uses the same available width and row geometry as Bereiche. */
+      .dd-home-flat-layout.home-layout-section {
+        padding-inline: 0;
+        padding-bottom: 0;
+      }
+
+      .dd-home-flat-layout .home-section-list {
+        width: 100%;
+      }
+
+      .dd-home-section-block > .home-section-item {
+        min-height: 62px;
+        box-sizing: border-box;
+      }
+
+      @media (max-width: 700px) {
+        .dd-status-people-card .persons-list {
+          grid-template-columns: 1fr;
+        }
+
+        .dd-status-people-card .persons-list .person-item + .person-item {
+          border-left: 0;
+          border-top: 1px solid var(--divider-color);
+        }
+
+        .area-order-group,
+        .area-entity-layout-group {
+          padding: 10px;
         }
       }
 
