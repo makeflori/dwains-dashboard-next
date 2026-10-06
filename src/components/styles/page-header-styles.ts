@@ -954,13 +954,17 @@ export const pageHeaderStyles = css`
 
     @media (max-width: 768px) {
       /*
-       * Room header v2 stays a real card on phones. The photo/icon and title
-       * share the first row; quick controls use the full width underneath.
+       * Room header v2 on phones:
+       * - keep the desktop Home/title/action hierarchy
+       * - use the room image as a very subtle full-card backdrop
+       * - keep all header metrics on one line
+       * - wrap quick controls instead of clipping or horizontally scrolling them
        */
       .room-header {
         margin: 0 0 14px;
         padding: 12px;
         gap: 0;
+        overflow: hidden;
         border: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 75%, transparent);
         border-radius: 18px;
         background: var(--ph-surface);
@@ -976,35 +980,52 @@ export const pageHeaderStyles = css`
       }
 
       .room-header .dd-page-header-with-media {
-        grid-template-columns: 64px minmax(0, 1fr);
-        align-items: start;
-        gap: 10px;
+        position: relative;
+        display: block;
+        min-height: 0;
       }
 
       .room-header .dd-page-header-media-tile {
-        width: 64px;
-        min-height: 64px;
-        height: 64px;
-        border-radius: 14px;
+        position: absolute;
+        inset: -12px;
+        z-index: 0;
+        width: auto;
+        min-height: 0;
+        height: auto;
+        border-radius: 0;
+        opacity: 0.12;
+        filter: saturate(0.72) contrast(0.92);
+        pointer-events: none;
       }
 
       .room-header .dd-page-header-room-picture,
       .room-header .dd-page-header-room-icon {
-        min-height: 64px;
-        height: 64px;
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+        border-radius: 0;
+      }
+
+      .room-header .dd-page-header-room-icon {
+        opacity: 0.55;
       }
 
       .room-header .dd-page-header-room-icon ha-icon {
-        --mdc-icon-size: 30px;
+        --mdc-icon-size: 54px;
       }
 
       .room-header .dd-page-header-main {
-        display: contents;
+        position: relative;
+        z-index: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding-top: 0;
       }
 
       .room-header .dd-page-header-top {
         min-width: 0;
-        grid-column: 2;
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
         align-items: start;
@@ -1019,24 +1040,33 @@ export const pageHeaderStyles = css`
       }
 
       .room-header .dd-page-header-title-row {
+        min-height: 42px;
         gap: 6px;
+        align-items: center;
       }
 
+      /* Match the desktop room Home affordance instead of introducing a
+         separate mobile icon treatment. */
       .room-header .dd-page-header-title-row .dd-page-header-home {
-        width: 32px;
-        height: 32px;
-        flex-basis: 32px;
+        width: 36px;
+        height: 36px;
+        flex: 0 0 36px;
       }
 
       .room-header .dd-page-header-title-row .dd-page-header-home ha-icon {
-        --mdc-icon-size: 19px;
+        --mdc-icon-size: 21px;
       }
 
       .room-header .dd-page-header-title-chevron {
-        display: none;
+        display: inline-flex;
+        --mdc-icon-size: 17px;
+        width: 17px;
+        height: 17px;
+        flex: 0 0 17px;
       }
 
       .room-header .dd-page-header-title {
+        min-width: 0;
         font-size: 20px;
         line-height: 1.15;
         white-space: nowrap;
@@ -1046,48 +1076,94 @@ export const pageHeaderStyles = css`
       }
 
       .room-header .dd-page-header-subtitle {
-        margin-top: 4px;
-        gap: 2px 9px;
+        margin-top: 3px;
+        flex-wrap: nowrap;
+        gap: 8px;
+        overflow: hidden;
         font-size: 12px;
         line-height: 1.25;
+      }
+
+      .room-header .dd-page-header-device-label,
+      .room-header .dd-page-header-reading {
+        flex: 0 0 auto;
+        white-space: nowrap;
       }
 
       .room-header .dd-page-header-actions {
         order: initial;
         margin-left: 0;
+        align-self: start;
         gap: 5px;
       }
 
+      /* Keep the current touch target size; only fix the icon centering. */
       .room-header .dd-page-header-actions .dd-page-header-button {
-        width: 34px;
-        height: 34px;
+        width: 42px;
+        height: 42px;
+        line-height: 0;
       }
 
       .room-header .dd-page-header-actions .dd-page-header-button ha-icon,
       .room-header .dd-page-header-actions .dd-page-header-button .dd-static-icon {
-        --mdc-icon-size: 19px;
-        width: 19px;
-        height: 19px;
+        --mdc-icon-size: 21px;
+        width: 21px;
+        height: 21px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 21px;
+      }
+
+      .room-header .dd-page-header-badge {
+        top: -3px;
+        right: -3px;
+        min-width: 18px;
+        height: 18px;
+        padding-inline: 4px;
+        font-size: 10px;
       }
 
       .room-header .dd-page-header-strip {
-        grid-column: 1 / -1;
-        margin-top: 10px;
+        margin-top: 0;
+        display: flex;
         flex-direction: column;
         align-items: stretch;
-        gap: 10px;
+        gap: 8px;
       }
 
+      /* Quick controls form a real wrapping grid. There is no clipped
+         off-screen content and no horizontal scroll dependency. */
       .room-header .dd-room-tiles {
+        width: 100%;
         margin: 0;
-        padding: 0 0 2px;
-        scroll-padding-inline: 0;
+        padding: 0;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        overflow: visible;
+        scroll-snap-type: none;
+      }
+
+      .room-header .dd-room-tile {
+        width: 100%;
+        min-width: 0;
+        padding-inline: 6px 10px;
+        scroll-snap-align: none;
+      }
+
+      /* Cover tiles can carry several action buttons and need the full row. */
+      .room-header .dd-room-tile.has-actions {
+        grid-column: 1 / -1;
       }
 
       .room-header .dd-page-header-strip > dwains-dashboard-next-area-thermostat {
         width: 100%;
+        min-width: 0;
+        max-width: none;
       }
     }
+
 
     /* Touch screens: the cover buttons inside a tile get a 40px target. */
     @media (pointer: coarse) {
