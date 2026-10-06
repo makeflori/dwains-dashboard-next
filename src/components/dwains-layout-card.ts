@@ -15791,10 +15791,10 @@ copy{
     .dd-page-header-media-tile{
       position: relative;
       width: 220px;
-      height: 176px;
-      min-height: 176px;
-      max-height: 176px;
-      align-self: start;
+      height: 100%;
+      min-height: 130px;
+      max-height: none;
+      align-self: stretch;
       overflow: hidden;
       border-radius: 14px;
       background: color-mix(in srgb, var(--ph-accent) 10%, var(--ph-surface));
@@ -15811,7 +15811,7 @@ copy{
     .dd-page-header-room-icon{
       width: 100%;
       height: 100%;
-      min-height: 176px;
+      min-height: 130px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -15825,10 +15825,13 @@ copy{
 
     .dd-page-header-main{
       min-width: 0;
+      min-height: 130px;
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      gap: 16px;
+      justify-content: flex-start;
+      gap: 14px;
+      padding-top: 8px;
+      box-sizing: border-box;
     }
 
     .dd-page-header-title-row{
@@ -17556,7 +17559,7 @@ copy{
           ` : nothing}
         </div>
 
-        ${this._selectedView === 'area' && !this._isMobile
+        ${this._selectedView === 'area' && !this._isMobile && this.config?.settings?.show_area_favorites !== false
           ? this._renderRoomFavoritesBlock()
           : nothing}
 
@@ -20905,13 +20908,11 @@ copy{
       if (!grouped[groupKey]) grouped[groupKey] = [];
     });
 
-    const order = ['light', 'switch', 'input_boolean', 'cover_openings', 'cover_shading', 'climate', 'todo', 'scene', 'event', 'motion', 'safety', 'binary_sensor', 'sensor', 'media_player', 'fan', 'lock', 'camera', 'vacuum'];
-
     return Object.entries(grouped)
       .sort(([a], [b]) => {
-        const ai = order.indexOf(a);
-        const bi = order.indexOf(b);
-        if (ai !== -1 || bi !== -1) return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+        const ai = (AREA_STRATEGY_GROUPS as readonly string[]).indexOf(a);
+        const bi = (AREA_STRATEGY_GROUPS as readonly string[]).indexOf(b);
+        if (ai !== -1 || bi !== -1) return (ai === -1 ? Number.MAX_SAFE_INTEGER : ai) - (bi === -1 ? Number.MAX_SAFE_INTEGER : bi);
         return this._mobileGroupName(a).localeCompare(this._mobileGroupName(b));
       })
       .map(([key, groupEntities]) => ({

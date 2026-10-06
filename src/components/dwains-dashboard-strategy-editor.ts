@@ -1248,29 +1248,29 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       this._t('favorites.title'),
       this._t('settings.favorites_global_description'),
       html`
-      <div class="favorites-section dd-favorites-inline">
-        <div class="dd-favorite-suggestions-row">
-          <div class="dd-favorite-suggestions-copy">
-            <strong>${this._t('settings.show_suggested_favorites')}</strong>
-            <span>${this._t('settings.suggested_favorites_description')}</span>
+        <div class="favorites-section dd-favorites-inline">
+          <div class="dd-favorites-options-card">
+            ${this._renderToggleSetting(
+              "mdi:star-plus-outline",
+              this._t('settings.show_suggested_favorites'),
+              this._t('settings.suggested_favorites_description'),
+              suggestedEnabled,
+              this._toggleSuggestedFavorites
+            )}
           </div>
-          <ha-switch
-            .checked=${suggestedEnabled}
-            @change=${this._toggleSuggestedFavorites}
-          ></ha-switch>
-        </div>
-        <div class="entity-picker dd-favorites-picker">
-          <div class="dd-inline-action-row dd-inline-action-only">
-            <button class="home-custom-card-add dd-favorites-add" type="button" @click=${this._addFavoriteEntity}>
-              <ha-icon icon="mdi:plus"></ha-icon>
-              ${this._t('common.add')}
-            </button>
+
+          <div class="entity-picker dd-favorites-picker dd-favorites-list-card">
+            <div class="dd-inline-action-row dd-inline-action-only">
+              <button class="home-custom-card-add dd-favorites-add" type="button" @click=${this._addFavoriteEntity}>
+                <ha-icon icon="mdi:plus"></ha-icon>
+                ${this._t('common.add')}
+              </button>
+            </div>
+            ${this._renderSelectedEntities()}
+            ${this._showEntityPicker ? this._renderEntityPicker() : nothing}
           </div>
-          ${this._renderSelectedEntities()}
-          ${this._showEntityPicker ? this._renderEntityPicker() : nothing}
         </div>
-      </div>
-    `
+      `
     );
   }
 
@@ -1356,15 +1356,15 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       { value: 'all', icon: 'mdi:view-dashboard-outline', label: this._t('now_playing.mode_all') },
     ];
     return html`
-      <div class="dd-header-feature">
-        <div class="dd-header-feature-row">
-          <span class="dd-setting-row-icon"><ha-icon icon="mdi:music-circle-outline"></ha-icon></span>
+      <div class="dd-now-playing-settings">
+        <div class="dd-header-feature-row dd-now-playing-heading">
+          <span class="dd-setting-row-icon dd-now-playing-icon"><ha-icon icon="mdi:music-circle-outline"></ha-icon></span>
           <span class="dd-setting-row-copy">
             <strong>${this._t('now_playing.setting_title')}</strong>
             <small>${this._t('now_playing.setting_description')}</small>
           </span>
         </div>
-        <div class="area-sort-segmented" role="radiogroup" aria-label=${this._t('now_playing.setting_title')}>
+        <div class="area-sort-segmented dd-now-playing-segments" role="radiogroup" aria-label=${this._t('now_playing.setting_title')}>
           ${modes.map(item => html`
             <button
               type="button"
@@ -1474,6 +1474,13 @@ export class DwainsDashboardStrategyEditor extends LitElement {
               this._toggleHideUnavailableAreaEntities
             )}
             ${this._renderToggleSetting(
+              "mdi:star-outline",
+              this._t('settings.show_area_favorites'),
+              this._t('settings.show_area_favorites_description'),
+              this._config?.settings?.show_area_favorites !== false,
+              this._toggleAreaFavorites
+            )}
+            ${this._renderToggleSetting(
               "mdi:thermostat",
               this._t('thermostat.setting_label'),
               this._t('thermostat.setting_description'),
@@ -1486,6 +1493,18 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       `
     );
   }
+
+  private _toggleAreaFavorites = (event: Event): void => {
+    if (!this._config) return;
+    const target = event.target as any;
+    this._fireConfigChanged({
+      ...this._config,
+      settings: {
+        ...this._config.settings,
+        show_area_favorites: Boolean(target.checked),
+      },
+    });
+  };
 
   private _toggleAreaThermostat = (event: Event): void => {
     if (!this._config) return;
@@ -7665,39 +7684,46 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .dd-favorites-inline {
-        padding: 2px 0;
-      }
-
-      .dd-favorite-suggestions-row {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) 64px;
-        align-items: center;
-        gap: 12px;
-        padding: 6px 8px 10px;
-        border-bottom: 1px solid var(--divider-color);
+        gap: 16px;
+        padding: 0;
       }
 
-      .dd-favorite-suggestions-copy {
-        min-width: 0;
-        display: grid;
-        gap: 3px;
+      .dd-favorites-options-card,
+      .dd-favorites-list-card {
+        overflow: hidden;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: var(--card-background-color);
       }
 
-      .dd-favorite-suggestions-copy strong {
-        color: var(--primary-text-color);
-        font-size: 13px;
-        font-weight: 600;
-        line-height: 1.3;
+      .dd-favorites-options-card .dd-setting-row {
+        min-height: 64px;
+        margin: 0;
+        border: 0;
+        border-radius: 0;
       }
 
-      .dd-favorite-suggestions-copy span {
-        color: var(--secondary-text-color);
-        font-size: 11px;
-        line-height: 1.4;
+      .dd-favorites-options-card .dd-setting-row-icon {
+        color: var(--primary-color);
       }
 
       .dd-favorites-picker {
-        padding-top: 4px;
+        padding: 0;
+      }
+
+      .dd-favorites-list-card .dd-inline-action-row {
+        padding: 12px 12px 10px;
+        border-bottom: 1px solid var(--divider-color);
+      }
+
+      .dd-favorites-list-card .selected-entities {
+        padding: 10px 12px 12px;
+      }
+
+      .dd-favorites-list-card .no-favorites {
+        margin: 0;
+        padding: 18px 12px;
       }
 
       @media (min-width: 701px) {
@@ -7929,6 +7955,36 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         justify-content: flex-end;
         gap: 8px;
         white-space: nowrap;
+      }
+
+      .dd-now-playing-settings {
+        margin: 12px;
+        padding: 0 12px 12px;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--card-background-color) 97%, var(--primary-background-color));
+      }
+
+      .dd-now-playing-settings .dd-now-playing-heading {
+        min-height: 68px;
+        padding-inline: 0;
+      }
+
+      .dd-now-playing-icon {
+        color: var(--primary-color) !important;
+      }
+
+      .dd-now-playing-segments {
+        width: 100%;
+        margin: 0;
+      }
+
+      .dd-now-playing-segments .area-sort-segment {
+        min-height: 48px;
+      }
+
+      .dd-now-playing-segments .area-sort-segment ha-icon {
+        --mdc-icon-size: 19px;
       }
 
       .dd-inline-text-button,
