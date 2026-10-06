@@ -10340,6 +10340,98 @@ which could overlap
       }
     }
 
+
+    /*
+     * iOS/mobile room switcher: keep the room photo as a very soft card
+     * background while preserving the small media preview at full contrast.
+     * The legacy picture treatment darkened the complete card and its overlay
+     * could visually escape the rounded corners.
+     */
+    @media (max-width: 768px) {
+      .sidebar .room-area-button{
+        overflow: hidden;
+        isolation: isolate;
+        border-radius: 12px;
+      }
+
+      .sidebar .room-area-button.has-picture{
+        color: var(--primary-text-color);
+        background: color-mix(in srgb, var(--card-background-color) 96%, var(--primary-background-color));
+        border-color: color-mix(in srgb, var(--primary-text-color) 8%, transparent);
+      }
+
+      .sidebar .room-area-button.has-picture.selected{
+        color: var(--primary-text-color);
+        background: color-mix(in srgb, var(--primary-color) 7%, var(--card-background-color));
+        border-color: color-mix(in srgb, var(--primary-color) 46%, transparent);
+      }
+
+      .sidebar .room-area-button.has-picture .area-background{
+        inset: 0;
+        z-index: 0;
+        opacity: 0.13;
+        transform: none;
+        border-radius: inherit;
+        background-position: center;
+        background-size: cover;
+        pointer-events: none;
+      }
+
+      .sidebar .room-area-button.has-picture:hover .area-background{
+        opacity: 0.16;
+      }
+
+      .sidebar .room-area-button.has-picture::after{
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        border-radius: inherit;
+        background: color-mix(in srgb, var(--card-background-color) 34%, transparent);
+        pointer-events: none;
+      }
+
+      .sidebar .room-area-button.has-picture .area-media,
+      .sidebar .room-area-button.has-picture .area-content,
+      .sidebar .room-area-button.has-picture .area-info-badges{
+        position: relative;
+        z-index: 2;
+      }
+
+      .sidebar .room-area-button.has-picture .area-media{
+        overflow: hidden;
+        border-radius: 10px;
+        background: var(--secondary-background-color);
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 7%, transparent);
+      }
+
+      .sidebar .room-area-button.has-picture .area-media-picture{
+        opacity: 1;
+        transform: none;
+        filter: none;
+      }
+
+      .sidebar .room-area-button.has-picture .area-name{
+        width: auto;
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+        color: var(--primary-text-color);
+        background: transparent;
+        text-shadow: none;
+        backdrop-filter: none;
+      }
+
+      .sidebar .room-area-button.has-picture .area-sensors{
+        color: var(--secondary-text-color);
+        text-shadow: none;
+      }
+
+      .sidebar .room-area-button.has-picture .info-badge{
+        backdrop-filter: none;
+      }
+    }
+
     /* Favorites are a dedicated layer between house information and room content. */
     .area-favorites-toggle{
       width: calc(100% - 32px);
@@ -16950,7 +17042,7 @@ copy{
       return html`<div class="loading">${this._t('common.loading')}</div>`;
     }
 
-    const floatingNowPlaying = this._isMobile && this._getNowPlayingPlayers().length > 0;
+    const floatingNowPlaying = this._isMobile && !this._mobileNavOpen && this._getNowPlayingPlayers().length > 0;
     const layoutClasses = {
       'layout-container': true,
       'has-floating-now-playing': floatingNowPlaying,
