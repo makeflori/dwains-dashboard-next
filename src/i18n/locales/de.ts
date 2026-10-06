@@ -461,7 +461,7 @@ export const de = {
   'settings.area_entity_layout_ungrouped': 'Eigene Reihenfolge',
   'settings.area_entity_layout_ungrouped_description': 'Zeigt alle automatisch erzeugten Entitätskarten in einer frei sortierbaren Liste.',
   'settings.area_entity_order': 'Reihenfolge der Entitäten',
-  'settings.area_entity_order_hint': 'Ziehe Entitäten und eigene Karten oder verwende die Pfeile, um ihre Position in diesem Bereich festzulegen.',
+  'settings.area_entity_order_hint': 'Entitäten per Drag & Drop in die gewünschte Reihenfolge bringen.',
   'settings.apply_type_order_all_rooms': 'Diese Typreihenfolge für alle Räume verwenden',
   'settings.area_order_description': 'Sortierung der Räume im Dashboard.',
   'settings.area_order_home_assistant': 'Home Assistant',
