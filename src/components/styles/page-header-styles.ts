@@ -737,10 +737,18 @@ export const pageHeaderStyles = css`
 
     .room-header .dd-page-header-strip {
       min-width: 0;
+      min-height: 52px;
       flex-wrap: wrap;
       align-items: center;
       justify-content: flex-start;
       gap: 8px;
+    }
+
+    /* Rooms without quick controls reserve the exact same control-row height.
+       This keeps the media tile identical when switching between rooms. */
+    .room-header .dd-page-header-strip.is-placeholder {
+      visibility: hidden;
+      pointer-events: none;
     }
 
     .room-header .dd-room-tiles {
@@ -1127,10 +1135,15 @@ export const pageHeaderStyles = css`
 
       .room-header .dd-page-header-strip {
         margin-top: 0;
+        min-height: 0;
         display: flex;
         flex-direction: column;
         align-items: stretch;
         gap: 8px;
+      }
+
+      .room-header .dd-page-header-strip.is-placeholder {
+        display: none;
       }
 
       /* Quick controls form a real wrapping grid. There is no clipped
