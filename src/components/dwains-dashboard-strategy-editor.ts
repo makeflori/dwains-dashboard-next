@@ -36,7 +36,7 @@ import {
 import { countReplacementRules } from "../utils/blueprint-replacements";
 import { isHiddenAsUnavailable } from "../utils/entity-availability";
 import { resolveStatusEntityAreaId } from "../utils/entity-lookups";
-import { normalizeNowPlayingMode, type NowPlayingMode } from "../utils/now-playing";
+import { normalizeNowPlayingMode } from "../utils/now-playing";
 import { getDeviceClassName, getDomainName } from "../utils/domain-names";
 import { getDeviceClassIcon, getDomainColor, getDomainIcon } from "../utils/icons";
 import { ddLocale, ddLocalize, ddLocalizePlural } from "../utils/localize";
@@ -2195,8 +2195,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     const settings = this._config?.settings;
     const explicitlyManaged =
       (settings?.home_sections_order || []).includes('now_playing') ||
-      (settings?.home_sections_hidden || []).includes('now_playing') ||
-      settings?.show_area_now_playing !== undefined;
+      (settings?.home_sections_hidden || []).includes('now_playing');
 
     if (!explicitlyManaged && normalizeNowPlayingMode(settings?.now_playing_bar) === 'off') {
       hidden.add('now_playing');
