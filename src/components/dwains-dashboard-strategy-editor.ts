@@ -9285,6 +9285,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         margin: 0;
       }
 
+      .area-detail-editor .area-entity-layout-settings > .area-entity-section > ha-expansion-panel {
+        margin-bottom: 0;
+      }
+
       .area-entity-layout-hint {
         margin: 0;
         color: var(--secondary-text-color);
