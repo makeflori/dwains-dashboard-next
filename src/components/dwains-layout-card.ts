@@ -19834,6 +19834,7 @@ copy{
       ? visibleAreaEntities.filter(entity => entity.entity_id !== thermostatEntityId)
       : visibleAreaEntities;
     const deviceLabel = this._tp('common.device', deviceCount);
+    const hasHeaderReadings = Boolean(areaData.temperature || areaData.humidity || areaData.wattage);
     const tiles = this._renderAreaQuickTiles(area.area_id, quickControlEntities);
     const hasStrip = tiles !== nothing || Boolean(thermostatEntityId);
 
@@ -19896,7 +19897,8 @@ copy{
                       <h1 class="dd-page-header-title">${area.name}</h1>
                     </div>
                     <div class="dd-page-header-subtitle">
-                      <span>${deviceLabel}</span>
+                      <span class="dd-page-header-device-label">${deviceLabel}</span>
+                      ${hasHeaderReadings ? html`<span class="dd-page-header-subtitle-separator" aria-hidden="true">·</span>` : nothing}
                       ${this._renderAreaHeaderReadings(areaData)}
                     </div>
                   </div>
