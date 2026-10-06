@@ -972,6 +972,24 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       overflow: visible !important;
     }
 
+    .content.room-context.custom-entities-context .entities-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 10px !important;
+    }
+
+    .content.room-context.custom-entities-context .domain-entity-card {
+      min-height: 70px !important;
+      height: auto !important;
+    }
+
+    .content.room-context.custom-entities-context .domain-entity-name,
+    .content.room-context.custom-entities-context .domain-entity-status {
+      overflow: visible !important;
+      text-overflow: clip !important;
+      white-space: normal !important;
+      overflow-wrap: anywhere !important;
+    }
+
     .content.room-context .domain-entity-card {
       min-height: 62px !important;
       height: 62px !important;
@@ -1043,7 +1061,8 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     }
 
     @media (max-width: 600px) {
-      .content.room-context .entities-grid {
+      .content.room-context .entities-grid,
+      .content.room-context.custom-entities-context .entities-grid {
         grid-template-columns: 1fr !important;
       }
 
@@ -1373,7 +1392,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
           ></ha-icon-button>
         </ha-dialog-header>
 
-        <div class="content ${this._params?.areaId ? 'room-context' : ''}">
+        <div class="content ${this._params?.areaId ? 'room-context' : ''} ${this._params?.customEntities ? 'custom-entities-context' : ''}">
           ${this._loading
             ? html`<div class="loading">${this._t('common.loading')}</div>`
             : this._renderContent()
