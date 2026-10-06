@@ -15699,7 +15699,10 @@ copy{
     .dd-page-header-media-tile{
       position: relative;
       width: 220px;
+      height: 176px;
       min-height: 176px;
+      max-height: 176px;
+      align-self: start;
       overflow: hidden;
       border-radius: 14px;
       background: color-mix(in srgb, var(--ph-accent) 10%, var(--ph-surface));
