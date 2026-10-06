@@ -9,6 +9,8 @@ import {
   roundToStep,
   stepDecimals,
   stepTemperature,
+  stepTemperatureRange,
+  canStepTemperatureRange,
   thermostatStep,
 } from '../src/utils/thermostat';
 import { entityState } from './helpers';
@@ -88,6 +90,20 @@ describe('stepTemperature', () => {
     expect(canStepTemperature(35, 1, limits)).toBe(false);
     expect(canStepTemperature(35, -1, limits)).toBe(true);
     expect(canStepTemperature(7, -1, limits)).toBe(false);
+  });
+});
+
+describe('stepTemperatureRange', () => {
+  it('shifts both heat/cool limits together and preserves the range width', () => {
+    expect(stepTemperatureRange(20.5, 24, 1, limits)).toEqual({ low: 21, high: 24.5 });
+    expect(stepTemperatureRange(20.5, 24, -1, limits)).toEqual({ low: 20, high: 23.5 });
+  });
+
+  it('stops cleanly at the configured min and max', () => {
+    expect(stepTemperatureRange(31.5, 35, 1, limits)).toEqual({ low: 31.5, high: 35 });
+    expect(stepTemperatureRange(7, 10.5, -1, limits)).toEqual({ low: 7, high: 10.5 });
+    expect(canStepTemperatureRange(31.5, 35, 1, limits)).toBe(false);
+    expect(canStepTemperatureRange(20.5, 24, 1, limits)).toBe(true);
   });
 });
 

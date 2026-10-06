@@ -92,6 +92,38 @@ export function canStepTemperature(current: number, direction: 1 | -1, limits: T
 }
 
 /**
+ * Shift a heat/cool target range together by one temperature step while
+ * preserving its width. Movement stops when either edge reaches its limit.
+ */
+export function stepTemperatureRange(
+  low: number,
+  high: number,
+  direction: 1 | -1,
+  limits: ThermostatLimits
+): { low: number; high: number } {
+  if (!(limits.step > 0) || high < low) return { low, high };
+  const available = direction > 0 ? limits.max - high : low - limits.min;
+  const delta = Math.max(0, Math.min(limits.step, available)) * direction;
+  if (Math.abs(delta) < EPSILON) return { low, high };
+  const decimals = stepDecimals(limits.step);
+  return {
+    low: Number((low + delta).toFixed(decimals)),
+    high: Number((high + delta).toFixed(decimals)),
+  };
+}
+
+/** Whether shifting the whole target range would change it. */
+export function canStepTemperatureRange(
+  low: number,
+  high: number,
+  direction: 1 | -1,
+  limits: ThermostatLimits
+): boolean {
+  const next = stepTemperatureRange(low, high, direction, limits);
+  return next.low !== low || next.high !== high;
+}
+
+/**
  * What the header thermostat can show for a climate entity, or undefined when
  * the entity is missing, unavailable or unknown.
  */
