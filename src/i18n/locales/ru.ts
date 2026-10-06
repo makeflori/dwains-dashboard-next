@@ -508,6 +508,7 @@ export const ru = {
 
   'settings.show_suggested_favorites': "Показывать предложенное избранное",
   'settings.suggested_favorites_description': "Добавляет часто используемые сущности, предложенные Home Assistant, рядом с вашим собственным избранным. Выбранные вручную элементы всегда сохраняются.",
+  'settings.manage_favorites': "Управлять избранным",
   'settings.show_area_favorites': "Показывать избранное в комнатах",
   'settings.show_area_favorites_description': "Показывает раздел «Избранное» над содержимым комнаты.",
   'settings.add_entity': 'Добавить сущность',
