@@ -535,7 +535,7 @@ export const de = {
   'settings.search': 'Suchen…',
   'settings.no_person_entities': 'Keine Personen in Home Assistant gefunden.',
   'settings.hidden_unavailable_count': '{count} ausgeblendete nicht verfügbare/unbekannte Entitäten anzeigen',
-  'settings.hidden_unavailable_title': 'Ausgeblendete nicht verfügbare Entitäten',
+  'settings.hidden_unavailable_title': 'Nicht verfügbare Entitäten',
   'settings.hidden_unavailable_description': 'Diese Entitäten sind derzeit ausgeblendet, weil ihr Status „nicht verfügbar“ oder „unbekannt“ ist. Du kannst diese Filterung in der Dashboard-Konfiguration deaktivieren.',
   'settings.edit_room': 'Raum bearbeiten',
   'settings.area_sensor_help_before': 'Temperatur und Luftfeuchtigkeit kommen aus den Sensoren, die diesem Raum in Home Assistant zugeordnet sind. ',

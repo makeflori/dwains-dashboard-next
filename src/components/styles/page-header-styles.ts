@@ -602,16 +602,16 @@ export const pageHeaderStyles = css`
 
     .room-header .dd-page-header-with-media {
       min-width: 0;
-      min-height: 154px;
+      min-height: 128px;
       display: grid;
-      grid-template-columns: 170px minmax(0, 1fr);
+      grid-template-columns: 176px minmax(0, 1fr);
       align-items: stretch;
       gap: 18px;
     }
 
     .room-header .dd-page-header-media-tile {
-      width: 170px;
-      min-height: 154px;
+      width: 176px;
+      min-height: 128px;
       height: 100%;
       align-self: stretch;
       overflow: hidden;
@@ -623,7 +623,7 @@ export const pageHeaderStyles = css`
     .room-header .dd-page-header-room-icon {
       width: 100%;
       height: 100%;
-      min-height: 154px;
+      min-height: 128px;
       border-radius: inherit;
     }
 
@@ -647,7 +647,7 @@ export const pageHeaderStyles = css`
 
     .room-header .dd-page-header-main {
       min-width: 0;
-      min-height: 154px;
+      min-height: 128px;
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
@@ -712,7 +712,21 @@ export const pageHeaderStyles = css`
 
     .room-header .dd-page-header-subtitle {
       margin-top: 6px;
-      gap: 4px 14px;
+      gap: 4px 10px;
+      align-items: center;
+    }
+
+    .room-header .dd-page-header-device-label,
+    .room-header .dd-page-header-subtitle-separator {
+      display: inline-flex;
+      align-items: center;
+      line-height: 1;
+    }
+
+    .room-header .dd-page-header-subtitle-separator {
+      margin-inline: 1px;
+      color: color-mix(in srgb, var(--ph-muted) 72%, transparent);
+      font-weight: 700;
     }
 
     .room-header .dd-page-header-actions {

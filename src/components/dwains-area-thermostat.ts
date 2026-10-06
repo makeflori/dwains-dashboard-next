@@ -25,6 +25,7 @@ const COMMIT_DELAY_MS = 800;
 // After a successful call the new target is shown until Home Assistant reports
 // it, or at most this long.
 const CONFIRM_TIMEOUT_MS = 8000;
+const LAST_ACTIVE_HVAC_MODE = new Map<string, string>();
 
 const ACTIVITY_ICONS: Record<ThermostatActivity, string> = {
   heat: 'mdi:fire',
@@ -32,8 +33,8 @@ const ACTIVITY_ICONS: Record<ThermostatActivity, string> = {
   dry: 'mdi:water-percent',
   fan: 'mdi:fan',
   auto: 'mdi:thermostat-auto',
-  idle: 'mdi:power',
-  off: 'mdi:power-off',
+  idle: 'mdi:thermostat',
+  off: 'mdi:power',
 };
 
 /**
@@ -198,6 +199,53 @@ export class DwainsAreaThermostat extends LitElement {
     this._adjust(direction);
   }
 
+  private _preferredActiveMode(stateObj: HassEntity): string | undefined {
+    const remembered = LAST_ACTIVE_HVAC_MODE.get(this.entityId);
+    const modes = Array.isArray(stateObj.attributes?.hvac_modes)
+      ? stateObj.attributes.hvac_modes.map((mode: unknown) => String(mode))
+      : [];
+
+    if (remembered && modes.includes(remembered)) return remembered;
+    return ['heat_cool', 'auto', 'heat', 'cool', 'dry', 'fan_only']
+      .find(mode => modes.includes(mode));
+  }
+
+  private async _togglePower(event: Event): Promise<void> {
+    event.stopPropagation();
+    const stateObj = this._stateObj();
+    const hass = this.hass;
+    if (!stateObj || !hass || !this.entityId) return;
+
+    const mode = String(stateObj.state || '').toLowerCase();
+    const turningOn = mode === 'off';
+
+    if (!turningOn && mode) LAST_ACTIVE_HVAC_MODE.set(this.entityId, mode);
+
+    try {
+      await hass.callService('climate', turningOn ? 'turn_on' : 'turn_off', {
+        entity_id: this.entityId,
+      });
+      return;
+    } catch {
+      // Some climate integrations do not expose turn_on/turn_off. Fall back
+      // to set_hvac_mode while preserving/restoring the last active mode.
+    }
+
+    try {
+      const hvacMode = turningOn ? this._preferredActiveMode(stateObj) : 'off';
+      if (!hvacMode) throw new Error('No supported active HVAC mode');
+      await hass.callService('climate', 'set_hvac_mode', {
+        entity_id: this.entityId,
+        hvac_mode: hvacMode,
+      });
+    } catch (err) {
+      console.warn(`Failed to toggle ${this.entityId}:`, err);
+      fireEvent(this, 'hass-notification', {
+        message: this._t('thermostat.update_failed', { name: this.roomName || this.entityId }),
+      });
+    }
+  }
+
   private _icon(path: string) {
     return html`<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d=${path}></path></svg>`;
   }
@@ -214,7 +262,7 @@ export class DwainsAreaThermostat extends LitElement {
     const target = this._displayTarget(model);
     const detailsLabel = this._t('thermostat.details', { name, state: activityLabel });
 
-    const showCurrent = activity === 'idle' && model.current !== undefined;
+    const showCurrent = activity === 'off' && model.current !== undefined;
 
     return html`
       <div
@@ -226,12 +274,18 @@ export class DwainsAreaThermostat extends LitElement {
         @click=${this._openMoreInfo}
         @keydown=${this._handleThermostatKeydown}
       >
-        <span class="type-icon" aria-hidden="true">
+        <button
+          class="type-icon"
+          type="button"
+          title=${activity === 'off' ? this._t('action.turn_on') : this._t('action.turn_off')}
+          aria-label=${activity === 'off' ? this._t('action.turn_on') : this._t('action.turn_off')}
+          @click=${this._togglePower}
+        >
           <ha-icon icon=${ACTIVITY_ICONS[activity]}></ha-icon>
-        </span>
+        </button>
 
         ${showCurrent ? html`
-          <div class="target idle-current" aria-label=${`${this._t('thermostat.current')}: ${this._formatValue(model.current!, decimals, model.unit)}`}>
+          <div class="target off-current" aria-label=${`${this._t('thermostat.current')}: ${this._formatValue(model.current!, decimals, model.unit)}`}>
             <span class="copy current-copy">
               <span class="label">${this._t('thermostat.current')}</span>
               <span class="value">${this._formatValue(model.current!, decimals, model.unit)}</span>
@@ -374,7 +428,8 @@ export class DwainsAreaThermostat extends LitElement {
     .thermostat.activity-cool .type-icon,
     .thermostat.activity-dry .type-icon,
     .thermostat.activity-fan .type-icon,
-    .thermostat.activity-auto .type-icon {
+    .thermostat.activity-auto .type-icon,
+    .thermostat.activity-idle .type-icon {
       background: var(--thermostat-color);
       color: #ffffff;
       box-shadow: 0 6px 14px color-mix(in srgb, var(--thermostat-color) 26%, transparent);
@@ -446,7 +501,7 @@ export class DwainsAreaThermostat extends LitElement {
       text-align: left;
     }
 
-    .idle-current {
+    .off-current {
       padding-right: 10px;
     }
 
