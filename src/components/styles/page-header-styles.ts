@@ -601,7 +601,7 @@ export const pageHeaderStyles = css`
     }
 
     .room-header .dd-page-header-with-media {
-      --room-header-content-min-height: 129px;
+      --room-header-content-min-height: 130px;
       min-width: 0;
       min-height: var(--room-header-content-min-height);
       display: grid;
