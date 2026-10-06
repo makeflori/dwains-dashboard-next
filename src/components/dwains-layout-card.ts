@@ -1757,12 +1757,17 @@ export class DwainsLayoutCard extends LitElement {
       align-items: center;
       gap: 8px;
       padding: 8px 16px;
-      background: var(--primary-color);
-      color: var(--text-primary-color);
+      background: color-mix(in srgb, var(--primary-color) 12%, var(--card-background-color));
+      color: var(--primary-color);
       border-radius: 20px;
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 16%, transparent);
       cursor: pointer;
       transition: all 0.2s ease;
       font-weight: 500;
+    }
+
+    .welcome-weather .weather-temp{
+      color: var(--primary-text-color);
     }
 
     .welcome-weather:hover{
@@ -15844,13 +15849,13 @@ copy{
       }
 
       .global-header.room-context .header-status-section.can-scroll-left .header-status-scroll{
-        padding-left: 28px !important;
-        scroll-padding-left: 28px !important;
+        padding-left: 20px !important;
+        scroll-padding-left: 20px !important;
       }
 
       .global-header.room-context .header-status-section.can-scroll-right .header-status-scroll{
-        padding-right: 28px !important;
-        scroll-padding-right: 28px !important;
+        padding-right: 20px !important;
+        scroll-padding-right: 20px !important;
       }
 
       .global-header.room-context .header-status-scroll-button-left{
@@ -15872,6 +15877,10 @@ copy{
         overflow: visible !important;
         text-overflow: clip !important;
         white-space: nowrap !important;
+      }
+
+      .global-header.room-context .header-content{
+        gap: 8px !important;
       }
 
       .global-header.room-context .header-time-weather{
