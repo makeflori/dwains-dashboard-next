@@ -610,6 +610,7 @@ export const it = {
 
   'settings.show_suggested_favorites': 'Mostra i preferiti suggeriti da Home Assistant',
   'settings.suggested_favorites_description': 'Aggiunge le entità usate di frequente suggerite da Home Assistant accanto ai preferiti fissati.',
+  'settings.manage_favorites': "Gestisci preferiti",
   'settings.show_area_favorites': "Mostra i preferiti nelle viste delle stanze",
   'settings.show_area_favorites_description': "Mostra la sezione Preferiti sopra il contenuto della stanza.",
   'settings.add_entity': 'Aggiungi entità',
