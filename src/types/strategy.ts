@@ -38,7 +38,7 @@ export interface LovelaceCardConfig {
   [key: string]: any;
 }
 
-export type HomeSectionKey = 'summaries' | 'cameras' | 'areas' | 'devices' | 'todos' | 'custom_cards' | 'favorites' | 'scenes';
+export type HomeSectionKey = 'now_playing' | 'summaries' | 'cameras' | 'areas' | 'devices' | 'todos' | 'custom_cards' | 'favorites' | 'scenes';
 export type HomeInformationCardKey = 'people' | 'climate' | 'outdoor_climate' | 'power' | 'device_groups';
 export type MasterActionConfirmationDomain = 'light' | 'switch' | 'fan' | 'cover' | 'lock';
 export type MasterActionConfirmationSettings = Partial<Record<MasterActionConfirmationDomain, boolean>>;
@@ -79,9 +79,11 @@ export interface DwainsDashboardSettings {
   home_scenes?: string[];
   /** Show the Favorites block in room views. Default on. */
   show_area_favorites?: boolean;
+  /** Show Now Playing in room views. Falls back to the legacy now_playing_bar setting. */
+  show_area_now_playing?: boolean;
   /** Thermostat in the room header for rooms with one climate entity. Default on. */
   show_area_thermostat?: boolean;
-  /** Where the Now playing bar is shown. Default 'home'. */
+  /** Legacy visibility mode kept for backwards compatibility with older configs. */
   now_playing_bar?: 'off' | 'home' | 'all';
 }
 
