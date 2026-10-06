@@ -2161,27 +2161,29 @@ export class DwainsDashboardStrategyEditor extends LitElement {
             </div>
           `;
         })}
-        ${entityLayout === 'grouped' ? html`
-          <button
-            class="home-layout-reset area-list-reset area-apply-type-order"
-            type="button"
-            ?disabled=${!this._areaGroupOrderDirty}
-            @click=${this._applyAreaGroupOrderToAllAreas}
-          >
-            ${this._t('settings.apply_type_order_all_rooms')}
-          </button>
-        ` : nothing}
         ${customCards.length || this._draggedAreaCustomCardId
           ? this._renderAreaCustomCardPlacement(customCards, 'bottom', this._t('layout.custom_cards_bottom'))
           : nothing}
-        <button
-          class="home-layout-reset area-list-reset"
-          type="button"
-          ?disabled=${areaEntityLayoutIsDefault}
-          @click=${this._resetAreaEntitySettings}
-        >
-          ${this._t('settings.reset_layout')}
-        </button>
+        <div class="area-layout-actions">
+          ${entityLayout === 'grouped' ? html`
+            <button
+              class="home-layout-reset area-apply-type-order"
+              type="button"
+              ?disabled=${!this._areaGroupOrderDirty}
+              @click=${this._applyAreaGroupOrderToAllAreas}
+            >
+              ${this._t('settings.apply_type_order_all_rooms')}
+            </button>
+          ` : nothing}
+          <button
+            class="home-layout-reset"
+            type="button"
+            ?disabled=${areaEntityLayoutIsDefault}
+            @click=${this._resetAreaEntitySettings}
+          >
+            ${this._t('settings.reset_layout')}
+          </button>
+        </div>
         </section>
       </div>
     `;
@@ -4944,7 +4946,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                 <span class="person-avatar">
                   ${person.picture
                     ? html`<img src=${person.picture} alt="" loading="lazy" />`
-                    : html`<ha-state-icon .stateObj=${person.state} class="person-icon"></ha-state-icon>`}
+                    : html`<ha-icon icon="mdi:account" class="person-icon"></ha-icon>`}
                 </span>
                 <span class="person-name">${person.friendly_name}</span>
                 ${this._renderVisibilityButton(
@@ -9025,12 +9027,13 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .persons-list .person-item {
         min-width: 0;
-        min-height: 60px;
+        min-height: 0;
         display: grid;
-        grid-template-columns: 44px minmax(0, 1fr) 36px;
+        grid-template-columns: 40px minmax(0, 1fr) 34px;
         align-items: center;
         gap: 8px;
-        padding: 6px 10px;
+        padding: 8px;
+        box-sizing: border-box;
         border: 1px solid var(--divider-color);
         border-radius: 10px;
         background: var(--card-background-color);
@@ -9041,8 +9044,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .person-avatar {
-        width: 44px;
-        height: 44px;
+        width: 40px;
+        height: 40px;
         display: grid;
         place-items: center;
         overflow: hidden;
@@ -9059,7 +9062,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .person-avatar .person-icon {
         margin: 0;
-        --mdc-icon-size: 28px;
+        --mdc-icon-size: 25px;
       }
 
       .persons-list .person-name {
@@ -9072,8 +9075,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .persons-list .dd-visibility-button {
-        width: 32px;
-        height: 32px;
+        width: 30px;
+        height: 30px;
       }
 
       .area-sort-segment {
@@ -9337,6 +9340,18 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .area-list-reset {
         margin-top: 10px;
+      }
+
+      .area-layout-actions {
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .area-layout-actions .home-layout-reset {
+        margin: 0;
       }
 
       /* Area room editor final consistency */
