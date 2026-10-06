@@ -16,7 +16,7 @@ import {
   stepDecimals,
   stepTemperature,
   stepTemperatureRange,
-  type ThermostatActivity,
+
   type ThermostatModel,
 } from '../utils/thermostat';
 import { fireEvent } from './utils/fire-event';
@@ -264,7 +264,7 @@ export class DwainsAreaThermostat extends LitElement {
     try {
       return this.hass?.formatEntityState?.({ ...stateObj, state: mode } as HassEntity) || mode;
     } catch {
-      return mode.replaceAll('_', ' ');
+      return mode.split('_').join(' ');
     }
   }
 
