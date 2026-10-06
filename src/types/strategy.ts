@@ -77,6 +77,8 @@ export interface DwainsDashboardSettings {
   master_action_confirmations?: MasterActionConfirmationSettings;
   /** Scenes and scripts shown in the Home "Scenes & scripts" row, in order. */
   home_scenes?: string[];
+  /** Show the Favorites block in room views. Default on. */
+  show_area_favorites?: boolean;
   /** Thermostat in the room header for rooms with one climate entity. Default on. */
   show_area_thermostat?: boolean;
   /** Where the Now playing bar is shown. Default 'home'. */
