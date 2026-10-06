@@ -189,8 +189,8 @@ export class DwainsPageCard extends LitElement {
     }
     .page-wrap {
       width: 100%;
-      max-width: 1180px;
-      margin: 0 auto;
+      max-width: none;
+      margin: 0;
       padding: 8px 16px 24px;
       box-sizing: border-box;
     }
