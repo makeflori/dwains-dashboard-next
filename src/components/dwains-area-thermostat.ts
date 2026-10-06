@@ -230,18 +230,19 @@ export class DwainsAreaThermostat extends LitElement {
           <ha-icon icon=${ACTIVITY_ICONS[activity]}></ha-icon>
         </span>
 
-        ${model.mode === 'single' && target !== undefined ? html`
+        ${showCurrent ? html`
+          <div class="target idle-current" aria-label=${`${this._t('thermostat.current')}: ${this._formatValue(model.current!, decimals, model.unit)}`}>
+            <span class="copy current-copy">
+              <span class="label">${this._t('thermostat.current')}</span>
+              <span class="value">${this._formatValue(model.current!, decimals, model.unit)}</span>
+            </span>
+          </div>
+        ` : model.mode === 'single' && target !== undefined ? html`
           <div class="target" role="group" aria-label=${this._t('thermostat.target_label', { name })}>
             <span class="copy target-copy">
               <span class="label">${this._t('thermostat.target')}</span>
               <span class="value" aria-live="polite">${this._formatValue(target, decimals, model.unit)}</span>
             </span>
-            ${showCurrent ? html`
-              <span class="copy current-copy">
-                <span class="label">${this._t('thermostat.current')}</span>
-                <span class="value">${this._formatValue(model.current!, decimals, model.unit)}</span>
-              </span>
-            ` : nothing}
             <button
               class="step"
               type="button"
@@ -445,8 +446,12 @@ export class DwainsAreaThermostat extends LitElement {
       text-align: left;
     }
 
+    .idle-current {
+      padding-right: 10px;
+    }
+
     .current-copy {
-      min-width: 54px;
+      min-width: 58px;
     }
 
     .step {

@@ -23334,7 +23334,9 @@ copy{
       config: this.config,
       customTitle: this._t('settings.hidden_unavailable_title'),
       customEntities: allProblematicEntities,
-      customDescription: this._t('settings.hidden_unavailable_description')
+      customDescription: this._t('settings.hidden_unavailable_description'),
+      viewAllLabel: this._houseInfoDeviceViewLabel(),
+      onViewAll: () => this._navigateToDeviceDomain('__maintenance__'),
     });
   }
 
