@@ -485,6 +485,7 @@ export const ptBR = {
 
   'settings.show_suggested_favorites': 'Mostrar favoritos sugeridos pelo Home Assistant',
   'settings.suggested_favorites_description': 'Adiciona entidades usadas com frequência, sugeridas pelo Home Assistant, ao lado dos seus favoritos fixados.',
+  'settings.manage_favorites': "Gerenciar favoritos",
   'settings.show_area_favorites': "Mostrar favoritos nas visualizações dos cômodos",
   'settings.show_area_favorites_description': "Exibe a seção Favoritos acima do conteúdo do cômodo.",
   'settings.add_entity': 'Adicionar entidade',
