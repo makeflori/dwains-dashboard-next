@@ -107,21 +107,25 @@ export function getStatusDomains(hass: HomeAssistant, config: any): DomainCount[
       return false;
     }
 
+    const domain = entityId.split('.')[0];
+
+    // Persons are global presence entities and commonly have no HA area at all.
+    // They must still participate in the House information presence summary.
+    if (domain === 'person') {
+      const hiddenPersons = config.settings?.hidden_persons || [];
+      return !hiddenPersons.includes(entityId);
+    }
+
     // Find the area of this entity (EXACT same logic as dialog)
     const deviceReg = entityReg && entityReg.device_id ?
       config.devices?.find((d: any) => d.device_id === entityReg.device_id) : null;
     const entityAreaId = entityReg?.area_id || deviceReg?.area_id || hass?.entities?.[entityId]?.area_id;
 
-    // Skip entities without area
-    if (!entityAreaId) {
+    // Area-based domains must belong to a configured, visible area.
+    if (!entityAreaId || !configuredAreaIds.has(entityAreaId)) {
       return false;
     }
 
-    if (!configuredAreaIds.has(entityAreaId)) {
-      return false;
-    }
-
-    // Skip entities from hidden areas
     const hiddenAreas = config.areas_display?.hidden || [];
     if (hiddenAreas.includes(entityAreaId)) {
       return false;
@@ -130,20 +134,10 @@ export function getStatusDomains(hass: HomeAssistant, config: any): DomainCount[
     // Check if entity is hidden in area configuration (same logic as area view)
     const areaOptions = config.areas_options?.[entityAreaId];
     if (areaOptions?.groups_options) {
-      // Check all groups for hidden entities
       for (const groupOptions of Object.values(areaOptions.groups_options)) {
         if ((groupOptions as any).hidden?.includes(entityId)) {
           return false;
         }
-      }
-    }
-
-    // Check if person is hidden in settings
-    const domain = entityId.split('.')[0];
-    if (domain === 'person') {
-      const hiddenPersons = config.settings?.hidden_persons || [];
-      if (hiddenPersons.includes(entityId)) {
-        return false;
       }
     }
 
