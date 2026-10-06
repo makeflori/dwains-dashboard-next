@@ -16122,14 +16122,14 @@ copy{
       }
     }
 
-    /* Sidebar room content: keep the established tile/media geometry.
-       Only rebalance the right copy column to the media height. */
+    /* Sidebar room content: keep the established tile/media geometry
+       and use a compact, vertically centered copy stack. */
     @media (min-width: 769px) {
       .sidebar .room-area-button .area-content {
         height: 100% !important;
         min-height: 0 !important;
         align-self: stretch !important;
-        justify-content: flex-start !important;
+        justify-content: center !important;
         gap: 0 !important;
       }
 
@@ -16143,7 +16143,7 @@ copy{
       }
 
       .sidebar .room-area-button .area-info-badges {
-        margin-top: auto !important;
+        margin-top: 6px !important;
         gap: 5px !important;
       }
 
