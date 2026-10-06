@@ -1961,6 +1961,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
               </span>
             </button>
           </div>
+          <p class="area-entity-layout-hint">${this._t('settings.area_entity_order_hint')}</p>
 
         ${entityLayout === 'ungrouped' ? html`
           <section class="area-free-order-section">
@@ -7459,10 +7460,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .dd-home-section-block > .home-section-item {
         position: relative;
-        min-height: 62px;
-        grid-template-columns: 22px 46px minmax(0, 1fr) 48px;
+        min-height: 54px;
+        grid-template-columns: 22px 40px minmax(0, 1fr) 44px;
         gap: 6px;
-        padding: 8px 12px;
+        padding: 5px 12px;
         border: 0;
         border-radius: 0;
         background: transparent;
@@ -7489,12 +7490,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .dd-home-flat-layout .home-section-icon {
-        width: 46px;
-        height: 46px;
+        width: 40px;
+        height: 40px;
       }
 
       .dd-home-flat-layout .home-section-icon ha-icon {
-        --mdc-icon-size: 25px;
+        --mdc-icon-size: 23px;
       }
 
       .dd-home-flat-layout .home-section-item.disabled .home-section-icon,
@@ -7517,15 +7518,21 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         background: color-mix(in srgb, var(--primary-color) 5%, transparent);
       }
 
+      .dd-home-section-block .home-section-description {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
       .dd-home-section-block .home-section-actions,
       .home-info-card-actions {
         display: grid;
-        grid-template-columns: 48px;
+        grid-template-columns: 44px;
         align-items: center;
         justify-content: end;
         justify-items: center;
         justify-self: end;
-        width: 48px;
+        width: 44px;
         margin: 0;
       }
 
@@ -8039,9 +8046,13 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         min-height: 60px;
       }
 
+      .dd-status-people-card .dd-status-people-list {
+        padding: 12px;
+        border-top: 1px solid var(--divider-color);
+      }
+
       .dd-status-people-card .persons-list {
         border: 0;
-        border-top: 1px solid var(--divider-color);
         border-radius: 0;
       }
 
@@ -9271,7 +9282,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .area-detail-editor .area-entity-layout-settings > .area-entity-section,
       .area-detail-editor .area-entity-layout-settings > .area-free-order-section {
-        margin-inline: 0;
+        margin: 0;
+      }
+
+      .area-entity-layout-hint {
+        margin: 0;
+        color: var(--secondary-text-color);
+        font-size: 12px;
+        line-height: 1.4;
       }
 
       .area-detail-editor .area-entity-section {
