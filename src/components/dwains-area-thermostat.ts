@@ -369,6 +369,16 @@ export class DwainsAreaThermostat extends LitElement {
       --mdc-icon-size: 22px;
     }
 
+    .thermostat.activity-heat .type-icon,
+    .thermostat.activity-cool .type-icon,
+    .thermostat.activity-dry .type-icon,
+    .thermostat.activity-fan .type-icon,
+    .thermostat.activity-auto .type-icon {
+      background: var(--thermostat-color);
+      color: #ffffff;
+      box-shadow: 0 6px 14px color-mix(in srgb, var(--thermostat-color) 26%, transparent);
+    }
+
     .target-range {
       min-height: 40px;
       padding: 0 8px;
