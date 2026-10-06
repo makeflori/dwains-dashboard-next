@@ -9,11 +9,13 @@ import type { HassEntity, HomeAssistant } from '../types/home-assistant';
 import { ddLocale, ddLocalize } from '../utils/localize';
 import {
   canStepTemperature,
+  canStepTemperatureRange,
   formatTemperatureNumber,
   getThermostatActivity,
   getThermostatModel,
   stepDecimals,
   stepTemperature,
+  stepTemperatureRange,
   type ThermostatActivity,
   type ThermostatModel,
 } from '../utils/thermostat';
@@ -25,15 +27,14 @@ const COMMIT_DELAY_MS = 800;
 // After a successful call the new target is shown until Home Assistant reports
 // it, or at most this long.
 const CONFIRM_TIMEOUT_MS = 8000;
-const LAST_ACTIVE_HVAC_MODE = new Map<string, string>();
 
-const ACTIVITY_ICONS: Record<ThermostatActivity, string> = {
+const HVAC_MODE_ICONS: Record<string, string> = {
   heat: 'mdi:fire',
   cool: 'mdi:snowflake',
-  dry: 'mdi:water-percent',
-  fan: 'mdi:fan',
+  heat_cool: 'mdi:sun-snowflake-variant',
   auto: 'mdi:thermostat-auto',
-  idle: 'mdi:thermostat',
+  dry: 'mdi:water-percent',
+  fan_only: 'mdi:fan',
   off: 'mdi:power',
 };
 
@@ -51,6 +52,8 @@ export class DwainsAreaThermostat extends LitElement {
 
   /** Target shown before Home Assistant confirms it. */
   @state() private _pendingTarget?: number;
+  @state() private _pendingRange?: { low: number; high: number };
+  @state() private _modeMenuOpen = false;
   private _pendingEntityId?: string;
   private _commitTimer?: number;
   private _confirmTimer?: number;
@@ -89,6 +92,12 @@ export class DwainsAreaThermostat extends LitElement {
       : model.target;
   }
 
+  private _displayRange(model: ThermostatModel): { low: number; high: number } | undefined {
+    if (this._pendingRange && this._pendingEntityId === this.entityId) return this._pendingRange;
+    if (model.targetLow === undefined || model.targetHigh === undefined) return undefined;
+    return { low: model.targetLow, high: model.targetHigh };
+  }
+
   private _formatValue(value: number, decimals: number, unit: string): string {
     return `${formatTemperatureNumber(value, decimals, ddLocale(this.hass))} ${unit}`;
   }
@@ -113,6 +122,26 @@ export class DwainsAreaThermostat extends LitElement {
     if (next === current) return;
 
     this._pendingTarget = next;
+    this._pendingRange = undefined;
+    this._pendingEntityId = this.entityId;
+    this._clearConfirmTimer();
+    if (this._commitTimer !== undefined) window.clearTimeout(this._commitTimer);
+    this._commitTimer = window.setTimeout(() => {
+      this._commitTimer = undefined;
+      void this._commit();
+    }, COMMIT_DELAY_MS);
+  }
+
+  private _adjustRange(direction: 1 | -1): void {
+    const model = getThermostatModel(this._stateObj(), this._unit());
+    if (model?.mode !== 'range') return;
+    const current = this._displayRange(model);
+    if (!current) return;
+    const next = stepTemperatureRange(current.low, current.high, direction, model);
+    if (next.low === current.low && next.high === current.high) return;
+
+    this._pendingRange = next;
+    this._pendingTarget = undefined;
     this._pendingEntityId = this.entityId;
     this._clearConfirmTimer();
     if (this._commitTimer !== undefined) window.clearTimeout(this._commitTimer);
@@ -132,46 +161,68 @@ export class DwainsAreaThermostat extends LitElement {
   private async _commit(): Promise<void> {
     const entityId = this._pendingEntityId;
     const temperature = this._pendingTarget;
+    const range = this._pendingRange;
     const hass = this.hass;
-    if (!entityId || temperature === undefined || !hass) return;
+    if (!entityId || !hass || (temperature === undefined && !range)) return;
 
     try {
-      await hass.callService('climate', 'set_temperature', { entity_id: entityId, temperature });
+      if (range) {
+        await hass.callService('climate', 'set_temperature', {
+          entity_id: entityId,
+          target_temp_low: range.low,
+          target_temp_high: range.high,
+        });
+      } else {
+        await hass.callService('climate', 'set_temperature', { entity_id: entityId, temperature });
+      }
     } catch (err) {
       console.warn(`Failed to set the temperature of ${entityId}:`, err);
-      // Revert, unless a newer tap is already waiting to be sent.
-      if (this._isLatestPending(entityId, temperature)) this._clearPending();
+      if (this._pendingEntityId === entityId && this._commitTimer === undefined) this._clearPending();
       fireEvent(this, 'hass-notification', {
         message: this._t('thermostat.update_failed', { name: this.roomName || entityId }),
       });
       return;
     }
 
-    if (!this._isLatestPending(entityId, temperature)) return;
+    if (this._pendingEntityId !== entityId || this._commitTimer !== undefined) return;
     this._clearPendingWhenConfirmed();
-    if (this._pendingTarget === undefined) return;
+    if (this._pendingEntityId !== entityId) return;
     this._clearConfirmTimer();
     this._confirmTimer = window.setTimeout(() => {
       this._confirmTimer = undefined;
-      if (this._isLatestPending(entityId, temperature)) this._clearPending();
+      if (this._pendingEntityId === entityId) this._clearPending();
     }, CONFIRM_TIMEOUT_MS);
-  }
-
-  private _isLatestPending(entityId: string, temperature: number): boolean {
-    return this._commitTimer === undefined &&
-      this._pendingEntityId === entityId &&
-      this._pendingTarget === temperature;
   }
 
   /** Drop the pending target once Home Assistant reports it. */
   private _clearPendingWhenConfirmed(): void {
-    if (this._pendingTarget === undefined || this._commitTimer !== undefined || !this._pendingEntityId) return;
-    const reported = Number(this.hass?.states?.[this._pendingEntityId]?.attributes?.temperature);
-    if (Number.isFinite(reported) && Math.abs(reported - this._pendingTarget) < 1e-6) this._clearPending();
+    if (this._commitTimer !== undefined || !this._pendingEntityId) return;
+    const attrs = this.hass?.states?.[this._pendingEntityId]?.attributes;
+    if (!attrs) return;
+
+    if (this._pendingRange) {
+      const low = Number(attrs.target_temp_low);
+      const high = Number(attrs.target_temp_high);
+      if (
+        Number.isFinite(low) &&
+        Number.isFinite(high) &&
+        Math.abs(low - this._pendingRange.low) < 1e-6 &&
+        Math.abs(high - this._pendingRange.high) < 1e-6
+      ) {
+        this._clearPending();
+      }
+      return;
+    }
+
+    if (this._pendingTarget !== undefined) {
+      const reported = Number(attrs.temperature);
+      if (Number.isFinite(reported) && Math.abs(reported - this._pendingTarget) < 1e-6) this._clearPending();
+    }
   }
 
   private _clearPending(): void {
     this._pendingTarget = undefined;
+    this._pendingRange = undefined;
     this._pendingEntityId = undefined;
     this._clearConfirmTimer();
   }
@@ -184,6 +235,10 @@ export class DwainsAreaThermostat extends LitElement {
   }
 
   private _openMoreInfo = (): void => {
+    if (this._modeMenuOpen) {
+      this._modeMenuOpen = false;
+      return;
+    }
     if (this.entityId) fireEvent(this, 'hass-more-info', { entityId: this.entityId });
   };
 
@@ -199,51 +254,46 @@ export class DwainsAreaThermostat extends LitElement {
     this._adjust(direction);
   }
 
-  private _preferredActiveMode(stateObj: HassEntity): string | undefined {
-    const remembered = LAST_ACTIVE_HVAC_MODE.get(this.entityId);
-    const modes = Array.isArray(stateObj.attributes?.hvac_modes)
+  private _supportedModes(stateObj: HassEntity): string[] {
+    return Array.isArray(stateObj.attributes?.hvac_modes)
       ? stateObj.attributes.hvac_modes.map((mode: unknown) => String(mode))
       : [];
-
-    if (remembered && modes.includes(remembered)) return remembered;
-    return ['heat_cool', 'auto', 'heat', 'cool', 'dry', 'fan_only']
-      .find(mode => modes.includes(mode));
   }
 
-  private async _togglePower(event: Event): Promise<void> {
-    event.stopPropagation();
-    const stateObj = this._stateObj();
-    const hass = this.hass;
-    if (!stateObj || !hass || !this.entityId) return;
-
-    const mode = String(stateObj.state || '').toLowerCase();
-    const turningOn = mode === 'off';
-
-    if (!turningOn && mode) LAST_ACTIVE_HVAC_MODE.set(this.entityId, mode);
-
+  private _modeLabel(stateObj: HassEntity, mode: string): string {
     try {
-      await hass.callService('climate', turningOn ? 'turn_on' : 'turn_off', {
-        entity_id: this.entityId,
-      });
-      return;
+      return this.hass?.formatEntityState?.({ ...stateObj, state: mode } as HassEntity) || mode;
     } catch {
-      // Some climate integrations do not expose turn_on/turn_off. Fall back
-      // to set_hvac_mode while preserving/restoring the last active mode.
+      return mode.replaceAll('_', ' ');
     }
+  }
+
+  private _toggleModeMenu(event: Event): void {
+    event.stopPropagation();
+    this._modeMenuOpen = !this._modeMenuOpen;
+  }
+
+  private async _setHvacMode(event: Event, hvacMode: string): Promise<void> {
+    event.stopPropagation();
+    this._modeMenuOpen = false;
+    if (!this.hass || !this.entityId || hvacMode === this._stateObj()?.state) return;
 
     try {
-      const hvacMode = turningOn ? this._preferredActiveMode(stateObj) : 'off';
-      if (!hvacMode) throw new Error('No supported active HVAC mode');
-      await hass.callService('climate', 'set_hvac_mode', {
+      await this.hass.callService('climate', 'set_hvac_mode', {
         entity_id: this.entityId,
         hvac_mode: hvacMode,
       });
     } catch (err) {
-      console.warn(`Failed to toggle ${this.entityId}:`, err);
+      console.warn(`Failed to set HVAC mode of ${this.entityId}:`, err);
       fireEvent(this, 'hass-notification', {
         message: this._t('thermostat.update_failed', { name: this.roomName || this.entityId }),
       });
     }
+  }
+
+  private _handleRangeStepClick(event: Event, direction: 1 | -1): void {
+    event.stopPropagation();
+    this._adjustRange(direction);
   }
 
   private _icon(path: string) {
@@ -260,9 +310,12 @@ export class DwainsAreaThermostat extends LitElement {
     const activityLabel = this._activityLabel(stateObj);
     const decimals = stepDecimals(model.step);
     const target = this._displayTarget(model);
+    const range = this._displayRange(model);
     const detailsLabel = this._t('thermostat.details', { name, state: activityLabel });
-
-    const showCurrent = activity === 'off' && model.current !== undefined;
+    const modes = this._supportedModes(stateObj);
+    const currentMode = String(stateObj.state || '').toLowerCase();
+    const currentModeLabel = this._modeLabel(stateObj, currentMode);
+    const modeIcon = HVAC_MODE_ICONS[currentMode] || 'mdi:thermostat';
 
     return html`
       <div
@@ -274,24 +327,37 @@ export class DwainsAreaThermostat extends LitElement {
         @click=${this._openMoreInfo}
         @keydown=${this._handleThermostatKeydown}
       >
-        <button
-          class="type-icon"
-          type="button"
-          title=${activity === 'off' ? this._t('action.turn_on') : this._t('action.turn_off')}
-          aria-label=${activity === 'off' ? this._t('action.turn_on') : this._t('action.turn_off')}
-          @click=${this._togglePower}
-        >
-          <ha-icon icon=${ACTIVITY_ICONS[activity]}></ha-icon>
-        </button>
+        <div class="mode-control">
+          <button
+            class="type-icon"
+            type="button"
+            title=${currentModeLabel}
+            aria-label=${currentModeLabel}
+            aria-haspopup="menu"
+            aria-expanded=${this._modeMenuOpen ? 'true' : 'false'}
+            @click=${this._toggleModeMenu}
+          >
+            <ha-icon icon=${modeIcon}></ha-icon>
+          </button>
+          ${this._modeMenuOpen && modes.length ? html`
+            <div class="mode-menu" role="menu" @click=${(event: Event) => event.stopPropagation()}>
+              ${modes.map(mode => html`
+                <button
+                  class="mode-item ${mode === currentMode ? 'active' : ''}"
+                  type="button"
+                  role="menuitemradio"
+                  aria-checked=${mode === currentMode ? 'true' : 'false'}
+                  @click=${(event: Event) => this._setHvacMode(event, mode)}
+                >
+                  <ha-icon icon=${HVAC_MODE_ICONS[mode] || 'mdi:thermostat'}></ha-icon>
+                  <span>${this._modeLabel(stateObj, mode)}</span>
+                </button>
+              `)}
+            </div>
+          ` : nothing}
+        </div>
 
-        ${showCurrent ? html`
-          <div class="target off-current" aria-label=${`${this._t('thermostat.current')}: ${this._formatValue(model.current!, decimals, model.unit)}`}>
-            <span class="copy current-copy">
-              <span class="label">${this._t('thermostat.current')}</span>
-              <span class="value">${this._formatValue(model.current!, decimals, model.unit)}</span>
-            </span>
-          </div>
-        ` : model.mode === 'single' && target !== undefined ? html`
+        ${model.mode === 'single' && target !== undefined ? html`
           <div class="target" role="group" aria-label=${this._t('thermostat.target_label', { name })}>
             <span class="copy target-copy">
               <span class="label">${this._t('thermostat.target')}</span>
@@ -318,25 +384,52 @@ export class DwainsAreaThermostat extends LitElement {
               ${this._icon(mdiPlus)}
             </button>
           </div>
-        ` : model.mode === 'range' && model.targetLow !== undefined && model.targetHigh !== undefined ? html`
-          <div class="target-range">
-            <span class="copy">
+        ` : model.mode === 'range' && range ? html`
+          <div class="target" role="group" aria-label=${this._t('thermostat.target_label', { name })}>
+            <span class="copy target-copy range-copy">
               <span class="label">${this._t('thermostat.target')}</span>
-              <span class="value">
-                ${formatTemperatureNumber(model.targetLow, decimals, ddLocale(this.hass))}
-                -
-                ${this._formatValue(model.targetHigh, decimals, model.unit)}
+              <span class="value" aria-live="polite">
+                ${formatTemperatureNumber(range.low, decimals, ddLocale(this.hass))}
+                –
+                ${this._formatValue(range.high, decimals, model.unit)}
               </span>
             </span>
+            <button
+              class="step"
+              type="button"
+              title=${this._t('thermostat.lower', { name })}
+              aria-label=${this._t('thermostat.lower', { name })}
+              ?disabled=${!canStepTemperatureRange(range.low, range.high, -1, model)}
+              @click=${(event: Event) => this._handleRangeStepClick(event, -1)}
+            >
+              ${this._icon(mdiMinus)}
+            </button>
+            <button
+              class="step"
+              type="button"
+              title=${this._t('thermostat.raise', { name })}
+              aria-label=${this._t('thermostat.raise', { name })}
+              ?disabled=${!canStepTemperatureRange(range.low, range.high, 1, model)}
+              @click=${(event: Event) => this._handleRangeStepClick(event, 1)}
+            >
+              ${this._icon(mdiPlus)}
+            </button>
           </div>
-        ` : nothing}
+        ` : html`
+          <div class="target mode-only">
+            <span class="copy target-copy">
+              <span class="label">${this._t('thermostat.target')}</span>
+              <span class="value">${currentMode === 'off' ? currentModeLabel : currentModeLabel}</span>
+            </span>
+          </div>
+        `}
       </div>
     `;
   }
 
   static override styles = css`
     :host {
-      display: block;
+      display: inline-block;
       min-width: 0;
       -webkit-tap-highlight-color: transparent;
     }
@@ -362,6 +455,7 @@ export class DwainsAreaThermostat extends LitElement {
       backdrop-filter: blur(16px) saturate(1.3);
       -webkit-backdrop-filter: blur(16px) saturate(1.3);
       cursor: pointer;
+      overflow: visible;
       transition: background-color 0.18s ease, transform 0.12s ease;
     }
 
@@ -408,6 +502,11 @@ export class DwainsAreaThermostat extends LitElement {
       fill: currentColor;
     }
 
+    .mode-control {
+      position: relative;
+      flex: 0 0 auto;
+    }
+
     .type-icon {
       width: 40px;
       height: 40px;
@@ -422,6 +521,47 @@ export class DwainsAreaThermostat extends LitElement {
 
     .type-icon ha-icon {
       --mdc-icon-size: 22px;
+    }
+
+    .mode-menu {
+      position: absolute;
+      z-index: 1000;
+      top: calc(100% + 8px);
+      left: 0;
+      min-width: 176px;
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      border-radius: 12px;
+      background: var(--card-background-color, #fff);
+      color: var(--primary-text-color);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+    }
+
+    .mode-item {
+      min-height: 38px;
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-radius: 9px;
+      white-space: nowrap;
+      text-align: left;
+    }
+
+    .mode-item:hover,
+    .mode-item.active {
+      background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+    }
+
+    .mode-item.active {
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+
+    .mode-item ha-icon {
+      --mdc-icon-size: 20px;
     }
 
     .thermostat.activity-heat .type-icon,
@@ -494,19 +634,18 @@ export class DwainsAreaThermostat extends LitElement {
       border-radius: 11px;
     }
 
-    .target-copy,
-    .current-copy {
+    .target-copy {
       min-width: 58px;
       align-items: flex-start;
       text-align: left;
     }
 
-    .off-current {
-      padding-right: 10px;
+    .range-copy {
+      min-width: 94px;
     }
 
-    .current-copy {
-      min-width: 58px;
+    .mode-only {
+      padding-right: 8px;
     }
 
     .step {
@@ -539,22 +678,6 @@ export class DwainsAreaThermostat extends LitElement {
       .step {
         width: 36px;
         height: 36px;
-      }
-    }
-
-    @media (max-width: 768px) {
-      :host {
-        width: 100%;
-      }
-
-      .thermostat {
-        width: 100%;
-      }
-    }
-
-    @media (max-width: 380px) {
-      .type-icon {
-        display: none;
       }
     }
 
