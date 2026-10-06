@@ -489,6 +489,7 @@ export const zhHant = {
   'settings.discard_action': '捨棄',
   'settings.show_suggested_favorites': "顯示建議收藏",
   'settings.suggested_favorites_description': "在你自己的收藏之外，加入 Home Assistant 建議的常用實體。你手動選擇的收藏會始終保留。",
+  'settings.manage_favorites': "管理收藏",
   'settings.show_area_favorites': "在房間檢視中顯示收藏",
   'settings.show_area_favorites_description': "在房間內容上方顯示「收藏」區塊。",
   'settings.add_entity': '新增實體',

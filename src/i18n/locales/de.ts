@@ -489,6 +489,7 @@ export const de = {
   'settings.discard_action': 'Verwerfen',
   'settings.show_suggested_favorites': "Vorgeschlagene Favoriten anzeigen",
   'settings.suggested_favorites_description': "Ergänzt deine eigenen Favoriten um häufig verwendete, von Home Assistant vorgeschlagene Entitäten. Deine selbst gewählten Favoriten bleiben immer erhalten.",
+  'settings.manage_favorites': "Favoriten verwalten",
   'settings.show_area_favorites': "Favoriten in Raumansichten anzeigen",
   'settings.show_area_favorites_description': "Blendet die Favoriten oberhalb der Rauminhalte ein.",
   'settings.add_entity': 'Entität hinzufügen',

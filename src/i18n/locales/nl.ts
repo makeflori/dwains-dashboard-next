@@ -489,6 +489,7 @@ export const nl = {
   'settings.discard_action': 'Verwerpen',
   'settings.show_suggested_favorites': "Voorgestelde favorieten tonen",
   'settings.suggested_favorites_description': "Voegt vaak gebruikte, door Home Assistant voorgestelde entiteiten toe naast je eigen favorieten. Je handmatig gekozen favorieten blijven altijd behouden.",
+  'settings.manage_favorites': "Favorieten beheren",
   'settings.show_area_favorites': "Favorieten in kamerweergaven tonen",
   'settings.show_area_favorites_description': "Toont het gedeelte Favorieten boven de kamerinhoud.",
   'settings.add_entity': 'Entiteit toevoegen',

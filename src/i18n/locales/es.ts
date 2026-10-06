@@ -489,6 +489,7 @@ export const es = {
   'settings.discard_action': 'Descartar',
   'settings.show_suggested_favorites': "Mostrar favoritos sugeridos",
   'settings.suggested_favorites_description': "Añade entidades de uso frecuente sugeridas por Home Assistant junto a tus propios favoritos. Tus favoritos seleccionados manualmente siempre se mantienen.",
+  'settings.manage_favorites': "Administrar favoritos",
   'settings.show_area_favorites': "Mostrar favoritos en las vistas de habitaciones",
   'settings.show_area_favorites_description': "Muestra la sección Favoritos encima del contenido de la habitación.",
   'settings.add_entity': 'Añadir entidad',

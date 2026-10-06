@@ -506,6 +506,7 @@ export const en = {
 
   'settings.show_suggested_favorites': "Show suggested favorites",
   'settings.suggested_favorites_description': "Adds frequently used entities suggested by Home Assistant alongside your own favorites. Your manually selected favorites always remain.",
+  'settings.manage_favorites': "Manage favorites",
   'settings.show_area_favorites': "Show favorites in room views",
   'settings.show_area_favorites_description': "Show the Favorites section above the room content.",
   'settings.add_entity': 'Add entity',

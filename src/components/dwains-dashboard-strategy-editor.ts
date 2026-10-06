@@ -1036,6 +1036,33 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     `;
   }
 
+  private _renderLinkedToggleSetting(
+    icon: string,
+    title: string,
+    description: string,
+    checked: boolean,
+    onChange: (event: Event) => void
+  ) {
+    return html`
+      <div class="dd-setting-row dd-setting-row-with-link">
+        <span class="dd-setting-row-icon"><ha-icon icon=${icon}></ha-icon></span>
+        <span class="dd-setting-row-copy">
+          <strong>${title}</strong>
+          ${description ? html`<small>${description}</small>` : nothing}
+          <button
+            class="dd-settings-inline-link"
+            type="button"
+            @click=${(event: Event) => {
+              event.stopPropagation();
+              this._openSettingsPage('favorites');
+            }}
+          >${this._t('settings.manage_favorites')}</button>
+        </span>
+        <ha-switch .checked=${checked} @change=${onChange}></ha-switch>
+      </div>
+    `;
+  }
+
   private _renderMasterActionConfirmationSettingsPanel() {
     return html`
       <div class="master-confirmation-section dd-simple-settings-stack">
@@ -1260,7 +1287,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           </div>
 
           <div class="entity-picker dd-favorites-picker dd-favorites-list-card">
-            <div class="dd-inline-action-row dd-inline-action-only">
+            <div class="dd-inline-action-row dd-favorites-list-head">
+              <strong>${this._t('favorites.title')}</strong>
               <button class="home-custom-card-add dd-favorites-add" type="button" @click=${this._addFavoriteEntity}>
                 <ha-icon icon="mdi:plus"></ha-icon>
                 ${this._t('common.add')}
@@ -1290,58 +1318,60 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       : this._t('settings.no_alarm_short');
 
     return html`
-      <div class="dd-header-status-list">
-        ${this._renderToggleSetting(
-          "mdi:clock-outline",
-          this._t('settings.time_date'),
-          "",
-          this._config?.settings?.show_time !== false,
-          this._toggleTimeDisplay
-        )}
-        ${this._renderToggleSetting(
-          "mdi:bell-outline",
-          this._t('home.notifications'),
-          "",
-          this._config?.settings?.show_notifications !== false,
-          this._toggleNotificationsDisplay
-        )}
+      <div class="dd-header-status-settings">
+        <div class="dd-header-status-list">
+          ${this._renderToggleSetting(
+            "mdi:clock-outline",
+            this._t('settings.time_date'),
+            "",
+            this._config?.settings?.show_time !== false,
+            this._toggleTimeDisplay
+          )}
+          ${this._renderToggleSetting(
+            "mdi:bell-outline",
+            this._t('home.notifications'),
+            "",
+            this._config?.settings?.show_notifications !== false,
+            this._toggleNotificationsDisplay
+          )}
 
-        <div class="dd-header-feature">
-          <div class="dd-header-feature-row">
-            <span class="dd-setting-row-icon"><ha-icon icon="mdi:weather-cloudy"></ha-icon></span>
-            <span class="dd-setting-row-copy">
-              <strong>${this._t('domain.weather')}</strong>
-              <small>${weatherName}</small>
-            </span>
-            <span class="dd-header-feature-actions">
-              <button class="dd-inline-text-button" type="button" @click=${this._addWeatherEntity}>
-                ${this._t('common.select')}
-              </button>
-              <ha-switch .checked=${weatherEnabled} @change=${this._toggleWeatherDisplay}></ha-switch>
-            </span>
+          <div class="dd-header-feature">
+            <div class="dd-header-feature-row">
+              <span class="dd-setting-row-icon"><ha-icon icon="mdi:weather-cloudy"></ha-icon></span>
+              <span class="dd-setting-row-copy">
+                <strong>${this._t('domain.weather')}</strong>
+                <small>${weatherName}</small>
+              </span>
+              <span class="dd-header-feature-actions">
+                <button class="dd-inline-text-button" type="button" @click=${this._addWeatherEntity}>
+                  ${this._t('common.select')}
+                </button>
+                <ha-switch .checked=${weatherEnabled} @change=${this._toggleWeatherDisplay}></ha-switch>
+              </span>
+            </div>
+            ${this._showWeatherPicker ? this._renderWeatherPicker() : nothing}
           </div>
-          ${this._showWeatherPicker ? this._renderWeatherPicker() : nothing}
-        </div>
 
-        <div class="dd-header-feature">
-          <div class="dd-header-feature-row">
-            <span class="dd-setting-row-icon"><ha-icon icon="mdi:shield-home-outline"></ha-icon></span>
-            <span class="dd-setting-row-copy">
-              <strong>${this._t('domain.alarm_control_panel')}</strong>
-              <small>${alarmName}</small>
-            </span>
-            <span class="dd-header-feature-actions">
-              <button class="dd-inline-text-button" type="button" @click=${this._addAlarmEntity}>
-                ${this._t('common.select')}
-              </button>
-              <ha-switch
-                .checked=${alarmEnabled}
-                .disabled=${!alarmId}
-                @change=${this._toggleAlarmDisplay}
-              ></ha-switch>
-            </span>
+          <div class="dd-header-feature">
+            <div class="dd-header-feature-row">
+              <span class="dd-setting-row-icon"><ha-icon icon="mdi:shield-home-outline"></ha-icon></span>
+              <span class="dd-setting-row-copy">
+                <strong>${this._t('domain.alarm_control_panel')}</strong>
+                <small>${alarmName}</small>
+              </span>
+              <span class="dd-header-feature-actions">
+                <button class="dd-inline-text-button" type="button" @click=${this._addAlarmEntity}>
+                  ${this._t('common.select')}
+                </button>
+                <ha-switch
+                  .checked=${alarmEnabled}
+                  .disabled=${!alarmId}
+                  @change=${this._toggleAlarmDisplay}
+                ></ha-switch>
+              </span>
+            </div>
+            ${this._showAlarmPicker ? this._renderAlarmPicker() : nothing}
           </div>
-          ${this._showAlarmPicker ? this._renderAlarmPicker() : nothing}
         </div>
         ${this._renderNowPlayingSettings()}
       </div>
@@ -1473,7 +1503,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
               this._config?.settings?.hide_unavailable_entities !== false,
               this._toggleHideUnavailableAreaEntities
             )}
-            ${this._renderToggleSetting(
+            ${this._renderLinkedToggleSetting(
               "mdi:star-outline",
               this._t('settings.show_area_favorites'),
               this._t('settings.show_area_favorites_description'),
@@ -2395,6 +2425,16 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                   <div class="home-section-copy">
                     <div class="home-section-title">${this._t(meta.labelKey)}</div>
                     <div class="home-section-description">${this._t(meta.descriptionKey)}</div>
+                    ${section === 'favorites' ? html`
+                      <button
+                        class="dd-settings-inline-link dd-home-favorites-link"
+                        type="button"
+                        @click=${(event: Event) => {
+                          event.stopPropagation();
+                          this._openSettingsPage('favorites');
+                        }}
+                      >${this._t('settings.manage_favorites')}</button>
+                    ` : nothing}
                   </div>
                   <div class="home-section-actions" @click=${(event: Event) => event.stopPropagation()}>
                     <button
@@ -7713,8 +7753,18 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .dd-favorites-list-card .dd-inline-action-row {
-        padding: 12px 12px 10px;
+        padding: 10px 12px;
         border-bottom: 1px solid var(--divider-color);
+      }
+
+      .dd-favorites-list-head {
+        justify-content: space-between;
+      }
+
+      .dd-favorites-list-head > strong {
+        color: var(--primary-text-color);
+        font-size: 13px;
+        font-weight: 700;
       }
 
       .dd-favorites-list-card .selected-entities {
@@ -7957,8 +8007,13 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         white-space: nowrap;
       }
 
+      .dd-header-status-settings {
+        display: grid;
+        gap: 16px;
+      }
+
       .dd-now-playing-settings {
-        margin: 12px;
+        margin: 0;
         padding: 0 12px 12px;
         border: 1px solid var(--divider-color);
         border-radius: 12px;
@@ -8004,6 +8059,32 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .dd-inline-text-button:hover,
       .dd-icon-text-button:hover {
         background: color-mix(in srgb, var(--primary-color) 7%, transparent);
+      }
+
+      .dd-settings-inline-link {
+        width: max-content;
+        margin: 2px 0 0;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: var(--primary-color);
+        font: inherit;
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1.3;
+        cursor: pointer;
+      }
+
+      .dd-settings-inline-link:hover {
+        text-decoration: underline;
+      }
+
+      .dd-setting-row-with-link {
+        cursor: default;
+      }
+
+      .dd-home-favorites-link {
+        margin-top: 3px;
       }
 
       .dd-icon-text-button {
