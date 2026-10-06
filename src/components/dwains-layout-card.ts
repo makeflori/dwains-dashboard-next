@@ -17142,8 +17142,7 @@ copy{
     const settings = this.config?.settings;
     const explicitlyManaged =
       (settings?.home_sections_order || []).includes('now_playing') ||
-      (settings?.home_sections_hidden || []).includes('now_playing') ||
-      settings?.show_area_now_playing !== undefined;
+      (settings?.home_sections_hidden || []).includes('now_playing');
 
     if (explicitlyManaged) {
       return !(settings?.home_sections_hidden || []).includes('now_playing');
