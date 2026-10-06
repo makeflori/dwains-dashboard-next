@@ -1256,15 +1256,15 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .home-notification-count{
-      min-width: 17px;
-      height: 17px;
-      padding: 0 5px;
-      border-radius: 999px;
+      min-width: 0;
+      height: auto;
+      padding: 0;
+      border-radius: 0;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      background: #e13f3f;
-      color: #ffffff;
+      background: transparent;
+      color: inherit;
       font-size: 11px;
       font-weight: 850;
       line-height: 1;
@@ -19936,8 +19936,8 @@ copy{
                 <div class="dd-page-header-actions">${actions}</div>
               </div>
 
-              ${hasStrip ? html`
-                <div class="dd-page-header-strip">
+              <div class="dd-page-header-strip ${hasStrip ? '' : 'is-placeholder'}" aria-hidden=${hasStrip ? 'false' : 'true'}>
+                ${hasStrip ? html`
                   ${tiles}
                   ${thermostatEntityId ? html`
                     <dwains-dashboard-next-area-thermostat
@@ -19946,8 +19946,8 @@ copy{
                       .roomName=${area.name}
                     ></dwains-dashboard-next-area-thermostat>
                   ` : nothing}
-                </div>
-              ` : nothing}
+                ` : nothing}
+              </div>
             </div>
           </div>
         </header>
