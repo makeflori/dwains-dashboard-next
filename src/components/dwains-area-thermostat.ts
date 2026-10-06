@@ -542,6 +542,16 @@ export class DwainsAreaThermostat extends LitElement {
       }
     }
 
+    @media (max-width: 768px) {
+      :host {
+        width: 100%;
+      }
+
+      .thermostat {
+        width: 100%;
+      }
+    }
+
     @media (max-width: 380px) {
       .type-icon {
         display: none;

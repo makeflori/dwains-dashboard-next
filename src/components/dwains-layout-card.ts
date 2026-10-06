@@ -15699,7 +15699,10 @@ copy{
     .dd-page-header-media-tile{
       position: relative;
       width: 220px;
+      height: 176px;
       min-height: 176px;
+      max-height: 176px;
+      align-self: start;
       overflow: hidden;
       border-radius: 14px;
       background: color-mix(in srgb, var(--ph-accent) 10%, var(--ph-surface));
@@ -15755,69 +15758,6 @@ copy{
     .dd-page-header-home ha-icon{
       --mdc-icon-size: 21px;
     }
-
-    @media (max-width: 768px) {
-      .dd-page-header-with-media{
-        grid-template-columns: 78px minmax(0, 1fr);
-        gap: 12px;
-        align-items: start;
-      }
-
-      .dd-page-header-media-tile{
-        width: 78px;
-        min-height: 78px;
-        height: 78px;
-        border-radius: 14px;
-      }
-
-      .dd-page-header-room-icon{
-        min-height: 78px;
-      }
-
-      .dd-page-header-room-icon ha-icon{
-        --mdc-icon-size: 34px;
-      }
-
-      .dd-page-header-main{
-        gap: 12px;
-      }
-
-      .dd-page-header-main .dd-page-header-top{
-        flex-wrap: wrap;
-        row-gap: 14px;
-      }
-
-      .dd-page-header-main .dd-page-header-identity{
-        order: 1;
-        flex: 1 1 auto;
-        flex-basis: auto;
-      }
-
-      .dd-page-header-main .dd-page-header-actions{
-        order: 2;
-        margin-left: auto;
-      }
-
-      .dd-page-header-main .dd-page-header-strip{
-        margin-left: calc(-78px - 12px);
-      }
-
-      .dd-page-header-title-row{
-        gap: 7px;
-      }
-
-      .dd-page-header-home{
-        width: 32px;
-        height: 32px;
-      }
-
-      .dd-room-compact .dd-page-header-home{
-        width: 38px;
-        height: 38px;
-      }
-    }
-
-
 
 
     /* 2026-10-06 room-view alignment follow-up.
@@ -19834,7 +19774,6 @@ copy{
       ? visibleAreaEntities.filter(entity => entity.entity_id !== thermostatEntityId)
       : visibleAreaEntities;
     const deviceLabel = this._tp('common.device', deviceCount);
-    const hasHeaderReadings = Boolean(areaData.temperature || areaData.humidity || areaData.wattage);
     const tiles = this._renderAreaQuickTiles(area.area_id, quickControlEntities);
     const hasStrip = tiles !== nothing || Boolean(thermostatEntityId);
 
@@ -19898,7 +19837,6 @@ copy{
                     </div>
                     <div class="dd-page-header-subtitle">
                       <span class="dd-page-header-device-label">${deviceLabel}</span>
-                      ${hasHeaderReadings ? html`<span class="dd-page-header-subtitle-separator" aria-hidden="true">·</span>` : nothing}
                       ${this._renderAreaHeaderReadings(areaData)}
                     </div>
                   </div>

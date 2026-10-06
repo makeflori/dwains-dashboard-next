@@ -8062,11 +8062,14 @@ which also swallowed pointer events for the new handle. */
 }
 
 @media (min-width: 769px){
-/* The room content must span exactly the same available width as the global room header. */
+/* Keep the room content and global house-information row on the same
+   desktop measure. This prevents both surfaces from becoming overly wide
+   on very large displays while keeping their left/right edges aligned. */
       .area-view{
         width: 100% !important;
-        max-width: none !important;
-        margin: 0 !important;
+        max-width: 1400px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
         box-sizing: border-box !important;
       }
 
