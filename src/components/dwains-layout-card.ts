@@ -16121,6 +16121,61 @@ copy{
         grid-column: 1 / -1 !important;
       }
     }
+
+    /* Settings/sidebar polish: the copy column mirrors the room media tile.
+       Name and sensor values stay together; badges anchor to the bottom. */
+    @media (min-width: 769px) {
+      .sidebar .room-area-button {
+        --dd-room-media-size: clamp(76px, 30cqw, 96px);
+        grid-template-columns: var(--dd-room-media-size) minmax(0, 1fr) !important;
+        min-height: calc(var(--dd-room-media-size) + 20px) !important;
+        height: calc(var(--dd-room-media-size) + 20px) !important;
+        padding: 10px !important;
+      }
+
+      .sidebar .room-area-button .area-media,
+      .sidebar .room-area-button .area-media-icon {
+        width: var(--dd-room-media-size) !important;
+        height: var(--dd-room-media-size) !important;
+      }
+
+      .sidebar .room-area-button .area-content {
+        height: var(--dd-room-media-size) !important;
+        align-self: center !important;
+        justify-content: flex-start !important;
+        gap: 0 !important;
+      }
+
+      .sidebar .room-area-button .area-top-section {
+        margin: 0 !important;
+        gap: 0 !important;
+      }
+
+      .sidebar .room-area-button .area-sensors {
+        margin-top: 2px !important;
+      }
+
+      .sidebar .room-area-button .area-info-badges {
+        margin-top: auto !important;
+        gap: 6px !important;
+      }
+
+      .sidebar .room-area-button .info-badge {
+        min-width: 34px !important;
+        height: 27px !important;
+        padding: 0 8px !important;
+        font-size: 13px !important;
+      }
+
+      .sidebar .room-area-button .info-badge ha-icon {
+        --mdc-icon-size: 16px !important;
+      }
+
+      .sidebar .room-area-button .badge-count {
+        font-size: 13px !important;
+      }
+    }
+
   `, pageHeaderStyles, roomAreaStyles];
 
   connectedCallback() {

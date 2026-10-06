@@ -454,7 +454,7 @@ export const de = {
   'settings.global_area_group_order_description': 'Diese Reihenfolge gilt für alle Räume ohne eigene Reihenfolge. Mit „Auf alle Räume anwenden“ werden vorhandene individuelle Reihenfolgen überschrieben.',
   'settings.apply_group_order_all_areas': 'Auf alle Räume anwenden',
   'settings.area_order_title': 'Anordnung der Räume',
-  'settings.area_entity_layout_title': 'Anordnung der Entitäten',
+  'settings.area_entity_layout_title': 'Gruppierung der Entitäten',
   'settings.area_entity_layout_description': 'Lege fest, ob automatisch erzeugte Entitätskarten nach Typ gruppiert oder in einer frei sortierbaren Liste angezeigt werden.',
   'settings.area_entity_layout_grouped': 'Nach Typ',
   'settings.area_entity_layout_grouped_description': 'Behält getrennte Abschnitte für Lichter, Beschattung & Tore, Sensoren und weitere Typen bei.',
