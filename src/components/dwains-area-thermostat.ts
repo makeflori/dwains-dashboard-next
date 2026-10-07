@@ -56,6 +56,7 @@ export class DwainsAreaThermostat extends LitElement {
   @state() private _pendingTarget?: number;
   @state() private _pendingRange?: { low: number; high: number };
   @state() private _modeMenuOpen = false;
+  @state() private _modeMenuPosition?: { top: number; left: number };
   private _pendingEntityId?: string;
   private _commitTimer?: number;
   private _confirmTimer?: number;
@@ -272,7 +273,35 @@ export class DwainsAreaThermostat extends LitElement {
 
   private _toggleModeMenu(event: Event): void {
     event.stopPropagation();
-    this._modeMenuOpen = !this._modeMenuOpen;
+
+    if (this._modeMenuOpen) {
+      this._modeMenuOpen = false;
+      this._modeMenuPosition = undefined;
+      return;
+    }
+
+    const button = event.currentTarget as HTMLElement | null;
+    if (button) {
+      const rect = button.getBoundingClientRect();
+      const menuWidth = 176;
+      const margin = 8;
+      const itemCount = Math.max(1, this._supportedModes(this._stateObj() as HassEntity).length);
+      const estimatedHeight = 12 + (itemCount * 40) + Math.max(0, itemCount - 1) * 2;
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const left = Math.min(
+        Math.max(margin, rect.left),
+        Math.max(margin, viewportWidth - menuWidth - margin)
+      );
+      const belowTop = rect.bottom + margin;
+      const top = belowTop + estimatedHeight <= viewportHeight - margin
+        ? belowTop
+        : Math.max(margin, rect.top - estimatedHeight - margin);
+
+      this._modeMenuPosition = { top, left };
+    }
+
+    this._modeMenuOpen = true;
   }
 
   private async _setHvacMode(event: Event, hvacMode: string): Promise<void> {
@@ -342,7 +371,14 @@ export class DwainsAreaThermostat extends LitElement {
             <ha-icon icon=${modeIcon}></ha-icon>
           </button>
           ${this._modeMenuOpen && modes.length ? html`
-            <div class="mode-menu" role="menu" @click=${(event: Event) => event.stopPropagation()}>
+            <div
+              class="mode-menu"
+              role="menu"
+              style=${this._modeMenuPosition
+                ? `top: ${this._modeMenuPosition.top}px; left: ${this._modeMenuPosition.left}px;`
+                : nothing}
+              @click=${(event: Event) => event.stopPropagation()}
+            >
               ${modes.map(mode => html`
                 <button
                   class="mode-item ${mode === currentMode ? 'active' : ''}"
@@ -501,9 +537,10 @@ export class DwainsAreaThermostat extends LitElement {
       margin: 0;
       padding: 0;
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: max-content max-content;
       grid-template-rows: 34px 36px;
       align-items: center;
+      justify-content: center;
       justify-items: center;
       gap: 4px;
     }
@@ -608,9 +645,9 @@ export class DwainsAreaThermostat extends LitElement {
     }
 
     .mode-menu {
-      position: absolute;
+      position: fixed;
       z-index: 1000;
-      top: calc(100% + 8px);
+      top: 0;
       left: 0;
       min-width: 176px;
       padding: 6px;
