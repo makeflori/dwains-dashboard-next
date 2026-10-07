@@ -466,15 +466,16 @@ export class DwainsAreaThermostat extends LitElement {
     }
 
     .thermostat.compact-vertical {
-      width: 112px;
-      min-width: 112px;
-      max-width: 112px;
-      min-height: 156px;
-      padding: 10px 8px;
-      flex-direction: column;
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+      min-height: 140px;
+      padding: 8px 6px;
+      display: grid;
+      grid-template-rows: 46px 74px;
       align-items: center;
-      justify-content: flex-start;
-      gap: 7px;
+      justify-items: center;
+      gap: 4px;
       text-align: center;
       border-radius: 16px;
     }
@@ -496,14 +497,15 @@ export class DwainsAreaThermostat extends LitElement {
     .compact-vertical .target {
       width: 100%;
       min-width: 0;
-      margin-top: 0;
+      height: 74px;
+      margin: 0;
       padding: 0;
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      grid-template-rows: auto 36px;
+      grid-template-rows: 34px 36px;
       align-items: center;
       justify-items: center;
-      gap: 6px 4px;
+      gap: 4px;
     }
 
     .compact-vertical .target-copy {
@@ -521,13 +523,15 @@ export class DwainsAreaThermostat extends LitElement {
     }
 
     .compact-vertical .label {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 650;
+      line-height: 1.05;
     }
 
     .compact-vertical .value {
       font-size: 13px;
       font-weight: 700;
+      line-height: 1.1;
       overflow: hidden;
       text-overflow: ellipsis;
     }
