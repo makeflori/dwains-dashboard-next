@@ -49,6 +49,8 @@ export class DwainsAreaThermostat extends LitElement {
   @property({ attribute: false }) public entityId = '';
   /** Room name, used in the button labels. */
   @property({ attribute: false }) public roomName = '';
+  /** Use the narrow vertical quick-control layout in the mobile room header. */
+  @property({ attribute: false }) public compactVertical = false;
 
   /** Target shown before Home Assistant confirms it. */
   @state() private _pendingTarget?: number;
@@ -319,7 +321,7 @@ export class DwainsAreaThermostat extends LitElement {
 
     return html`
       <div
-        class="thermostat activity-${activity}"
+        class="thermostat activity-${activity} ${this.compactVertical ? 'compact-vertical' : ''}"
         role="button"
         tabindex="0"
         title=${detailsLabel}
@@ -461,6 +463,84 @@ export class DwainsAreaThermostat extends LitElement {
 
     .thermostat:hover {
       background: var(--ph-control-hover, color-mix(in srgb, var(--primary-text-color) 11%, transparent));
+    }
+
+    .thermostat.compact-vertical {
+      width: 112px;
+      min-width: 112px;
+      max-width: 112px;
+      min-height: 156px;
+      padding: 10px 8px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 7px;
+      text-align: center;
+      border-radius: 16px;
+    }
+
+    .compact-vertical .mode-control {
+      align-self: center;
+    }
+
+    .compact-vertical .type-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+    }
+
+    .compact-vertical .type-icon ha-icon {
+      --mdc-icon-size: 25px;
+    }
+
+    .compact-vertical .target {
+      width: 100%;
+      min-width: 0;
+      margin-top: 0;
+      padding: 0;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: auto 36px;
+      align-items: center;
+      justify-items: center;
+      gap: 6px 4px;
+    }
+
+    .compact-vertical .target-copy {
+      grid-column: 1 / -1;
+      min-width: 0;
+      width: 100%;
+      align-items: center;
+      text-align: center;
+    }
+
+    .compact-vertical .label,
+    .compact-vertical .value {
+      max-width: 100%;
+      text-align: center;
+    }
+
+    .compact-vertical .label {
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .compact-vertical .value {
+      font-size: 13px;
+      font-weight: 700;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .compact-vertical .step {
+      width: 36px;
+      height: 36px;
+      margin: 0;
+    }
+
+    .compact-vertical .mode-only {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto;
     }
 
     .thermostat:active {

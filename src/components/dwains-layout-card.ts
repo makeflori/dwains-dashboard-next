@@ -20015,8 +20015,9 @@ copy{
       </button>
     `;
 
+    const headerActionEntities = this._getEditableAreaEntities(area.area_id);
     const actions = html`
-      ${this._renderAreaMobileCameraAction(visibleAreaEntities)}
+      ${this._renderAreaMobileCameraAction(headerActionEntities)}
       ${this._renderUnavailableEntitiesIcon(area.area_id)}
       ${this._canManageDashboard() ? html`
         <button
@@ -20076,6 +20077,7 @@ copy{
                       .hass=${this.hass}
                       .entityId=${thermostatEntityId}
                       .roomName=${area.name}
+                      .compactVertical=${this._isMobile}
                     ></dwains-dashboard-next-area-thermostat>
                   ` : nothing}
                 ` : nothing}
