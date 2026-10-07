@@ -19,6 +19,7 @@ export const AREA_STRATEGY_GROUPS = [
   'media_player',
   'motion',
   'camera',
+  'cover_gates',
   'vacuum',
   'lawn_mower',
   'todo',
@@ -41,6 +42,7 @@ export const AREA_STRATEGY_GROUP_ICONS: Record<AreaStrategyGroup, string> = {
   switch: 'mdi:power-plug',
   cover_openings: 'mdi:door-open',
   cover_shading: 'mdi:blinds-horizontal',
+  cover_gates: 'mdi:gate',
   climate: 'mdi:thermostat',
   todo: 'mdi:clipboard-list-outline',
   scene: 'mdi:palette-outline',
@@ -73,7 +75,8 @@ export const AREA_STRATEGY_GROUP_TITLES: Record<AreaStrategyGroup, string> = {
   light: 'Lights',
   switch: 'Switches',
   cover_openings: 'Windows & doors',
-  cover_shading: 'Shading & gates',
+  cover_shading: 'Shading',
+  cover_gates: 'Gates',
   climate: 'Climate',
   todo: 'To-do lists',
   scene: 'Scenes',
@@ -121,6 +124,8 @@ export function getAreaEntityGroupKey(entityId: string, hass: HomeAssistant): Ar
   if (domain === 'cover') {
     const deviceClass = String(hass.states[entityId]?.attributes?.device_class || '').toLowerCase();
     const openingClasses = new Set(['door', 'window']);
+    const gateClasses = new Set(['garage', 'garage_door', 'gate']);
+    if (gateClasses.has(deviceClass)) return 'cover_gates';
     return openingClasses.has(deviceClass) ? 'cover_openings' : 'cover_shading';
   }
   if (domain === 'input_select') return 'select';
@@ -128,7 +133,8 @@ export function getAreaEntityGroupKey(entityId: string, hass: HomeAssistant): Ar
   if (domain === 'alarm_control_panel') return 'safety';
   if (domain === 'binary_sensor') {
     const deviceClass = String(hass.states[entityId]?.attributes?.device_class || '').toLowerCase();
-    if (['door', 'window', 'opening', 'garage_door'].includes(deviceClass)) return 'cover_openings';
+    if (['garage', 'garage_door', 'gate'].includes(deviceClass)) return 'cover_gates';
+    if (['door', 'window', 'opening'].includes(deviceClass)) return 'cover_openings';
     if (['motion', 'moving', 'occupancy', 'presence'].includes(deviceClass)) return 'motion';
     if (['smoke', 'gas', 'carbon_monoxide', 'moisture', 'safety', 'tamper', 'problem', 'heat', 'cold'].includes(deviceClass)) return 'safety';
     return 'binary_sensor';
@@ -143,7 +149,7 @@ export function getAreaEntityGroupKey(entityId: string, hass: HomeAssistant): Ar
 export function getLegacyAreaGroupKey(group: AreaStrategyGroup): string {
   if (group === 'light') return 'lights';
   if (['climate', 'humidifier', 'water_heater', 'fan'].includes(group)) return 'climate';
-  if (group === 'cover_openings' || group === 'cover_shading') return 'covers';
+  if (group === 'cover_openings' || group === 'cover_shading' || group === 'cover_gates') return 'covers';
   if (group === 'media_player') return 'media_players';
   if (['alarm_control_panel', 'lock', 'camera', 'binary_sensor', 'safety'].includes(group)) return 'security';
   if (group === 'motion') return 'motion';
@@ -169,7 +175,11 @@ function optionsForGroup(
     if (legacyInputSelect) return legacyInputSelect;
   }
   if (direct) return direct;
-  if (group === 'cover_openings' || group === 'cover_shading') {
+  if (group === 'cover_gates') {
+    const formerCombinedShading = displayOptions?.cover_shading;
+    if (formerCombinedShading) return formerCombinedShading;
+  }
+  if (group === 'cover_openings' || group === 'cover_shading' || group === 'cover_gates') {
     const formerCover = displayOptions?.cover;
     if (formerCover) return formerCover;
   }

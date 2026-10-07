@@ -2027,8 +2027,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           // Get ALL entities for this group (don't filter hidden ones)
           const allGroupEntities = groups[group] || [];
           const concreteGroupOptions = this._config!.areas_options?.[this._area!]?.groups_options?.[group];
+          const formerCombinedGroupOptions = group === 'cover_gates'
+            ? this._config!.areas_options?.[this._area!]?.groups_options?.cover_shading
+            : undefined;
           const legacyGroupOptions = this._config!.areas_options?.[this._area!]?.groups_options?.[getLegacyAreaGroupKey(group)];
-          const groupOptions = concreteGroupOptions || legacyGroupOptions;
+          const groupOptions = concreteGroupOptions || formerCombinedGroupOptions || legacyGroupOptions;
           const hiddenEntities = new Set(groupOptions?.hidden || []);
           const entityOrder = groupOptions?.order || [];
 
@@ -3497,7 +3500,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _getGroupTitle(group: string): string {
     const german = ddLocale(this.hass).toLowerCase().startsWith('de');
     if (group === 'cover_openings') return german ? 'Fenster & Türen' : 'Windows & doors';
-    if (group === 'cover_shading') return german ? 'Beschattung & Tore' : 'Shading & gates';
+    if (group === 'cover_shading') return german ? 'Beschattung' : 'Shading';
+    if (group === 'cover_gates') return german ? 'Tore' : 'Gates';
     if (group === 'motion') return german ? 'Bewegung & Präsenz' : 'Motion & presence';
     if (group === 'safety') return german ? 'Sicherheit & Warnmelder' : 'Safety & alarms';
     return getDomainName(this.hass, group);
@@ -3519,7 +3523,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
   private _getAreaStrategyGroupColor(group: AreaStrategyGroup): string {
     if (group === 'cover_openings') return getDomainColor('binary_sensor', 'opening');
-    if (group === 'cover_shading') return getDomainColor('cover');
+    if (group === 'cover_shading' || group === 'cover_gates') return getDomainColor('cover');
     if (group === 'motion') return getDomainColor('binary_sensor', 'motion');
     if (group === 'safety') return getDomainColor('binary_sensor', 'smoke');
     return getDomainColor(group);
@@ -3945,6 +3949,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     const direct = configuredOrder.indexOf(group);
     if (direct >= 0) return direct;
 
+    if (group === 'cover_gates') {
+      const formerCombined = configuredOrder.indexOf('cover_shading');
+      if (formerCombined >= 0) return formerCombined;
+    }
+
     const legacy = configuredOrder.indexOf(getLegacyAreaGroupKey(group));
     return legacy >= 0 ? legacy : undefined;
   }
@@ -4026,8 +4035,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     if (!this._config || !this._area) return;
 
     const concrete = this._config.areas_options?.[this._area]?.groups_options?.[group];
+    const formerCombined = group === 'cover_gates'
+      ? this._config.areas_options?.[this._area]?.groups_options?.cover_shading
+      : undefined;
     const legacy = this._config.areas_options?.[this._area]?.groups_options?.[getLegacyAreaGroupKey(group)];
-    const current = concrete || legacy;
+    const current = concrete || formerCombined || legacy;
     const nextHidden = new Set(
       (current?.hidden || []).filter((entityId) => entityIds.includes(entityId))
     );
@@ -4202,13 +4214,16 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       ? AREA_STRATEGY_GROUPS.flatMap((groupKey) => groups[groupKey] || [])
       : groups[group as keyof typeof groups] || [];
     const concreteGroupOptions = this._config.areas_options?.[this._area]?.groups_options?.[group];
+    const formerCombinedGroupOptions = group === 'cover_gates'
+      ? this._config.areas_options?.[this._area]?.groups_options?.cover_shading
+      : undefined;
     const legacyGroup = (AREA_STRATEGY_GROUPS as readonly string[]).includes(group)
       ? getLegacyAreaGroupKey(group as AreaStrategyGroup)
       : undefined;
     const legacyGroupOptions = legacyGroup
       ? this._config.areas_options?.[this._area]?.groups_options?.[legacyGroup]
       : undefined;
-    const groupOptions = concreteGroupOptions || legacyGroupOptions;
+    const groupOptions = concreteGroupOptions || formerCombinedGroupOptions || legacyGroupOptions;
     const entityOrder = isUngrouped
       ? this._config.areas_options?.[this._area]?.entity_order || []
       : groupOptions?.order || [];
@@ -4299,13 +4314,16 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
   private _toggleEntityVisibility(entityId: string, group: string): void {
     const concrete = this._config!.areas_options?.[this._area!]?.groups_options?.[group];
+    const formerCombined = group === 'cover_gates'
+      ? this._config!.areas_options?.[this._area!]?.groups_options?.cover_shading
+      : undefined;
     const legacyGroup = (AREA_STRATEGY_GROUPS as readonly string[]).includes(group)
       ? getLegacyAreaGroupKey(group as AreaStrategyGroup)
       : undefined;
     const legacy = legacyGroup
       ? this._config!.areas_options?.[this._area!]?.groups_options?.[legacyGroup]
       : undefined;
-    const hidden = [...((concrete || legacy)?.hidden || [])];
+    const hidden = [...((concrete || formerCombined || legacy)?.hidden || [])];
     const index = hidden.indexOf(entityId);
 
     if (index === -1) {

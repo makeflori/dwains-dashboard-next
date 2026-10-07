@@ -20658,7 +20658,7 @@ copy{
             : undefined;
           const groupColor = group.key === 'cover_openings'
             ? getDomainColor('binary_sensor', 'opening')
-            : group.key === 'cover_shading'
+            : (group.key === 'cover_shading' || group.key === 'cover_gates')
               ? getDomainColor('cover')
               : group.key === 'motion'
                 ? getDomainColor('binary_sensor', 'motion')
@@ -21012,7 +21012,10 @@ copy{
     const groupIndex = (groupKey: string): number | undefined => {
       const direct = configuredOrder.indexOf(groupKey);
       if (direct >= 0) return direct;
-      if ((groupKey === 'cover_openings' || groupKey === 'cover_shading') && configuredOrder.includes('cover')) {
+      if (groupKey === 'cover_gates' && configuredOrder.includes('cover_shading')) {
+        return configuredOrder.indexOf('cover_shading');
+      }
+      if ((groupKey === 'cover_openings' || groupKey === 'cover_shading' || groupKey === 'cover_gates') && configuredOrder.includes('cover')) {
         return configuredOrder.indexOf('cover');
       }
 
@@ -21056,13 +21059,16 @@ copy{
         const bGroup = this._mobileEntityTypeKey(b.entity_id);
         if (aGroup === bGroup && aGroup) {
           const directOptions = areaOptions?.groups_options?.[aGroup];
-          const formerCoverOptions = (aGroup === 'cover_openings' || aGroup === 'cover_shading')
+          const formerCombinedShadingOptions = aGroup === 'cover_gates'
+            ? areaOptions?.groups_options?.cover_shading
+            : undefined;
+          const formerCoverOptions = (aGroup === 'cover_openings' || aGroup === 'cover_shading' || aGroup === 'cover_gates')
             ? areaOptions?.groups_options?.cover
             : undefined;
           const legacyOptions = (AREA_STRATEGY_GROUPS as readonly string[]).includes(aGroup)
             ? areaOptions?.groups_options?.[getLegacyAreaGroupKey(aGroup as AreaStrategyGroup)]
             : undefined;
-          const groupOrder = directOptions?.order || formerCoverOptions?.order || legacyOptions?.order || [];
+          const groupOrder = directOptions?.order || formerCombinedShadingOptions?.order || formerCoverOptions?.order || legacyOptions?.order || [];
           const aIndex = groupOrder.indexOf(a.entity_id);
           const bIndex = groupOrder.indexOf(b.entity_id);
           if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
@@ -21310,7 +21316,8 @@ copy{
     const areaOptions = this.config?.areas_options?.[areaId];
     const groupsOptions = areaOptions?.groups_options || {};
     const groupOptions = groupsOptions[storageGroup] ||
-      ((storageGroup === 'cover_openings' || storageGroup === 'cover_shading') ? groupsOptions.cover : undefined) ||
+      (storageGroup === 'cover_gates' ? groupsOptions.cover_shading : undefined) ||
+      ((storageGroup === 'cover_openings' || storageGroup === 'cover_shading' || storageGroup === 'cover_gates') ? groupsOptions.cover : undefined) ||
       {};
     const editableEntities = this._getEditableAreaEntities(areaId);
     const eligibleEntityIds = editableEntities
@@ -21395,7 +21402,8 @@ copy{
   private _mobileGroupName(key: string): string {
     const german = String(this.hass?.language || this.hass?.locale?.language || '').toLowerCase().startsWith('de');
     if (key === 'cover_openings') return german ? 'Fenster & Türen' : 'Windows & doors';
-    if (key === 'cover_shading') return german ? 'Beschattung & Tore' : 'Shading & gates';
+    if (key === 'cover_shading') return german ? 'Beschattung' : 'Shading';
+    if (key === 'cover_gates') return german ? 'Tore' : 'Gates';
     if (key === 'motion') return german ? 'Bewegung & Präsenz' : 'Motion & presence';
     if (key === 'safety') return german ? 'Sicherheit & Warnmelder' : 'Safety & alarms';
     return getDomainName(this.hass, key);
@@ -21406,6 +21414,7 @@ copy{
     if (key === 'safety') return 'mdi:shield-alert-outline';
     if (key === 'cover_openings') return 'mdi:door-open';
     if (key === 'cover_shading') return 'mdi:blinds-horizontal';
+    if (key === 'cover_gates') return 'mdi:gate';
     return getDomainIcon(key);
   }
 
