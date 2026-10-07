@@ -9454,7 +9454,7 @@ which could overlap
         backdrop-filter: blur(20px);
         transform: translate3d(0, calc(100% + 140px), 0) !important;
         transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
-        z-index: 121;
+        z-index: 141;
       }
 
       .layout-container > .sidebar.open,
@@ -9954,9 +9954,9 @@ which could overlap
       }
 
       .mobile-nav-overlay{
-        z-index: 120 !important;
-        background: rgba(0, 0, 0, 0.45);
-        backdrop-filter: blur(2px);
+        z-index: 140 !important;
+        background: rgba(8, 13, 24, 0.18);
+        backdrop-filter: blur(3px);
       }
 
       :host([data-theme-dark]){
@@ -11895,7 +11895,7 @@ vertically centered badge contents. */
       }
 
       .sidebar::before{
-        margin-bottom: 7px !important;
+        display: none !important;
       }
 
       .sidebar .area-list{

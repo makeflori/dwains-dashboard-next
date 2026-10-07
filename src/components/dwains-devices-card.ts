@@ -897,7 +897,20 @@ export class DwainsDevicesCard extends LitElement {
 
     return html`
       <nav class=${classMap(classes)}>
-        <div class="sidebar-title">${this._t('devices.title')}</div>
+        ${this._isMobile ? html`
+          <div class="mobile-device-picker-head">
+            <div class="mobile-device-picker-title">${this._t('devices.title')}</div>
+            <button
+              class="mobile-device-picker-close"
+              type="button"
+              title=${this._t('common.close')}
+              aria-label=${this._t('common.close')}
+              @click=${this._closeMobileNav}
+            >
+              <ha-icon icon="mdi:close"></ha-icon>
+            </button>
+          </div>
+        ` : html`<div class="sidebar-title">${this._t('devices.title')}</div>`}
         <div class="area-list">
           <button
             class="area-button overview ${this._selectedDomain === DEVICES_OVERVIEW_KEY ? 'selected' : ''}"
@@ -2894,14 +2907,14 @@ export class DwainsDevicesCard extends LitElement {
         max-height: min(64vh, 560px);
         padding: 10px;
         overflow-y: auto;
-        border-radius: 8px;
+        border-radius: 12px;
         border: 1px solid rgba(0, 0, 0, 0.08);
         background: rgba(255, 255, 255, 0.94);
         box-shadow: 0 22px 48px rgba(0, 0, 0, 0.24);
         backdrop-filter: blur(20px);
         transform: translate3d(0, calc(100% + 140px), 0) !important;
         transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
-        z-index: 121;
+        z-index: 141;
       }
 
       .layout-container > .sidebar.open,
@@ -2910,21 +2923,15 @@ export class DwainsDevicesCard extends LitElement {
       }
 
       .sidebar::before {
-        content: "";
-        width: 42px;
-        height: 4px;
-        margin: 0 auto 10px;
-        display: block;
-        border-radius: 999px;
-        background: rgba(0, 0, 0, 0.14);
+        display: none;
       }
 
       .mobile-nav-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.45);
-        backdrop-filter: blur(2px);
-        z-index: 120;
+        background: rgba(8, 13, 24, 0.18);
+        backdrop-filter: blur(3px);
+        z-index: 140;
         opacity: 0;
         pointer-events: none;
         transition: opacity 0.3s ease;
@@ -2935,12 +2942,40 @@ export class DwainsDevicesCard extends LitElement {
         pointer-events: auto;
       }
 
-      .sidebar-title {
-        padding: 4px 8px 12px;
-        font-size: 16px;
+      .mobile-device-picker-head {
+        min-height: 34px;
+        margin: 0 2px 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .mobile-device-picker-title {
+        min-width: 0;
+        color: var(--primary-text-color);
+        font-size: 18px;
         font-weight: 850;
-        letter-spacing: 0;
-        text-transform: none;
+        line-height: 1.1;
+      }
+
+      .mobile-device-picker-close {
+        width: 34px;
+        height: 34px;
+        padding: 0;
+        border: 1px solid color-mix(in srgb, var(--primary-text-color) 10%, transparent);
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        background: color-mix(in srgb, var(--card-background-color) 92%, transparent);
+        color: var(--primary-text-color);
+        cursor: pointer;
+      }
+
+      .mobile-device-picker-close ha-icon {
+        --mdc-icon-size: 21px;
       }
 
       .sidebar .area-list {
