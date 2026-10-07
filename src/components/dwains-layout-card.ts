@@ -204,6 +204,7 @@ export class DwainsLayoutCard extends LitElement {
   @state() private _notificationsError = '';
   @state() private _areaHeaderStuck = false;
   @state() private _areaHeaderRevealed = false;
+  @state() private _areaQuickPage = 0;
   @state() private _mobileEntityLayout: 'rail' | 'grid' = 'rail';
   @state() private _mobileHomeAreasLayout: 'rail' | 'grid' = 'rail';
   @state() private _mobileHomeDevicesLayout: 'rail' | 'grid' = 'rail';
@@ -19653,6 +19654,53 @@ copy{
     return active ? this._t('area_header.on_count', { active, total }) : this._t('common.off');
   }
 
+  private _areaQuickControlCount(entities: EntityConfig[], thermostatEntityId?: string): number {
+    let count = 0;
+    if (entities.some(entity => entity.entity_id.startsWith('light.'))) count++;
+    if (entities.some(entity => entity.entity_id.startsWith('switch.'))) count++;
+
+    const coverGroups = new Set(
+      entities
+        .filter(entity => entity.entity_id.startsWith('cover.'))
+        .map(entity => getAreaEntityGroupKey(entity.entity_id, this.hass))
+        .filter((key): key is 'cover_shading' | 'cover_openings' | 'cover_gates' =>
+          key === 'cover_shading' || key === 'cover_openings' || key === 'cover_gates'
+        )
+    );
+    count += coverGroups.size;
+
+    if (entities.some(entity => entity.entity_id.startsWith('fan.'))) count++;
+    if (entities.some(entity => entity.entity_id.startsWith('climate.'))) count++;
+    if (thermostatEntityId) count++;
+    return count;
+  }
+
+  private _handleAreaQuickScroll = (event: Event): void => {
+    if (!this._isMobile) return;
+    const rail = event.currentTarget as HTMLElement;
+    const pageCount = Number(rail.dataset.pageCount || 1);
+    if (pageCount <= 1) {
+      if (this._areaQuickPage !== 0) this._areaQuickPage = 0;
+      return;
+    }
+    const maxScroll = Math.max(1, rail.scrollWidth - rail.clientWidth);
+    const nextPage = Math.max(
+      0,
+      Math.min(pageCount - 1, Math.round((rail.scrollLeft / maxScroll) * (pageCount - 1)))
+    );
+    if (nextPage !== this._areaQuickPage) this._areaQuickPage = nextPage;
+  };
+
+  private _scrollAreaQuickToPage(page: number): void {
+    const rail = this.renderRoot.querySelector<HTMLElement>('.room-header .dd-page-header-strip');
+    if (!rail) return;
+    const pageCount = Number(rail.dataset.pageCount || 1);
+    const clamped = Math.max(0, Math.min(pageCount - 1, page));
+    const maxScroll = Math.max(0, rail.scrollWidth - rail.clientWidth);
+    const left = pageCount <= 1 ? 0 : (maxScroll * clamped) / (pageCount - 1);
+    rail.scrollTo({ left, behavior: 'smooth' });
+  }
+
   private _renderAreaQuickTiles(areaId: string, entities: EntityConfig[]) {
     const lights = entities.filter(e => e.entity_id.startsWith('light.'));
     const switches = entities.filter(e => e.entity_id.startsWith('switch.'));
@@ -20000,6 +20048,9 @@ copy{
     const deviceLabel = this._tp('common.device', deviceCount);
     const tiles = this._renderAreaQuickTiles(area.area_id, quickControlEntities);
     const hasStrip = tiles !== nothing || Boolean(thermostatEntityId);
+    const quickControlCount = this._areaQuickControlCount(quickControlEntities, thermostatEntityId);
+    const quickPageCount = Math.max(1, Math.ceil(quickControlCount / 3));
+    const activeQuickPage = Math.min(this._areaQuickPage, quickPageCount - 1);
 
     // Keep the current Home navigation semantics, but place it in the same
     // structural slot that the v1.11.0 header styles expect.
@@ -20069,17 +20120,37 @@ copy{
                 <div class="dd-page-header-actions">${actions}</div>
               </div>
 
-              <div class="dd-page-header-strip ${hasStrip ? '' : 'is-placeholder'}" aria-hidden=${hasStrip ? 'false' : 'true'}>
-                ${hasStrip ? html`
-                  ${tiles}
-                  ${thermostatEntityId ? html`
-                    <dwains-dashboard-next-area-thermostat
-                      .hass=${this.hass}
-                      .entityId=${thermostatEntityId}
-                      .roomName=${area.name}
-                      .compactVertical=${this._isMobile}
-                    ></dwains-dashboard-next-area-thermostat>
+              <div class="dd-room-quick-wrap">
+                <div
+                  class="dd-page-header-strip ${hasStrip ? '' : 'is-placeholder'}"
+                  aria-hidden=${hasStrip ? 'false' : 'true'}
+                  data-page-count=${quickPageCount}
+                  @scroll=${this._handleAreaQuickScroll}
+                >
+                  ${hasStrip ? html`
+                    ${tiles}
+                    ${thermostatEntityId ? html`
+                      <dwains-dashboard-next-area-thermostat
+                        .hass=${this.hass}
+                        .entityId=${thermostatEntityId}
+                        .roomName=${area.name}
+                        .compactVertical=${this._isMobile}
+                      ></dwains-dashboard-next-area-thermostat>
+                    ` : nothing}
                   ` : nothing}
+                </div>
+                ${this._isMobile && hasStrip && quickPageCount > 1 ? html`
+                  <div class="dd-room-quick-dots" aria-label="Schnellsteuerung Seiten">
+                    ${Array.from({ length: quickPageCount }, (_, index) => html`
+                      <button
+                        class="dd-room-quick-dot ${index === activeQuickPage ? 'active' : ''}"
+                        type="button"
+                        aria-label=${`Seite ${index + 1} von ${quickPageCount}`}
+                        aria-current=${index === activeQuickPage ? 'true' : 'false'}
+                        @click=${() => this._scrollAreaQuickToPage(index)}
+                      ></button>
+                    `)}
+                  </div>
                 ` : nothing}
               </div>
             </div>
@@ -22699,6 +22770,7 @@ copy{
   private async _selectArea(areaId: string) {
     if (!(await this._confirmDiscardSettings())) return;
     this._resetAreaHeaderScrollState(true);
+    this._areaQuickPage = 0;
     this._selectedArea = areaId;
     this._selectedView = 'area';
     this._editMode = false;
