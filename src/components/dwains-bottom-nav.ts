@@ -375,12 +375,15 @@ export class DwainsBottomNav extends LitElement {
 
   protected render() {
     if (!this._visible || !this._items.length) return nothing;
+    const visibleItems = this._pagesOpen
+      ? this._items.filter((item) => item.action === 'pages')
+      : this._items;
     return html`
       ${this._renderPagesSheet()}
       ${this._renderRestrictedMenuSheet()}
       ${this._renderStandaloneMenuButton()}
       <nav class="bar ${this._areaContext.view === 'area' && this._areaContext.areaId ? 'with-back' : ''} ${this._isHaMenuRestricted() ? 'no-menu' : ''}">
-        ${this._items.map(
+        ${visibleItems.map(
           (it) => {
             const display = this._displayItem(it);
             const active = this._isItemActive(it);
@@ -638,9 +641,9 @@ export class DwainsBottomNav extends LitElement {
 
     .bar.with-back {
       left: calc(max(14px, env(safe-area-inset-left, 0px)) + 62px);
-      right: max(14px, env(safe-area-inset-right, 0px));
-      width: auto;
-      max-width: none;
+      right: auto;
+      width: max-content;
+      max-width: calc(100vw - 90px);
       transform: none;
     }
 
@@ -1044,9 +1047,9 @@ export class DwainsBottomNav extends LitElement {
       }
       .bar.with-back {
         left: calc(max(10px, env(safe-area-inset-left, 0px)) + 58px);
-        right: max(10px, env(safe-area-inset-right, 0px));
-        width: auto;
-        max-width: none;
+        right: auto;
+        width: max-content;
+        max-width: calc(100vw - 78px);
       }
       .bar.no-menu,
       .bar.no-menu.with-back {
