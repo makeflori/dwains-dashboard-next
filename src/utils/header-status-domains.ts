@@ -207,16 +207,16 @@ export function getStatusDomains(hass: HomeAssistant, config: any): DomainCount[
         icon = rawDeviceClass ? getDeviceClassIcon('cover', rawDeviceClass) : 'mdi:gate';
         active = coverState === 'open' || coverState === 'opening' || (hasPosition && currentPositionRaw > 0);
       } else {
-        // Everything that is not an opening/gate belongs to the same
-        // "Beschattung & Tore" visual group used by the room view. This also
-        // covers template covers without a device_class (e.g. a test blind).
+        // Everything that is not an opening/gate belongs to the shading group.
+        // This also covers template covers without a device_class (e.g. a test blind).
         groupKey = 'shading';
         deviceClass = rawDeviceClass || undefined;
         name = String(hass?.language || hass?.locale?.language || '').toLowerCase().startsWith('de') ? 'Beschattung' : 'Shading';
         icon = 'mdi:blinds-horizontal';
 
-        // "Deployed" means the shading is providing cover. HA uses opposite
-        // direction semantics for awnings versus blinds/shutters/curtains.
+        // The status card still becomes relevant when the shading is in its
+        // protective/closed position. HA uses opposite direction semantics
+        // for awnings versus blinds/shutters/curtains.
         // Unknown covers follow the latter, matching the room grouping.
         active = rawDeviceClass === 'awning'
           ? (coverState === 'open' || coverState === 'opening' || (hasPosition && currentPositionRaw > 0))
@@ -365,8 +365,9 @@ export function getStatusDomains(hass: HomeAssistant, config: any): DomainCount[
   });
 
   // Covers are status-oriented here: windows, doors and gates are shown when
-  // open; shading is shown only when deployed. Unknown cover types stay out of
-  // House information instead of falling back to the broad "Covers" label.
+  // open; shading is shown in its relevant closed/protective state. Unknown
+  // cover types stay out of House information instead of falling back to the
+  // broad "Covers" label.
   Object.values(coverStatusCounts).forEach((data) => {
     if (data.total > 0 && data.on > 0) {
       result.push({

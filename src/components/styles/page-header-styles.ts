@@ -760,6 +760,7 @@ export const pageHeaderStyles = css`
 
     .room-header .dd-room-tiles {
       flex: 0 1 auto;
+      gap: 8px;
     }
 
     @media (max-width: 768px) {
