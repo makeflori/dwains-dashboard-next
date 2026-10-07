@@ -1042,7 +1042,9 @@ export const pageHeaderStyles = css`
       }
 
       .room-header .dd-page-header-top {
+        position: relative;
         min-width: 0;
+        padding-bottom: 27px;
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
         align-items: start;
@@ -1093,12 +1095,22 @@ export const pageHeaderStyles = css`
       }
 
       .room-header .dd-page-header-subtitle {
-        margin-top: 3px;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        margin-top: 0;
         flex-wrap: nowrap;
         gap: 8px;
-        overflow: hidden;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: none;
         font-size: 12px;
         line-height: 1.25;
+      }
+
+      .room-header .dd-page-header-subtitle::-webkit-scrollbar {
+        display: none;
       }
 
       .room-header .dd-page-header-device-label,
@@ -1142,47 +1154,115 @@ export const pageHeaderStyles = css`
       }
 
       .room-header .dd-page-header-strip {
-        margin-top: 0;
+        margin: 0 -12px;
         min-height: 0;
+        padding: 2px 12px 4px;
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         align-items: stretch;
         gap: 8px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        overscroll-behavior-x: contain;
+        scroll-padding-inline: 12px;
+        scroll-snap-type: x proximity;
+        scrollbar-width: none;
+      }
+
+      .room-header .dd-page-header-strip::-webkit-scrollbar {
+        display: none;
       }
 
       .room-header .dd-page-header-strip.is-placeholder {
         display: none;
       }
 
-      /* Quick controls form a real wrapping grid. There is no clipped
-         off-screen content and no horizontal scroll dependency. */
+      /* Mobile quick controls are uniform vertical cards in one horizontal rail. */
       .room-header .dd-room-tiles {
-        width: 100%;
-        margin: 0;
-        padding: 0;
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 8px;
-        overflow: visible;
-        scroll-snap-type: none;
+        display: contents;
       }
 
       .room-header .dd-room-tile {
-        width: 100%;
-        min-width: 0;
-        padding-inline: 6px 10px;
-        scroll-snap-align: none;
+        flex: 0 0 112px;
+        width: 112px;
+        min-width: 112px;
+        min-height: 156px;
+        padding: 10px 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 7px;
+        border-radius: 16px;
+        text-align: center;
+        scroll-snap-align: start;
       }
 
-      /* Cover tiles can carry several action buttons and need the full row. */
+      .room-header .dd-room-tile-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+      }
+
+      .room-header .dd-room-tile-icon ha-icon {
+        --mdc-icon-size: 25px;
+      }
+
+      .room-header .dd-room-tile-copy {
+        width: 100%;
+        min-width: 0;
+        min-height: 38px;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 2px;
+        text-align: center;
+      }
+
+      .room-header .dd-room-tile-label,
+      .room-header .dd-room-tile-state {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-align: center;
+      }
+
+      .room-header .dd-room-tile-label {
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .room-header .dd-room-tile-state {
+        font-size: 12px;
+      }
+
+      .room-header .dd-room-tile-switch {
+        margin: auto 0 0;
+      }
+
       .room-header .dd-room-tile.has-actions {
-        grid-column: 1 / -1;
+        padding-right: 8px;
+      }
+
+      .room-header .dd-room-tile-actions {
+        margin: auto 0 0;
+        gap: 4px;
+      }
+
+      .room-header .dd-room-tile-action {
+        width: 36px;
+        height: 36px;
+      }
+
+      .room-header .dd-room-tile-chevron {
+        display: none;
       }
 
       .room-header .dd-page-header-strip > dwains-dashboard-next-area-thermostat {
-        width: 100%;
-        min-width: 0;
-        max-width: none;
+        flex: 0 0 112px;
+        width: 112px;
+        min-width: 112px;
+        max-width: 112px;
+        scroll-snap-align: start;
       }
     }
 
