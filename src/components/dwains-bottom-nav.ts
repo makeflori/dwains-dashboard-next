@@ -379,7 +379,7 @@ export class DwainsBottomNav extends LitElement {
       ${this._renderPagesSheet()}
       ${this._renderRestrictedMenuSheet()}
       ${this._renderStandaloneMenuButton()}
-      <nav class="bar ${this._areaContext.view === 'area' && this._areaContext.areaId ? 'with-back' : ''}">
+      <nav class="bar ${this._areaContext.view === 'area' && this._areaContext.areaId ? 'with-back' : ''} ${this._isHaMenuRestricted() ? 'no-menu' : ''}">
         ${this._items.map(
           (it) => {
             const display = this._displayItem(it);
@@ -403,6 +403,7 @@ export class DwainsBottomNav extends LitElement {
   }
 
   private _renderStandaloneMenuButton() {
+    if (this._isHaMenuRestricted()) return nothing;
     const label = ddLocalize(this._hass, 'navigation.open_menu');
     return html`
       <button
@@ -455,8 +456,16 @@ export class DwainsBottomNav extends LitElement {
       ></button>
       <section class="pages-sheet ${this._pagesOpen ? 'open' : ''}" aria-hidden=${this._pagesOpen ? 'false' : 'true'}>
         <div class="pages-heading">
-          ${this._renderIcon('mdi:puzzle')}
           <span>${ddLocalize(this._hass, 'navigation.pages')}</span>
+          <button
+            class="pages-close"
+            type="button"
+            title=${ddLocalize(this._hass, 'common.close')}
+            aria-label=${ddLocalize(this._hass, 'common.close')}
+            @click=${this._closePages}
+          >
+            <ha-icon icon="mdi:close"></ha-icon>
+          </button>
         </div>
         <div class="pages-list">
           ${this._pages.map((page) => {
@@ -481,7 +490,9 @@ export class DwainsBottomNav extends LitElement {
   }
 
   private _isItemActive(item: NavItem): boolean {
-    if (item.action === 'pages') return this._pages.some((page) => page.path === this._active);
+    if (item.action === 'pages') {
+      return this._pagesOpen || this._pages.some((page) => page.path === this._active);
+    }
     return this._active === item.path;
   }
 
@@ -534,6 +545,12 @@ export class DwainsBottomNav extends LitElement {
     }
 
     if (item.action === 'pages') {
+      if (this._pagesOpen) {
+        return {
+          icon: 'mdi:puzzle',
+          label: ddLocalize(this._hass, 'navigation.pages'),
+        };
+      }
       const activePage = this._activePage();
       if (activePage) {
         return {
@@ -625,6 +642,15 @@ export class DwainsBottomNav extends LitElement {
       width: auto;
       max-width: none;
       transform: none;
+    }
+
+    .bar.no-menu,
+    .bar.no-menu.with-back {
+      left: 50%;
+      right: auto;
+      width: max-content;
+      max-width: calc(100vw - 32px);
+      transform: translate3d(-50%, 0, 0);
     }
 
     .standalone-menu {
@@ -829,19 +855,15 @@ export class DwainsBottomNav extends LitElement {
       max-height: min(64vh, 560px);
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      padding: 10px 10px 12px;
+      gap: 8px;
+      padding: 10px;
       overflow: hidden;
-      border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.72);
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.82)),
-        rgba(255, 255, 255, 0.86);
-      box-shadow:
-        0 24px 58px rgba(15, 23, 42, 0.22),
-        inset 0 1px 0 rgba(255, 255, 255, 0.88);
-      backdrop-filter: blur(28px) saturate(170%);
-      -webkit-backdrop-filter: blur(28px) saturate(170%);
+      border-radius: 12px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: 0 22px 48px rgba(0, 0, 0, 0.24);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
@@ -869,29 +891,42 @@ export class DwainsBottomNav extends LitElement {
     }
 
     .pages-heading {
+      min-height: 34px;
+      margin: 0 2px 8px;
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 0 4px;
-      color: rgba(15, 23, 42, 0.86);
-      font-size: 15px;
-      font-weight: 900;
-      line-height: 1;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--primary-text-color);
+      font-size: 18px;
+      font-weight: 850;
+      line-height: 1.1;
     }
 
-    .pages-heading ha-icon,
-    .pages-heading .dd-static-icon {
-      --mdc-icon-size: 20px;
-      width: 20px;
-      height: 20px;
-      color: rgba(15, 23, 42, 0.78);
-      fill: currentColor;
+    .pages-close {
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      border: 1px solid color-mix(in srgb, var(--primary-text-color) 10%, transparent);
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      background: color-mix(in srgb, var(--card-background-color) 92%, transparent);
+      color: var(--primary-text-color);
+      cursor: pointer;
+    }
+
+    .pages-close ha-icon {
+      --mdc-icon-size: 21px;
     }
 
     .pages-list {
       display: grid;
       gap: 8px;
       min-height: 0;
+      padding: 0 0 8px;
       overflow-y: auto;
       overscroll-behavior: contain;
       scrollbar-width: none;
@@ -902,35 +937,34 @@ export class DwainsBottomNav extends LitElement {
     }
 
     .page-row {
-      min-height: 60px;
+      min-height: 70px;
       display: grid;
-      grid-template-columns: 42px minmax(0, 1fr) 26px;
+      grid-template-columns: 48px minmax(0, 1fr) 26px;
       align-items: center;
-      gap: 11px;
-      padding: 8px 10px;
-      border: 0;
+      gap: 12px;
+      padding: 10px 12px;
+      border: 1px solid rgba(15, 23, 42, 0.06);
       border-radius: 8px;
-      background: rgba(255, 255, 255, 0.68);
-      color: rgba(15, 23, 42, 0.9);
+      background: rgba(255, 255, 255, 0.92);
+      color: var(--primary-text-color);
       text-align: left;
       cursor: pointer;
-      box-shadow:
-        inset 0 0 0 1px rgba(15, 23, 42, 0.06),
-        0 8px 18px rgba(15, 23, 42, 0.06);
+      box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
     }
 
     .page-row.active {
-      background: color-mix(in srgb, var(--primary-color, #03a9f4) 11%, rgba(255, 255, 255, 0.86));
+      background: rgba(255, 255, 255, 0.98);
+      border-color: color-mix(in srgb, var(--primary-color, #03a9f4) 34%, transparent);
       box-shadow:
-        inset 0 0 0 1px color-mix(in srgb, var(--primary-color, #03a9f4) 28%, transparent),
-        0 10px 22px rgba(15, 23, 42, 0.08);
+        0 14px 28px rgba(15, 23, 42, 0.1),
+        inset 3px 0 0 var(--primary-color, #03a9f4);
     }
 
     .page-icon {
-      width: 42px;
-      height: 42px;
+      width: 46px;
+      height: 46px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -941,9 +975,9 @@ export class DwainsBottomNav extends LitElement {
 
     .page-icon ha-icon,
     .page-icon .dd-static-icon {
-      --mdc-icon-size: 22px;
-      width: 22px;
-      height: 22px;
+      --mdc-icon-size: 25px;
+      width: 25px;
+      height: 25px;
       fill: currentColor;
     }
 
@@ -1013,6 +1047,14 @@ export class DwainsBottomNav extends LitElement {
         right: max(10px, env(safe-area-inset-right, 0px));
         width: auto;
         max-width: none;
+      }
+      .bar.no-menu,
+      .bar.no-menu.with-back {
+        left: 50%;
+        right: auto;
+        width: max-content;
+        max-width: calc(100vw - 16px);
+        transform: translate3d(-50%, 0, 0);
       }
       .item {
         min-width: 42px;
