@@ -375,15 +375,12 @@ export class DwainsBottomNav extends LitElement {
 
   protected render() {
     if (!this._visible || !this._items.length) return nothing;
-    const visibleItems = this._pagesOpen
-      ? this._items.filter((item) => item.action === 'pages')
-      : this._items;
     return html`
       ${this._renderPagesSheet()}
       ${this._renderRestrictedMenuSheet()}
       ${this._renderStandaloneMenuButton()}
       <nav class="bar ${this._areaContext.view === 'area' && this._areaContext.areaId ? 'with-back' : ''} ${this._isHaMenuRestricted() ? 'no-menu' : ''}">
-        ${visibleItems.map(
+        ${this._items.map(
           (it) => {
             const display = this._displayItem(it);
             const active = this._isItemActive(it);
@@ -493,8 +490,11 @@ export class DwainsBottomNav extends LitElement {
   }
 
   private _isItemActive(item: NavItem): boolean {
+    if (this._pagesOpen) {
+      return item.action === 'pages';
+    }
     if (item.action === 'pages') {
-      return this._pagesOpen || this._pages.some((page) => page.path === this._active);
+      return this._pages.some((page) => page.path === this._active);
     }
     return this._active === item.path;
   }
