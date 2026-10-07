@@ -9438,10 +9438,10 @@ which could overlap
       .layout-container > .sidebar,
 .sidebar{
         position: fixed !important;
-        left: 18px !important;
-        right: 18px !important;
+        left: 16px !important;
+        right: 16px !important;
         top: auto !important;
-        bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important;
+        bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
         width: auto !important;
         height: auto !important;
         max-height: min(72vh, 620px);
@@ -11873,7 +11873,7 @@ vertically centered badge contents. */
 .sidebar{
         left: 16px !important;
         right: 16px !important;
-        bottom: calc(94px + env(safe-area-inset-bottom, 0px)) !important;
+        bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
         max-height: min(64vh, 560px) !important;
         padding: 10px !important;
         border-radius: 12px !important;
@@ -16174,6 +16174,7 @@ copy{
     this._checkMobile();
     this._setupEventListeners();
     window.addEventListener('dwains-dashboard-next-toggle-area-nav', this._handleAreaNavToggle);
+    window.addEventListener('dwains-dashboard-next-mobile-nav-sheet', this._handleMobileNavSheet as EventListener);
     window.addEventListener('dwains-dashboard-next-open-settings', this._handleOpenSettingsEvent);
     window.addEventListener('dwains-dashboard-next-open-home', this._handleOpenHomeEvent);
     this._startTimeUpdate();
@@ -16286,6 +16287,7 @@ copy{
   disconnectedCallback() {
     super.disconnectedCallback();
     window.removeEventListener('dwains-dashboard-next-toggle-area-nav', this._handleAreaNavToggle);
+    window.removeEventListener('dwains-dashboard-next-mobile-nav-sheet', this._handleMobileNavSheet as EventListener);
     window.removeEventListener('dwains-dashboard-next-open-settings', this._handleOpenSettingsEvent);
     window.removeEventListener('dwains-dashboard-next-open-home', this._handleOpenHomeEvent);
     window.removeEventListener('pointermove', this._handleSidebarResizeMove);
@@ -22702,12 +22704,24 @@ copy{
   }
 
   private _toggleMobileNav() {
-    this._mobileNavOpen = !this._mobileNavOpen;
+    const opening = !this._mobileNavOpen;
+    if (opening) {
+      window.dispatchEvent(new CustomEvent('dwains-dashboard-next-mobile-nav-sheet', {
+        detail: { kind: 'areas' },
+      }));
+    }
+    this._mobileNavOpen = opening;
   }
 
   private _handleAreaNavToggle = () => {
     if (!this._isMobile) return;
     this._toggleMobileNav();
+  };
+
+  private _handleMobileNavSheet = (event: CustomEvent<{ kind?: string }>) => {
+    if (event.detail?.kind !== 'areas') {
+      this._mobileNavOpen = false;
+    }
   };
 
   private _handleOpenSettingsEvent = () => {
@@ -22728,6 +22742,9 @@ copy{
     this._rememberAreaEditMode(null);
     this._updateUrlArea(null);
     this._clearSettingsEditState();
+    window.dispatchEvent(new CustomEvent('dwains-dashboard-next-mobile-nav-sheet', {
+      detail: { kind: 'areas' },
+    }));
     this._mobileNavOpen = true;
   };
 

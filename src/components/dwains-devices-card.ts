@@ -152,6 +152,7 @@ export class DwainsDevicesCard extends LitElement {
     this._checkMobile();
     window.addEventListener('resize', this._resizeHandler);
     window.addEventListener('dwains-dashboard-next-toggle-devices-nav', this._handleDevicesNavToggle);
+    window.addEventListener('dwains-dashboard-next-mobile-nav-sheet', this._handleMobileNavSheet as EventListener);
     window.addEventListener('dwains-dashboard-next-select-device-domain', this._handleSelectDeviceDomain as EventListener);
     window.addEventListener('location-changed', this._locationHandler);
     window.addEventListener('popstate', this._locationHandler);
@@ -163,6 +164,7 @@ export class DwainsDevicesCard extends LitElement {
     super.disconnectedCallback();
     window.removeEventListener('resize', this._resizeHandler);
     window.removeEventListener('dwains-dashboard-next-toggle-devices-nav', this._handleDevicesNavToggle);
+    window.removeEventListener('dwains-dashboard-next-mobile-nav-sheet', this._handleMobileNavSheet as EventListener);
     window.removeEventListener('dwains-dashboard-next-select-device-domain', this._handleSelectDeviceDomain as EventListener);
     window.removeEventListener('location-changed', this._locationHandler);
     window.removeEventListener('popstate', this._locationHandler);
@@ -767,17 +769,28 @@ export class DwainsDevicesCard extends LitElement {
     this._closeMobileNav();
   }
 
-  private _toggleMobileNav = () => {
-    this._mobileNavOpen = !this._mobileNavOpen;
-  };
-
   private _handleDevicesNavToggle = (event?: Event) => {
     if (!this._isMobile) return;
     if ((event as CustomEvent<{ open?: boolean }>)?.detail?.open) {
+      window.dispatchEvent(new CustomEvent('dwains-dashboard-next-mobile-nav-sheet', {
+        detail: { kind: 'devices' },
+      }));
       this._mobileNavOpen = true;
       return;
     }
-    this._toggleMobileNav();
+    const opening = !this._mobileNavOpen;
+    if (opening) {
+      window.dispatchEvent(new CustomEvent('dwains-dashboard-next-mobile-nav-sheet', {
+        detail: { kind: 'devices' },
+      }));
+    }
+    this._mobileNavOpen = opening;
+  };
+
+  private _handleMobileNavSheet = (event: CustomEvent<{ kind?: string }>) => {
+    if (event.detail?.kind !== 'devices') {
+      this._mobileNavOpen = false;
+    }
   };
 
   private _closeMobileNav = () => {
@@ -2872,10 +2885,10 @@ export class DwainsDevicesCard extends LitElement {
       .layout-container > .sidebar,
       .sidebar {
         position: fixed !important;
-        left: 18px !important;
-        right: 18px !important;
+        left: 16px !important;
+        right: 16px !important;
         top: auto !important;
-        bottom: calc(94px + env(safe-area-inset-bottom, 0px)) !important;
+        bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
         width: auto !important;
         height: auto !important;
         max-height: min(64vh, 560px);
@@ -2925,6 +2938,7 @@ export class DwainsDevicesCard extends LitElement {
       .sidebar-title {
         padding: 4px 8px 12px;
         font-size: 16px;
+        font-weight: 850;
         letter-spacing: 0;
         text-transform: none;
       }
@@ -2987,7 +3001,7 @@ export class DwainsDevicesCard extends LitElement {
       .sidebar .area-name {
         margin: 0;
         font-size: 15px;
-        font-weight: 750;
+        font-weight: 800;
         line-height: 1.1;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -2997,6 +3011,10 @@ export class DwainsDevicesCard extends LitElement {
       .sidebar .device-menu-subtitle,
       .sidebar .device-menu-chevron {
         display: block;
+      }
+
+      .sidebar .device-menu-subtitle {
+        font-weight: 650;
       }
 
       .sidebar .area-button.selected .device-menu-subtitle,
