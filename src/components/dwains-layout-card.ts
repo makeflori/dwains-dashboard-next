@@ -11899,7 +11899,7 @@ vertically centered badge contents. */
       }
 
       .sidebar .area-list{
-        gap: 6px !important;
+        gap: 4px !important;
       }
 
       .sidebar .floor-section{
@@ -11908,7 +11908,7 @@ vertically centered badge contents. */
       }
 
       .sidebar .floor-areas{
-        gap: 5px !important;
+        gap: 4px !important;
       }
 
       .sidebar .floor-header{
@@ -12010,19 +12010,16 @@ vertically centered badge contents. */
       .sidebar .room-area-button .area-info-badges{
         grid-column: 2 !important;
         position: static !important;
-        width: auto !important;
+        width: 74px !important;
         max-width: 74px !important;
-        margin: 0 !important;
-        display: grid !important;
-        grid-template-columns: repeat(2, max-content) !important;
+        min-width: 74px !important;
+        margin: 0 0 0 auto !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
         align-items: center !important;
-        justify-content: end !important;
+        align-content: center !important;
+        justify-content: flex-end !important;
         gap: 4px !important;
-      }
-
-      .sidebar .room-area-button .area-info-badges:has(.info-badge:nth-child(5)){
-        grid-template-columns: repeat(3, max-content) !important;
-        max-width: 108px !important;
       }
 
       .sidebar .room-area-button .info-badge{
@@ -12037,6 +12034,19 @@ vertically centered badge contents. */
 
       .sidebar .room-area-button .badge-count{
         font-size: 9px !important;
+      }
+
+      .sidebar .room-area-button .info-badge-overflow{
+        width: 14px !important;
+        min-width: 14px !important;
+        height: 19px !important;
+        padding: 0 !important;
+        border: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        color: var(--secondary-text-color) !important;
+        font-size: 15px !important;
+        line-height: 19px !important;
       }
 
       .sidebar .room-area-button.selected{
@@ -17541,8 +17551,13 @@ copy{
     const isSelected = this._selectedArea === area.area_id;
     const hasPicture = Boolean(area.picture);
     const allBadges = this._getAreaStatusBadges(areaData);
-    const badgeLimit = this._sidebarAreaBadgeLimit(allBadges.length);
-    const hasMoreBadges = allBadges.length > badgeLimit;
+    const mobileHasMoreBadges = this._isMobile && allBadges.length > 4;
+    const badgeLimit = this._isMobile
+      ? (mobileHasMoreBadges ? 3 : Math.min(4, allBadges.length))
+      : this._sidebarAreaBadgeLimit(allBadges.length);
+    const hasMoreBadges = this._isMobile
+      ? mobileHasMoreBadges
+      : allBadges.length > badgeLimit;
     const badges = allBadges.slice(0, badgeLimit);
     const sensorSummary = [
       areaData.temperature,

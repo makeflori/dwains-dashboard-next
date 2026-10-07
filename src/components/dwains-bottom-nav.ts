@@ -927,9 +927,9 @@ export class DwainsBottomNav extends LitElement {
 
     .pages-list {
       display: grid;
-      gap: 8px;
+      gap: 6px;
       min-height: 0;
-      padding: 0 0 8px;
+      padding: 0 4px 8px;
       overflow-y: auto;
       overscroll-behavior: contain;
       scrollbar-width: none;
@@ -952,7 +952,7 @@ export class DwainsBottomNav extends LitElement {
       color: var(--primary-text-color);
       text-align: left;
       cursor: pointer;
-      box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
+      box-shadow: 0 6px 14px rgba(15, 23, 42, 0.055);
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
     }
@@ -961,7 +961,7 @@ export class DwainsBottomNav extends LitElement {
       background: rgba(255, 255, 255, 0.98);
       border-color: color-mix(in srgb, var(--primary-color, #03a9f4) 34%, transparent);
       box-shadow:
-        0 14px 28px rgba(15, 23, 42, 0.1),
+        0 8px 18px rgba(15, 23, 42, 0.08),
         inset 3px 0 0 var(--primary-color, #03a9f4);
     }
 
@@ -1169,15 +1169,16 @@ export class DwainsBottomNav extends LitElement {
       background: rgba(255, 255, 255, 0.07);
       color: rgba(248, 250, 252, 0.94);
       box-shadow:
-        inset 0 0 0 1px rgba(255, 255, 255, 0.08),
-        0 10px 24px rgba(0, 0, 0, 0.18);
+        0 6px 14px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.035);
     }
 
     :host([data-theme-dark]) .page-row.active {
       background: color-mix(in srgb, var(--primary-color, #03a9f4) 18%, rgba(255, 255, 255, 0.08));
       box-shadow:
-        inset 0 0 0 1px color-mix(in srgb, var(--primary-color, #03a9f4) 42%, transparent),
-        0 12px 28px rgba(0, 0, 0, 0.24);
+        0 8px 18px rgba(0, 0, 0, 0.28),
+        inset 3px 0 0 var(--primary-color, #03a9f4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
     }
 
     :host([data-theme-dark]) .page-icon {
