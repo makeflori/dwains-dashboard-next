@@ -735,6 +735,10 @@ export const pageHeaderStyles = css`
       align-self: flex-start;
     }
 
+    .room-header .dd-room-quick-wrap {
+      min-width: 0;
+    }
+
     .room-header .dd-page-header-strip {
       position: relative;
       z-index: 2;
@@ -744,6 +748,10 @@ export const pageHeaderStyles = css`
       align-items: center;
       justify-content: flex-start;
       gap: 8px;
+    }
+
+    .dd-room-quick-dots {
+      display: none;
     }
 
     .room-header .dd-page-header-strip > dwains-dashboard-next-area-thermostat {
@@ -1153,19 +1161,26 @@ export const pageHeaderStyles = css`
         font-size: 10px;
       }
 
-      .room-header .dd-page-header-strip {
+      .room-header .dd-room-quick-wrap {
         margin: 0 -12px;
+        min-width: 0;
+      }
+
+      .room-header .dd-page-header-strip {
+        --dd-room-quick-gap: 8px;
+        margin: 0;
         min-height: 0;
         padding: 2px 12px 4px;
         display: flex;
         flex-direction: row;
+        flex-wrap: nowrap;
         align-items: stretch;
-        gap: 8px;
+        gap: var(--dd-room-quick-gap);
         overflow-x: auto;
         overflow-y: hidden;
         overscroll-behavior-x: contain;
         scroll-padding-inline: 12px;
-        scroll-snap-type: x proximity;
+        scroll-snap-type: x mandatory;
         scrollbar-width: none;
       }
 
@@ -1183,16 +1198,16 @@ export const pageHeaderStyles = css`
       }
 
       .room-header .dd-room-tile {
-        flex: 0 0 112px;
-        width: 112px;
-        min-width: 112px;
-        min-height: 156px;
-        padding: 10px 8px;
-        display: flex;
-        flex-direction: column;
+        flex: 0 0 calc((100% - (2 * var(--dd-room-quick-gap))) / 3);
+        width: calc((100% - (2 * var(--dd-room-quick-gap))) / 3);
+        min-width: calc((100% - (2 * var(--dd-room-quick-gap))) / 3);
+        min-height: 140px;
+        padding: 8px 6px;
+        display: grid;
+        grid-template-rows: 46px 34px 36px;
         align-items: center;
-        justify-content: flex-start;
-        gap: 7px;
+        justify-items: center;
+        gap: 4px;
         border-radius: 16px;
         text-align: center;
         scroll-snap-align: start;
@@ -1211,10 +1226,11 @@ export const pageHeaderStyles = css`
       .room-header .dd-room-tile-copy {
         width: 100%;
         min-width: 0;
-        min-height: 38px;
+        min-height: 0;
+        height: 34px;
         align-items: center;
-        justify-content: flex-start;
-        gap: 2px;
+        justify-content: center;
+        gap: 1px;
         text-align: center;
       }
 
@@ -1236,7 +1252,8 @@ export const pageHeaderStyles = css`
       }
 
       .room-header .dd-room-tile-switch {
-        margin: auto 0 0;
+        margin: 0;
+        align-self: center;
       }
 
       .room-header .dd-room-tile.has-actions {
@@ -1244,7 +1261,8 @@ export const pageHeaderStyles = css`
       }
 
       .room-header .dd-room-tile-actions {
-        margin: auto 0 0;
+        margin: 0;
+        align-self: center;
         gap: 4px;
       }
 
@@ -1258,11 +1276,36 @@ export const pageHeaderStyles = css`
       }
 
       .room-header .dd-page-header-strip > dwains-dashboard-next-area-thermostat {
-        flex: 0 0 112px;
-        width: 112px;
-        min-width: 112px;
-        max-width: 112px;
+        flex: 0 0 calc((100% - (2 * var(--dd-room-quick-gap))) / 3);
+        width: calc((100% - (2 * var(--dd-room-quick-gap))) / 3);
+        min-width: calc((100% - (2 * var(--dd-room-quick-gap))) / 3);
+        max-width: calc((100% - (2 * var(--dd-room-quick-gap))) / 3);
         scroll-snap-align: start;
+      }
+
+      .room-header .dd-room-quick-dots {
+        min-height: 14px;
+        padding: 4px 12px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+
+      .room-header .dd-room-quick-dot {
+        width: 6px;
+        height: 6px;
+        padding: 0;
+        border: 0;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--ph-text) 24%, transparent);
+        cursor: pointer;
+        transition: width 0.18s ease, background-color 0.18s ease;
+      }
+
+      .room-header .dd-room-quick-dot.active {
+        width: 16px;
+        background: color-mix(in srgb, var(--ph-text) 68%, transparent);
       }
     }
 
