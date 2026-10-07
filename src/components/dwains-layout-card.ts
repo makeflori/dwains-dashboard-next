@@ -19640,6 +19640,11 @@ copy{
     const lights = entities.filter(e => e.entity_id.startsWith('light.'));
     const switches = entities.filter(e => e.entity_id.startsWith('switch.'));
     const covers = entities.filter(e => e.entity_id.startsWith('cover.'));
+    const coverGroups = {
+      cover_shading: covers.filter(e => getAreaEntityGroupKey(e.entity_id, this.hass) === 'cover_shading'),
+      cover_openings: covers.filter(e => getAreaEntityGroupKey(e.entity_id, this.hass) === 'cover_openings'),
+      cover_gates: covers.filter(e => getAreaEntityGroupKey(e.entity_id, this.hass) === 'cover_gates'),
+    } as const;
     const fans = entities.filter(e => e.entity_id.startsWith('fan.'));
     const climates = entities.filter(e => e.entity_id.startsWith('climate.'));
 
@@ -19680,7 +19685,46 @@ copy{
       `;
     };
 
-    const openCovers = this._countActiveEntities(covers, 'cover');
+    const renderCoverTile = (
+      groupKey: 'cover_shading' | 'cover_openings' | 'cover_gates',
+      groupCovers: EntityConfig[]
+    ) => {
+      if (!groupCovers.length) return nothing;
+      const openCount = this._countActiveEntities(groupCovers, 'cover');
+      const label = this._mobileGroupName(groupKey);
+      return html`
+        <div class="dd-room-tile cover has-actions ${openCount > 0 ? 'is-on' : ''}">
+          <span class="dd-room-tile-icon">
+            <ha-icon icon=${this._mobileGroupIcon(groupKey)}></ha-icon>
+          </span>
+          <span class="dd-room-tile-copy">
+            <span class="dd-room-tile-label">${label}</span>
+            <span class="dd-room-tile-state">${this._areaTileState(openCount, groupCovers.length, 'open')}</span>
+          </span>
+          <span class="dd-room-tile-actions">
+            <button
+              class="dd-room-tile-action"
+              type="button"
+              title=${this._t('action.open_all')}
+              aria-label=${`${label}: ${this._t('action.open_all')}`}
+              @click=${() => void this._setAreaCoverState(areaId, true, groupKey)}
+            >
+              <ha-icon icon="mdi:arrow-up"></ha-icon>
+            </button>
+            <button
+              class="dd-room-tile-action"
+              type="button"
+              title=${this._t('action.close_all')}
+              aria-label=${`${label}: ${this._t('action.close_all')}`}
+              @click=${() => void this._setAreaCoverState(areaId, false, groupKey)}
+            >
+              <ha-icon icon="mdi:arrow-down"></ha-icon>
+            </button>
+          </span>
+        </div>
+      `;
+    };
+
     const activeClimates = this._countActiveEntities(climates, 'climate');
     const singleClimateState = climates.length === 1 ? this.hass.states[climates[0]!.entity_id] : undefined;
     const currentTemperature = singleClimateState?.attributes?.current_temperature;
@@ -19707,37 +19751,9 @@ copy{
           ['action.switches_on_summary', 'action.switches_off_summary'],
           () => this._toggleAreaSwitches(areaId)
         ) : nothing}
-        ${covers.length ? html`
-          <div class="dd-room-tile cover has-actions ${openCovers > 0 ? 'is-on' : ''}">
-            <span class="dd-room-tile-icon">
-              <ha-icon icon=${openCovers > 0 ? 'mdi:window-shutter-open' : 'mdi:window-shutter'}></ha-icon>
-            </span>
-            <span class="dd-room-tile-copy">
-              <span class="dd-room-tile-label">${this._t('domain.cover')}</span>
-              <span class="dd-room-tile-state">${this._areaTileState(openCovers, covers.length, 'open')}</span>
-            </span>
-            <span class="dd-room-tile-actions">
-              <button
-                class="dd-room-tile-action"
-                type="button"
-                title=${this._t('action.open_all')}
-                aria-label=${this._t('action.open_all')}
-                @click=${() => void this._setAreaCoverState(areaId, true)}
-              >
-                <ha-icon icon="mdi:arrow-up"></ha-icon>
-              </button>
-              <button
-                class="dd-room-tile-action"
-                type="button"
-                title=${this._t('action.close_all')}
-                aria-label=${this._t('action.close_all')}
-                @click=${() => void this._setAreaCoverState(areaId, false)}
-              >
-                <ha-icon icon="mdi:arrow-down"></ha-icon>
-              </button>
-            </span>
-          </div>
-        ` : nothing}
+        ${renderCoverTile('cover_shading', coverGroups.cover_shading)}
+        ${renderCoverTile('cover_openings', coverGroups.cover_openings)}
+        ${renderCoverTile('cover_gates', coverGroups.cover_gates)}
         ${fans.length ? toggleTile(
           'fan',
           fans.length,
@@ -19908,9 +19924,16 @@ copy{
     }
   }
 
-  private async _setAreaCoverState(areaId: string, open: boolean) {
+  private async _setAreaCoverState(
+    areaId: string,
+    open: boolean,
+    groupKey?: 'cover_shading' | 'cover_openings' | 'cover_gates'
+  ) {
     const entities = this._getFilteredAreaEntities(areaId);
-    const covers = entities.filter(e => e.entity_id.startsWith('cover.'));
+    const covers = entities.filter(e =>
+      e.entity_id.startsWith('cover.') &&
+      (!groupKey || getAreaEntityGroupKey(e.entity_id, this.hass) === groupKey)
+    );
     if (covers.length === 0) return;
 
     const confirmed = await this._confirmMasterActionIfNeeded('cover', open, covers.length, areaId);
