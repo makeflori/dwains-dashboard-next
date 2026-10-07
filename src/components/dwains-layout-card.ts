@@ -11908,7 +11908,7 @@ vertically centered badge contents. */
       }
 
       .sidebar .floor-areas{
-        gap: 5px !important;
+        gap: 4px !important;
       }
 
       .sidebar .floor-header{
@@ -12010,13 +12010,14 @@ vertically centered badge contents. */
       .sidebar .room-area-button .area-info-badges{
         grid-column: 2 !important;
         position: static !important;
-        width: auto !important;
+        width: 74px !important;
         max-width: 74px !important;
         margin: 0 !important;
         display: grid !important;
         grid-template-columns: repeat(2, max-content) !important;
         align-items: center !important;
-        justify-content: end !important;
+        justify-content: start !important;
+        justify-self: start !important;
         gap: 4px !important;
       }
 
@@ -12037,6 +12038,24 @@ vertically centered badge contents. */
 
       .sidebar .room-area-button .badge-count{
         font-size: 9px !important;
+      }
+
+      .sidebar .room-area-button .info-badge-overflow{
+        width: 22px !important;
+        min-width: 22px !important;
+        height: 19px !important;
+        padding: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        color: var(--secondary-text-color) !important;
+        font-size: 16px !important;
+        font-weight: 900 !important;
+        line-height: 1 !important;
       }
 
       .sidebar .room-area-button.selected{
@@ -17501,19 +17520,20 @@ copy{
   }
 
   private _sidebarAreaBadgeLimit(totalBadges = Number.MAX_SAFE_INTEGER): number {
+    // Mobile area picker: show up to four real badges. Starting with a fifth
+    // status, reserve the fourth slot for a plain ellipsis.
+    if (this._isMobile) {
+      return totalBadges > 4 ? 3 : Math.min(4, totalBadges);
+    }
+
     /*
-     * The sidebar area list is deliberately a single-column list. Calculate
-     * badge capacity from that actual tile width so the result grows
-     * monotonically as the sidebar is widened.
+     * Desktop keeps its width-aware capacity so the persistent sidebar can
+     * continue to use the available horizontal space.
      */
     const tileWidth = Math.max(0, this._areaSidebarWidth - 16);
-
-    // The room icon slot is fixed at 74px, independent of sidebar width.
     const mediaWidth = 74;
     const contentGap = 9;
     const contentWidth = Math.max(0, tileWidth - 14 - mediaWidth - contentGap);
-
-    // Approximate rendered width of the slightly enlarged badge geometry.
     const badgeWidth = 44;
     const badgeGap = 4;
     const overflowWidth = 15;
@@ -17527,7 +17547,6 @@ copy{
       return Math.min(8, totalBadges);
     }
 
-    // Reserve room for the visible "…" marker whenever more badges exist.
     const capacityWithOverflow = Math.max(
       1,
       Math.floor(Math.max(0, contentWidth - overflowWidth - badgeGap) / (badgeWidth + badgeGap))
@@ -17598,7 +17617,7 @@ copy{
             )}
             ${hasMoreBadges ? html`
               <span
-                class="info-badge info-badge-overflow"
+                class="info-badge-overflow"
                 title="Weitere aktive Status"
                 aria-label="Weitere aktive Status"
               >…</span>
