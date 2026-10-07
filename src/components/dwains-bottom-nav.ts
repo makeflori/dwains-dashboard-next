@@ -57,6 +57,7 @@ interface DeviceContext {
 const PAGES_PATH = '__dd_pages__';
 const MOBILE_NAV_QUERY = '(max-width: 768px)';
 const MOBILE_NAV_ACTIVE_CLASS = 'dd-next-mobile-nav-active';
+const MOBILE_NAV_SHEET_EVENT = 'dwains-dashboard-next-mobile-nav-sheet';
 const HIDE_NATIVE_HEADER_STYLE_ID = 'dd-hide-header';
 const HIDDEN_NATIVE_HEADER_ATTR = 'data-dd-next-native-header-hidden';
 const HIDDEN_NATIVE_HEADER_OLD_STYLE_ATTR = 'data-dd-next-native-header-old-style';
@@ -127,6 +128,7 @@ export class DwainsBottomNav extends LitElement {
     window.addEventListener('dwains-dashboard-next-device-context-changed', this._handleDeviceContext as EventListener);
     window.addEventListener(WALL_TABLET_CHANGED_EVENT, this._handleWallTabletChanged);
     window.addEventListener(WALL_TABLET_RESET_EVENT, this._handleWallTabletReset);
+    window.addEventListener(MOBILE_NAV_SHEET_EVENT, this._handleMobileNavSheet as EventListener);
   }
 
   disconnectedCallback(): void {
@@ -138,6 +140,7 @@ export class DwainsBottomNav extends LitElement {
     window.removeEventListener('dwains-dashboard-next-device-context-changed', this._handleDeviceContext as EventListener);
     window.removeEventListener(WALL_TABLET_CHANGED_EVENT, this._handleWallTabletChanged);
     window.removeEventListener(WALL_TABLET_RESET_EVENT, this._handleWallTabletReset);
+    window.removeEventListener(MOBILE_NAV_SHEET_EVENT, this._handleMobileNavSheet as EventListener);
   }
 
   private _sync = () => {
@@ -162,6 +165,16 @@ export class DwainsBottomNav extends LitElement {
     this._pagesOpen = false;
     this._restrictedMenuOpen = false;
   };
+
+  private _handleMobileNavSheet = (event: CustomEvent<{ kind?: string }>): void => {
+    if (event.detail?.kind !== 'pages') {
+      this._pagesOpen = false;
+    }
+  };
+
+  private _announceMobileNavSheet(kind: 'areas' | 'devices' | 'pages'): void {
+    window.dispatchEvent(new CustomEvent(MOBILE_NAV_SHEET_EVENT, { detail: { kind } }));
+  }
 
   private _handleTranslationsLoaded = (): void => {
     if (this._hass) this._loadItems();
@@ -270,6 +283,7 @@ export class DwainsBottomNav extends LitElement {
 
     const fire = () => {
       this._active = 'home';
+      this._announceMobileNavSheet('areas');
       window.dispatchEvent(new CustomEvent('dwains-dashboard-next-toggle-area-nav'));
     };
 
@@ -285,6 +299,7 @@ export class DwainsBottomNav extends LitElement {
     this._pagesOpen = false;
     const fire = () => {
       this._active = 'devices';
+      this._announceMobileNavSheet('devices');
       window.dispatchEvent(new CustomEvent('dwains-dashboard-next-toggle-devices-nav'));
     };
 
@@ -302,7 +317,9 @@ export class DwainsBottomNav extends LitElement {
       this._go(onlyPage.path);
       return;
     }
-    this._pagesOpen = !this._pagesOpen;
+    const opening = !this._pagesOpen;
+    if (opening) this._announceMobileNavSheet('pages');
+    this._pagesOpen = opening;
   }
 
   private _closePages = (): void => {
@@ -437,7 +454,6 @@ export class DwainsBottomNav extends LitElement {
         @click=${this._closePages}
       ></button>
       <section class="pages-sheet ${this._pagesOpen ? 'open' : ''}" aria-hidden=${this._pagesOpen ? 'false' : 'true'}>
-        <div class="pages-handle"></div>
         <div class="pages-heading">
           ${this._renderIcon('mdi:puzzle')}
           <span>${ddLocalize(this._hass, 'navigation.pages')}</span>
@@ -454,9 +470,6 @@ export class DwainsBottomNav extends LitElement {
                 <span class="page-icon">${this._renderIcon(page.icon)}</span>
                 <span class="page-copy">
                   <span class="page-name">${page.label}</span>
-                  <span class="page-subtitle">${active
-                    ? ddLocalize(this._hass, 'navigation.current_page')
-                    : ddLocalize(this._hass, 'navigation.open_page')}</span>
                 </span>
                 <span class="page-chevron">${this._renderIcon(active ? 'mdi:check' : 'mdi:chevron-right')}</span>
               </button>
@@ -568,7 +581,7 @@ export class DwainsBottomNav extends LitElement {
     }
     .bar {
       position: fixed;
-      left: 50%;
+      left: calc(max(14px, env(safe-area-inset-left, 0px)) + 62px);
       right: auto;
       bottom: calc(4px + env(safe-area-inset-bottom, 0px));
       z-index: 142;
@@ -577,15 +590,15 @@ export class DwainsBottomNav extends LitElement {
       justify-content: center;
       gap: 4px;
       width: max-content;
-      max-width: calc(100vw - 32px);
-      margin: 0 auto;
+      max-width: calc(100vw - 90px);
+      margin: 0;
       padding: 8px;
       overflow-x: auto;
       scrollbar-width: none;
       user-select: none;
       -webkit-user-select: none;
       touch-action: manipulation;
-      transform: translate3d(-50%, 0, 0);
+      transform: none;
       will-change: transform;
       border-radius: 999px;
       background:
@@ -809,9 +822,9 @@ export class DwainsBottomNav extends LitElement {
 
     .pages-sheet {
       position: fixed;
-      left: 18px;
-      right: 18px;
-      bottom: calc(94px + env(safe-area-inset-bottom, 0px));
+      left: 16px;
+      right: 16px;
+      bottom: calc(76px + env(safe-area-inset-bottom, 0px));
       z-index: 141;
       max-height: min(64vh, 560px);
       display: flex;
@@ -950,7 +963,7 @@ export class DwainsBottomNav extends LitElement {
 
     .page-name {
       font-size: 14px;
-      font-weight: 900;
+      font-weight: 800;
       line-height: 1.05;
     }
 
