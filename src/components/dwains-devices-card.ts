@@ -769,10 +769,6 @@ export class DwainsDevicesCard extends LitElement {
     this._closeMobileNav();
   }
 
-  private _toggleMobileNav = () => {
-    this._mobileNavOpen = !this._mobileNavOpen;
-  };
-
   private _handleDevicesNavToggle = (event?: Event) => {
     if (!this._isMobile) return;
     if ((event as CustomEvent<{ open?: boolean }>)?.detail?.open) {
