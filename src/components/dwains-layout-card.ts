@@ -17897,7 +17897,7 @@ copy{
     }
     if (domain.domain === 'cover' && domain.statusKind === 'shading') {
       const german = String(this.hass?.language || this.hass?.locale?.language || '').toLowerCase().startsWith('de');
-      return german ? 'Beschattung ausgefahren' : 'Shading deployed';
+      return german ? 'Beschattung geschlossen' : 'Shading closed';
     }
     if (domain.domain === 'cover') return domain.name;
     const activeLabel = this._statusCardActiveLabel(domain);
@@ -19692,10 +19692,16 @@ copy{
       if (!groupCovers.length) return nothing;
       const openCount = this._countActiveEntities(groupCovers, 'cover');
       const label = this._mobileGroupName(groupKey);
+      const highlighted = groupKey === 'cover_shading'
+        ? openCount === 0
+        : openCount > 0;
+      const icon = groupKey === 'cover_shading' && openCount === 0
+        ? 'mdi:blinds-horizontal-closed'
+        : this._mobileGroupIcon(groupKey);
       return html`
-        <div class="dd-room-tile cover has-actions ${openCount > 0 ? 'is-on' : ''}">
+        <div class="dd-room-tile cover has-actions ${highlighted ? 'is-on' : ''}">
           <span class="dd-room-tile-icon">
-            <ha-icon icon=${this._mobileGroupIcon(groupKey)}></ha-icon>
+            <ha-icon icon=${icon}></ha-icon>
           </span>
           <span class="dd-room-tile-copy">
             <span class="dd-room-tile-label">${label}</span>
