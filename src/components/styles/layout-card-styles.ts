@@ -8755,4 +8755,83 @@ which also swallowed pointer events for the new handle. */
   }
 }
 
+
+
+/* 2026-10-08 correction pass: exact room-picture behavior, balanced desktop
+   quick controls, Sidebar Home parity and mobile Favorite leading icons. */
+@media (max-width: 768px) {
+  /* Favorites: use a small, fully colored foreground icon directly before the name. */
+  .home-favorites-section .favorite-card-wrapper {
+    display: grid !important;
+    grid-template-columns: 22px minmax(0, 1fr) auto !important;
+    grid-template-rows: 1fr !important;
+    align-items: center !important;
+    column-gap: 8px !important;
+  }
+
+  .home-favorites-section .favorite-icon {
+    position: static !important;
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    width: 22px !important;
+    height: 22px !important;
+    margin: 0 !important;
+    transform: none !important;
+    opacity: 1 !important;
+    color: var(--favorite-color) !important;
+    background: transparent !important;
+    align-self: center !important;
+    justify-self: start !important;
+    pointer-events: none !important;
+  }
+
+  .home-favorites-section .favorite-icon ha-icon {
+    --mdc-icon-size: 18px !important;
+    color: var(--favorite-color) !important;
+  }
+
+  .home-favorites-section .favorite-body {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    padding-left: 0 !important;
+  }
+
+  .home-favorites-section .favorite-end {
+    grid-column: 3 !important;
+    grid-row: 1 !important;
+  }
+}
+
+@media (min-width: 769px) {
+  /* Flatten the tile wrapper into the parent grid so the individual group
+     controls and thermostat can actually share two balanced rows. */
+  .room-header .dd-page-header-strip[data-control-count="4"] .dd-room-tiles,
+  .room-header .dd-page-header-strip[data-control-count="5"] .dd-room-tiles,
+  .room-header .dd-page-header-strip[data-control-count="6"] .dd-room-tiles,
+  .room-header .dd-page-header-strip[data-control-count="7"] .dd-room-tiles,
+  .room-header .dd-page-header-strip[data-control-count="8"] .dd-room-tiles {
+    display: contents !important;
+  }
+
+  .room-header .dd-page-header-strip[data-control-count="4"],
+  .room-header .dd-page-header-strip[data-control-count="5"],
+  .room-header .dd-page-header-strip[data-control-count="6"],
+  .room-header .dd-page-header-strip[data-control-count="7"],
+  .room-header .dd-page-header-strip[data-control-count="8"] {
+    display: grid !important;
+    grid-template-columns: repeat(var(--dd-room-quick-columns), max-content) !important;
+    grid-auto-flow: row !important;
+    justify-content: start !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+
+  /* Home uses exactly the same visible text scale as room names. */
+  .sidebar .area-button.home-button .area-info .area-name {
+    font-size: 15px !important;
+    font-weight: 850 !important;
+    line-height: 1.1 !important;
+  }
+}
+
 `;

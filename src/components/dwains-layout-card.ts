@@ -17785,9 +17785,13 @@ copy{
         ` : nothing}
 
         <div class="area-media" aria-hidden="true">
-          <div class="area-media-icon">
-            <ha-icon icon=${getAreaIcon(area)}></ha-icon>
-          </div>
+          ${hasPicture
+            ? html`<div class="area-media-picture" style=${`background-image: url('${area.picture}');`}></div>`
+            : html`
+                <div class="area-media-icon">
+                  <ha-icon icon=${getAreaIcon(area)}></ha-icon>
+                </div>
+              `}
         </div>
 
         <div class="area-content">
@@ -20288,7 +20292,7 @@ copy{
           ` : nothing}
           <div class="dd-page-header-with-media">
             <div class="dd-page-header-media-tile" aria-hidden="true">
-              ${hasPicture && this._isMobile
+              ${hasPicture
                 ? html`<div class="dd-page-header-room-picture" style=${`background-image: url('${area.picture}');`}></div>`
                 : html`
                     <div class="dd-page-header-room-icon">
