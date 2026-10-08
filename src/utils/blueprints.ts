@@ -41,6 +41,7 @@ export interface BlueprintInput {
   description_de?: string;
   entity_domain?: string;
   suggest?: string;
+  suggest_entity?: string;
   default_icon?: string;
 }
 
@@ -112,6 +113,7 @@ function normalizeInputs(input: any): Record<string, BlueprintInput> {
       description_de: def.description_de,
       entity_domain: def.entity_domain,
       suggest: def.suggest,
+      suggest_entity: def.suggest_entity,
       default_icon: def.default_icon,
     };
   }
