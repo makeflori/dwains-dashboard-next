@@ -865,11 +865,41 @@ export class DwainsBlueprintDialog extends LitElement {
     `;
   }
 
+  private _coinSuggestions(): { name: string; entity: string; price_entity: string; amount_entity: string; icon: string }[] {
+    const states = this.hass?.states || {};
+    const ids = Object.keys(states);
+    const values = ids.filter(id => /^sensor\\.wallet_value_(?!total$)/i.test(id));
+    const normalized = (text: string) => text.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const displayName = (id: string) => {
+      const friendly = String(states[id]?.attributes?.friendly_name || '');
+      return (friendly.replace(/^(?:wert|value|wallet|price|kurs|volume|volumen|bestand|holdings)\\s*[:\\-]?\\s*/i, '').trim() || id.replace(/^sensor\\.wallet_value_/, '').replace(/_/g, ' ')).trim();
+    };
+    return values.map(entity => {
+      const suffix = entity.replace(/^sensor\\.wallet_value_/, '');
+      const name = displayName(entity);
+      const possible = [suffix, name].map(normalized);
+      const priceMatches = ids.filter(id => id.startsWith('sensor.') && (/cryptoinfo|(?:^|_)price_|(?:^|_)kurs_/.test(id) || id.includes('price')) && possible.some(word => word && normalized(id).includes(word)));
+      const amountMatches = ids.filter(id => id.startsWith('sensor.') && /wallet_volume_|wallet_amount_|holdings_|balance_/.test(id) && possible.some(word => word && normalized(id).includes(word)));
+      const price = 'sensor.cryptoinfo_' + suffix + '_eur';
+      const amount = 'sensor.wallet_volume_' + suffix;
+      return {
+        name,
+        entity,
+        price_entity: states[price] ? price : priceMatches.length === 1 ? priceMatches[0] : '',
+        amount_entity: states[amount] ? amount : amountMatches.length === 1 ? amountMatches[0] : '',
+        icon: '',
+      };
+    }).sort((a,b)=>a.name.localeCompare(b.name)).filter((row,index,rows)=>rows.findIndex(other=>other.entity===row.entity)===index);
+  }
+
   private _entitySuggestions(def: any): string[] {
     const rx = def.suggest === 'waste'
       ? /waste|garbage|rubbish|trash|refuse|recycl|papier|paper|bio(?:m[uü]ll)?|rest(?:m[uü]ll)?|abfall|gelber.?sack|altglas|muell|mull|collection|pickup|tonne/i
       : /wallet|crypto|bitcoin|ethereum|cardano|coin|token|asset|portfolio|balance|cryptoinfo|wallet_value/i;
-    return Object.keys(this.hass?.states || {}).filter((id) => id.startsWith((def.entity_domain || 'sensor') + '.') && rx.test(id + ' ' + (this.hass.states[id]?.attributes?.friendly_name || '')));
+    return Object.keys(this.hass?.states || {}).filter(id =>
+      id.startsWith((def.entity_domain || 'sensor') + '.') &&
+      rx.test(id + ' ' + (this.hass.states[id]?.attributes?.friendly_name || ''))
+    );
   }
 
   private _renderEntityList(key: string, def: any) {
@@ -880,7 +910,9 @@ export class DwainsBlueprintDialog extends LitElement {
       if (prop === 'entity' && value && !next[index].name) next[index].name = this.hass.states[value]?.attributes?.friendly_name || value.split('.').pop()?.replace(/_/g, ' ') || '';
       this._setValue(key, next);
     };
-    const suggestions = this._entitySuggestions(def).filter(id => !items.some((x: any) => x.entity === id));
+    const suggestions = def.suggest === 'coin'
+      ? this._coinSuggestions().filter(row => !items.some((x: any) => x.entity === row.entity))
+      : this._entitySuggestions(def).filter(id => !items.some((x: any) => x.entity === id));
     return html`<div class="entity-list">
       ${items.map((item: any, index: number) => html`<div class="entity-list-row">
         <div class="entity-list-header"><strong>${this._listTitle(def.suggest)} ${index + 1}</strong>
@@ -894,7 +926,7 @@ export class DwainsBlueprintDialog extends LitElement {
       </div>`)}
       <ha-button appearance="outlined" @click=${() => this._setValue(key, [...items, { name: '', icon: '', entity: '' }])}>${this._german ? 'Hinzufügen' : 'Add'} ${this._listTitle(def.suggest)}</ha-button>
       ${suggestions.length ? html`<div class="field-desc">${this._german ? 'Vorschläge aus Home Assistant:' : 'Suggested Home Assistant entities:'}</div>
-        <div class="entity-list-suggestions">${suggestions.slice(0, 16).map(id => html`<ha-button appearance="plain" size="s" @click=${() => this._setValue(key, [...items, { entity: id, name: this.hass.states[id]?.attributes?.friendly_name || (id.split('.')[1] || id).replace(/_/g,' '), icon: '' }])}>${this.hass.states[id]?.attributes?.friendly_name || id}</ha-button>`)}</div>` : nothing}
+        <div class="entity-list-suggestions">${suggestions.slice(0, 32).map(entry => { const item = typeof entry === 'string' ? { entity: entry, name: this.hass.states[entry]?.attributes?.friendly_name || (entry.split('.')[1] || entry).replace(/_/g, ' '), icon: '' } : entry; return html`<ha-button appearance="plain" size="s" @click=${() => this._setValue(key, [...items, item])}>${item.name}</ha-button>`; })}</div>` : nothing}
     </div>`;
   }
 
