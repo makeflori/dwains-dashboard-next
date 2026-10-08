@@ -539,6 +539,10 @@ export class DwainsBlueprintDialog extends LitElement {
         this._error = this._german ? 'Bitte mindestens einen vollständigen Eintrag hinzufügen.' : 'Add at least one complete entry.';
         return;
       }
+      if (def.suggest === 'coin' && new Set(entries.map((item: any) => item.entity)).size !== entries.length) {
+        this._error = this._german ? 'Ein Coin-Wertsensor darf nur einmal vorkommen.' : 'Each coin value sensor can only be used once.';
+        return;
+      }
       if (def.suggest === 'coin' && entries.some((item: any) => !item.price_entity || !item.amount_entity)) {
         this._error = this._german ? 'Für jeden Coin werden ein Wert-, Preis- und Bestandssensor benötigt.' : 'Each coin needs a value, price and holdings sensor.';
         return;
