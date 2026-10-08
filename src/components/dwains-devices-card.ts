@@ -636,7 +636,7 @@ export class DwainsDevicesCard extends LitElement {
 
   private _typeColor(key: string): string {
     if (key === MAINTENANCE_KEY) return 'var(--warning-color, #ff9800)';
-    if (key === ENERGY_KEY) return '#d88e20';
+    if (key === ENERGY_KEY) return '#65a83f';
     if (key === DEVICES_OVERVIEW_KEY) return 'var(--primary-color)';
     if (key.startsWith('binary_sensor.')) {
       return getDomainColor('binary_sensor', key.slice('binary_sensor.'.length));
@@ -2445,11 +2445,11 @@ export class DwainsDevicesCard extends LitElement {
     }
 
     .area-button.energy {
-      --domain-color: #d88e20;
+      --domain-color: #65a83f;
     }
 
     .energy-view {
-      --domain-color: #d88e20;
+      --domain-color: #65a83f;
       max-width: 1320px;
     }
 
