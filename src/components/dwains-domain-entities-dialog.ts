@@ -1134,20 +1134,20 @@ export class DwainsDomainEntitiesDialog extends LitElement {
 
   private _onSheetTouchStart = (event: TouchEvent): void => {
     if (event.touches.length !== 1) return;
-    this._sheetDragStartY = event.touches[0].clientY;
+    this._sheetDragStartY = event.touches.item(0)?.clientY ?? null;
     this._sheetDragOffset = 0;
   };
 
   private _onSheetTouchMove = (event: TouchEvent): void => {
     if (this._sheetDragStartY === null || event.touches.length !== 1) return;
-    const distance = event.touches[0].clientY - this._sheetDragStartY;
+    const distance = (event.touches.item(0)?.clientY ?? this._sheetDragStartY) - this._sheetDragStartY;
     this._sheetDragOffset = Math.max(0, distance);
     if (distance > 0 && event.cancelable) event.preventDefault();
-    const dialog = this.renderRoot.querySelector('ha-dialog');
+    const dialog = this.renderRoot.querySelector<HTMLElement>('ha-dialog');
     if (dialog) dialog.style.setProperty('--sheet-drag-offset', `${this._sheetDragOffset}px`);
   };
 
-  private _onSheetTouchEnd = (event: TouchEvent): void => {
+  private _onSheetTouchEnd = (): void => {
     if (this._sheetDragStartY === null) return;
     const shouldClose = this._sheetDragOffset >= 90;
     this._sheetDragStartY = null;
@@ -1646,7 +1646,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     `;
   }
 
-  private _renderEntityCard(entity: EntityConfig, fallbackMeta?: string) {
+  private _renderEntityCard(entity: EntityConfig) {
     const rawState = this.hass.states[entity.entity_id];
     if (!rawState) return nothing;
 
