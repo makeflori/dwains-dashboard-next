@@ -896,8 +896,8 @@ export class DwainsBlueprintDialog extends LitElement {
       return {
         name,
         entity,
-        price_entity: states[price] ? price : priceMatches.length === 1 ? priceMatches[0] : '',
-        amount_entity: states[amount] ? amount : amountMatches.length === 1 ? amountMatches[0] : '',
+        price_entity: states[price] ? price : priceMatches.length === 1 ? (priceMatches[0] || '') : '',
+        amount_entity: states[amount] ? amount : amountMatches.length === 1 ? (amountMatches[0] || '') : '',
         icon: '',
       };
     }).sort((a,b)=>a.name.localeCompare(b.name)).filter((row,index,rows)=>rows.findIndex(other=>other.entity===row.entity)===index);
