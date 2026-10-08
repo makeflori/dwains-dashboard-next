@@ -16365,6 +16365,189 @@ copy{
       }
     }
 
+    @media (max-width: 768px) {
+      /* Keep horizontal home rails from clipping their card shadows. */
+      .mobile-home-section:not(.layout-grid) .mobile-area-rail,
+      .home-status-section:not(.layout-grid) .home-status-grid,
+      .home-camera-section:not(.layout-grid) .home-camera-grid {
+        padding-bottom: 24px !important;
+      }
+
+      /* Native/custom Home Assistant cards must stay inside the phone viewport. */
+      .home-todos-grid,
+      .home-custom-cards-grid,
+      .home-todo-card,
+      .home-custom-card,
+      .home-todo-card dwains-dashboard-next-card-host,
+      .home-custom-card dwains-dashboard-next-card-host {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+      }
+
+      .home-todos-grid,
+      .home-custom-cards-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+        overflow: hidden !important;
+      }
+
+      /* Mobile area cards: larger icon, calmer image treatment. */
+      .mobile-area-icon {
+        width: 52px !important;
+        height: 52px !important;
+        flex: 0 0 52px !important;
+        border-radius: 14px !important;
+      }
+
+      .mobile-area-icon ha-icon {
+        --mdc-icon-size: 28px !important;
+      }
+
+      .mobile-area-card.has-picture .mobile-area-picture {
+        opacity: 0.20 !important;
+        filter: saturate(0.72) contrast(0.92) !important;
+      }
+
+      .mobile-area-card.has-picture {
+        background: var(--card-background-color) !important;
+        color: var(--primary-text-color) !important;
+        --mobile-area-picture-text-color: var(--primary-text-color) !important;
+        --mobile-area-picture-muted-text-color: var(--secondary-text-color) !important;
+        --mobile-area-picture-text-shadow: none !important;
+        --mobile-area-picture-overlay: linear-gradient(
+          color-mix(in srgb, var(--card-background-color) 18%, transparent),
+          color-mix(in srgb, var(--card-background-color) 18%, transparent)
+        ) !important;
+      }
+
+      .mobile-area-card.has-picture .mobile-area-icon {
+        color: var(--primary-color) !important;
+        background: color-mix(in srgb, var(--primary-color) 13%, var(--card-background-color)) !important;
+        backdrop-filter: none !important;
+      }
+
+      /* Favorites: full-width two-column grid or compact content-sized one-column list. */
+      .home-favorites-section {
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 -10px 44px !important;
+        overflow: visible !important;
+      }
+
+      .home-favorites-section .favorites-grid {
+        width: 100% !important;
+        box-sizing: border-box !important;
+      }
+
+      .home-favorites-section.layout-grid .favorites-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 10px !important;
+        padding: 2px 18px 16px !important;
+        overflow: visible !important;
+      }
+
+      .home-favorites-section.layout-rail .favorites-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 8px !important;
+        padding: 2px 18px 16px !important;
+        overflow: visible !important;
+        scroll-snap-type: none !important;
+      }
+
+      .home-favorites-section .favorite-card-wrapper {
+        position: relative !important;
+        isolation: isolate !important;
+        display: grid !important;
+        grid-template-columns: minmax(0, max-content) auto !important;
+        grid-template-rows: 1fr !important;
+        align-items: center !important;
+        column-gap: 12px !important;
+        height: 78px !important;
+        min-height: 78px !important;
+        padding: 10px 12px !important;
+        overflow: hidden !important;
+        border-radius: 14px !important;
+      }
+
+      .home-favorites-section.layout-grid .favorite-card-wrapper {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+      }
+
+      .home-favorites-section.layout-rail .favorite-card-wrapper {
+        width: max-content !important;
+        max-width: 100% !important;
+        min-width: min(230px, 100%) !important;
+        flex: none !important;
+      }
+
+      .home-favorites-section .favorite-icon {
+        position: absolute !important;
+        left: 8px !important;
+        top: 50% !important;
+        z-index: 0 !important;
+        width: 72px !important;
+        height: 72px !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        transform: translateY(-50%) !important;
+        background: transparent !important;
+        color: var(--favorite-color) !important;
+        opacity: 0.12 !important;
+        pointer-events: none !important;
+      }
+
+      .home-favorites-section .favorite-icon ha-icon {
+        --mdc-icon-size: 66px !important;
+      }
+
+      .home-favorites-section .favorite-body {
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+        position: relative !important;
+        z-index: 1 !important;
+        min-width: 0 !important;
+        align-self: center !important;
+        padding: 0 0 0 8px !important;
+      }
+
+      .home-favorites-section .favorite-end {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+        position: relative !important;
+        z-index: 1 !important;
+        align-self: center !important;
+        justify-self: end !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      .home-favorites-section .favorite-name {
+        margin: 0 !important;
+        display: block !important;
+        max-width: 100% !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        -webkit-line-clamp: unset !important;
+        font-size: 14px !important;
+        line-height: 1.12 !important;
+      }
+
+      .home-favorites-section .favorite-meta {
+        margin-top: 4px !important;
+      }
+
+      .home-favorites-section.layout-rail .favorite-name {
+        max-width: min(64vw, 430px) !important;
+      }
+    }
+
   `, pageHeaderStyles, roomAreaStyles];
 
   connectedCallback() {
@@ -19498,7 +19681,7 @@ copy{
               aria-label=${gridMode ? this._t('favorites.switch_swipe') : this._t('favorites.show_all')}
               @click=${this._toggleMobileHomeFavoritesLayout}
             >
-              <ha-icon icon=${gridMode ? 'mdi:view-carousel-outline' : 'mdi:view-grid-outline'}></ha-icon>
+              <ha-icon icon=${gridMode ? 'mdi:view-agenda-outline' : 'mdi:view-grid-outline'}></ha-icon>
             </button>
             <span class="mobile-section-title-label">${this._t('favorites.title')}</span>
           </div>

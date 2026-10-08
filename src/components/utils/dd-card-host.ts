@@ -42,6 +42,10 @@ export class DwainsCardHost extends HTMLElement {
 
   connectedCallback() {
     this.style.display = 'block';
+    this.style.boxSizing = 'border-box';
+    this.style.width = '100%';
+    this.style.maxWidth = '100%';
+    this.style.minWidth = '0';
     this._applyFrame();
     this.style.setProperty('content-visibility', 'auto');
     this.style.setProperty('contain-intrinsic-size', '120px');

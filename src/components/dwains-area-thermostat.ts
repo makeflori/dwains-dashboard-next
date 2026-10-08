@@ -571,6 +571,17 @@ export class DwainsAreaThermostat extends LitElement {
       gap: 4px;
       text-align: center;
       border-radius: 16px;
+      background: color-mix(in srgb, var(--primary-text-color) 7%, var(--card-background-color));
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+
+    .thermostat.compact-vertical:not(.activity-off) {
+      background: color-mix(in srgb, var(--thermostat-color) 15%, var(--card-background-color));
+    }
+
+    .thermostat.compact-vertical.activity-off {
+      --thermostat-color: var(--secondary-text-color, #6b7280);
     }
 
     .compact-vertical .mode-control {
