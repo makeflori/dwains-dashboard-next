@@ -20324,9 +20324,9 @@ copy{
                   class="dd-page-header-strip ${hasStrip ? '' : 'is-placeholder'}"
                   aria-hidden=${hasStrip ? 'false' : 'true'}
                   data-page-count=${quickPageCount}
-                  data-control-count=${quickControlCount + (thermostatEntityId ? 1 : 0)}
-                  style=${!this._isMobile && (quickControlCount + (thermostatEntityId ? 1 : 0)) > 3
-                    ? `--dd-room-quick-columns: ${Math.ceil((quickControlCount + (thermostatEntityId ? 1 : 0)) / 2)};`
+                  data-control-count=${quickControlCount}
+                  style=${!this._isMobile && quickControlCount > 3
+                    ? `--dd-room-quick-columns: ${Math.ceil(quickControlCount / 2)};`
                     : ''}
                   @scroll=${this._handleAreaQuickScroll}
                 >
