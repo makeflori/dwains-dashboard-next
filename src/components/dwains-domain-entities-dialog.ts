@@ -1089,10 +1089,13 @@ export class DwainsDomainEntitiesDialog extends LitElement {
         overscroll-behavior: contain;
       }
       ha-dialog-header {
-        touch-action: pan-x !important;
+        min-height: 112px !important;
+        height: auto !important;
+        box-sizing: border-box !important;
+        touch-action: none !important;
         overflow: visible !important;
         padding-top: 30px !important;
-        padding-bottom: 15px !important;
+        padding-bottom: 18px !important;
       }
       .dialog-title-line { align-items: center !important; }
       .dialog-heading-copy { overflow: visible !important; }
