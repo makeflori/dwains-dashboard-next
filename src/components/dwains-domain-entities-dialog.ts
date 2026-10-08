@@ -1074,6 +1074,46 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       }
     }
 
+    /* Unified header: desktop link follows title, mobile link is a second line.
+       Icon spans the full two-line block on phones. */
+    .dialog-title-line {
+      display: flex !important;
+      align-items: center !important;
+      flex-wrap: nowrap !important;
+      min-width: 0;
+    }
+    .dialog-heading-copy {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      min-width: 0;
+      gap: 8px 12px;
+    }
+    .dialog-title-icon {
+      flex: 0 0 44px !important;
+      width: 44px !important;
+      height: 44px !important;
+    }
+    @media (max-width: 600px) {
+      .dialog-title-line { flex-wrap: nowrap !important; }
+      .dialog-heading-copy {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        gap: 7px;
+      }
+      .dialog-title-icon {
+        flex: 0 0 56px !important;
+        width: 56px !important;
+        height: 56px !important;
+      }
+      .dialog-title-icon ha-icon { --mdc-icon-size: 30px; }
+      .dialog-header-destination { order: initial !important; }
+      .sheet-handle { touch-action: none !important; }
+      .content { overscroll-behavior-y: contain; }
+    }
+
     /* Shared room-style entity layout: desktop 2–3 columns, mobile one flat row per entity. */
     .entities-grid, .content.room-context .entities-grid {
       grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
@@ -1152,6 +1192,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     if (event.touches.length !== 1) return;
     this._sheetDragStartY = event.touches.item(0)?.clientY ?? null;
     this._sheetDragOffset = 0;
+    event.stopPropagation();
   };
 
   private _onSheetTouchMove = (event: TouchEvent): void => {
@@ -1159,6 +1200,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     const distance = (event.touches.item(0)?.clientY ?? this._sheetDragStartY) - this._sheetDragStartY;
     this._sheetDragOffset = Math.max(0, distance);
     if (distance > 0 && event.cancelable) event.preventDefault();
+    event.stopPropagation();
     const dialog = this.renderRoot.querySelector<HTMLElement>('ha-dialog');
     if (dialog) dialog.style.setProperty('--sheet-drag-offset', `${this._sheetDragOffset}px`);
   };
@@ -1472,17 +1514,19 @@ export class DwainsDomainEntitiesDialog extends LitElement {
             <span class="dialog-title-icon" aria-hidden="true">
               <ha-icon icon=${headerIcon}></ha-icon>
             </span>
-            <span class="dialog-title-text">${domainTitle}</span>
-            ${this._params?.onViewAll ? html`
-              <button
-                class="dialog-header-destination"
-                type="button"
-                @click=${this._handleViewAll}
-              >
-                <span>${this._params.viewAllLabel || 'Open device view'}</span>
-                <ha-icon icon="mdi:chevron-right"></ha-icon>
-              </button>
-            ` : nothing}
+            <span class="dialog-heading-copy">
+              <span class="dialog-title-text">${domainTitle}</span>
+              ${this._params?.onViewAll ? html`
+                <button
+                  class="dialog-header-destination"
+                  type="button"
+                  @click=${this._handleViewAll}
+                >
+                  <span>${this._params.viewAllLabel || 'Open device view'}</span>
+                  <ha-icon icon="mdi:chevron-right"></ha-icon>
+                </button>
+              ` : nothing}
+            </span>
           </span>
           <ha-icon-button
             slot="actionItems"
@@ -1638,7 +1682,8 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     }
 
     // The dialog title already identifies persons; do not repeat a persons group header.
-    const showAreaHeader = this._params?.domain !== 'person';
+    // A single group repeats the information conveyed by its entity cards or dialog title.
+    const showAreaHeader = this._params?.domain !== 'person' && Object.keys(this._groupedEntities).length > 1;
 
     return html`
       <div class="area-section">
@@ -1714,7 +1759,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
           ${this._renderEntityActions(state, domain, active)}
         </div>
         <div class="domain-entity-copy">
-          ${nothing}
           <div class="domain-entity-name">${name}</div>
           <div class="domain-entity-status">${this._entityStatusText(state, domain)}</div>
         </div>
