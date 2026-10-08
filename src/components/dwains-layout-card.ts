@@ -18895,7 +18895,7 @@ copy{
     return html`
       <div
         class="home-status-card house-climate-card sensor ${scope} metrics-${Math.min(climate.metrics.length, 4)}"
-        style=${this._domainStatusStyle('climate')}
+        style=${this._domainStatusStyle('room_climate')}
         @click=${() => this._showHouseClimateEntities(undefined, scope)}
         @keydown=${(event: KeyboardEvent) => this._handleHouseClimateKeydown(event, scope)}
         data-domain="sensor"
