@@ -515,6 +515,23 @@ export class DwainsBlueprintDialog extends LitElement {
 
   private _save(): void {
     if (!this._parsed || !this._params) return;
+    for (const [key, def] of Object.entries(this._parsed.meta.input || {})) {
+      const value = this._values[key];
+      if (def.type === 'entity-picker' && !def.default && !value) {
+        this._error = this._german ? 'Bitte zuerst eine Entität für „' + this._label(def, key) + '“ auswählen.' : 'Select an entity for “' + this._label(def, key) + '” first.';
+        return;
+      }
+      if (def.type !== 'entity-list') continue;
+      const entries = Array.isArray(value) ? value : [];
+      if (!entries.length || entries.some((item: any) => !item.entity)) {
+        this._error = this._german ? 'Bitte mindestens einen vollständigen Eintrag hinzufügen.' : 'Add at least one complete entry.';
+        return;
+      }
+      if (def.suggest === 'coin' && entries.some((item: any) => !item.price_entity || !item.amount_entity)) {
+        this._error = this._german ? 'Für jeden Coin werden ein Wert-, Preis- und Bestandssensor benötigt.' : 'Each coin needs a value, price and holdings sensor.';
+        return;
+      }
+    }
     let card: any;
     try {
       card = resolveBlueprintCard(this._parsed.card, this._parsed.meta, this._values);
@@ -871,7 +888,7 @@ export class DwainsBlueprintDialog extends LitElement {
         </div>
         <ha-entity-picker .hass=${this.hass} .value=${item.entity || ''} @value-changed=${(e: any) => update(index, 'entity', e.detail.value)}></ha-entity-picker>
         <input class="dd-input" placeholder=${this._german ? 'Name' : 'Name'} .value=${item.name || ''} @input=${(e: any) => update(index, 'name', e.target.value)} />
-        ${def.suggest === 'coin' ? html`<div class="field-desc">${this._german ? 'Preissensor (optional)' : 'Price sensor (optional)'}</div><ha-entity-picker .hass=${this.hass} .value=${item.price_entity || ''} @value-changed=${(e: any) => update(index, 'price_entity', e.detail.value)}></ha-entity-picker><div class="field-desc">${this._german ? 'Bestandssensor (optional)' : 'Holdings sensor (optional)'}</div><ha-entity-picker .hass=${this.hass} .value=${item.amount_entity || ''} @value-changed=${(e: any) => update(index, 'amount_entity', e.detail.value)}></ha-entity-picker>` : nothing}
+        ${def.suggest === 'coin' ? html`<div class="field-desc">${this._german ? 'Preissensor' : 'Price sensor'}</div><ha-entity-picker .hass=${this.hass} .value=${item.price_entity || ''} @value-changed=${(e: any) => update(index, 'price_entity', e.detail.value)}></ha-entity-picker><div class="field-desc">${this._german ? 'Bestandssensor' : 'Holdings sensor'}</div><ha-entity-picker .hass=${this.hass} .value=${item.amount_entity || ''} @value-changed=${(e: any) => update(index, 'amount_entity', e.detail.value)}></ha-entity-picker>` : nothing}
         <ha-icon-picker .hass=${this.hass} .value=${item.icon || ''} @value-changed=${(e: any) => update(index, 'icon', e.detail.value)}></ha-icon-picker>
         <div class="field-desc">${this._german ? 'Icon optional – Standard:' : 'Icon optional – default:'} ${def.default_icon || 'mdi:shape'}</div>
       </div>`)}
