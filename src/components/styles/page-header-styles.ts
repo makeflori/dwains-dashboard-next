@@ -149,15 +149,15 @@ export const pageHeaderStyles = css`
     }
 
     .dd-page-header-reading.temperature {
-      --reading-color: #34a6d8;
+      --reading-color: #239cb5;
     }
 
     .dd-page-header-reading.humidity {
-      --reading-color: #16a6b6;
+      --reading-color: #39b5ae;
     }
 
     .dd-page-header-reading.wattage {
-      --reading-color: #d88e20;
+      --reading-color: #65a83f;
     }
 
     /* Round buttons: back, camera, hidden entities, edit */
@@ -317,12 +317,12 @@ export const pageHeaderStyles = css`
     }
 
     .dd-room-tile.light {
-      --tile-color: #e1a129;
+      --tile-color: #e5b83b;
       --tile-on: #2b1c00;
     }
 
     .dd-room-tile.switch {
-      --tile-color: #2f6fd6;
+      --tile-color: #367dd5;
     }
 
     .dd-room-tile.cover {
@@ -330,11 +330,11 @@ export const pageHeaderStyles = css`
     }
 
     .dd-room-tile.fan {
-      --tile-color: #16a6b6;
+      --tile-color: #39b5ae;
     }
 
     .dd-room-tile.climate {
-      --tile-color: #34a6d8;
+      --tile-color: #239cb5;
     }
 
     .dd-room-tile-icon {
