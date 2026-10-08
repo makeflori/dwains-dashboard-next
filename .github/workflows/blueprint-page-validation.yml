@@ -32,6 +32,7 @@ jobs:
         run: npm ci
       - name: Type check
         run: npm run type-check
+      # Validate all real page blueprint imports and repeatable card expansion.
       - name: Blueprint tests
         run: npx vitest run tests/blueprint-repeat.test.ts tests/blueprint-page-import.test.ts
       - name: Build
