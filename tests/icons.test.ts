@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getDeviceClassIcon, getDomainIcon } from '../src/utils/icons';
+import { getDeviceClassIcon, getDomainColor, getDomainIcon } from '../src/utils/icons';
 
 const PLAIN_CIRCLE = 'mdi:radiobox-blank';
 const FALLBACK = 'mdi:shape-outline';
@@ -34,5 +34,24 @@ describe('device group icons', () => {
     for (const domain of ['notify', 'assist_satellite', 'conversation', 'tts', 'stt', 'wake_word', 'datetime']) {
       expect(getDomainIcon(domain), domain).not.toBe(FALLBACK);
     }
+  });
+});
+
+
+describe('semantic dashboard colors', () => {
+  it('uses the established type palette and humidity family', () => {
+    expect(getDomainColor('light')).toBe('#E1A129');
+    expect(getDomainColor('energy')).toBe('#65A83F');
+    expect(getDomainColor('sensor', 'power')).toBe(getDomainColor('energy'));
+    expect(getDomainColor('sensor', 'temperature')).toBe(getDomainColor('climate'));
+    expect(getDomainColor('sensor', 'humidity')).toBe(getDomainColor('fan'));
+    expect(getDomainColor('humidifier')).toBe(getDomainColor('fan'));
+    expect(getDomainColor('scene')).toBe(getDomainColor('event'));
+  });
+
+  it('distinguishes the combined room climate from both readings', () => {
+    expect(getDomainColor('room_climate')).toBe('#399FA0');
+    expect(getDomainColor('room_climate')).not.toBe(getDomainColor('climate'));
+    expect(getDomainColor('room_climate')).not.toBe(getDomainColor('humidity'));
   });
 });
