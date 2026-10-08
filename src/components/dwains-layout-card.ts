@@ -1727,8 +1727,13 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .welcome-alarm.alarm-armed{
-      background: var(--error-color);
-      color: var(--text-primary-color);
+      background: ${unsafeCSS(getDomainColor('lock'))};
+      color: #ffffff;
+    }
+
+    .welcome-alarm.alarm-unknown{
+      background: var(--secondary-background-color);
+      color: var(--primary-text-color);
     }
 
     .welcome-alarm.alarm-disarmed{
