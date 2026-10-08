@@ -186,3 +186,10 @@ See [LICENSE](LICENSE) for the full license terms.
 - Give combined indoor/outdoor climate cards the shared teal accent and use green-only household power bars.
 
 - Preserve the room section heading in entity popups even when only one room is present, while avoiding redundant person grouping labels.
+
+## Mobile entity dialog refinements
+
+- Size mobile domain dialogs to their contents up to the viewport limit.
+- Use a two-line mobile header with a full-height icon and a swipe-down dismissal gesture.
+- Display entities as single-column mobile rows and room-grouped desktop tiles.
+- Give each room section its own bulk controls for supported domains.
