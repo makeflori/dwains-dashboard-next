@@ -19920,6 +19920,8 @@ copy{
       const isOn = active > 0;
       const label = this._t(`domain.${kind}`);
       const state = this._areaTileState(active, total, 'on');
+      const fullState = this._areaTileState(total, total, 'on');
+      const offState = this._areaTileState(0, total, 'on');
       const action = this._t(isOn ? actionKey[1] : actionKey[0], { active, total });
       return html`
         <button
@@ -19935,7 +19937,11 @@ copy{
           </span>
           <span class="dd-room-tile-copy">
             <span class="dd-room-tile-label">${label}</span>
+            <span class="dd-room-tile-state-slot">
             <span class="dd-room-tile-state">${state}</span>
+            <span class="dd-room-tile-state dd-room-tile-state-reserve" aria-hidden="true">${fullState}</span>
+            <span class="dd-room-tile-state dd-room-tile-state-reserve" aria-hidden="true">${offState}</span>
+          </span>
           </span>
           <span class="dd-room-tile-switch" aria-hidden="true"></span>
         </button>
@@ -19962,7 +19968,11 @@ copy{
           </span>
           <span class="dd-room-tile-copy">
             <span class="dd-room-tile-label">${label}</span>
-            <span class="dd-room-tile-state">${this._areaTileState(openCount, groupCovers.length, 'open')}</span>
+            <span class="dd-room-tile-state-slot">
+              <span class="dd-room-tile-state">${this._areaTileState(openCount, groupCovers.length, 'open')}</span>
+              <span class="dd-room-tile-state dd-room-tile-state-reserve" aria-hidden="true">${this._areaTileState(groupCovers.length, groupCovers.length, 'open')}</span>
+              <span class="dd-room-tile-state dd-room-tile-state-reserve" aria-hidden="true">${this._areaTileState(0, groupCovers.length, 'open')}</span>
+            </span>
           </span>
           <span class="dd-room-tile-actions">
             <button
