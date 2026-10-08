@@ -5910,7 +5910,7 @@ export class DwainsLayoutCard extends LitElement {
       width: var(--power-width, 0%);
       min-width: 4px;
       border-radius: inherit;
-      background: linear-gradient(90deg, ${unsafeCSS(getDomainColor('energy'))}, #f4c34d);
+      background: ${unsafeCSS(getDomainColor('energy'))};
     }
 
     .house-persons-grid{
@@ -6669,11 +6669,11 @@ export class DwainsLayoutCard extends LitElement {
         }
 
         .home-status-card.house-power-card {
-          --status-color: #f2b447;
+          --status-color: ${unsafeCSS(getDomainColor('energy'))};
         }
 
         .home-status-card.house-climate-card {
-          --status-color: #64c8e8;
+          --status-color: ${unsafeCSS(getDomainColor('room_climate'))};
         }
 
         .house-person-mini {
@@ -12946,7 +12946,7 @@ no chip/background. */
       width: var(--power-width, 0%);
       min-width: 4px;
       border-radius: inherit;
-      background: linear-gradient(90deg, ${unsafeCSS(getDomainColor('energy'))}, #f4c34d);
+      background: ${unsafeCSS(getDomainColor('energy'))};
     }
 
     .house-power-dialog-entities{
