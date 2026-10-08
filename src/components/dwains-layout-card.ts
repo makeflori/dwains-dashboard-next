@@ -962,43 +962,43 @@ export class DwainsLayoutCard extends LitElement {
 
     /* Domain-specific status card colors */
     .status-card-compact.light .status-card-icon-compact{
-      background: color-mix(in srgb, var(--status-color, #e1a129) 15%, transparent);
+      background: color-mix(in srgb, var(--status-color, #e5b83b) 15%, transparent);
     }
 
     .status-card-compact.light ha-icon{
-      color: var(--status-color, #e1a129);
+      color: var(--status-color, #e5b83b);
     }
 
     .status-card-compact.switch .status-card-icon-compact{
-      background: color-mix(in srgb, var(--status-color, #2f6fd6) 15%, transparent);
+      background: color-mix(in srgb, var(--status-color, #367dd5) 15%, transparent);
     }
 
     .status-card-compact.switch ha-icon{
-      color: var(--status-color, #2f6fd6);
+      color: var(--status-color, #367dd5);
     }
 
     .status-card-compact.binary_sensor .status-card-icon-compact{
-      background: color-mix(in srgb, var(--status-color, #6d7891) 15%, transparent);
+      background: color-mix(in srgb, var(--status-color, #7a8799) 15%, transparent);
     }
 
     .status-card-compact.binary_sensor ha-icon{
-      color: var(--status-color, #6d7891);
+      color: var(--status-color, #7a8799);
     }
 
     .status-card-compact.person .status-card-icon-compact{
-      background: color-mix(in srgb, var(--status-color, #6d7891) 15%, transparent);
+      background: color-mix(in srgb, var(--status-color, #7a8799) 15%, transparent);
     }
 
     .status-card-compact.person ha-icon{
-      color: var(--status-color, #6d7891);
+      color: var(--status-color, #7a8799);
     }
 
     .status-card-compact.wattage .status-card-icon-compact{
-      background: color-mix(in srgb, var(--status-color, #d88e20) 15%, transparent);
+      background: color-mix(in srgb, var(--status-color, #65a83f) 15%, transparent);
     }
 
     .status-card-compact.wattage ha-icon{
-      color: var(--status-color, #d88e20);
+      color: var(--status-color, #65a83f);
     }
 
     /* Header Expand Button */
@@ -2596,13 +2596,13 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .person-card.away{
-      --person-color: #d88e20;
-      --person-bg: color-mix(in srgb, #d88e20 9%, var(--card-background-color));
+      --person-color: #65a83f;
+      --person-bg: color-mix(in srgb, #65a83f 9%, var(--card-background-color));
     }
 
     .person-card.unknown{
-      --person-color: #7c67c7;
-      --person-bg: color-mix(in srgb, #7c67c7 8%, var(--card-background-color));
+      --person-color: #c16aaf;
+      --person-bg: color-mix(in srgb, #c16aaf 8%, var(--card-background-color));
     }
 
     .person-card:hover{
@@ -2915,23 +2915,23 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .info-badge.light{
-      background: color-mix(in srgb, var(--badge-color, #e1a129) 10%, var(--card-background-color));
-      color: var(--badge-color, #e1a129);
+      background: color-mix(in srgb, var(--badge-color, #e5b83b) 10%, var(--card-background-color));
+      color: var(--badge-color, #e5b83b);
     }
 
     .info-badge.switch{
-      background: color-mix(in srgb, var(--badge-color, #2f6fd6) 10%, var(--card-background-color));
-      color: var(--badge-color, #2f6fd6);
+      background: color-mix(in srgb, var(--badge-color, #367dd5) 10%, var(--card-background-color));
+      color: var(--badge-color, #367dd5);
     }
 
     .info-badge.climate{
-      background: color-mix(in srgb, var(--badge-color, #34a6d8) 10%, var(--card-background-color));
-      color: var(--badge-color, #34a6d8);
+      background: color-mix(in srgb, var(--badge-color, #239cb5) 10%, var(--card-background-color));
+      color: var(--badge-color, #239cb5);
     }
 
     .info-badge.media_player{
-      background: color-mix(in srgb, var(--badge-color, #7c67c7) 10%, var(--card-background-color));
-      color: var(--badge-color, #7c67c7);
+      background: color-mix(in srgb, var(--badge-color, #c16aaf) 10%, var(--card-background-color));
+      color: var(--badge-color, #c16aaf);
     }
 
     .info-badge.cover{
@@ -2940,13 +2940,13 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .info-badge.fan{
-      background: color-mix(in srgb, var(--badge-color, #16a6b6) 10%, var(--card-background-color));
-      color: var(--badge-color, #16a6b6);
+      background: color-mix(in srgb, var(--badge-color, #39b5ae) 10%, var(--card-background-color));
+      color: var(--badge-color, #39b5ae);
     }
 
     .info-badge.motion{
-      background: color-mix(in srgb, var(--badge-color, #6d7891) 10%, var(--card-background-color));
-      color: var(--badge-color, #6d7891);
+      background: color-mix(in srgb, var(--badge-color, #7a8799) 10%, var(--card-background-color));
+      color: var(--badge-color, #7a8799);
     }
 
     /* Sidebar info badges (smaller) */
@@ -3221,22 +3221,22 @@ export class DwainsLayoutCard extends LitElement {
 
     .mobile-area-metric.temperature,
 .area-header-metric.temperature{
-      --metric-color: #7c67c7;
+      --metric-color: #c16aaf;
     }
 
     .mobile-area-metric.humidity,
 .area-header-metric.humidity{
-      --metric-color: #34a6d8;
+      --metric-color: #239cb5;
     }
 
     .mobile-area-metric.power,
 .area-header-metric.power{
-      --metric-color: #d88e20;
+      --metric-color: #65a83f;
     }
 
     .mobile-area-metric.energy,
 .area-header-metric.energy{
-      --metric-color: #7c67c7;
+      --metric-color: #c16aaf;
     }
 
     .metric-ring{
@@ -4706,11 +4706,11 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .favorite-card-wrapper.favorite-light{
-      --favorite-color: #e1a129;
+      --favorite-color: #e5b83b;
     }
 
     .favorite-card-wrapper.favorite-switch{
-      --favorite-color: #2f6fd6;
+      --favorite-color: #367dd5;
     }
 
     .favorite-card-wrapper.favorite-cover{
@@ -4719,16 +4719,16 @@ export class DwainsLayoutCard extends LitElement {
 
     .favorite-card-wrapper.favorite-binary_sensor,
 .favorite-card-wrapper.favorite-motion{
-      --favorite-color: #6d7891;
+      --favorite-color: #7a8799;
     }
 
     .favorite-card-wrapper.favorite-climate,
 .favorite-card-wrapper.favorite-weather{
-      --favorite-color: #34a6d8;
+      --favorite-color: #239cb5;
     }
 
     .favorite-card-wrapper.favorite-media_player{
-      --favorite-color: #7c67c7;
+      --favorite-color: #c16aaf;
     }
 
     .favorite-card-wrapper.favorite-person{
@@ -5272,27 +5272,27 @@ export class DwainsLayoutCard extends LitElement {
 
     /* Domain-specific badge colors */
     .area-badge.light{
-      background: color-mix(in srgb, var(--area-badge-color, #e1a129) 10%, var(--card-background-color));
-      color: var(--area-badge-color, #e1a129);
-      border-color: color-mix(in srgb, var(--area-badge-color, #e1a129) 20%, transparent);
+      background: color-mix(in srgb, var(--area-badge-color, #e5b83b) 10%, var(--card-background-color));
+      color: var(--area-badge-color, #e5b83b);
+      border-color: color-mix(in srgb, var(--area-badge-color, #e5b83b) 20%, transparent);
     }
 
     .area-badge.switch{
-      background: color-mix(in srgb, var(--area-badge-color, #2f6fd6) 10%, var(--card-background-color));
-      color: var(--area-badge-color, #2f6fd6);
-      border-color: color-mix(in srgb, var(--area-badge-color, #2f6fd6) 20%, transparent);
+      background: color-mix(in srgb, var(--area-badge-color, #367dd5) 10%, var(--card-background-color));
+      color: var(--area-badge-color, #367dd5);
+      border-color: color-mix(in srgb, var(--area-badge-color, #367dd5) 20%, transparent);
     }
 
     .area-badge.climate{
-      background: color-mix(in srgb, var(--area-badge-color, #34a6d8) 10%, var(--card-background-color));
-      color: var(--area-badge-color, #34a6d8);
-      border-color: color-mix(in srgb, var(--area-badge-color, #34a6d8) 20%, transparent);
+      background: color-mix(in srgb, var(--area-badge-color, #239cb5) 10%, var(--card-background-color));
+      color: var(--area-badge-color, #239cb5);
+      border-color: color-mix(in srgb, var(--area-badge-color, #239cb5) 20%, transparent);
     }
 
     .area-badge.motion.active{
-      background: color-mix(in srgb, var(--area-badge-color, #6d7891) 10%, var(--card-background-color));
-      color: var(--area-badge-color, #6d7891);
-      border-color: color-mix(in srgb, var(--area-badge-color, #6d7891) 20%, transparent);
+      background: color-mix(in srgb, var(--area-badge-color, #7a8799) 10%, var(--card-background-color));
+      color: var(--area-badge-color, #7a8799);
+      border-color: color-mix(in srgb, var(--area-badge-color, #7a8799) 20%, transparent);
     }
 
     .area-badge.cover{
@@ -5302,9 +5302,9 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .area-badge.media_player{
-      background: color-mix(in srgb, var(--area-badge-color, #7c67c7) 10%, var(--card-background-color));
-      color: var(--area-badge-color, #7c67c7);
-      border-color: color-mix(in srgb, var(--area-badge-color, #7c67c7) 20%, transparent);
+      background: color-mix(in srgb, var(--area-badge-color, #c16aaf) 10%, var(--card-background-color));
+      color: var(--area-badge-color, #c16aaf);
+      border-color: color-mix(in srgb, var(--area-badge-color, #c16aaf) 20%, transparent);
     }
 
     .area-badge.temperature{
@@ -5534,23 +5534,23 @@ export class DwainsLayoutCard extends LitElement {
 .home-status-card.motion,
 .status-card-compact.binary_sensor,
 .status-card-compact.motion{
-      --status-color: #6d7891;
+      --status-color: #7a8799;
     }
 
     .home-status-card.light,
 .status-card-compact.light{
-      --status-color: #e1a129;
+      --status-color: #e5b83b;
     }
 
     .home-status-card.switch,
 .status-card-compact.switch{
-      --status-color: #2f6fd6;
+      --status-color: #367dd5;
     }
 
     .home-status-card.climate,
 .home-status-card.house-climate-card,
 .status-card-compact.climate{
-      --status-color: #34a6d8;
+      --status-color: #239cb5;
     }
 
     .home-status-card.person,
@@ -5560,12 +5560,12 @@ export class DwainsLayoutCard extends LitElement {
 
     .home-status-card.media_player,
 .status-card-compact.media_player{
-      --status-color: #7c67c7;
+      --status-color: #c16aaf;
     }
 
     .home-status-card.fan,
 .status-card-compact.fan{
-      --status-color: #16a6b6;
+      --status-color: #39b5ae;
     }
 
     .home-status-card.wattage,
@@ -5573,7 +5573,7 @@ export class DwainsLayoutCard extends LitElement {
 .home-status-card.energy,
 .status-card-compact.wattage,
 .status-card-compact.energy{
-      --status-color: #d88e20;
+      --status-color: #65a83f;
     }
 
     .home-status-grid{
@@ -5687,14 +5687,14 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .home-status-card.house-power-card{
-      --status-color: #d88e20;
+      --status-color: #65a83f;
       grid-column: span 2;
       min-width: 270px;
       gap: 12px;
     }
 
     .home-status-card.house-climate-card{
-      --status-color: #34a6d8;
+      --status-color: #239cb5;
       grid-column: span 2;
       min-width: 270px;
       gap: 12px;
@@ -5906,7 +5906,7 @@ export class DwainsLayoutCard extends LitElement {
       width: var(--power-width, 0%);
       min-width: 4px;
       border-radius: inherit;
-      background: linear-gradient(90deg, #d88e20, #f4c34d);
+      background: linear-gradient(90deg, #65a83f, #f4c34d);
     }
 
     .house-persons-grid{
@@ -5945,7 +5945,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .house-person-mini.is-away{
-      background: color-mix(in srgb, #df5b63 10%, var(--card-background-color));
+      background: color-mix(in srgb, #d94f58 10%, var(--card-background-color));
     }
 
     .house-person-avatar{
@@ -6503,7 +6503,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .mobile-area-badge.light{
-        --area-badge-color: #e1a129;
+        --area-badge-color: #e5b83b;
       }
 
       .mobile-area-badge.cover{
@@ -6511,7 +6511,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .mobile-area-badge.motion{
-        --area-badge-color: #6d7891;
+        --area-badge-color: #7a8799;
       }
 
       .mobile-area-name{
@@ -6695,7 +6695,7 @@ export class DwainsLayoutCard extends LitElement {
         }
 
         .house-person-mini.is-away {
-          background: color-mix(in srgb, #df5b63 16%, var(--card-background-color));
+          background: color-mix(in srgb, #d94f58 16%, var(--card-background-color));
         }
 
         .home-summary-card {
@@ -12771,8 +12771,8 @@ typography and interaction. */
       }
 
       /* Climate card uses exactly the same temperature/humidity colors as the room view. */
-      .house-climate-metric.temperature{ --metric-color: #34a6d8 !important; }
-      .house-climate-metric.humidity{ --metric-color: #16a6b6 !important; }
+      .house-climate-metric.temperature{ --metric-color: #239cb5 !important; }
+      .house-climate-metric.humidity{ --metric-color: #39b5ae !important; }
 
       /* Climate metric icons are direct,
 slightly larger icons without a second circle. */
@@ -12861,8 +12861,8 @@ no chip/background. */
       align-items: center;
       justify-content: center;
       border-radius: 10px;
-      color: #d88e20;
-      background: color-mix(in srgb, #d88e20 12%, var(--card-background-color));
+      color: #65a83f;
+      background: color-mix(in srgb, #65a83f 12%, var(--card-background-color));
     }
 
     .house-power-dialog-icon ha-icon{ --mdc-icon-size: 23px; }
@@ -12891,8 +12891,8 @@ no chip/background. */
       flex-direction: column;
       justify-content: center;
       border-radius: 10px;
-      background: color-mix(in srgb, #d88e20 8%, var(--card-background-color));
-      box-shadow: inset 0 0 0 1px color-mix(in srgb, #d88e20 14%, transparent);
+      background: color-mix(in srgb, #65a83f 8%, var(--card-background-color));
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, #65a83f 14%, transparent);
     }
 
     .house-power-dialog-total span{ font-size: 28px; font-weight: 950; line-height: 1; }
@@ -12920,8 +12920,8 @@ no chip/background. */
       align-items: center;
       justify-content: center;
       border-radius: 8px;
-      color: #d88e20;
-      background: color-mix(in srgb, #d88e20 10%, transparent);
+      color: #65a83f;
+      background: color-mix(in srgb, #65a83f 10%, transparent);
     }
 
     .house-power-dialog-area-icon ha-icon{ --mdc-icon-size: 17px; }
@@ -12933,7 +12933,7 @@ no chip/background. */
       margin: 8px 0 6px 38px;
       overflow: hidden;
       border-radius: 999px;
-      background: color-mix(in srgb, #d88e20 10%, var(--secondary-background-color));
+      background: color-mix(in srgb, #65a83f 10%, var(--secondary-background-color));
     }
 
     .house-power-dialog-bar span{
@@ -12942,7 +12942,7 @@ no chip/background. */
       width: var(--power-width, 0%);
       min-width: 4px;
       border-radius: inherit;
-      background: linear-gradient(90deg, #d88e20, #f4c34d);
+      background: linear-gradient(90deg, #65a83f, #f4c34d);
     }
 
     .house-power-dialog-entities{
@@ -12969,7 +12969,7 @@ no chip/background. */
     }
 
     .house-power-dialog-entity:hover{
-      background: color-mix(in srgb, #d88e20 7%, transparent);
+      background: color-mix(in srgb, #65a83f 7%, transparent);
     }
 
     .house-power-dialog-entity span{
@@ -13204,8 +13204,8 @@ never pill-shaped for 1–2 digits. */
       align-items: center;
       justify-content: center;
       border-radius: 10px;
-      color: #d88e20;
-      background: color-mix(in srgb, #d88e20 10%, transparent);
+      color: #65a83f;
+      background: color-mix(in srgb, #65a83f 10%, transparent);
     }
 
     .house-power-dialog-overview-icon ha-icon{ --mdc-icon-size: 21px; }
@@ -13219,7 +13219,7 @@ never pill-shaped for 1–2 digits. */
       margin-top: 10px;
       border-radius: 10px;
       overflow: hidden;
-      background: color-mix(in srgb, #d88e20 4%, transparent);
+      background: color-mix(in srgb, #65a83f 4%, transparent);
       --ha-card-background: transparent;
       --ha-card-box-shadow: none;
       --ha-card-border-width: 0;
@@ -13241,7 +13241,7 @@ never pill-shaped for 1–2 digits. */
       align-items: center;
       justify-content: space-between;
       gap: 10px;
-      background: color-mix(in srgb, #d88e20 5%, transparent);
+      background: color-mix(in srgb, #65a83f 5%, transparent);
       color: inherit;
       font: inherit;
       cursor: pointer;
@@ -13263,8 +13263,8 @@ never pill-shaped for 1–2 digits. */
       align-items: center;
       justify-content: center;
       border-radius: 8px;
-      color: #d88e20;
-      background: color-mix(in srgb, #d88e20 9%, transparent);
+      color: #65a83f;
+      background: color-mix(in srgb, #65a83f 9%, transparent);
     }
 
     .house-power-dialog-entity-icon ha-icon{ --mdc-icon-size: 17px; }
@@ -13293,7 +13293,7 @@ never pill-shaped for 1–2 digits. */
       height: 3px;
       overflow: hidden;
       border-radius: 999px;
-      background: color-mix(in srgb, #d88e20 10%, var(--secondary-background-color));
+      background: color-mix(in srgb, #65a83f 10%, var(--secondary-background-color));
     }
 
     .house-power-dialog-entity-bar span{
@@ -13302,7 +13302,7 @@ never pill-shaped for 1–2 digits. */
       width: var(--entity-power-width, 0%);
       min-width: 3px;
       border-radius: inherit;
-      background: #d88e20;
+      background: #65a83f;
     }
 
     .house-power-dialog-entity.detailed > b{
@@ -13469,9 +13469,9 @@ never pill-shaped for 1–2 digits. */
       align-items: center;
       justify-content: center;
       gap: 6px;
-      color: #d88e20;
-      background: color-mix(in srgb, #d88e20 10%, var(--card-background-color));
-      box-shadow: inset 0 0 0 1px color-mix(in srgb, #d88e20 14%, transparent);
+      color: #65a83f;
+      background: color-mix(in srgb, #65a83f 10%, var(--card-background-color));
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, #65a83f 14%, transparent);
       font: inherit;
       font-size: 12px;
       font-weight: 850;
@@ -13479,7 +13479,7 @@ never pill-shaped for 1–2 digits. */
     }
 
     .house-power-dialog-energy-link:hover{
-      background: color-mix(in srgb, #d88e20 15%, var(--card-background-color));
+      background: color-mix(in srgb, #65a83f 15%, var(--card-background-color));
     }
 
     .house-power-dialog-energy-link ha-icon{
@@ -14181,7 +14181,7 @@ never pill-shaped for 1–2 digits. */
       }
 
       .mobile-light-control-row.mode-brightness .mobile-light-control-slider{
-        background: linear-gradient(90deg, #e1a129 0%, #f0bd45 100%);
+        background: linear-gradient(90deg, #e5b83b 0%, #f0bd45 100%);
       }
 
       .mobile-light-control-row.mode-color_temp .mobile-light-control-slider{
@@ -17998,27 +17998,19 @@ copy{
     return `--status-color: ${this._statusColor(domain, deviceClass)};`;
   }
 
-  private _isAlarmActive(): boolean {
+  private _isAlarmTriggered(): boolean {
     const alarm = this._getAlarmEntity();
     if (!alarm) return false;
-    return [
-      'armed_away',
-      'armed_home',
-      'armed_night',
-      'armed_vacation',
-      'arming',
-      'pending',
-      'triggered',
-    ].includes(String(alarm.state || '').toLowerCase());
+    return String(alarm.state || '').toLowerCase() === 'triggered';
   }
 
   private _binarySensorBadgeColor(deviceClass?: string): string {
     // Status badges normally use the exact colour of their type.
-    // Only alarm-relevant active states are allowed to override that colour with red.
+    // Only a triggered alarm may override relevant badge colours with red.
     const alarmRelevant = ['motion', 'window', 'door', 'opening', 'garage_door'].includes(
       String(deviceClass || '')
     );
-    if (alarmRelevant && this._isAlarmActive()) {
+    if (alarmRelevant && this._isAlarmTriggered()) {
       return getDomainColor('alarm_control_panel');
     }
     return getDomainColor('binary_sensor', deviceClass);
@@ -18512,7 +18504,7 @@ copy{
         label: this._t('home.devices_discovered'),
         subtitle: this._tp('summary.device_to_add', this._discoveredDeviceCount),
         icon: 'mdi:devices',
-        color: '#1494aa',
+        color: '#8065c7',
         count: this._discoveredDeviceCount,
         path: '/config/integrations',
       });
@@ -19473,23 +19465,27 @@ copy{
     const state = alarm?.state || '';
     const isArmed = ['armed_away', 'armed_home', 'armed_night', 'armed_vacation'].includes(state);
     const isDisarmed = state === 'disarmed';
+    const isTriggered = state === 'triggered';
 
     const getAlarmIcon = () => {
+      if (isTriggered) return 'mdi:shield-alert';
       if (isArmed) return 'mdi:shield-check';
       if (isDisarmed) return 'mdi:shield-off';
       return 'mdi:shield-alert';
     };
 
     const getAlarmText = () => {
+      if (isTriggered) return this._t('domain.alarm_control_panel');
       if (isArmed) return this._t('home.alarm_armed');
       if (isDisarmed) return this._t('home.alarm_disarmed');
       return this._t('domain.alarm_control_panel');
     };
 
     const getAlarmClass = () => {
+      if (isTriggered) return 'alarm-triggered';
       if (isArmed) return 'alarm-armed';
       if (isDisarmed) return 'alarm-disarmed';
-      return 'alarm-triggered';
+      return 'alarm-unknown';
     };
 
     return html`
