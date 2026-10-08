@@ -191,6 +191,15 @@ export class DwainsCardHost extends HTMLElement {
       const child = helpers.createCardElement(config);
       if (!child) throw new Error('Home Assistant did not create a card element');
 
+      // Keep native Lovelace cards constrained to the host width on narrow screens.
+      // Some HA cards carry their own intrinsic/minimum width, so constraining only
+      // the outer host is not enough.
+      child.style.display = 'block';
+      child.style.boxSizing = 'border-box';
+      child.style.width = '100%';
+      child.style.maxWidth = '100%';
+      child.style.minWidth = '0';
+
       // Home Assistant configures the real card before returning it. We only
       // provide hass and mount it, avoiding hui-card's asynchronous setConfig race.
       if (this._hass) child.hass = this._hass;
