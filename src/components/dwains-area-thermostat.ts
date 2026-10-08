@@ -240,7 +240,7 @@ export class DwainsAreaThermostat extends LitElement {
 
   private _openMoreInfo = (): void => {
     if (this._modeMenuOpen) {
-      this._modeMenuOpen = false;
+      this._closeModeMenu();
       return;
     }
     if (this.entityId) fireEvent(this, 'hass-more-info', { entityId: this.entityId });
