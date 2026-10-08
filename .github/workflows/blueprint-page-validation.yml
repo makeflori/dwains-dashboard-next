@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: makeflori/dwains-dashboard-blueprints
-          ref: feature/blueprint-i18n-generic-20261008
+          ref: fix/english-folders-wallet-20261008
           path: blueprint-source
           persist-credentials: false
       - uses: actions/setup-node@v4
