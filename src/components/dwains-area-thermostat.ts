@@ -1,4 +1,4 @@
-import { LitElement, PropertyValues, css, html, nothing } from 'lit';
+import { LitElement, PropertyValues, css, html, nothing, render } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import {
   mdiMinus,
@@ -56,7 +56,7 @@ export class DwainsAreaThermostat extends LitElement {
   @state() private _pendingTarget?: number;
   @state() private _pendingRange?: { low: number; high: number };
   @state() private _modeMenuOpen = false;
-  @state() private _modeMenuPosition?: { top: number; left: number };
+  private _modeMenuPortal?: HTMLDivElement;
   private _pendingEntityId?: string;
   private _commitTimer?: number;
   private _confirmTimer?: number;
@@ -70,6 +70,7 @@ export class DwainsAreaThermostat extends LitElement {
     // Leaving the page right after a tap still sends the new target.
     this._flushCommit();
     this._clearConfirmTimer();
+    this._closeModeMenu();
   }
 
   protected override willUpdate(changedProps: PropertyValues): void {
@@ -271,42 +272,121 @@ export class DwainsAreaThermostat extends LitElement {
     }
   }
 
+  private _closeModeMenu = (): void => {
+    this._modeMenuOpen = false;
+    if (this._modeMenuPortal) {
+      render(nothing, this._modeMenuPortal);
+      this._modeMenuPortal.remove();
+      this._modeMenuPortal = undefined;
+    }
+  };
+
   private _toggleModeMenu(event: Event): void {
     event.stopPropagation();
 
     if (this._modeMenuOpen) {
-      this._modeMenuOpen = false;
-      this._modeMenuPosition = undefined;
+      this._closeModeMenu();
       return;
     }
 
     const button = event.currentTarget as HTMLElement | null;
-    if (button) {
-      const rect = button.getBoundingClientRect();
-      const menuWidth = 176;
-      const margin = 8;
-      const itemCount = Math.max(1, this._supportedModes(this._stateObj() as HassEntity).length);
-      const estimatedHeight = 12 + (itemCount * 40) + Math.max(0, itemCount - 1) * 2;
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
-      const left = Math.min(
-        Math.max(margin, rect.left),
-        Math.max(margin, viewportWidth - menuWidth - margin)
-      );
-      const belowTop = rect.bottom + margin;
-      const top = belowTop + estimatedHeight <= viewportHeight - margin
-        ? belowTop
-        : Math.max(margin, rect.top - estimatedHeight - margin);
+    const stateObj = this._stateObj();
+    if (!button || !stateObj) return;
 
-      this._modeMenuPosition = { top, left };
-    }
+    const modes = this._supportedModes(stateObj);
+    if (!modes.length) return;
 
+    const currentMode = String(stateObj.state || '').toLowerCase();
+    const portal = document.createElement('div');
+    portal.className = 'dd-next-hvac-mode-portal';
+    portal.style.cssText = [
+      'position:fixed',
+      'z-index:10000',
+      'visibility:hidden',
+      'min-width:176px',
+      'max-width:calc(100vw - 16px)',
+      'box-sizing:border-box'
+    ].join(';');
+
+    render(html`
+      <style>
+        .dd-next-hvac-mode-menu {
+          box-sizing: border-box;
+          min-width: 176px;
+          padding: 6px;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          border-radius: 12px;
+          background: var(--card-background-color, #fff);
+          color: var(--primary-text-color, #111);
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+          font: inherit;
+        }
+        .dd-next-hvac-mode-item {
+          min-height: 38px;
+          padding: 0 10px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          border: 0;
+          border-radius: 9px;
+          background: transparent;
+          color: inherit;
+          font: inherit;
+          white-space: nowrap;
+          text-align: left;
+          cursor: pointer;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .dd-next-hvac-mode-item.active {
+          background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+          color: var(--primary-color);
+          font-weight: 600;
+        }
+        .dd-next-hvac-mode-item ha-icon {
+          --mdc-icon-size: 20px;
+        }
+      </style>
+      <div class="dd-next-hvac-mode-menu" role="menu" @click=${(menuEvent: Event) => menuEvent.stopPropagation()}>
+        ${modes.map(mode => html`
+          <button
+            class="dd-next-hvac-mode-item ${mode === currentMode ? 'active' : ''}"
+            type="button"
+            role="menuitemradio"
+            aria-checked=${mode === currentMode ? 'true' : 'false'}
+            @click=${(menuEvent: Event) => this._setHvacMode(menuEvent, mode)}
+          >
+            <ha-icon icon=${HVAC_MODE_ICONS[mode] || 'mdi:thermostat'}></ha-icon>
+            <span>${this._modeLabel(stateObj, mode)}</span>
+          </button>
+        `)}
+      </div>
+    `, portal);
+
+    document.body.appendChild(portal);
+    const triggerRect = button.getBoundingClientRect();
+    const menuRect = portal.getBoundingClientRect();
+    const margin = 8;
+    const left = Math.min(
+      Math.max(margin, triggerRect.left),
+      Math.max(margin, window.innerWidth - menuRect.width - margin)
+    );
+    const belowTop = triggerRect.bottom + margin;
+    const top = belowTop + menuRect.height <= window.innerHeight - margin
+      ? belowTop
+      : Math.max(margin, triggerRect.top - menuRect.height - margin);
+
+    portal.style.left = `${left}px`;
+    portal.style.top = `${top}px`;
+    portal.style.visibility = 'visible';
+    this._modeMenuPortal = portal;
     this._modeMenuOpen = true;
   }
 
   private async _setHvacMode(event: Event, hvacMode: string): Promise<void> {
     event.stopPropagation();
-    this._modeMenuOpen = false;
+    this._closeModeMenu();
     if (!this.hass || !this.entityId || hvacMode === this._stateObj()?.state) return;
 
     try {
@@ -370,29 +450,7 @@ export class DwainsAreaThermostat extends LitElement {
           >
             <ha-icon icon=${modeIcon}></ha-icon>
           </button>
-          ${this._modeMenuOpen && modes.length ? html`
-            <div
-              class="mode-menu"
-              role="menu"
-              style=${this._modeMenuPosition
-                ? `top: ${this._modeMenuPosition.top}px; left: ${this._modeMenuPosition.left}px;`
-                : nothing}
-              @click=${(event: Event) => event.stopPropagation()}
-            >
-              ${modes.map(mode => html`
-                <button
-                  class="mode-item ${mode === currentMode ? 'active' : ''}"
-                  type="button"
-                  role="menuitemradio"
-                  aria-checked=${mode === currentMode ? 'true' : 'false'}
-                  @click=${(event: Event) => this._setHvacMode(event, mode)}
-                >
-                  <ha-icon icon=${HVAC_MODE_ICONS[mode] || 'mdi:thermostat'}></ha-icon>
-                  <span>${this._modeLabel(stateObj, mode)}</span>
-                </button>
-              `)}
-            </div>
-          ` : nothing}
+
         </div>
 
         ${model.mode === 'single' && target !== undefined ? html`
@@ -589,8 +647,7 @@ export class DwainsAreaThermostat extends LitElement {
     }
 
     .thermostat:focus-visible {
-      outline: 2px solid var(--primary-color);
-      outline-offset: 2px;
+      outline: none;
     }
 
     .thermostat.activity-heat { --thermostat-color: var(--state-climate-heat-color, #ff8100); }
