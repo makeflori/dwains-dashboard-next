@@ -1126,6 +1126,9 @@ export class DwainsDomainEntitiesDialog extends LitElement {
         pointer-events: auto;
         cursor: grab;
       }
+      ha-dialog {
+        transform: translateY(var(--sheet-drag-offset, 0px));
+      }
     }
   `;
 
@@ -1144,7 +1147,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     if (dialog) dialog.style.setProperty('--sheet-drag-offset', `${this._sheetDragOffset}px`);
   };
 
-  private _onSheetTouchEnd = (): void => {
+  private _onSheetTouchEnd = (event: TouchEvent): void => {
     if (this._sheetDragStartY === null) return;
     const shouldClose = this._sheetDragOffset >= 90;
     this._sheetDragStartY = null;
