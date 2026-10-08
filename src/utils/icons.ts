@@ -64,7 +64,7 @@ export const getDomainColor = (domain: string, deviceClass?: string): string => 
       cold: '#D94F58',
 
       // Light and energy
-      light: '#E5B83B',
+      light: '#E1A129',
       plug: '#65A83F',
       power: '#65A83F',
 
@@ -105,7 +105,7 @@ export const getDomainColor = (domain: string, deviceClass?: string): string => 
   if (domain === 'sensor') {
     const sensorDeviceClassColors: Record<string, string> = {
       temperature: '#239CB5',
-      humidity: '#39B5AE',
+      humidity: '#50A789',
       power: '#65A83F',
       energy: '#65A83F',
       battery: '#7A8799',
@@ -120,7 +120,7 @@ export const getDomainColor = (domain: string, deviceClass?: string): string => 
     alarm_control_panel: '#D94F58',
 
     // Warm yellow for light; green for energy
-    light: '#E5B83B',
+    light: '#E1A129',
     wattage: '#65A83F',
     energy: '#65A83F',
 
@@ -149,14 +149,17 @@ export const getDomainColor = (domain: string, deviceClass?: string): string => 
     // Magenta — media / events
     media_player: '#C16AAF',
     event: '#C16AAF',
+    scene: '#C16AAF',
 
     // Blue-cyan — climate / temperature
     climate: '#239CB5',
     temperature: '#239CB5',
+    room_climate: '#399FA0',
 
     // Teal — air / humidity
-    fan: '#39B5AE',
-    humidity: '#39B5AE',
+    fan: '#50A789',
+    humidifier: '#50A789',
+    humidity: '#50A789',
 
     // Violet — cameras
     camera: '#8065C7',
