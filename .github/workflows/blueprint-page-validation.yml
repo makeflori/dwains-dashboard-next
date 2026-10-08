@@ -17,6 +17,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Check out blueprint source
+        uses: actions/checkout@v4
+        with:
+          repository: makeflori/dwains-dashboard-blueprints
+          ref: feature/blueprint-i18n-generic-20261008
+          path: blueprint-source
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -26,6 +33,6 @@ jobs:
       - name: Type check
         run: npm run type-check
       - name: Blueprint tests
-        run: npx vitest run tests/blueprint-repeat.test.ts
+        run: npx vitest run tests/blueprint-repeat.test.ts tests/blueprint-page-import.test.ts
       - name: Build
         run: npm run build
