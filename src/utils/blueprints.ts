@@ -175,7 +175,7 @@ export function resolveBlueprintCard(
     if (Array.isArray(node)) return node.flatMap((entry) => {
       if (entry && typeof entry === 'object' && typeof entry.repeat === 'string' && entry.template) {
         const items = values[entry.repeat];
-        return Array.isArray(items) ? items.filter((x) => x?.entity).map((item, index) => renderItem(entry.template, item, index)) : [];
+        return Array.isArray(items) ? items.filter((x) => x?.entity).map((item, index) => renderItem(entry.template, { ...item, icon: item.icon || meta.input?.[entry.repeat]?.default_icon || 'mdi:shape' }, index)) : [];
       }
       return [walk(entry)];
     });
