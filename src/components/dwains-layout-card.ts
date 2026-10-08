@@ -55,6 +55,7 @@ type DomainCount = StatusDomainCount;
 type DwainsSelectedView = 'home' | 'area' | 'settings';
 type PictureTextTone = 'light' | 'dark';
 const SETTINGS_HISTORY_STATE_KEY = 'dwainsDashboardNextSettingsOpen';
+const SETTINGS_HISTORY_RESTORE_MS = 15000;
 type PictureContrastCacheValue = PictureTextTone | 'pending';
 const SIDEBAR_WIDTH_STORAGE_KEY = 'dd-next-area-sidebar-width';
 const SIDEBAR_COLLAPSED_STORAGE_KEY = 'dd-next-area-sidebar-collapsed';
@@ -278,27 +279,35 @@ export class DwainsLayoutCard extends LitElement {
     }
     this.config = config;
 
-    // Restore the settings view after a Lovelace config save recreates the card.
+    // Restore the settings view only immediately after a settings interaction/save.
+    // A stale browser history marker must never reopen DD settings later by itself.
     if (!this._selectedView) {
-      const settingsOpen = Boolean(window.history.state?.[SETTINGS_HISTORY_STATE_KEY]);
+      const savedSettingsState = window.history.state?.[SETTINGS_HISTORY_STATE_KEY];
+      const settingsStateFresh = Boolean(
+        savedSettingsState &&
+        typeof savedSettingsState === 'object' &&
+        typeof savedSettingsState.updatedAt === 'number' &&
+        Date.now() - savedSettingsState.updatedAt <= SETTINGS_HISTORY_RESTORE_MS
+      );
       const urlArea = this._getUrlArea();
-      if (settingsOpen) {
+
+      if (settingsStateFresh) {
         this._selectedArea = null;
         this._selectedView = 'settings';
-        const savedSettingsState = window.history.state?.[SETTINGS_HISTORY_STATE_KEY];
-        if (savedSettingsState && typeof savedSettingsState === 'object') {
-          this._settingsRestorePageKey = typeof savedSettingsState.page === 'string'
-            ? savedSettingsState.page
-            : 'overview';
-          this._settingsRestoreAreaId = typeof savedSettingsState.areaId === 'string'
-            ? savedSettingsState.areaId
-            : undefined;
-        }
-      } else if (urlArea && config.areas?.some(a => a.area_id === urlArea)) {
-        this._selectedArea = urlArea;
-        this._selectedView = 'area';
+        this._settingsRestorePageKey = typeof savedSettingsState.page === 'string'
+          ? savedSettingsState.page
+          : 'overview';
+        this._settingsRestoreAreaId = typeof savedSettingsState.areaId === 'string'
+          ? savedSettingsState.areaId
+          : undefined;
       } else {
-        this._selectedView = 'home';
+        if (savedSettingsState) this._setSettingsHistoryState(false);
+        if (urlArea && config.areas?.some(a => a.area_id === urlArea)) {
+          this._selectedArea = urlArea;
+          this._selectedView = 'area';
+        } else {
+          this._selectedView = 'home';
+        }
       }
     }
     this._restoreAreaEditMode();
@@ -333,6 +342,7 @@ export class DwainsLayoutCard extends LitElement {
         next[SETTINGS_HISTORY_STATE_KEY] = {
           page: this._settingsPageKey || 'overview',
           areaId: this._settingsRestoreAreaId,
+          updatedAt: Date.now(),
         };
       } else {
         delete next[SETTINGS_HISTORY_STATE_KEY];
@@ -23154,6 +23164,7 @@ copy{
 
   private async _selectArea(areaId: string) {
     if (!(await this._confirmDiscardSettings())) return;
+    this._setSettingsHistoryState(false);
     this._resetAreaHeaderScrollState(true);
     this._areaQuickPage = 0;
     this._selectedArea = areaId;
@@ -23209,6 +23220,7 @@ copy{
   private _openMobileAreaSwitcher = async () => {
     if (!this._isMobile) return;
     if (!(await this._confirmDiscardSettings())) return;
+    this._setSettingsHistoryState(false);
     this._selectedView = 'home';
     this._selectedArea = null;
     this._resetAreaHeaderScrollState(false);
