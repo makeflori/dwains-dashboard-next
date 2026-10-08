@@ -199,7 +199,7 @@ export function resolveBlueprintCard(
   function substituteString(str: string): any {
     // Exact één placeholder? Behoud type van de waarde.
     const entities = str.match(/^\\$entities\\.([a-zA-Z0-9_]+)\\$/);
-    if (entities) return [...new Set((Array.isArray(values[entities[1]]) ? values[entities[1]] : []).flatMap((item: any) => [item.entity, item.price_entity, item.amount_entity]).filter(Boolean).concat(values.portfolio_total ? [values.portfolio_total] : []))];
+    if (entities) return [...new Set((Array.isArray(values[entities[1] || '']) ? values[entities[1] || ''] : []).flatMap((item: any) => [item.entity, item.price_entity, item.amount_entity]).filter(Boolean).concat(values.portfolio_total ? [values.portfolio_total] : []))];
     for (const key of keys) {
       if (str === `$${key}$`) {
         return coerce(values[key]);
