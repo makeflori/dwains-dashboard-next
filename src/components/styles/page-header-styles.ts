@@ -1025,7 +1025,7 @@ export const pageHeaderStyles = css`
         min-height: 0;
         height: auto;
         border-radius: 0;
-        opacity: 0.12;
+        opacity: 0.17;
         filter: saturate(0.72) contrast(0.92);
         pointer-events: none;
       }
@@ -1218,6 +1218,22 @@ export const pageHeaderStyles = css`
         border-radius: 16px;
         text-align: center;
         scroll-snap-align: start;
+        background: color-mix(in srgb, var(--primary-text-color) 7%, var(--ph-surface));
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+      }
+
+      .room-header .dd-room-tile.is-on,
+      .room-header.dd-page-header.has-picture .dd-room-tile.is-on {
+        background: color-mix(in srgb, var(--tile-color) 15%, var(--ph-surface));
+      }
+
+      .room-header.dd-page-header.has-picture .dd-room-tile:not(.is-on) {
+        --ph-text: var(--primary-text-color);
+        --ph-muted: var(--secondary-text-color);
+        --ph-control: color-mix(in srgb, var(--primary-text-color) 7%, var(--ph-surface));
+        --ph-control-hover: color-mix(in srgb, var(--primary-text-color) 11%, var(--ph-surface));
+        background: color-mix(in srgb, var(--primary-text-color) 7%, var(--ph-surface));
       }
 
       .room-header .dd-room-tile-icon {
