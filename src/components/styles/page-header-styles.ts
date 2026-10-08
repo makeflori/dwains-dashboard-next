@@ -286,6 +286,9 @@ export const pageHeaderStyles = css`
       --tile-color: var(--primary-color);
       --tile-on: #ffffff;
       box-sizing: border-box;
+      /* Stable desktop width: label length and room size must not shift the toggle. */
+      flex: 0 0 216px;
+      width: 216px;
       min-width: 0;
       min-height: 52px;
       padding: 6px 12px 6px 6px;
