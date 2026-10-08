@@ -8604,4 +8604,155 @@ which also swallowed pointer events for the new handle. */
   }
 }
 
+
+
+/* 2026-10-08 follow-up: Home/mobile width, scrolling and desktop room header. */
+@media (max-width: 768px) {
+  /* Match the exact two-column Areas geometry. */
+  .home-view .home-favorites-section {
+    width: calc(100% + 20px) !important;
+    max-width: none !important;
+    margin-left: -10px !important;
+    margin-right: -10px !important;
+    overflow-x: visible !important;
+  }
+
+  .home-favorites-section.layout-grid .favorites-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    padding: 2px 18px 16px !important;
+  }
+
+  /* Decorative Favorite icon: smaller, low-right under the title area. */
+  .home-favorites-section .favorite-icon {
+    left: auto !important;
+    right: 10px !important;
+    top: auto !important;
+    bottom: 7px !important;
+    width: 34px !important;
+    height: 34px !important;
+    transform: none !important;
+    opacity: 0.14 !important;
+  }
+
+  .home-favorites-section .favorite-icon ha-icon {
+    --mdc-icon-size: 30px !important;
+  }
+
+  /* Avoid creating a second vertical scroll container on Home.
+     overflow-x:hidden makes overflow-y compute to auto; clip does not. */
+  .home-view,
+  .home-content-area {
+    overflow-x: clip !important;
+    overflow-y: visible !important;
+  }
+
+  /* The framed native todo card should align with all other mobile card surfaces. */
+  .home-todo-card {
+    border-radius: 16px !important;
+    overflow: hidden !important;
+  }
+
+  .home-todo-card dwains-dashboard-next-card-host[framed] {
+    --dd-replacement-radius: 16px;
+    --dd-replacement-border: 1px solid color-mix(in srgb, var(--primary-text-color) 8%, transparent);
+    --dd-replacement-padding: 0px;
+  }
+}
+
+@media (min-width: 769px) {
+  /* Native todo cards use DD's normal rounded card surface on desktop as well. */
+  .home-todo-card {
+    border-radius: 12px !important;
+    overflow: hidden !important;
+  }
+
+  .home-todo-card dwains-dashboard-next-card-host[framed] {
+    --dd-replacement-radius: 12px;
+    --dd-replacement-border: 1px solid color-mix(in srgb, var(--primary-text-color) 8%, transparent);
+    --dd-replacement-padding: 0px;
+  }
+
+  /* Room header picture becomes a subtle full-card background; the room icon
+     remains the foreground media tile, matching the sidebar treatment. */
+  .room-header.has-room-background {
+    position: relative !important;
+    isolation: isolate !important;
+    overflow: hidden !important;
+    background: var(--card-background-color) !important;
+  }
+
+  .room-header .dd-page-header-room-background {
+    position: absolute !important;
+    inset: 0 !important;
+    z-index: 0 !important;
+    background-position: center !important;
+    background-size: cover !important;
+    background-repeat: no-repeat !important;
+    opacity: 0.13 !important;
+    filter: saturate(0.72) contrast(0.94) !important;
+    transform: scale(1.01) !important;
+    pointer-events: none !important;
+  }
+
+  .room-header .dd-page-header-with-media {
+    position: relative !important;
+    z-index: 1 !important;
+  }
+
+  .room-header.has-room-background .dd-page-header-media-tile {
+    background: color-mix(in srgb, var(--primary-color) 9%, var(--card-background-color)) !important;
+  }
+
+  .room-header.has-room-background .dd-page-header-room-icon {
+    color: var(--primary-color) !important;
+    background: color-mix(in srgb, var(--primary-color) 11%, var(--card-background-color)) !important;
+  }
+
+  /* When the quick controls need more than one row, balance them rather than
+     allowing flex-wrap to leave a single orphan tile on the last line. */
+  .room-header .dd-page-header-strip[data-control-count="4"],
+  .room-header .dd-page-header-strip[data-control-count="5"],
+  .room-header .dd-page-header-strip[data-control-count="6"],
+  .room-header .dd-page-header-strip[data-control-count="7"],
+  .room-header .dd-page-header-strip[data-control-count="8"] {
+    display: grid !important;
+    grid-template-columns: repeat(var(--dd-room-quick-columns), max-content) !important;
+    justify-content: start !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+
+  .room-header .dd-page-header-strip[data-control-count="4"] > *,
+  .room-header .dd-page-header-strip[data-control-count="5"] > *,
+  .room-header .dd-page-header-strip[data-control-count="6"] > *,
+  .room-header .dd-page-header-strip[data-control-count="7"] > *,
+  .room-header .dd-page-header-strip[data-control-count="8"] > * {
+    min-width: 0 !important;
+  }
+
+  /* Sidebar Home entry uses the same visual scale and surface as room entries. */
+  .sidebar .area-button.home-button {
+    background: color-mix(in srgb, var(--card-background-color) 96%, var(--primary-background-color)) !important;
+    border-color: color-mix(in srgb, var(--primary-text-color) 7%, transparent) !important;
+  }
+
+  .sidebar .area-button.home-button .area-name {
+    font-size: 14px !important;
+    font-weight: 850 !important;
+  }
+
+  .sidebar .area-button.home-button .area-icon {
+    width: 46px !important;
+    height: 46px !important;
+    border-radius: 10px !important;
+    background: color-mix(in srgb, var(--primary-color) 11%, var(--card-background-color)) !important;
+    color: var(--primary-color) !important;
+  }
+
+  .sidebar .area-button.home-button .area-icon ha-icon {
+    --mdc-icon-size: 34px !important;
+  }
+}
+
 `;

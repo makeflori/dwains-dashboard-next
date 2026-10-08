@@ -18388,6 +18388,7 @@ copy{
               <div class="home-todo-card" data-entity=${entityId}>
                 <dwains-dashboard-next-card-host
                   eager
+                  framed
                   .hass=${this.hass}
                   .config=${{
                     type: 'todo-list',
@@ -20277,10 +20278,17 @@ copy{
           ? this._renderAreaCompactBar(area, areaData, deviceLabel, homeButton, actions, tiles)
           : nothing}
 
-        <header class="dd-page-header room-header">
+        <header class="dd-page-header room-header ${hasPicture ? 'has-room-background' : ''}">
+          ${hasPicture && !this._isMobile ? html`
+            <div
+              class="dd-page-header-room-background"
+              aria-hidden="true"
+              style=${`background-image: url('${area.picture}');`}
+            ></div>
+          ` : nothing}
           <div class="dd-page-header-with-media">
             <div class="dd-page-header-media-tile" aria-hidden="true">
-              ${hasPicture
+              ${hasPicture && this._isMobile
                 ? html`<div class="dd-page-header-room-picture" style=${`background-image: url('${area.picture}');`}></div>`
                 : html`
                     <div class="dd-page-header-room-icon">
@@ -20312,6 +20320,10 @@ copy{
                   class="dd-page-header-strip ${hasStrip ? '' : 'is-placeholder'}"
                   aria-hidden=${hasStrip ? 'false' : 'true'}
                   data-page-count=${quickPageCount}
+                  data-control-count=${quickControlCount}
+                  style=${!this._isMobile && quickControlCount > 3
+                    ? `--dd-room-quick-columns: ${Math.ceil(quickControlCount / 2)};`
+                    : ''}
                   @scroll=${this._handleAreaQuickScroll}
                 >
                   ${hasStrip ? html`
