@@ -1,4 +1,5 @@
-import { css } from 'lit';
+import { css, unsafeCSS } from 'lit';
+import { getDomainColor } from '../../utils/icons';
 
 // Styles for dwains-dashboard-next-layout-card, kept apart from the component logic.
 export const layoutCardStyles = css`
@@ -425,43 +426,43 @@ export const layoutCardStyles = css`
 
     /* Domain-specific status card colors */
     .status-card-compact.light .status-card-icon-compact {
-      background: color-mix(in srgb, var(--status-color, #e5b83b) 15%, transparent);
+      background: color-mix(in srgb, var(--status-color, ${unsafeCSS(getDomainColor('light'))}) 15%, transparent);
     }
 
     .status-card-compact.light ha-icon {
-      color: var(--status-color, #e5b83b);
+      color: var(--status-color, ${unsafeCSS(getDomainColor('light'))});
     }
 
     .status-card-compact.switch .status-card-icon-compact {
-      background: color-mix(in srgb, var(--status-color, #367dd5) 15%, transparent);
+      background: color-mix(in srgb, var(--status-color, ${unsafeCSS(getDomainColor('switch'))}) 15%, transparent);
     }
 
     .status-card-compact.switch ha-icon {
-      color: var(--status-color, #367dd5);
+      color: var(--status-color, ${unsafeCSS(getDomainColor('switch'))});
     }
 
     .status-card-compact.binary_sensor .status-card-icon-compact {
-      background: color-mix(in srgb, var(--status-color, #d94f58) 15%, transparent);
+      background: color-mix(in srgb, var(--status-color, ${unsafeCSS(getDomainColor('sensor'))}) 15%, transparent);
     }
 
     .status-card-compact.binary_sensor ha-icon {
-      color: var(--status-color, #d94f58);
+      color: var(--status-color, ${unsafeCSS(getDomainColor('sensor'))});
     }
 
     .status-card-compact.person .status-card-icon-compact {
-      background: color-mix(in srgb, var(--status-color, #7a8799) 15%, transparent);
+      background: color-mix(in srgb, var(--status-color, ${unsafeCSS(getDomainColor('sensor'))}) 15%, transparent);
     }
 
     .status-card-compact.person ha-icon {
-      color: var(--status-color, #7a8799);
+      color: var(--status-color, ${unsafeCSS(getDomainColor('sensor'))});
     }
 
     .status-card-compact.wattage .status-card-icon-compact {
-      background: color-mix(in srgb, var(--status-color, #65a83f) 15%, transparent);
+      background: color-mix(in srgb, var(--status-color, ${unsafeCSS(getDomainColor('energy'))}) 15%, transparent);
     }
 
     .status-card-compact.wattage ha-icon {
-      color: var(--status-color, #65a83f);
+      color: var(--status-color, ${unsafeCSS(getDomainColor('energy'))});
     }
 
     /* Header Expand Button */
@@ -2383,13 +2384,13 @@ export const layoutCardStyles = css`
     }
 
     .person-card.away {
-      --person-color: #65a83f;
-      --person-bg: color-mix(in srgb, #65a83f 9%, var(--card-background-color));
+      --person-color: ${unsafeCSS(getDomainColor('alarm_control_panel'))};
+      --person-bg: color-mix(in srgb, ${unsafeCSS(getDomainColor('alarm_control_panel'))} 9%, var(--card-background-color));
     }
 
     .person-card.unknown {
-      --person-color: #c16aaf;
-      --person-bg: color-mix(in srgb, #c16aaf 8%, var(--card-background-color));
+      --person-color: ${unsafeCSS(getDomainColor('sensor'))};
+      --person-bg: color-mix(in srgb, ${unsafeCSS(getDomainColor('sensor'))} 8%, var(--card-background-color));
     }
 
     .person-card:hover {
@@ -2701,28 +2702,28 @@ export const layoutCardStyles = css`
     }
 
     .info-badge.light {
-      background: color-mix(in srgb, var(--badge-color, #e5b83b) 10%, var(--card-background-color));
-      color: var(--badge-color, #e5b83b);
+      background: color-mix(in srgb, var(--badge-color, ${unsafeCSS(getDomainColor('light'))}) 10%, var(--card-background-color));
+      color: var(--badge-color, ${unsafeCSS(getDomainColor('light'))});
     }
 
     .info-badge.switch {
-      background: color-mix(in srgb, var(--badge-color, #367dd5) 10%, var(--card-background-color));
-      color: var(--badge-color, #367dd5);
+      background: color-mix(in srgb, var(--badge-color, ${unsafeCSS(getDomainColor('switch'))}) 10%, var(--card-background-color));
+      color: var(--badge-color, ${unsafeCSS(getDomainColor('switch'))});
     }
 
     .info-badge.climate {
-      background: color-mix(in srgb, var(--badge-color, #239cb5) 10%, var(--card-background-color));
-      color: var(--badge-color, #239cb5);
+      background: color-mix(in srgb, var(--badge-color, ${unsafeCSS(getDomainColor('climate'))}) 10%, var(--card-background-color));
+      color: var(--badge-color, ${unsafeCSS(getDomainColor('climate'))});
     }
 
     .info-badge.media_player {
-      background: color-mix(in srgb, var(--badge-color, #c16aaf) 10%, var(--card-background-color));
-      color: var(--badge-color, #c16aaf);
+      background: color-mix(in srgb, var(--badge-color, ${unsafeCSS(getDomainColor('media_player'))}) 10%, var(--card-background-color));
+      color: var(--badge-color, ${unsafeCSS(getDomainColor('media_player'))});
     }
 
     .info-badge.cover {
-      background: color-mix(in srgb, var(--badge-color, #8065c7) 10%, var(--card-background-color));
-      color: var(--badge-color, #8065c7);
+      background: color-mix(in srgb, var(--badge-color, ${unsafeCSS(getDomainColor('camera'))}) 10%, var(--card-background-color));
+      color: var(--badge-color, ${unsafeCSS(getDomainColor('camera'))});
     }
 
     .info-badge.fan {
@@ -2731,8 +2732,8 @@ export const layoutCardStyles = css`
     }
 
     .info-badge.motion {
-      background: color-mix(in srgb, var(--badge-color, #d94f58) 10%, var(--card-background-color));
-      color: var(--badge-color, #d94f58);
+      background: color-mix(in srgb, var(--badge-color, ${unsafeCSS(getDomainColor('alarm_control_panel'))}) 10%, var(--card-background-color));
+      color: var(--badge-color, ${unsafeCSS(getDomainColor('alarm_control_panel'))});
     }
 
     .info-badge.alerts {
@@ -4439,33 +4440,33 @@ export const layoutCardStyles = css`
     }
 
     .favorite-card-wrapper.favorite-light {
-      --favorite-color: #e5b83b;
+      --favorite-color: ${unsafeCSS(getDomainColor('light'))};
     }
 
     .favorite-card-wrapper.favorite-switch {
-      --favorite-color: #367dd5;
+      --favorite-color: ${unsafeCSS(getDomainColor('switch'))};
     }
 
     .favorite-card-wrapper.favorite-cover {
-      --favorite-color: #8065c7;
+      --favorite-color: ${unsafeCSS(getDomainColor('camera'))};
     }
 
     .favorite-card-wrapper.favorite-binary_sensor,
     .favorite-card-wrapper.favorite-motion {
-      --favorite-color: #d94f58;
+      --favorite-color: ${unsafeCSS(getDomainColor('sensor'))};
     }
 
     .favorite-card-wrapper.favorite-climate,
     .favorite-card-wrapper.favorite-weather {
-      --favorite-color: #239cb5;
+      --favorite-color: ${unsafeCSS(getDomainColor('climate'))};
     }
 
     .favorite-card-wrapper.favorite-media_player {
-      --favorite-color: #c16aaf;
+      --favorite-color: ${unsafeCSS(getDomainColor('media_player'))};
     }
 
     .favorite-card-wrapper.favorite-person {
-      --favorite-color: #7a8799;
+      --favorite-color: ${unsafeCSS(getDomainColor('sensor'))};
     }
 
     .favorite-card-wrapper.favorite-sun {
@@ -5034,40 +5035,40 @@ export const layoutCardStyles = css`
 
     .home-status-card.cover,
     .status-card-compact.cover {
-      --status-color: #8065c7;
+      --status-color: ${unsafeCSS(getDomainColor('camera'))};
     }
 
     .home-status-card.binary_sensor,
     .home-status-card.motion,
     .status-card-compact.binary_sensor,
     .status-card-compact.motion {
-      --status-color: #d94f58;
+      --status-color: ${unsafeCSS(getDomainColor('sensor'))};
     }
 
     .home-status-card.light,
     .status-card-compact.light {
-      --status-color: #e5b83b;
+      --status-color: ${unsafeCSS(getDomainColor('light'))};
     }
 
     .home-status-card.switch,
     .status-card-compact.switch {
-      --status-color: #367dd5;
+      --status-color: ${unsafeCSS(getDomainColor('switch'))};
     }
 
     .home-status-card.climate,
     .home-status-card.house-climate-card,
     .status-card-compact.climate {
-      --status-color: #239cb5;
+      --status-color: ${unsafeCSS(getDomainColor('climate'))};
     }
 
     .home-status-card.person,
     .status-card-compact.person {
-      --status-color: #7a8799;
+      --status-color: ${unsafeCSS(getDomainColor('sensor'))};
     }
 
     .home-status-card.media_player,
     .status-card-compact.media_player {
-      --status-color: #c16aaf;
+      --status-color: ${unsafeCSS(getDomainColor('media_player'))};
     }
 
     .home-status-card.fan,
@@ -5080,7 +5081,7 @@ export const layoutCardStyles = css`
     .home-status-card.energy,
     .status-card-compact.wattage,
     .status-card-compact.energy {
-      --status-color: #65a83f;
+      --status-color: ${unsafeCSS(getDomainColor('energy'))};
     }
 
     .home-status-grid {
@@ -5194,14 +5195,14 @@ export const layoutCardStyles = css`
     }
 
     .home-status-card.house-power-card {
-      --status-color: #65a83f;
+      --status-color: ${unsafeCSS(getDomainColor('energy'))};
       grid-column: span 2;
       min-width: 270px;
       gap: 12px;
     }
 
     .home-status-card.house-climate-card {
-      --status-color: #239cb5;
+      --status-color: ${unsafeCSS(getDomainColor('climate'))};
       grid-column: span 2;
       min-width: 270px;
       gap: 12px;
@@ -5413,7 +5414,7 @@ export const layoutCardStyles = css`
       width: var(--power-width, 0%);
       min-width: 4px;
       border-radius: inherit;
-      background: linear-gradient(90deg, #65a83f, #f4c34d);
+      background: linear-gradient(90deg, ${unsafeCSS(getDomainColor('energy'))}, #f4c34d);
     }
 
     .house-persons-grid {
@@ -5452,7 +5453,7 @@ export const layoutCardStyles = css`
     }
 
     .house-person-mini.is-away {
-      background: color-mix(in srgb, #d94f58 10%, var(--card-background-color));
+      background: color-mix(in srgb, ${unsafeCSS(getDomainColor('alarm_control_panel'))} 10%, var(--card-background-color));
     }
 
     .house-person-avatar {
@@ -5570,7 +5571,7 @@ export const layoutCardStyles = css`
       }
 
       .house-person-mini.is-away {
-        background: color-mix(in srgb, #d94f58 16%, var(--card-background-color));
+        background: color-mix(in srgb, ${unsafeCSS(getDomainColor('alarm_control_panel'))} 16%, var(--card-background-color));
       }
 
       .house-persons-more {
@@ -6121,15 +6122,15 @@ export const layoutCardStyles = css`
       }
 
       .mobile-area-badge.light {
-        --area-badge-color: #e5b83b;
+        --area-badge-color: ${unsafeCSS(getDomainColor('light'))};
       }
 
       .mobile-area-badge.cover {
-        --area-badge-color: #8065c7;
+        --area-badge-color: ${unsafeCSS(getDomainColor('camera'))};
       }
 
       .mobile-area-badge.motion {
-        --area-badge-color: #d94f58;
+        --area-badge-color: ${unsafeCSS(getDomainColor('alarm_control_panel'))};
       }
 
       .mobile-area-name {
