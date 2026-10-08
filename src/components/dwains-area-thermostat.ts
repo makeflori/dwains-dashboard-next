@@ -423,7 +423,6 @@ export class DwainsAreaThermostat extends LitElement {
     const target = this._displayTarget(model);
     const range = this._displayRange(model);
     const detailsLabel = this._t('thermostat.details', { name, state: activityLabel });
-    const modes = this._supportedModes(stateObj);
     const currentMode = String(stateObj.state || '').toLowerCase();
     const currentModeLabel = this._modeLabel(stateObj, currentMode);
     const modeIcon = HVAC_MODE_ICONS[currentMode] || 'mdi:thermostat';
