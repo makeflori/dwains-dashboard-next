@@ -183,3 +183,4 @@ See [LICENSE](LICENSE) for the full license terms.
 - Keep the quick-control layout stable when device counts or states change.
 - Align light, energy, temperature, humidity, room-climate, humidifier, and scene colors through existing domain color definitions.
 - Preserve distinct armed and triggered alarm states.
+- Give combined indoor/outdoor climate cards the shared teal accent and use green-only household power bars.
