@@ -198,7 +198,7 @@ export function resolveBlueprintCard(
       }
     }
     // Anders: tekstvervanging binnen de string.
-    let result = str;
+    let result = str.replace(/\$json\.([a-zA-Z0-9_]+)\$/g, (_match, key: string) => JSON.stringify(Array.isArray(values[key]) ? values[key] : []));
     for (const key of keys) {
       if (result.includes(`$${key}$`)) {
         const v = values[key];
