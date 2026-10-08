@@ -636,7 +636,7 @@ export class DwainsDevicesCard extends LitElement {
 
   private _typeColor(key: string): string {
     if (key === MAINTENANCE_KEY) return 'var(--warning-color, #ff9800)';
-    if (key === ENERGY_KEY) return '#65a83f';
+    if (key === ENERGY_KEY) return getDomainColor('energy');
     if (key === DEVICES_OVERVIEW_KEY) return 'var(--primary-color)';
     if (key.startsWith('binary_sensor.')) {
       return getDomainColor('binary_sensor', key.slice('binary_sensor.'.length));
