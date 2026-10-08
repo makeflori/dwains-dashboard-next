@@ -1,4 +1,4 @@
-import { LitElement, html, css, PropertyValues, TemplateResult, nothing } from 'lit';
+import { LitElement, html, css, unsafeCSS, PropertyValues, TemplateResult, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { repeat } from 'lit/directives/repeat.js';
@@ -962,43 +962,43 @@ export class DwainsLayoutCard extends LitElement {
 
     /* Domain-specific status card colors */
     .status-card-compact.light .status-card-icon-compact{
-      background: color-mix(in srgb, var(--status-color, #e5b83b) 15%, transparent);
+      background: color-mix(in srgb, var(--status-color, ${unsafeCSS(getDomainColor('light'))}) 15%, transparent);
     }
 
     .status-card-compact.light ha-icon{
-      color: var(--status-color, #e5b83b);
+      color: var(--status-color, ${unsafeCSS(getDomainColor('light'))});
     }
 
     .status-card-compact.switch .status-card-icon-compact{
-      background: color-mix(in srgb, var(--status-color, #367dd5) 15%, transparent);
+      background: color-mix(in srgb, var(--status-color, ${unsafeCSS(getDomainColor('switch'))}) 15%, transparent);
     }
 
     .status-card-compact.switch ha-icon{
-      color: var(--status-color, #367dd5);
+      color: var(--status-color, ${unsafeCSS(getDomainColor('switch'))});
     }
 
     .status-card-compact.binary_sensor .status-card-icon-compact{
-      background: color-mix(in srgb, var(--status-color, #7a8799) 15%, transparent);
+      background: color-mix(in srgb, var(--status-color, ${unsafeCSS(getDomainColor('sensor'))}) 15%, transparent);
     }
 
     .status-card-compact.binary_sensor ha-icon{
-      color: var(--status-color, #7a8799);
+      color: var(--status-color, ${unsafeCSS(getDomainColor('sensor'))});
     }
 
     .status-card-compact.person .status-card-icon-compact{
-      background: color-mix(in srgb, var(--status-color, #7a8799) 15%, transparent);
+      background: color-mix(in srgb, var(--status-color, ${unsafeCSS(getDomainColor('sensor'))}) 15%, transparent);
     }
 
     .status-card-compact.person ha-icon{
-      color: var(--status-color, #7a8799);
+      color: var(--status-color, ${unsafeCSS(getDomainColor('sensor'))});
     }
 
     .status-card-compact.wattage .status-card-icon-compact{
-      background: color-mix(in srgb, var(--status-color, #65a83f) 15%, transparent);
+      background: color-mix(in srgb, var(--status-color, ${unsafeCSS(getDomainColor('energy'))}) 15%, transparent);
     }
 
     .status-card-compact.wattage ha-icon{
-      color: var(--status-color, #65a83f);
+      color: var(--status-color, ${unsafeCSS(getDomainColor('energy'))});
     }
 
     /* Header Expand Button */
@@ -2596,13 +2596,13 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .person-card.away{
-      --person-color: #65a83f;
-      --person-bg: color-mix(in srgb, #65a83f 9%, var(--card-background-color));
+      --person-color: ${unsafeCSS(getDomainColor('alarm_control_panel'))};
+      --person-bg: color-mix(in srgb, ${unsafeCSS(getDomainColor('alarm_control_panel'))} 9%, var(--card-background-color));
     }
 
     .person-card.unknown{
-      --person-color: #c16aaf;
-      --person-bg: color-mix(in srgb, #c16aaf 8%, var(--card-background-color));
+      --person-color: ${unsafeCSS(getDomainColor('sensor'))};
+      --person-bg: color-mix(in srgb, ${unsafeCSS(getDomainColor('sensor'))} 8%, var(--card-background-color));
     }
 
     .person-card:hover{
@@ -2915,38 +2915,38 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .info-badge.light{
-      background: color-mix(in srgb, var(--badge-color, #e5b83b) 10%, var(--card-background-color));
-      color: var(--badge-color, #e5b83b);
+      background: color-mix(in srgb, var(--badge-color, ${unsafeCSS(getDomainColor('light'))}) 10%, var(--card-background-color));
+      color: var(--badge-color, ${unsafeCSS(getDomainColor('light'))});
     }
 
     .info-badge.switch{
-      background: color-mix(in srgb, var(--badge-color, #367dd5) 10%, var(--card-background-color));
-      color: var(--badge-color, #367dd5);
+      background: color-mix(in srgb, var(--badge-color, ${unsafeCSS(getDomainColor('switch'))}) 10%, var(--card-background-color));
+      color: var(--badge-color, ${unsafeCSS(getDomainColor('switch'))});
     }
 
     .info-badge.climate{
-      background: color-mix(in srgb, var(--badge-color, #239cb5) 10%, var(--card-background-color));
-      color: var(--badge-color, #239cb5);
+      background: color-mix(in srgb, var(--badge-color, ${unsafeCSS(getDomainColor('climate'))}) 10%, var(--card-background-color));
+      color: var(--badge-color, ${unsafeCSS(getDomainColor('climate'))});
     }
 
     .info-badge.media_player{
-      background: color-mix(in srgb, var(--badge-color, #c16aaf) 10%, var(--card-background-color));
-      color: var(--badge-color, #c16aaf);
+      background: color-mix(in srgb, var(--badge-color, ${unsafeCSS(getDomainColor('media_player'))}) 10%, var(--card-background-color));
+      color: var(--badge-color, ${unsafeCSS(getDomainColor('media_player'))});
     }
 
     .info-badge.cover{
-      background: color-mix(in srgb, var(--badge-color, #d98928) 10%, var(--card-background-color));
-      color: var(--badge-color, #d98928);
+      background: color-mix(in srgb, var(--badge-color, ${unsafeCSS(getDomainColor('cover'))}) 10%, var(--card-background-color));
+      color: var(--badge-color, ${unsafeCSS(getDomainColor('cover'))});
     }
 
     .info-badge.fan{
-      background: color-mix(in srgb, var(--badge-color, #39b5ae) 10%, var(--card-background-color));
-      color: var(--badge-color, #39b5ae);
+      background: color-mix(in srgb, var(--badge-color, ${unsafeCSS(getDomainColor('fan'))}) 10%, var(--card-background-color));
+      color: var(--badge-color, ${unsafeCSS(getDomainColor('fan'))});
     }
 
     .info-badge.motion{
-      background: color-mix(in srgb, var(--badge-color, #7a8799) 10%, var(--card-background-color));
-      color: var(--badge-color, #7a8799);
+      background: color-mix(in srgb, var(--badge-color, ${unsafeCSS(getDomainColor('sensor'))}) 10%, var(--card-background-color));
+      color: var(--badge-color, ${unsafeCSS(getDomainColor('sensor'))});
     }
 
     /* Sidebar info badges (smaller) */
@@ -3221,22 +3221,22 @@ export class DwainsLayoutCard extends LitElement {
 
     .mobile-area-metric.temperature,
 .area-header-metric.temperature{
-      --metric-color: #c16aaf;
+      --metric-color: ${unsafeCSS(getDomainColor('media_player'))};
     }
 
     .mobile-area-metric.humidity,
 .area-header-metric.humidity{
-      --metric-color: #239cb5;
+      --metric-color: ${unsafeCSS(getDomainColor('climate'))};
     }
 
     .mobile-area-metric.power,
 .area-header-metric.power{
-      --metric-color: #65a83f;
+      --metric-color: ${unsafeCSS(getDomainColor('energy'))};
     }
 
     .mobile-area-metric.energy,
 .area-header-metric.energy{
-      --metric-color: #c16aaf;
+      --metric-color: ${unsafeCSS(getDomainColor('media_player'))};
     }
 
     .metric-ring{
@@ -4706,29 +4706,29 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .favorite-card-wrapper.favorite-light{
-      --favorite-color: #e5b83b;
+      --favorite-color: ${unsafeCSS(getDomainColor('light'))};
     }
 
     .favorite-card-wrapper.favorite-switch{
-      --favorite-color: #367dd5;
+      --favorite-color: ${unsafeCSS(getDomainColor('switch'))};
     }
 
     .favorite-card-wrapper.favorite-cover{
-      --favorite-color: #d98928;
+      --favorite-color: ${unsafeCSS(getDomainColor('cover'))};
     }
 
     .favorite-card-wrapper.favorite-binary_sensor,
 .favorite-card-wrapper.favorite-motion{
-      --favorite-color: #7a8799;
+      --favorite-color: ${unsafeCSS(getDomainColor('sensor'))};
     }
 
     .favorite-card-wrapper.favorite-climate,
 .favorite-card-wrapper.favorite-weather{
-      --favorite-color: #239cb5;
+      --favorite-color: ${unsafeCSS(getDomainColor('climate'))};
     }
 
     .favorite-card-wrapper.favorite-media_player{
-      --favorite-color: #c16aaf;
+      --favorite-color: ${unsafeCSS(getDomainColor('media_player'))};
     }
 
     .favorite-card-wrapper.favorite-person{
@@ -5272,39 +5272,39 @@ export class DwainsLayoutCard extends LitElement {
 
     /* Domain-specific badge colors */
     .area-badge.light{
-      background: color-mix(in srgb, var(--area-badge-color, #e5b83b) 10%, var(--card-background-color));
-      color: var(--area-badge-color, #e5b83b);
-      border-color: color-mix(in srgb, var(--area-badge-color, #e5b83b) 20%, transparent);
+      background: color-mix(in srgb, var(--area-badge-color, ${unsafeCSS(getDomainColor('light'))}) 10%, var(--card-background-color));
+      color: var(--area-badge-color, ${unsafeCSS(getDomainColor('light'))});
+      border-color: color-mix(in srgb, var(--area-badge-color, ${unsafeCSS(getDomainColor('light'))}) 20%, transparent);
     }
 
     .area-badge.switch{
-      background: color-mix(in srgb, var(--area-badge-color, #367dd5) 10%, var(--card-background-color));
-      color: var(--area-badge-color, #367dd5);
-      border-color: color-mix(in srgb, var(--area-badge-color, #367dd5) 20%, transparent);
+      background: color-mix(in srgb, var(--area-badge-color, ${unsafeCSS(getDomainColor('switch'))}) 10%, var(--card-background-color));
+      color: var(--area-badge-color, ${unsafeCSS(getDomainColor('switch'))});
+      border-color: color-mix(in srgb, var(--area-badge-color, ${unsafeCSS(getDomainColor('switch'))}) 20%, transparent);
     }
 
     .area-badge.climate{
-      background: color-mix(in srgb, var(--area-badge-color, #239cb5) 10%, var(--card-background-color));
-      color: var(--area-badge-color, #239cb5);
-      border-color: color-mix(in srgb, var(--area-badge-color, #239cb5) 20%, transparent);
+      background: color-mix(in srgb, var(--area-badge-color, ${unsafeCSS(getDomainColor('climate'))}) 10%, var(--card-background-color));
+      color: var(--area-badge-color, ${unsafeCSS(getDomainColor('climate'))});
+      border-color: color-mix(in srgb, var(--area-badge-color, ${unsafeCSS(getDomainColor('climate'))}) 20%, transparent);
     }
 
     .area-badge.motion.active{
-      background: color-mix(in srgb, var(--area-badge-color, #7a8799) 10%, var(--card-background-color));
-      color: var(--area-badge-color, #7a8799);
-      border-color: color-mix(in srgb, var(--area-badge-color, #7a8799) 20%, transparent);
+      background: color-mix(in srgb, var(--area-badge-color, ${unsafeCSS(getDomainColor('sensor'))}) 10%, var(--card-background-color));
+      color: var(--area-badge-color, ${unsafeCSS(getDomainColor('sensor'))});
+      border-color: color-mix(in srgb, var(--area-badge-color, ${unsafeCSS(getDomainColor('sensor'))}) 20%, transparent);
     }
 
     .area-badge.cover{
-      background: color-mix(in srgb, var(--area-badge-color, #d98928) 10%, var(--card-background-color));
-      color: var(--area-badge-color, #d98928);
-      border-color: color-mix(in srgb, var(--area-badge-color, #d98928) 20%, transparent);
+      background: color-mix(in srgb, var(--area-badge-color, ${unsafeCSS(getDomainColor('cover'))}) 10%, var(--card-background-color));
+      color: var(--area-badge-color, ${unsafeCSS(getDomainColor('cover'))});
+      border-color: color-mix(in srgb, var(--area-badge-color, ${unsafeCSS(getDomainColor('cover'))}) 20%, transparent);
     }
 
     .area-badge.media_player{
-      background: color-mix(in srgb, var(--area-badge-color, #c16aaf) 10%, var(--card-background-color));
-      color: var(--area-badge-color, #c16aaf);
-      border-color: color-mix(in srgb, var(--area-badge-color, #c16aaf) 20%, transparent);
+      background: color-mix(in srgb, var(--area-badge-color, ${unsafeCSS(getDomainColor('media_player'))}) 10%, var(--card-background-color));
+      color: var(--area-badge-color, ${unsafeCSS(getDomainColor('media_player'))});
+      border-color: color-mix(in srgb, var(--area-badge-color, ${unsafeCSS(getDomainColor('media_player'))}) 20%, transparent);
     }
 
     .area-badge.temperature{
@@ -5527,30 +5527,30 @@ export class DwainsLayoutCard extends LitElement {
 
     .home-status-card.cover,
 .status-card-compact.cover{
-      --status-color: #d98928;
+      --status-color: ${unsafeCSS(getDomainColor('cover'))};
     }
 
     .home-status-card.binary_sensor,
 .home-status-card.motion,
 .status-card-compact.binary_sensor,
 .status-card-compact.motion{
-      --status-color: #7a8799;
+      --status-color: ${unsafeCSS(getDomainColor('sensor'))};
     }
 
     .home-status-card.light,
 .status-card-compact.light{
-      --status-color: #e5b83b;
+      --status-color: ${unsafeCSS(getDomainColor('light'))};
     }
 
     .home-status-card.switch,
 .status-card-compact.switch{
-      --status-color: #367dd5;
+      --status-color: ${unsafeCSS(getDomainColor('switch'))};
     }
 
     .home-status-card.climate,
 .home-status-card.house-climate-card,
 .status-card-compact.climate{
-      --status-color: #239cb5;
+      --status-color: ${unsafeCSS(getDomainColor('climate'))};
     }
 
     .home-status-card.person,
@@ -5560,12 +5560,12 @@ export class DwainsLayoutCard extends LitElement {
 
     .home-status-card.media_player,
 .status-card-compact.media_player{
-      --status-color: #c16aaf;
+      --status-color: ${unsafeCSS(getDomainColor('media_player'))};
     }
 
     .home-status-card.fan,
 .status-card-compact.fan{
-      --status-color: #39b5ae;
+      --status-color: ${unsafeCSS(getDomainColor('fan'))};
     }
 
     .home-status-card.wattage,
@@ -5573,7 +5573,7 @@ export class DwainsLayoutCard extends LitElement {
 .home-status-card.energy,
 .status-card-compact.wattage,
 .status-card-compact.energy{
-      --status-color: #65a83f;
+      --status-color: ${unsafeCSS(getDomainColor('energy'))};
     }
 
     .home-status-grid{
@@ -5687,14 +5687,14 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .home-status-card.house-power-card{
-      --status-color: #65a83f;
+      --status-color: ${unsafeCSS(getDomainColor('energy'))};
       grid-column: span 2;
       min-width: 270px;
       gap: 12px;
     }
 
     .home-status-card.house-climate-card{
-      --status-color: #239cb5;
+      --status-color: ${unsafeCSS(getDomainColor('climate'))};
       grid-column: span 2;
       min-width: 270px;
       gap: 12px;
@@ -5906,7 +5906,7 @@ export class DwainsLayoutCard extends LitElement {
       width: var(--power-width, 0%);
       min-width: 4px;
       border-radius: inherit;
-      background: linear-gradient(90deg, #65a83f, #f4c34d);
+      background: linear-gradient(90deg, ${unsafeCSS(getDomainColor('energy'))}, #f4c34d);
     }
 
     .house-persons-grid{
@@ -5945,7 +5945,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .house-person-mini.is-away{
-      background: color-mix(in srgb, #d94f58 10%, var(--card-background-color));
+      background: color-mix(in srgb, ${unsafeCSS(getDomainColor('alarm_control_panel'))} 10%, var(--card-background-color));
     }
 
     .house-person-avatar{
@@ -6503,15 +6503,15 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       .mobile-area-badge.light{
-        --area-badge-color: #e5b83b;
+        --area-badge-color: ${unsafeCSS(getDomainColor('light'))};
       }
 
       .mobile-area-badge.cover{
-        --area-badge-color: #d98928;
+        --area-badge-color: ${unsafeCSS(getDomainColor('cover'))};
       }
 
       .mobile-area-badge.motion{
-        --area-badge-color: #7a8799;
+        --area-badge-color: ${unsafeCSS(getDomainColor('sensor'))};
       }
 
       .mobile-area-name{
@@ -6695,7 +6695,7 @@ export class DwainsLayoutCard extends LitElement {
         }
 
         .house-person-mini.is-away {
-          background: color-mix(in srgb, #d94f58 16%, var(--card-background-color));
+          background: color-mix(in srgb, ${unsafeCSS(getDomainColor('alarm_control_panel'))} 16%, var(--card-background-color));
         }
 
         .home-summary-card {
@@ -6799,13 +6799,13 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .area-badge.cover{
-      background: color-mix(in srgb, var(--area-badge-color, #d98928) 12%, var(--card-background-color));
-      border-color: color-mix(in srgb, var(--area-badge-color, #d98928) 22%, transparent);
-      color: var(--area-badge-color, #d98928);
+      background: color-mix(in srgb, var(--area-badge-color, ${unsafeCSS(getDomainColor('cover'))}) 12%, var(--card-background-color));
+      border-color: color-mix(in srgb, var(--area-badge-color, ${unsafeCSS(getDomainColor('cover'))}) 22%, transparent);
+      color: var(--area-badge-color, ${unsafeCSS(getDomainColor('cover'))});
     }
 
     .area-badge.cover ha-icon{
-      color: var(--area-badge-color, #d98928);
+      color: var(--area-badge-color, ${unsafeCSS(getDomainColor('cover'))});
     }
 
     .area-badge.light-toggle,
@@ -12771,8 +12771,8 @@ typography and interaction. */
       }
 
       /* Climate card uses exactly the same temperature/humidity colors as the room view. */
-      .house-climate-metric.temperature{ --metric-color: #239cb5 !important; }
-      .house-climate-metric.humidity{ --metric-color: #39b5ae !important; }
+      .house-climate-metric.temperature{ --metric-color: ${unsafeCSS(getDomainColor('climate'))} !important; }
+      .house-climate-metric.humidity{ --metric-color: ${unsafeCSS(getDomainColor('fan'))} !important; }
 
       /* Climate metric icons are direct,
 slightly larger icons without a second circle. */
@@ -12861,8 +12861,8 @@ no chip/background. */
       align-items: center;
       justify-content: center;
       border-radius: 10px;
-      color: #65a83f;
-      background: color-mix(in srgb, #65a83f 12%, var(--card-background-color));
+      color: ${unsafeCSS(getDomainColor('energy'))};
+      background: color-mix(in srgb, ${unsafeCSS(getDomainColor('energy'))} 12%, var(--card-background-color));
     }
 
     .house-power-dialog-icon ha-icon{ --mdc-icon-size: 23px; }
@@ -12891,8 +12891,8 @@ no chip/background. */
       flex-direction: column;
       justify-content: center;
       border-radius: 10px;
-      background: color-mix(in srgb, #65a83f 8%, var(--card-background-color));
-      box-shadow: inset 0 0 0 1px color-mix(in srgb, #65a83f 14%, transparent);
+      background: color-mix(in srgb, ${unsafeCSS(getDomainColor('energy'))} 8%, var(--card-background-color));
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, ${unsafeCSS(getDomainColor('energy'))} 14%, transparent);
     }
 
     .house-power-dialog-total span{ font-size: 28px; font-weight: 950; line-height: 1; }
@@ -12920,8 +12920,8 @@ no chip/background. */
       align-items: center;
       justify-content: center;
       border-radius: 8px;
-      color: #65a83f;
-      background: color-mix(in srgb, #65a83f 10%, transparent);
+      color: ${unsafeCSS(getDomainColor('energy'))};
+      background: color-mix(in srgb, ${unsafeCSS(getDomainColor('energy'))} 10%, transparent);
     }
 
     .house-power-dialog-area-icon ha-icon{ --mdc-icon-size: 17px; }
@@ -12933,7 +12933,7 @@ no chip/background. */
       margin: 8px 0 6px 38px;
       overflow: hidden;
       border-radius: 999px;
-      background: color-mix(in srgb, #65a83f 10%, var(--secondary-background-color));
+      background: color-mix(in srgb, ${unsafeCSS(getDomainColor('energy'))} 10%, var(--secondary-background-color));
     }
 
     .house-power-dialog-bar span{
@@ -12942,7 +12942,7 @@ no chip/background. */
       width: var(--power-width, 0%);
       min-width: 4px;
       border-radius: inherit;
-      background: linear-gradient(90deg, #65a83f, #f4c34d);
+      background: linear-gradient(90deg, ${unsafeCSS(getDomainColor('energy'))}, #f4c34d);
     }
 
     .house-power-dialog-entities{
@@ -12969,7 +12969,7 @@ no chip/background. */
     }
 
     .house-power-dialog-entity:hover{
-      background: color-mix(in srgb, #65a83f 7%, transparent);
+      background: color-mix(in srgb, ${unsafeCSS(getDomainColor('energy'))} 7%, transparent);
     }
 
     .house-power-dialog-entity span{
@@ -13204,8 +13204,8 @@ never pill-shaped for 1–2 digits. */
       align-items: center;
       justify-content: center;
       border-radius: 10px;
-      color: #65a83f;
-      background: color-mix(in srgb, #65a83f 10%, transparent);
+      color: ${unsafeCSS(getDomainColor('energy'))};
+      background: color-mix(in srgb, ${unsafeCSS(getDomainColor('energy'))} 10%, transparent);
     }
 
     .house-power-dialog-overview-icon ha-icon{ --mdc-icon-size: 21px; }
@@ -13219,7 +13219,7 @@ never pill-shaped for 1–2 digits. */
       margin-top: 10px;
       border-radius: 10px;
       overflow: hidden;
-      background: color-mix(in srgb, #65a83f 4%, transparent);
+      background: color-mix(in srgb, ${unsafeCSS(getDomainColor('energy'))} 4%, transparent);
       --ha-card-background: transparent;
       --ha-card-box-shadow: none;
       --ha-card-border-width: 0;
@@ -13241,7 +13241,7 @@ never pill-shaped for 1–2 digits. */
       align-items: center;
       justify-content: space-between;
       gap: 10px;
-      background: color-mix(in srgb, #65a83f 5%, transparent);
+      background: color-mix(in srgb, ${unsafeCSS(getDomainColor('energy'))} 5%, transparent);
       color: inherit;
       font: inherit;
       cursor: pointer;
@@ -13263,8 +13263,8 @@ never pill-shaped for 1–2 digits. */
       align-items: center;
       justify-content: center;
       border-radius: 8px;
-      color: #65a83f;
-      background: color-mix(in srgb, #65a83f 9%, transparent);
+      color: ${unsafeCSS(getDomainColor('energy'))};
+      background: color-mix(in srgb, ${unsafeCSS(getDomainColor('energy'))} 9%, transparent);
     }
 
     .house-power-dialog-entity-icon ha-icon{ --mdc-icon-size: 17px; }
@@ -13293,7 +13293,7 @@ never pill-shaped for 1–2 digits. */
       height: 3px;
       overflow: hidden;
       border-radius: 999px;
-      background: color-mix(in srgb, #65a83f 10%, var(--secondary-background-color));
+      background: color-mix(in srgb, ${unsafeCSS(getDomainColor('energy'))} 10%, var(--secondary-background-color));
     }
 
     .house-power-dialog-entity-bar span{
@@ -13302,7 +13302,7 @@ never pill-shaped for 1–2 digits. */
       width: var(--entity-power-width, 0%);
       min-width: 3px;
       border-radius: inherit;
-      background: #65a83f;
+      background: ${unsafeCSS(getDomainColor('energy'))};
     }
 
     .house-power-dialog-entity.detailed > b{
@@ -13469,9 +13469,9 @@ never pill-shaped for 1–2 digits. */
       align-items: center;
       justify-content: center;
       gap: 6px;
-      color: #65a83f;
-      background: color-mix(in srgb, #65a83f 10%, var(--card-background-color));
-      box-shadow: inset 0 0 0 1px color-mix(in srgb, #65a83f 14%, transparent);
+      color: ${unsafeCSS(getDomainColor('energy'))};
+      background: color-mix(in srgb, ${unsafeCSS(getDomainColor('energy'))} 10%, var(--card-background-color));
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, ${unsafeCSS(getDomainColor('energy'))} 14%, transparent);
       font: inherit;
       font-size: 12px;
       font-weight: 850;
@@ -13479,7 +13479,7 @@ never pill-shaped for 1–2 digits. */
     }
 
     .house-power-dialog-energy-link:hover{
-      background: color-mix(in srgb, #65a83f 15%, var(--card-background-color));
+      background: color-mix(in srgb, ${unsafeCSS(getDomainColor('energy'))} 15%, var(--card-background-color));
     }
 
     .house-power-dialog-energy-link ha-icon{
@@ -14181,7 +14181,7 @@ never pill-shaped for 1–2 digits. */
       }
 
       .mobile-light-control-row.mode-brightness .mobile-light-control-slider{
-        background: linear-gradient(90deg, #e5b83b 0%, #f0bd45 100%);
+        background: linear-gradient(90deg, ${unsafeCSS(getDomainColor('light'))} 0%, #f0bd45 100%);
       }
 
       .mobile-light-control-row.mode-color_temp .mobile-light-control-slider{
