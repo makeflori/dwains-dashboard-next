@@ -53,6 +53,7 @@ export class DwainsBlueprintDialog extends LitElement {
   @state() private _gallery?: GalleryItem[];
   @state() private _galleryLoading = false;
   @state() private _galleryError = "";
+  @state() private _gallerySearch = "";
   @state() private _yamlText = "";
   @state() private _url = "";
   @state() private _loadingUrl = false;
@@ -330,7 +331,13 @@ export class DwainsBlueprintDialog extends LitElement {
       const data = await resp.json();
       const list: any[] = Array.isArray(data) ? data : data?.blueprints || [];
       this._gallery = list
-        .filter((b) => b && b.url && b.name)
+        .filter(
+          (b) =>
+            b &&
+            b.url &&
+            b.name &&
+            String(b.type || "page").toLowerCase() === "page"
+        )
         .map((b) => ({
           name: String(b.name),
           description: b.description ? String(b.description) : undefined,
@@ -350,6 +357,25 @@ export class DwainsBlueprintDialog extends LitElement {
     }
   }
 
+  private _filteredGallery(): GalleryItem[] {
+    const query = this._gallerySearch.trim().toLowerCase();
+    if (!query) return this._gallery || [];
+
+    return (this._gallery || []).filter((item) => {
+      const haystack = [
+        item.name,
+        item.description,
+        item.author,
+        item.type,
+        ...(item.custom_cards || []),
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(query);
+    });
+  }
+
   private _pickGalleryItem(item: GalleryItem): void {
     this._url = item.url;
     this._loadFromUrl();
@@ -361,17 +387,32 @@ export class DwainsBlueprintDialog extends LitElement {
   };
 
   private _renderGallery() {
+    const items = this._filteredGallery();
+    const searchLabel = this.hass?.localize?.("ui.common.search") || "Search";
+
     return html`
+      <div class="gallery-search">
+        <ha-icon icon="mdi:magnify"></ha-icon>
+        <input
+          type="search"
+          aria-label=${searchLabel}
+          placeholder=${searchLabel}
+          .value=${this._gallerySearch}
+          @input=${(event: Event) => {
+            this._gallerySearch = (event.target as HTMLInputElement).value;
+          }}
+        />
+      </div>
       <p class="hint">${this._t("blueprint.gallery_hint")}</p>
       ${this._galleryError ? html`<div class="error">${this._galleryError}</div>` : nothing}
       ${this._galleryLoading
         ? html`<div class="hint">${this._t("blueprint.loading")}</div>`
         : nothing}
-      ${this._gallery && this._gallery.length === 0 && !this._galleryError
+      ${this._gallery && items.length === 0 && !this._galleryError && !this._galleryLoading
         ? html`<div class="hint">${this._t("blueprint.gallery_empty")}</div>`
         : nothing}
       <div class="gallery">
-        ${(this._gallery || []).map(
+        ${items.map(
           (item) => html`
             <button class="gallery-item" @click=${() => this._pickGalleryItem(item)}>
               ${item.image
@@ -943,6 +984,40 @@ export class DwainsBlueprintDialog extends LitElement {
         padding: 8px 12px;
         margin-bottom: 12px;
         font-size: 13px;
+      }
+      .gallery-search {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0 0 12px;
+        padding: 0 12px;
+        min-height: 46px;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: var(--card-background-color);
+      }
+      .gallery-search:focus-within {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary-color) 22%, transparent);
+      }
+      .gallery-search ha-icon {
+        --mdc-icon-size: 20px;
+        color: var(--secondary-text-color);
+        flex: 0 0 auto;
+      }
+      .gallery-search input {
+        width: 100%;
+        min-width: 0;
+        height: 44px;
+        padding: 0;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        color: var(--primary-text-color);
+        font: inherit;
+      }
+      .gallery-search input::placeholder {
+        color: var(--secondary-text-color);
       }
       .gallery {
         display: grid;
