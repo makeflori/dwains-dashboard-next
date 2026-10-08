@@ -1,4 +1,5 @@
-import { css } from 'lit';
+import { css, unsafeCSS } from 'lit';
+import { getDomainColor } from '../../utils/icons';
 
 // Page header shared by the room pages (layout card) and the Devices page.
 //
@@ -149,15 +150,15 @@ export const pageHeaderStyles = css`
     }
 
     .dd-page-header-reading.temperature {
-      --reading-color: #239cb5;
+      --reading-color: ${unsafeCSS(getDomainColor('climate'))};
     }
 
     .dd-page-header-reading.humidity {
-      --reading-color: #39b5ae;
+      --reading-color: ${unsafeCSS(getDomainColor('fan'))};
     }
 
     .dd-page-header-reading.wattage {
-      --reading-color: #65a83f;
+      --reading-color: ${unsafeCSS(getDomainColor('energy'))};
     }
 
     /* Round buttons: back, camera, hidden entities, edit */
@@ -317,24 +318,24 @@ export const pageHeaderStyles = css`
     }
 
     .dd-room-tile.light {
-      --tile-color: #e5b83b;
+      --tile-color: ${unsafeCSS(getDomainColor('light'))};
       --tile-on: #2b1c00;
     }
 
     .dd-room-tile.switch {
-      --tile-color: #367dd5;
+      --tile-color: ${unsafeCSS(getDomainColor('switch'))};
     }
 
     .dd-room-tile.cover {
-      --tile-color: #d98928;
+      --tile-color: ${unsafeCSS(getDomainColor('cover'))};
     }
 
     .dd-room-tile.fan {
-      --tile-color: #39b5ae;
+      --tile-color: ${unsafeCSS(getDomainColor('fan'))};
     }
 
     .dd-room-tile.climate {
-      --tile-color: #239cb5;
+      --tile-color: ${unsafeCSS(getDomainColor('climate'))};
     }
 
     .dd-room-tile-icon {
