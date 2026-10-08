@@ -29,6 +29,7 @@ export type BlueprintInputType =
   | 'boolean'
   | 'number'
   | 'area-picker'
+  | 'entity-list'
   | string;
 
 export interface BlueprintInput {
@@ -36,6 +37,12 @@ export interface BlueprintInput {
   description?: string;
   type?: BlueprintInputType;
   default?: any;
+  name_de?: string;
+  description_de?: string;
+  entity_domain?: string;
+  suggest?: string;
+  suggest_entity?: string;
+  default_icon?: string;
 }
 
 export interface BlueprintMeta {
@@ -44,6 +51,9 @@ export interface BlueprintMeta {
   version?: string;
   type?: string;
   author?: string;
+  name_de?: string;
+  description_de?: string;
+  icon?: string;
   custom_cards?: string[];
   input?: Record<string, BlueprintInput>;
 }
@@ -79,6 +89,9 @@ export function parseBlueprintYaml(text: string): ParsedBlueprint {
     version: bp.version != null ? String(bp.version) : undefined,
     type: bp.type != null ? String(bp.type) : 'page',
     author: bp.author != null ? String(bp.author) : undefined,
+    name_de: bp.name_de != null ? String(bp.name_de) : undefined,
+    description_de: bp.description_de != null ? String(bp.description_de) : undefined,
+    icon: bp.icon != null ? String(bp.icon) : undefined,
     custom_cards: Array.isArray(bp.custom_cards) ? bp.custom_cards.map(String) : [],
     input: normalizeInputs(bp.input),
   };
@@ -96,6 +109,12 @@ function normalizeInputs(input: any): Record<string, BlueprintInput> {
       description: def.description != null ? String(def.description) : undefined,
       type: def.type != null ? String(def.type) : 'text-field',
       default: def.default,
+      name_de: def.name_de,
+      description_de: def.description_de,
+      entity_domain: def.entity_domain,
+      suggest: def.suggest,
+      suggest_entity: def.suggest_entity,
+      default_icon: def.default_icon,
     };
   }
   return out;
@@ -109,6 +128,7 @@ export function defaultValues(meta: BlueprintMeta): Record<string, any> {
     const def = inputs[key]!;
     if (def.default !== undefined) vals[key] = def.default;
     else if (def.type === 'boolean') vals[key] = false;
+    else if (def.type === 'entity-list') vals[key] = [];
     else vals[key] = '';
   }
   return vals;
@@ -133,10 +153,36 @@ export function resolveBlueprintCard(
   ).sort((a, b) => b.length - a.length);
   return walk(card);
 
+  function localized(node: any): any {
+    return node && typeof node === 'object' && !Array.isArray(node) && node.i18n
+      ? (values.__language === 'de' ? (node.i18n.de ?? node.i18n.en) : (node.i18n.en ?? node.i18n.de))
+      : node;
+  }
+
+  function renderItem(node: any, item: any, index: number): any {
+    if (typeof node === 'string') {
+      const value = node.replace(/\$item\.(name|icon|entity|price_entity|amount_entity|index)\$/g, (_: string, key: string) => String(key === 'index' ? index : (item[key] ?? '')));
+      return walk(value);
+    }
+    if (Array.isArray(node)) return node.map((x) => renderItem(x, item, index));
+    if (node && typeof node === 'object') {
+      if (node.i18n) return renderItem(localized(node), item, index);
+      return Object.fromEntries(Object.entries(node).map(([k, v]) => [k, renderItem(v, item, index)]));
+    }
+    return node;
+  }
+
   function walk(node: any): any {
     if (typeof node === 'string') return substituteString(node);
-    if (Array.isArray(node)) return node.map(walk);
+    if (Array.isArray(node)) return node.flatMap((entry) => {
+      if (entry && typeof entry === 'object' && typeof entry.repeat === 'string' && entry.template) {
+        const items = values[entry.repeat];
+        return Array.isArray(items) ? items.filter((x) => x?.entity).map((item, index) => renderItem(entry.template, { ...item, icon: item.icon || meta.input?.[entry.repeat]?.default_icon || 'mdi:shape' }, index)) : [];
+      }
+      return [walk(entry)];
+    });
     if (node && typeof node === 'object') {
+      if (node.i18n) return walk(localized(node));
       const out: Record<string, any> = {};
       for (const k of Object.keys(node)) out[k] = walk(node[k]);
       return out;
@@ -152,7 +198,7 @@ export function resolveBlueprintCard(
       }
     }
     // Anders: tekstvervanging binnen de string.
-    let result = str;
+    let result = str.replace(/\$json\.([a-zA-Z0-9_]+)\$/g, (_match, key: string) => JSON.stringify(Array.isArray(values[key]) ? values[key] : []));
     for (const key of keys) {
       if (result.includes(`$${key}$`)) {
         const v = values[key];

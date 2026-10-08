@@ -45,6 +45,11 @@ const GALLERY_URL =
 export class DwainsBlueprintDialog extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
+  private get _german(): boolean { return (this.hass?.locale?.language || this.hass?.language || 'en').toLowerCase().split('-')[0] === 'de'; }
+  private _label(def: any, key: string): string { return (this._german ? def.name_de : undefined) || def.name || key; }
+  private _desc(def: any): string { return (this._german ? def.description_de : undefined) || def.description || ''; }
+  private _listTitle(type: string): string { return this._german ? (type === 'waste' ? 'Müllart' : 'Coin') : (type === 'waste' ? 'Waste type' : 'Coin'); }
+
   private _t = (key: string, vars?: Record<string, string | number>) =>
     ddLocalize(this.hass, key, vars);
 
@@ -85,7 +90,7 @@ export class DwainsBlueprintDialog extends LitElement {
       try {
         const parsed = parseBlueprintYaml(params.page.blueprint);
         this._parsed = parsed;
-        this._values = { ...defaultValues(parsed.meta), ...(params.page.inputs || {}) };
+        this._values = { ...defaultValues(parsed.meta), ...(params.page.inputs || {}), __language: this._german ? "de" : "en" };
         this._pageName = params.page.name;
         this._pageIcon = params.page.icon || "mdi:puzzle";
         this._yamlText = params.page.blueprint;
@@ -129,16 +134,33 @@ export class DwainsBlueprintDialog extends LitElement {
     }
   }
 
+  private _suggestInputValues(parsed: ParsedBlueprint): Record<string, any> {
+    const suggestions: Record<string, any> = {};
+    const states = this.hass?.states || {};
+    for (const [key, def] of Object.entries(parsed.meta.input || {})) {
+      if (def.type !== 'entity-picker') continue;
+      const candidate = def.suggest_entity;
+      if (candidate && states[candidate]) { suggestions[key] = candidate; continue; }
+      const domain = key.startsWith('switch_') ? 'switch' : key.startsWith('update_') ? 'update' : key.startsWith('binary_sensor_') ? 'binary_sensor' : 'sensor';
+      const suffix = key.replace(/^(sensor|switch|update|binary_sensor)_/, '');
+      const exact = domain + '.' + suffix;
+      if (states[exact]) { suggestions[key] = exact; continue; }
+      const matches = Object.keys(states).filter(id => id.startsWith(domain + '.') && ((id.split('.')[1] || '') === suffix || (id.split('.')[1] || '').endsWith('_' + suffix)));
+      if (matches.length === 1) suggestions[key] = matches[0];
+    }
+    return suggestions;
+  }
+
   private _applyParsed(parsed: ParsedBlueprint): void {
     this._parsed = parsed;
-    this._values = defaultValues(parsed.meta);
-    this._pageName = parsed.meta.name || this._t("blueprint.new_page");
-    this._pageIcon = "mdi:puzzle";
+    this._values = { ...defaultValues(parsed.meta), ...this._suggestInputValues(parsed), __language: this._german ? "de" : "en" };
+    this._pageName = (this._german && parsed.meta.name_de) || parsed.meta.name || this._t("blueprint.new_page");
+    this._pageIcon = parsed.meta.icon || "mdi:puzzle";
   }
 
   // Behoud ingevulde waarden voor velden die in de nieuwe blueprint nog bestaan.
   private _mergeValues(newParsed: ParsedBlueprint): Record<string, any> {
-    const merged = defaultValues(newParsed.meta);
+    const merged: Record<string, any> = { ...defaultValues(newParsed.meta), __language: this._german ? "de" : "en" };
     const keys = Object.keys(newParsed.meta.input || {});
     for (const key of keys) {
       if (this._values[key] !== undefined && this._values[key] !== "") {
@@ -607,8 +629,8 @@ export class DwainsBlueprintDialog extends LitElement {
 
     return html`
       <div class="meta">
-        <div class="meta-title">${meta.name}</div>
-        ${meta.description ? html`<div class="meta-desc">${meta.description}</div>` : nothing}
+        <div class="meta-title">${(this._german && meta.name_de) || meta.name}</div>
+        ${(meta.description || meta.description_de) ? html`<div class="meta-desc">${(this._german && meta.description_de) || meta.description}</div>` : nothing}
         <div class="meta-tags">
           ${meta.version ? html`<span class="chip">v${meta.version}</span>` : nothing}
           ${meta.author ? html`<span class="chip">${meta.author}</span>` : nothing}
@@ -732,11 +754,14 @@ export class DwainsBlueprintDialog extends LitElement {
 
   private _renderField(key: string, def: any) {
     const value = this._values[key];
-    const label = def.name || key;
+    const label = this._label(def, key);
     const type = def.type || "text-field";
 
     let control;
     switch (type) {
+      case "entity-list":
+        control = this._renderEntityList(key, def);
+        break;
       case "entity-picker":
         control = html`
           <ha-entity-picker
@@ -796,10 +821,41 @@ export class DwainsBlueprintDialog extends LitElement {
     return html`
       <div class="field">
         <label>${label}</label>
-        ${def.description ? html`<div class="field-desc">${def.description}</div>` : nothing}
+        ${this._desc(def) ? html`<div class="field-desc">${this._desc(def)}</div>` : nothing}
         ${control}
       </div>
     `;
+  }
+
+  private _entitySuggestions(def: any): string[] {
+    const rx = def.suggest === 'waste' ? /waste|garbage|rubbish|trash|refuse|recycl|papier|paper|biom[uü]ll|restm[uü]ll|abfall|gelber.sack|altglas|muell|mull/i : /wallet|crypto|bitcoin|ethereum|cardano|coin|token|asset|portfolio|balance/i;
+    return Object.keys(this.hass?.states || {}).filter((id) => id.startsWith((def.entity_domain || 'sensor') + '.') && rx.test(id + ' ' + (this.hass.states[id]?.attributes?.friendly_name || '')));
+  }
+
+  private _renderEntityList(key: string, def: any) {
+    const items = Array.isArray(this._values[key]) ? this._values[key] : [];
+    const update = (index: number, prop: 'name' | 'icon' | 'entity' | 'price_entity' | 'amount_entity', value: string) => {
+      const next = items.map((item: any) => ({ ...item }));
+      next[index][prop] = value;
+      if (prop === 'entity' && value && !next[index].name) next[index].name = this.hass.states[value]?.attributes?.friendly_name || value.split('.').pop()?.replace(/_/g, ' ') || '';
+      this._setValue(key, next);
+    };
+    const suggestions = this._entitySuggestions(def).filter(id => !items.some((x: any) => x.entity === id));
+    return html`<div class="entity-list">
+      ${items.map((item: any, index: number) => html`<div class="entity-list-row">
+        <div class="entity-list-header"><strong>${this._listTitle(def.suggest)} ${index + 1}</strong>
+          <ha-button appearance="plain" size="s" @click=${() => this._setValue(key, items.filter((_: any, i: number) => i !== index))}>${this._german ? 'Entfernen' : 'Remove'}</ha-button>
+        </div>
+        <ha-entity-picker .hass=${this.hass} .value=${item.entity || ''} @value-changed=${(e: any) => update(index, 'entity', e.detail.value)}></ha-entity-picker>
+        <input class="dd-input" placeholder=${this._german ? 'Name' : 'Name'} .value=${item.name || ''} @input=${(e: any) => update(index, 'name', e.target.value)} />
+        ${def.suggest === 'coin' ? html`<div class="field-desc">${this._german ? 'Preissensor (optional)' : 'Price sensor (optional)'}</div><ha-entity-picker .hass=${this.hass} .value=${item.price_entity || ''} @value-changed=${(e: any) => update(index, 'price_entity', e.detail.value)}></ha-entity-picker><div class="field-desc">${this._german ? 'Bestandssensor (optional)' : 'Holdings sensor (optional)'}</div><ha-entity-picker .hass=${this.hass} .value=${item.amount_entity || ''} @value-changed=${(e: any) => update(index, 'amount_entity', e.detail.value)}></ha-entity-picker>` : nothing}
+        <ha-icon-picker .hass=${this.hass} .value=${item.icon || ''} @value-changed=${(e: any) => update(index, 'icon', e.detail.value)}></ha-icon-picker>
+        <div class="field-desc">${this._german ? 'Icon optional – Standard:' : 'Icon optional – default:'} ${def.default_icon || 'mdi:shape'}</div>
+      </div>`)}
+      <ha-button appearance="outlined" @click=${() => this._setValue(key, [...items, { name: '', icon: '', entity: '' }])}>${this._german ? 'Hinzufügen' : 'Add'} ${this._listTitle(def.suggest)}</ha-button>
+      ${suggestions.length ? html`<div class="field-desc">${this._german ? 'Vorschläge aus Home Assistant:' : 'Suggested Home Assistant entities:'}</div>
+        <div class="entity-list-suggestions">${suggestions.slice(0, 16).map(id => html`<ha-button appearance="plain" size="s" @click=${() => this._setValue(key, [...items, { entity: id, name: this.hass.states[id]?.attributes?.friendly_name || (id.split('.')[1] || id).replace(/_/g,' '), icon: '' }])}>${this.hass.states[id]?.attributes?.friendly_name || id}</ha-button>`)}</div>` : nothing}
+    </div>`;
   }
 
   static get styles() {
@@ -937,6 +993,10 @@ export class DwainsBlueprintDialog extends LitElement {
         color: var(--secondary-text-color);
         margin: 14px 0 8px;
       }
+      .entity-list-row { border: 1px solid var(--divider-color); border-radius: 10px; padding: 12px; margin-bottom: 10px; display: grid; gap: 9px; }
+      .entity-list-header { display: flex; align-items: center; justify-content: space-between; }
+      .entity-list-suggestions { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+      .entity-list > ha-button { margin-top: 5px; }
       .field {
         margin-bottom: 14px;
       }

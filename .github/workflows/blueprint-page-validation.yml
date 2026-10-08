@@ -1,0 +1,39 @@
+name: Blueprint Page Validation
+
+on:
+  push:
+    branches:
+      - feature/generic-blueprint-pages-20261008
+  pull_request:
+    branches:
+      - dev
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  blueprint-page-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check out blueprint source
+        uses: actions/checkout@v4
+        with:
+          repository: makeflori/dwains-dashboard-blueprints
+          ref: feature/blueprint-i18n-generic-20261008
+          path: blueprint-source
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Type check
+        run: npm run type-check
+      # Validate all real page blueprint imports and repeatable card expansion.
+      - name: Blueprint tests
+        run: npx vitest run tests/blueprint-repeat.test.ts tests/blueprint-page-import.test.ts
+      - name: Build
+        run: npm run build
