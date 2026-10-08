@@ -16370,7 +16370,7 @@ copy{
       .mobile-home-section:not(.layout-grid) .mobile-area-rail,
       .home-status-section:not(.layout-grid) .home-status-grid,
       .home-camera-section:not(.layout-grid) .home-camera-grid {
-        padding-bottom: 12px !important;
+        padding-bottom: 24px !important;
       }
 
       /* Native/custom Home Assistant cards must stay inside the phone viewport. */
@@ -16405,7 +16405,7 @@ copy{
       }
 
       .mobile-area-card.has-picture .mobile-area-picture {
-        opacity: 0.18 !important;
+        opacity: 0.20 !important;
         filter: saturate(0.72) contrast(0.92) !important;
       }
 
@@ -16416,8 +16416,8 @@ copy{
         --mobile-area-picture-muted-text-color: var(--secondary-text-color) !important;
         --mobile-area-picture-text-shadow: none !important;
         --mobile-area-picture-overlay: linear-gradient(
-          color-mix(in srgb, var(--card-background-color) 72%, transparent),
-          color-mix(in srgb, var(--card-background-color) 72%, transparent)
+          color-mix(in srgb, var(--card-background-color) 18%, transparent),
+          color-mix(in srgb, var(--card-background-color) 18%, transparent)
         ) !important;
       }
 
@@ -16431,7 +16431,7 @@ copy{
       .home-favorites-section {
         width: 100% !important;
         max-width: none !important;
-        margin: 0 0 44px !important;
+        margin: 0 -10px 44px !important;
         overflow: visible !important;
       }
 
@@ -16444,7 +16444,7 @@ copy{
         display: grid !important;
         grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
         gap: 10px !important;
-        padding: 0 !important;
+        padding: 2px 18px 16px !important;
         overflow: visible !important;
       }
 
@@ -16453,7 +16453,7 @@ copy{
         flex-direction: column !important;
         align-items: flex-start !important;
         gap: 8px !important;
-        padding: 0 !important;
+        padding: 2px 18px 16px !important;
         overflow: visible !important;
         scroll-snap-type: none !important;
       }
