@@ -31,6 +31,14 @@ describe('import actual published Dashboard Next page YAML', () => {
       expect(card?.type).toBeTruthy();
       expect(JSON.stringify(card)).not.toContain('$item.');
       expect(JSON.stringify(card)).not.toContain('"repeat":');
+      function validateJS(node: any): void {
+        if (typeof node === 'string' && /^\\[\\[\\[[\\s\\S]*\\]\\]\\]$/.test(node)) {
+          const body = node.slice(3, -3);
+          expect(() => new Function('entity', 'states', 'variables', body), body.slice(0, 90)).not.toThrow();
+        } else if (Array.isArray(node)) node.forEach(validateJS);
+        else if (node && typeof node === 'object') Object.values(node).forEach(validateJS);
+      }
+      validateJS(card);
     });
   }
 });
