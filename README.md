@@ -184,3 +184,5 @@ See [LICENSE](LICENSE) for the full license terms.
 - Align light, energy, temperature, humidity, room-climate, humidifier, and scene colors through existing domain color definitions.
 - Preserve distinct armed and triggered alarm states.
 - Give combined indoor/outdoor climate cards the shared teal accent and use green-only household power bars.
+
+- Preserve the room section heading in entity popups even when only one room is present, while avoiding redundant person grouping labels.
