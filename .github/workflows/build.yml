@@ -101,6 +101,35 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Recover missing GitHub release for current version
+        if: github.event_name == 'push' && github.ref == 'refs/heads/dev' && steps.dev_release.outputs.should_release != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          TAG="v${VERSION}"
+          if ! git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "No existing tag $TAG; nothing to recover."
+            exit 0
+          fi
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already published."
+            exit 0
+          fi
+          TAG_SHA=$(git rev-list -n 1 "$TAG")
+          if ! git merge-base --is-ancestor "$TAG_SHA" HEAD; then
+            echo "Tag $TAG is not in dev history; refusing to publish."
+            exit 1
+          fi
+          if [[ "$(git log -1 --pretty=%s "$TAG_SHA")" != "Build release $TAG" ]]; then
+            echo "Tag $TAG does not point to an automated build release; refusing."
+            exit 1
+          fi
+          echo "Publishing missing GitHub release for existing $TAG at $TAG_SHA."
+          gh release create "$TAG" --verify-tag --title "$TAG" \
+            --notes "Recovered GitHub release for the existing, successfully built $TAG tag."
+
       - name: Commit complete release
         if: steps.dev_release.outputs.should_release == 'true'
         env:
