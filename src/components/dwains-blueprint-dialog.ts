@@ -776,7 +776,7 @@ export class DwainsBlueprintDialog extends LitElement {
 
   private _renderEntityList(key: string, def: any) {
     const items = Array.isArray(this._values[key]) ? this._values[key] : [];
-    const update = (index: number, prop: 'name' | 'icon' | 'entity', value: string) => {
+    const update = (index: number, prop: 'name' | 'icon' | 'entity' | 'price_entity' | 'amount_entity', value: string) => {
       const next = items.map((item: any) => ({ ...item }));
       next[index][prop] = value;
       if (prop === 'entity' && value && !next[index].name) next[index].name = this.hass.states[value]?.attributes?.friendly_name || value.split('.').pop()?.replace(/_/g, ' ') || '';
@@ -790,6 +790,7 @@ export class DwainsBlueprintDialog extends LitElement {
         </div>
         <ha-entity-picker .hass=${this.hass} .value=${item.entity || ''} @value-changed=${(e: any) => update(index, 'entity', e.detail.value)}></ha-entity-picker>
         <input class="dd-input" placeholder=${this._german ? 'Name' : 'Name'} .value=${item.name || ''} @input=${(e: any) => update(index, 'name', e.target.value)} />
+        ${def.suggest === 'coin' ? html`<div class="field-desc">${this._german ? 'Preissensor (optional)' : 'Price sensor (optional)'}</div><ha-entity-picker .hass=${this.hass} .value=${item.price_entity || ''} @value-changed=${(e: any) => update(index, 'price_entity', e.detail.value)}></ha-entity-picker><div class="field-desc">${this._german ? 'Bestandssensor (optional)' : 'Holdings sensor (optional)'}</div><ha-entity-picker .hass=${this.hass} .value=${item.amount_entity || ''} @value-changed=${(e: any) => update(index, 'amount_entity', e.detail.value)}></ha-entity-picker>` : nothing}
         <ha-icon-picker .hass=${this.hass} .value=${item.icon || ''} @value-changed=${(e: any) => update(index, 'icon', e.detail.value)}></ha-icon-picker>
         <div class="field-desc">${this._german ? 'Icon optional – Standard:' : 'Icon optional – default:'} ${def.default_icon || 'mdi:shape'}</div>
       </div>`)}
