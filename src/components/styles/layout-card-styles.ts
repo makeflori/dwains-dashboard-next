@@ -8834,4 +8834,36 @@ which also swallowed pointer events for the new handle. */
   }
 }
 
+
+
+/* 2026-10-08 small consistency follow-up. */
+.room-header .dd-page-header-title-row .dd-page-header-home,
+.dd-room-compact .dd-page-header-home {
+  color: var(--primary-color) !important;
+  background: color-mix(in srgb, var(--primary-color) 11%, var(--card-background-color)) !important;
+}
+
+.room-header .dd-page-header-title-row .dd-page-header-home:hover,
+.dd-room-compact .dd-page-header-home:hover {
+  color: var(--primary-color) !important;
+  background: color-mix(in srgb, var(--primary-color) 17%, var(--card-background-color)) !important;
+}
+
+@media (min-width: 769px) {
+  /* One desktop camera tile matches one large House Information card:
+     three equal columns across the same Home content width. */
+  .home-camera-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  .home-camera-card {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+}
+
 `;
