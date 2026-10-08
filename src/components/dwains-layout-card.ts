@@ -17776,24 +17776,27 @@ copy{
         class="area-button room-area-button ${isSelected ? 'selected' : ''} ${hasPicture ? 'has-picture' : 'has-icon'}"
         @click=${() => this._selectArea(area.area_id)}
       >
+        ${hasPicture ? html`
+          <div
+            class="area-list-picture"
+            aria-hidden="true"
+            style=${`background-image: url('${area.picture}');`}
+          ></div>
+        ` : nothing}
+
         <div class="area-media" aria-hidden="true">
-          ${hasPicture
-            ? html`<div class="area-media-picture" style=${`background-image: url('${area.picture}');`}></div>`
-            : html`
-                <div class="area-media-icon">
-                  <ha-icon icon=${getAreaIcon(area)}></ha-icon>
-                </div>
-              `}
+          <div class="area-media-icon">
+            <ha-icon icon=${getAreaIcon(area)}></ha-icon>
+          </div>
         </div>
 
         <div class="area-content">
           <div class="area-top-section">
             <div class="area-name">${area.name}</div>
-            ${sensorSummary ? html`
-              <div class="area-sensors">${sensorSummary}</div>
-            ` : nothing}
+            <div class="area-sensors ${sensorSummary ? '' : 'is-empty'}">
+              ${sensorSummary || '\u00A0'}
+            </div>
           </div>
-
           <div class="area-info-badges">
             ${badges.map((badge) =>
               badge.domain === 'light'
