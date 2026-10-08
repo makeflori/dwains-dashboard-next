@@ -159,7 +159,7 @@ export function resolveBlueprintCard(
 
   function renderItem(node: any, item: any, index: number): any {
     if (typeof node === 'string') {
-      const value = node.replace(/\\$item\\.(name|icon|entity|index)\\$/g, (_: string, key: string) => String(key === 'index' ? index : (item[key] ?? '')));
+      const value = node.replace(/\\$item\\.(name|icon|entity|price_entity|amount_entity|index)\\$/g, (_: string, key: string) => String(key === 'index' ? index : (item[key] ?? '')));
       return walk(value);
     }
     if (Array.isArray(node)) return node.map((x) => renderItem(x, item, index));
