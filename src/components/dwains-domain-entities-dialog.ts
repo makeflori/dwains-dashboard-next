@@ -1210,7 +1210,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     const shouldClose = this._sheetDragOffset >= 90;
     this._sheetDragStartY = null;
     this._sheetDragOffset = 0;
-    this.renderRoot.querySelector('ha-dialog')?.style.removeProperty('--sheet-drag-offset');
+    this.renderRoot.querySelector<HTMLElement>('ha-dialog')?.style.removeProperty('--sheet-drag-offset');
     if (shouldClose) this.closeDialog();
   };
 
@@ -1700,7 +1700,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
           ${repeat(
             group.entities,
             entity => entity.entity_id,
-            entity => this._renderEntityCard(entity, group.areaName)
+            entity => this._renderEntityCard(entity)
           )}
         </div>
       </div>
