@@ -177,5 +177,9 @@ Dwains Dashboard Next is released under the MIT License.
 
 See [LICENSE](LICENSE) for the full license terms.
 
+## Latest dashboard improvements
 
-
+- Size desktop quick-control tiles to their content while reserving space for longest on/off and open/closed states.
+- Keep the quick-control layout stable when device counts or states change.
+- Align light, energy, temperature, humidity, room-climate, humidifier, and scene colors through existing domain color definitions.
+- Preserve distinct armed and triggered alarm states.
