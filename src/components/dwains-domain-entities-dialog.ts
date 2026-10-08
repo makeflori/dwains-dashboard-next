@@ -512,9 +512,9 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       :host {
         --mdc-dialog-min-width: min(calc(100vw - 4px), 480px);
         --mdc-dialog-max-width: min(calc(100vw - 4px), 480px);
-        --mdc-dialog-min-height: calc(100dvh - 54px);
+        --mdc-dialog-min-height: 0px;
         --mdc-dialog-max-height: calc(100dvh - 54px);
-        --ha-dialog-min-height: calc(100dvh - 54px);
+        --ha-dialog-min-height: 0px;
         --ha-dialog-max-height: calc(100dvh - 54px);
         --vertical-align-dialog: flex-end;
         --dialog-surface-margin-top: 54px;
@@ -558,7 +558,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
 
       .content {
         max-height: calc(100dvh - 148px);
-        padding: 12px 12px calc(84px + env(safe-area-inset-bottom, 0px)) !important;
+        padding: 12px 12px calc(16px + env(safe-area-inset-bottom, 0px)) !important;
       }
 
       .area-section {
@@ -1074,6 +1074,34 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       }
     }
 
+    /* The modal grows with its actual content, not with the entire viewport. */
+    @media (max-width: 600px) {
+      :host {
+        --mdc-dialog-min-height: 0px !important;
+        --ha-dialog-min-height: 0px !important;
+        --mdc-dialog-max-height: calc(100dvh - 54px);
+        --ha-dialog-max-height: calc(100dvh - 54px);
+      }
+      ha-dialog { height: auto !important; max-height: calc(100dvh - 54px); }
+      .content {
+        max-height: calc(100dvh - 190px);
+        padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px)) !important;
+        overscroll-behavior: contain;
+      }
+      ha-dialog-header {
+        touch-action: pan-x !important;
+        overflow: visible !important;
+        padding-top: 30px !important;
+        padding-bottom: 15px !important;
+      }
+      .dialog-title-line { align-items: center !important; }
+      .dialog-heading-copy { overflow: visible !important; }
+      .dialog-header-destination { position: relative; white-space: nowrap; }
+      .sheet-handle { z-index: 10; }
+    }
+    .area-group-actions { padding: 8px 12px 0; }
+    .area-group-actions .domain-actions { margin: 0; flex-wrap: wrap; }
+
     /* Unified header: desktop link follows title, mobile link is a second line.
        Icon spans the full two-line block on phones. */
     .dialog-title-line {
@@ -1508,8 +1536,8 @@ export class DwainsDomainEntitiesDialog extends LitElement {
         flexContent
         hideActions
       >
-        <ha-dialog-header slot="header">
-          <div class="sheet-handle" aria-hidden="true" @touchstart=${this._onSheetTouchStart} @touchmove=${this._onSheetTouchMove} @touchend=${this._onSheetTouchEnd} @touchcancel=${this._onSheetTouchEnd}></div>
+        <ha-dialog-header slot="header" @touchstart=${this._onSheetTouchStart} @touchmove=${this._onSheetTouchMove} @touchend=${this._onSheetTouchEnd} @touchcancel=${this._onSheetTouchEnd}>
+          <div class="sheet-handle" aria-hidden="true"></div>
           <span slot="title" class="dialog-title-line" style=${`--dialog-accent: ${headerColor};`}>
             <span class="dialog-title-icon" aria-hidden="true">
               <ha-icon icon=${headerIcon}></ha-icon>
@@ -1567,7 +1595,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     }
 
     return html`
-      ${this._renderDomainActions(entities)}
       ${repeat(
         Object.entries(this._groupedEntities),
         ([areaId]) => areaId,
@@ -1697,6 +1724,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
           <div class="area-name">${group.areaName}</div>
           <div class="entity-count">${group.entities.length}</div>
         </div>` : nothing}
+        ${showAreaHeader ? html`<div class="area-group-actions">${this._renderDomainActions(group.entities)}</div>` : this._renderDomainActions(group.entities)}
         <div class="entities-grid">
           ${repeat(
             group.entities,
