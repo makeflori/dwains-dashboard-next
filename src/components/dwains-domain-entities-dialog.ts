@@ -54,6 +54,8 @@ export class DwainsDomainEntitiesDialog extends LitElement {
   private _entityCards = new Map<string, HTMLElement>();
   private _updateInterval?: number;
   private _mobileSheetAnimated = false;
+  private _sheetDragStartY: number | null = null;
+  private _sheetDragOffset = 0;
   private _optimisticCleanupTimer?: number;
 
   private _t(key: string, vars?: Record<string, string | number>): string {
@@ -1072,7 +1074,84 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       }
     }
 
+    /* Shared room-style entity layout: desktop 2–3 columns, mobile one flat row per entity. */
+    .entities-grid, .content.room-context .entities-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
+    @media (max-width: 1000px) and (min-width: 601px) {
+      .entities-grid, .content.room-context .entities-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      }
+    }
+    @media (max-width: 600px) {
+      .entities-grid, .content.room-context .entities-grid,
+      .content.room-context.custom-entities-context .entities-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+      }
+      .domain-entity-card, .content.room-context .domain-entity-card {
+        display: grid !important;
+        grid-template-columns: 40px minmax(0, 1fr) auto !important;
+        grid-template-rows: auto !important;
+        align-items: center !important;
+        gap: 10px !important;
+        min-height: 68px !important;
+        height: auto !important;
+        padding: 10px 12px !important;
+      }
+      .domain-entity-top, .content.room-context .domain-entity-top {
+        display: contents !important;
+      }
+      .domain-entity-icon, .content.room-context .domain-entity-icon {
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+      }
+      .domain-entity-copy, .content.room-context .domain-entity-copy {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+        min-width: 0 !important;
+      }
+      .domain-entity-top > :not(.domain-entity-icon),
+      .content.room-context .domain-entity-top > :not(.domain-entity-icon) {
+        grid-column: 3 !important;
+        grid-row: 1 !important;
+        justify-self: end !important;
+      }
+      .domain-entity-name, .content.room-context .domain-entity-name {
+        white-space: normal !important;
+        overflow-wrap: anywhere !important;
+        text-overflow: clip !important;
+      }
+      .sheet-handle {
+        touch-action: none;
+        pointer-events: auto;
+        cursor: grab;
+      }
+    }
   `;
+
+  private _onSheetTouchStart = (event: TouchEvent): void => {
+    if (event.touches.length !== 1) return;
+    this._sheetDragStartY = event.touches[0].clientY;
+    this._sheetDragOffset = 0;
+  };
+
+  private _onSheetTouchMove = (event: TouchEvent): void => {
+    if (this._sheetDragStartY === null || event.touches.length !== 1) return;
+    const distance = event.touches[0].clientY - this._sheetDragStartY;
+    this._sheetDragOffset = Math.max(0, distance);
+    if (distance > 0 && event.cancelable) event.preventDefault();
+    const dialog = this.renderRoot.querySelector('ha-dialog');
+    if (dialog) dialog.style.setProperty('--sheet-drag-offset', `${this._sheetDragOffset}px`);
+  };
+
+  private _onSheetTouchEnd = (): void => {
+    if (this._sheetDragStartY === null) return;
+    const shouldClose = this._sheetDragOffset >= 90;
+    this._sheetDragStartY = null;
+    this._sheetDragOffset = 0;
+    this.renderRoot.querySelector('ha-dialog')?.style.removeProperty('--sheet-drag-offset');
+    if (shouldClose) this.closeDialog();
+  };
 
   public async showDialog(params: DomainEntitiesDialogParams): Promise<void> {
     this._params = params;
@@ -1087,6 +1166,8 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     this._optimisticEntityStates = {};
     this._entityCards.clear();
     this._mobileSheetAnimated = false;
+    this._sheetDragStartY = null;
+    this._sheetDragOffset = 0;
     if (this._updateInterval) {
       clearInterval(this._updateInterval);
       this._updateInterval = undefined;
@@ -1367,7 +1448,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
         hideActions
       >
         <ha-dialog-header slot="header">
-          <div class="sheet-handle" aria-hidden="true"></div>
+          <div class="sheet-handle" aria-hidden="true" @touchstart=${this._onSheetTouchStart} @touchmove=${this._onSheetTouchMove} @touchend=${this._onSheetTouchEnd} @touchcancel=${this._onSheetTouchEnd}></div>
           <span slot="title" class="dialog-title-line" style=${`--dialog-accent: ${headerColor};`}>
             <span class="dialog-title-icon" aria-hidden="true">
               <ha-icon icon=${headerIcon}></ha-icon>
@@ -1537,14 +1618,12 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       }
     }
 
-    // Persons are shown as one household group instead of room-based groups.
-    if (this._params?.domain === 'person') {
-      areaIcon = 'mdi:account-group';
-    }
+    // The dialog title already identifies persons; do not repeat a persons group header.
+    const showAreaHeader = this._params?.domain !== 'person';
 
     return html`
       <div class="area-section">
-        <div class="area-header">
+        ${showAreaHeader ? html`<div class="area-header">
           ${areaIcon ? html`
             <div class="area-icon">
               <ha-icon icon="${areaIcon}"></ha-icon>
@@ -1552,7 +1631,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
           ` : nothing}
           <div class="area-name">${group.areaName}</div>
           <div class="entity-count">${group.entities.length}</div>
-        </div>
+        </div>` : nothing}
         <div class="entities-grid">
           ${repeat(
             group.entities,
@@ -1589,11 +1668,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       getDomainIcon(domain);
     const rawName = state.attributes?.friendly_name || this.hass.entities?.[entity.entity_id]?.name || entity.entity_id;
     const areaName = this._entityAreaName(entity);
-    const name = this._params?.areaId
-      ? stripAreaNameFromEntityName(rawName, areaName)
-      : this._params?.config.settings?.hide_area_name_in_entity_names === true
-        ? stripAreaNameFromEntityName(rawName, areaName)
-        : rawName;
+    const name = stripAreaNameFromEntityName(rawName, areaName);
     const active = this._isEntityActiveForUi(state, domain);
     const unavailable = this._isUnavailable(state);
     const classes = [
@@ -1620,9 +1695,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
           ${this._renderEntityActions(state, domain, active)}
         </div>
         <div class="domain-entity-copy">
-          ${this._params?.areaId
-            ? nothing
-            : html`<div class="domain-entity-meta">${fallbackMeta || areaName || this._t('dialog.no_area')}</div>`}
+          ${nothing}
           <div class="domain-entity-name">${name}</div>
           <div class="domain-entity-status">${this._entityStatusText(state, domain)}</div>
         </div>
