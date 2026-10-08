@@ -688,6 +688,13 @@ export const pageHeaderStyles = css`
       flex: 0 0 30px;
       display: inline-grid;
       place-items: center;
+      background: color-mix(in srgb, #03a9f4 14%, var(--ph-surface));
+      color: #03a9f4;
+    }
+
+    .room-header .dd-page-header-title-row .dd-page-header-home:hover {
+      background: color-mix(in srgb, #03a9f4 22%, var(--ph-surface));
+      color: #03a9f4;
     }
 
     .room-header .dd-page-header-title-chevron {
