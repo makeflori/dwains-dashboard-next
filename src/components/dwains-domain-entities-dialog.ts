@@ -1682,8 +1682,9 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     }
 
     // The dialog title already identifies persons; do not repeat a persons group header.
-    // A single group repeats the information conveyed by its entity cards or dialog title.
-    const showAreaHeader = this._params?.domain !== 'person' && Object.keys(this._groupedEntities).length > 1;
+    // Preserve area context even when there is only one room: entity tiles omit room names.
+    // Persons are not area-grouped, and the dialog title already identifies that domain.
+    const showAreaHeader = this._params?.domain !== 'person';
 
     return html`
       <div class="area-section">
