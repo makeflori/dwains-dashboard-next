@@ -3430,6 +3430,37 @@ export class DwainsLayoutCard extends LitElement {
       pointer-events: none;
     }
 
+    .mobile-section-icon{
+      width: 30px;
+      height: 30px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      color: color-mix(in srgb, var(--primary-text-color) 62%, transparent);
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    .mobile-section-icon ha-icon{
+      --mdc-icon-size: 20px;
+    }
+
+    .home-summaries-section .mobile-section-icon.summaries{
+      color: #f59e0b;
+    }
+
+    .home-todos-section .mobile-section-icon.todos{
+      color: #7c3aed;
+    }
+
+    .home-custom-cards-section .mobile-section-icon.custom-cards{
+      color: #0ea5a8;
+    }
+
     .mobile-domain-title-copy{
       min-width: 0;
       display: inline-flex;
@@ -16174,6 +16205,166 @@ copy{
       }
     }
 
+    /* Final mobile room sizing: make the entity list about 10% larger without
+       changing the desktop room grid. */
+    @media (max-width: 768px) {
+      .area-view .mobile-domain-title-label,
+      .mobile-domain-title-label {
+        font-size: 20px;
+      }
+
+      .area-view .mobile-domain-count,
+      .mobile-domain-count {
+        font-size: 13px;
+      }
+
+      .mobile-domain-header {
+        margin-bottom: 11px;
+      }
+
+      .mobile-domain-title {
+        gap: 9px;
+      }
+
+      .mobile-layout-toggle {
+        width: 33px;
+        height: 33px;
+      }
+
+      .mobile-layout-toggle ha-icon {
+        --mdc-icon-size: 19px;
+      }
+
+      .mobile-domain-master {
+        min-width: 64px;
+        height: 33px;
+        padding: 0 6px 0 8px;
+        gap: 7px;
+      }
+
+      .mobile-domain-master ha-icon {
+        --mdc-icon-size: 18px;
+      }
+
+      .mobile-domain-master-track {
+        width: 29px;
+        height: 18px;
+      }
+
+      .mobile-domain-master-track::after {
+        top: 3px;
+        left: 3px;
+        width: 12px;
+        height: 12px;
+      }
+
+      .mobile-domain-master.active .mobile-domain-master-track::after {
+        transform: translateX(11px);
+      }
+
+      .mobile-domain-master-actions {
+        height: 33px;
+      }
+
+      .mobile-domain-master-action {
+        width: 37px;
+        height: 33px;
+      }
+
+      .mobile-domain-master-action ha-icon {
+        --mdc-icon-size: 19px;
+      }
+
+      .mobile-entity-card,
+      .mobile-entities-section.layout-grid .mobile-entity-card {
+        flex-basis: 180px;
+        min-height: 141px;
+        padding: 15px;
+      }
+
+      .mobile-entity-icon,
+      .mobile-entities-section.layout-grid .mobile-entity-icon {
+        width: 40px;
+        height: 40px;
+      }
+
+      .mobile-entity-icon ha-icon {
+        --mdc-icon-size: 22px;
+      }
+
+      .mobile-entity-toggle {
+        width: 42px;
+        height: 24px;
+      }
+
+      .mobile-entity-toggle::before {
+        width: 20px;
+        height: 20px;
+      }
+
+      .mobile-entity-card.is-active .mobile-entity-toggle::before {
+        transform: translateX(18px);
+      }
+
+      .mobile-entity-more,
+      .mobile-scene-action,
+      .mobile-lock-action {
+        width: 33px;
+        height: 33px;
+      }
+
+      .mobile-entity-more ha-icon,
+      .mobile-scene-action ha-icon,
+      .mobile-lock-action ha-icon {
+        --mdc-icon-size: 19px;
+      }
+
+      .mobile-cover-actions,
+      .mobile-entities-section.layout-grid .mobile-cover-actions {
+        min-height: 35px;
+        padding: 3px;
+        gap: 3px;
+      }
+
+      .mobile-cover-action,
+      .mobile-entities-section.layout-grid .mobile-cover-action {
+        width: 29px;
+        height: 29px;
+      }
+
+      .mobile-cover-action ha-icon,
+      .mobile-entities-section.layout-grid .mobile-cover-action ha-icon {
+        --mdc-icon-size: 18px;
+      }
+
+      .mobile-entity-meta {
+        font-size: 11px;
+      }
+
+      .mobile-entity-name {
+        font-size: 17px;
+      }
+
+      .mobile-entity-status {
+        font-size: 12px;
+      }
+
+      .mobile-entity-select select {
+        height: 37px;
+        font-size: 13px;
+        line-height: 37px;
+      }
+
+      .mobile-entity-select ha-icon {
+        --mdc-icon-size: 20px;
+      }
+
+      .home-favorites-section.layout-grid {
+        width: auto;
+        max-width: none;
+      }
+    }
+
   `, pageHeaderStyles, roomAreaStyles];
 
   connectedCallback() {
@@ -18063,7 +18254,7 @@ copy{
         </div>
         <div class="mobile-section-heading">
           <div class="mobile-section-title">
-            <span class="mobile-layout-toggle active static"><ha-icon icon=${HOME_SECTION_META.scenes.icon}></ha-icon></span>
+            <span class="mobile-section-icon"><ha-icon icon=${HOME_SECTION_META.scenes.icon}></ha-icon></span>
             <span class="mobile-section-title-label">${title}</span>
           </div>
         </div>
@@ -18121,14 +18312,7 @@ copy{
         </div>
         <div class="mobile-section-heading">
           <div class="mobile-section-title">
-            <button
-              class="mobile-layout-toggle active static"
-              type="button"
-              title=${this._t('home.summaries')}
-              aria-label=${this._t('home.summaries')}
-            >
-              <ha-icon icon="mdi:clipboard-list-outline"></ha-icon>
-            </button>
+            <span class="mobile-section-icon summaries"><ha-icon icon="mdi:clipboard-list-outline"></ha-icon></span>
             <span class="mobile-section-title-label">${this._t('home.summaries')}</span>
           </div>
         </div>
@@ -18175,14 +18359,7 @@ copy{
         </div>
         <div class="mobile-section-heading">
           <div class="mobile-section-title">
-            <button
-              class="mobile-layout-toggle active"
-              type="button"
-              title=${sectionTitle}
-              aria-label=${sectionTitle}
-            >
-              <ha-icon icon="mdi:format-list-checks"></ha-icon>
-            </button>
+            <span class="mobile-section-icon todos"><ha-icon icon="mdi:format-list-checks"></ha-icon></span>
             <span class="mobile-section-title-label">${sectionTitle}</span>
           </div>
         </div>
@@ -18236,14 +18413,7 @@ copy{
         </div>
         <div class="mobile-section-heading">
           <div class="mobile-section-title">
-            <button
-              class="mobile-layout-toggle active static"
-              type="button"
-              title=${sectionTitle}
-              aria-label=${sectionTitle}
-            >
-              <ha-icon icon="mdi:cards-outline"></ha-icon>
-            </button>
+            <span class="mobile-section-icon custom-cards"><ha-icon icon="mdi:cards-outline"></ha-icon></span>
             <span class="mobile-section-title-label">${sectionTitle}</span>
           </div>
         </div>
@@ -19182,7 +19352,7 @@ copy{
         <div class="mobile-section-heading">
           <div class="mobile-section-title">
             ${desktopCollapsed ? html`
-              <span class="mobile-layout-toggle active" aria-hidden="true">
+              <span class="mobile-section-icon" aria-hidden="true">
                 <ha-icon icon="mdi:view-grid-outline"></ha-icon>
               </span>
             ` : html`
