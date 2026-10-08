@@ -3226,12 +3226,12 @@ export class DwainsLayoutCard extends LitElement {
 
     .mobile-area-metric.temperature,
 .area-header-metric.temperature{
-      --metric-color: ${unsafeCSS(getDomainColor('media_player'))};
+      --metric-color: ${unsafeCSS(getDomainColor('climate'))};
     }
 
     .mobile-area-metric.humidity,
 .area-header-metric.humidity{
-      --metric-color: ${unsafeCSS(getDomainColor('climate'))};
+      --metric-color: ${unsafeCSS(getDomainColor('humidity'))};
     }
 
     .mobile-area-metric.power,
@@ -3241,7 +3241,7 @@ export class DwainsLayoutCard extends LitElement {
 
     .mobile-area-metric.energy,
 .area-header-metric.energy{
-      --metric-color: ${unsafeCSS(getDomainColor('media_player'))};
+      --metric-color: ${unsafeCSS(getDomainColor('energy'))};
     }
 
     .metric-ring{
@@ -5553,7 +5553,6 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .home-status-card.climate,
-.home-status-card.house-climate-card,
 .status-card-compact.climate{
       --status-color: ${unsafeCSS(getDomainColor('climate'))};
     }
@@ -5699,7 +5698,7 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .home-status-card.house-climate-card{
-      --status-color: ${unsafeCSS(getDomainColor('climate'))};
+      --status-color: ${unsafeCSS(getDomainColor('room_climate'))};
       grid-column: span 2;
       min-width: 270px;
       gap: 12px;
@@ -11101,9 +11100,9 @@ scale and navigation. */
     }
 
     .room-summary-item ha-icon{ --mdc-icon-size: 17px; }
-    .room-summary-item.temperature ha-icon{ color: #7567d8; }
-    .room-summary-item.humidity ha-icon{ color: #35a9dc; }
-    .room-summary-item.power ha-icon{ color: #d99600; }
+    .room-summary-item.temperature ha-icon{ color: ${unsafeCSS(getDomainColor('temperature'))}; }
+    .room-summary-item.humidity ha-icon{ color: ${unsafeCSS(getDomainColor('humidity'))}; }
+    .room-summary-item.power ha-icon{ color: ${unsafeCSS(getDomainColor('energy'))}; }
 
     .room-summary-item.status{
       border-radius: 999px;
@@ -12777,7 +12776,7 @@ typography and interaction. */
 
       /* Climate card uses exactly the same temperature/humidity colors as the room view. */
       .house-climate-metric.temperature{ --metric-color: ${unsafeCSS(getDomainColor('climate'))} !important; }
-      .house-climate-metric.humidity{ --metric-color: ${unsafeCSS(getDomainColor('fan'))} !important; }
+      .house-climate-metric.humidity{ --metric-color: ${unsafeCSS(getDomainColor('humidity'))} !important; }
 
       /* Climate metric icons are direct,
 slightly larger icons without a second circle. */
