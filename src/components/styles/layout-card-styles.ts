@@ -8443,4 +8443,165 @@ which also swallowed pointer events for the new handle. */
   }
 }
 
+
+
+/* 2026-10-08 Home/sidebar follow-up.
+   Keep these overrides at the end of layoutCardStyles so they remain the
+   authoritative rules for the current Home and room-navigation markup. */
+
+/* Room list: the room icon always remains the foreground icon. If a room has
+   a picture, that picture becomes a soft card background on both desktop and mobile. */
+.sidebar .room-area-button {
+  position: relative !important;
+  isolation: isolate !important;
+  overflow: hidden !important;
+}
+
+.sidebar .room-area-button .area-list-picture {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  background-position: center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  opacity: 0.13 !important;
+  filter: saturate(0.72) contrast(0.94) !important;
+  transform: scale(1.015) !important;
+  pointer-events: none !important;
+}
+
+.sidebar .room-area-button.has-picture,
+.sidebar .room-area-button.has-picture.selected {
+  color: var(--primary-text-color) !important;
+  background: color-mix(in srgb, var(--card-background-color) 96%, var(--primary-background-color)) !important;
+  --area-picture-text-color: var(--primary-text-color) !important;
+  --area-picture-muted-text-color: var(--secondary-text-color) !important;
+  --area-picture-text-shadow: none !important;
+}
+
+.sidebar .room-area-button.has-picture::after {
+  display: none !important;
+}
+
+.sidebar .room-area-button .area-media,
+.sidebar .room-area-button .area-content {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.sidebar .room-area-button .area-media {
+  background: color-mix(in srgb, var(--primary-color) 9%, var(--card-background-color)) !important;
+}
+
+.sidebar .room-area-button .area-media-icon {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: var(--primary-color) !important;
+  background: color-mix(in srgb, var(--primary-color) 11%, var(--card-background-color)) !important;
+  backdrop-filter: none !important;
+}
+
+.sidebar .room-area-button.has-picture .area-name,
+.sidebar .room-area-button.has-picture .area-sensors {
+  color: inherit !important;
+  background: transparent !important;
+  text-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+@media (min-width: 769px) {
+  /* Reserve one metadata line even when a room has neither climate nor power data,
+     keeping room names and badge rows aligned between neighboring entries. */
+  .sidebar .room-area-button .area-sensors {
+    min-height: 12px !important;
+  }
+
+  .sidebar .room-area-button .area-sensors.is-empty {
+    visibility: hidden !important;
+  }
+
+  /* House-information shadows need paint space below the last row. */
+  .home-status-section {
+    overflow: visible !important;
+  }
+
+  .home-status-primary-grid {
+    overflow: visible !important;
+    padding-bottom: 18px !important;
+  }
+
+  /* One to-do column spans exactly half of the six-column Home rhythm:
+     three favorite-card widths plus the two internal gaps. */
+  .home-todos-grid {
+    width: calc(50% - 5px) !important;
+    max-width: calc(50% - 5px) !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .home-todo-card,
+  .home-todo-card dwains-dashboard-next-card-host {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar .room-area-button .area-list-picture {
+    opacity: 0.16 !important;
+  }
+
+  .sidebar .room-area-button .area-sensors.is-empty {
+    display: none !important;
+  }
+
+  /* Grid mode returns to the requested two-column mobile Favorites layout. */
+  .home-favorites-section.layout-grid .favorites-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .home-favorites-section.layout-grid .favorite-card-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* Make the decorative background icon a little easier to read. */
+  .home-favorites-section .favorite-icon {
+    opacity: 0.14 !important;
+  }
+
+  /* Touch taps get feedback only while the pointer is down. Do not retain the
+     desktop hover/focus transform after a mobile tap. */
+  .home-favorites-section .favorite-card-wrapper,
+  .home-favorites-section .favorite-card-wrapper:hover,
+  .home-favorites-section .favorite-card-wrapper:focus,
+  .home-favorites-section .favorite-card-wrapper:focus-visible {
+    outline: none !important;
+  }
+
+  .home-favorites-section .favorite-card-wrapper:hover:not(:active),
+  .home-favorites-section .favorite-card-wrapper:focus:not(:active),
+  .home-favorites-section .favorite-card-wrapper:focus-visible:not(:active) {
+    transform: none !important;
+    box-shadow:
+      0 12px 26px rgba(15, 23, 42, 0.06),
+      inset 0 0 0 1px rgba(15, 23, 42, 0.035) !important;
+  }
+
+  .home-favorites-section .favorite-card-wrapper:active {
+    transform: scale(0.985) !important;
+  }
+
+  /* To-do stays full width on mobile. */
+  .home-todos-grid {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
 `;
