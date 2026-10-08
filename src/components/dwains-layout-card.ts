@@ -18504,7 +18504,7 @@ copy{
         label: this._t('home.devices_discovered'),
         subtitle: this._tp('summary.device_to_add', this._discoveredDeviceCount),
         icon: 'mdi:devices',
-        color: '#8065c7',
+        color: '#1494aa',
         count: this._discoveredDeviceCount,
         path: '/config/integrations',
       });
