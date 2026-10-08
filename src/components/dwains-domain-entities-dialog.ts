@@ -1122,9 +1122,25 @@ export class DwainsDomainEntitiesDialog extends LitElement {
         text-overflow: clip !important;
       }
       .sheet-handle {
+        top: 0;
+        width: 92px;
+        height: 28px;
+        border-radius: 0;
+        background: transparent;
         touch-action: none;
         pointer-events: auto;
         cursor: grab;
+      }
+      .sheet-handle::after {
+        content: '';
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        width: 38px;
+        height: 4px;
+        border-radius: 999px;
+        transform: translateX(-50%);
+        background: color-mix(in srgb, var(--secondary-text-color) 24%, transparent);
       }
       ha-dialog {
         transform: translateY(var(--sheet-drag-offset, 0px));
