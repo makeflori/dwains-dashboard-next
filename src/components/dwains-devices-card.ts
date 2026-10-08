@@ -1,4 +1,4 @@
-import { LitElement, html, css, nothing, type PropertyValues } from 'lit';
+import { LitElement, html, css, unsafeCSS, nothing, type PropertyValues } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { repeat } from 'lit/directives/repeat.js';
@@ -2445,11 +2445,11 @@ export class DwainsDevicesCard extends LitElement {
     }
 
     .area-button.energy {
-      --domain-color: #65a83f;
+      --domain-color: ${unsafeCSS(getDomainColor('energy'))};
     }
 
     .energy-view {
-      --domain-color: #65a83f;
+      --domain-color: ${unsafeCSS(getDomainColor('energy'))};
       max-width: 1320px;
     }
 
