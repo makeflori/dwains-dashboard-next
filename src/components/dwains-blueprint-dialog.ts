@@ -144,7 +144,7 @@ export class DwainsBlueprintDialog extends LitElement {
       const suffix = key.replace(/^(sensor|switch|update|binary_sensor)_/, '');
       const exact = domain + '.' + suffix;
       if (states[exact]) { suggestions[key] = exact; continue; }
-      const matches = Object.keys(states).filter(id => id.startsWith(domain + '.') && (id.split('.')[1] === suffix || id.split('.')[1].endsWith('_' + suffix)));
+      const matches = Object.keys(states).filter(id => id.startsWith(domain + '.') && ((id.split('.')[1] || '') === suffix || (id.split('.')[1] || '').endsWith('_' + suffix)));
       if (matches.length === 1) suggestions[key] = matches[0];
     }
     return suggestions;
@@ -159,7 +159,7 @@ export class DwainsBlueprintDialog extends LitElement {
 
   // Behoud ingevulde waarden voor velden die in de nieuwe blueprint nog bestaan.
   private _mergeValues(newParsed: ParsedBlueprint): Record<string, any> {
-    const merged = { ...defaultValues(newParsed.meta), __language: this._german ? "de" : "en" };
+    const merged: Record<string, any> = { ...defaultValues(newParsed.meta), __language: this._german ? "de" : "en" };
     const keys = Object.keys(newParsed.meta.input || {});
     for (const key of keys) {
       if (this._values[key] !== undefined && this._values[key] !== "") {
@@ -813,7 +813,7 @@ export class DwainsBlueprintDialog extends LitElement {
       </div>`)}
       <ha-button appearance="outlined" @click=${() => this._setValue(key, [...items, { name: '', icon: '', entity: '' }])}>${this._german ? 'Hinzufügen' : 'Add'} ${this._listTitle(def.suggest)}</ha-button>
       ${suggestions.length ? html`<div class="field-desc">${this._german ? 'Vorschläge aus Home Assistant:' : 'Suggested Home Assistant entities:'}</div>
-        <div class="entity-list-suggestions">${suggestions.slice(0, 16).map(id => html`<ha-button appearance="plain" size="s" @click=${() => this._setValue(key, [...items, { entity: id, name: this.hass.states[id]?.attributes?.friendly_name || id.split('.')[1].replace(/_/g,' '), icon: '' }])}>${this.hass.states[id]?.attributes?.friendly_name || id}</ha-button>`)}</div>` : nothing}
+        <div class="entity-list-suggestions">${suggestions.slice(0, 16).map(id => html`<ha-button appearance="plain" size="s" @click=${() => this._setValue(key, [...items, { entity: id, name: this.hass.states[id]?.attributes?.friendly_name || (id.split('.')[1] || id).replace(/_/g,' '), icon: '' }])}>${this.hass.states[id]?.attributes?.friendly_name || id}</ha-button>`)}</div>` : nothing}
     </div>`;
   }
 
