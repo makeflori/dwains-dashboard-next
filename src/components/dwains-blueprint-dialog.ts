@@ -160,6 +160,17 @@ export class DwainsBlueprintDialog extends LitElement {
         continue;
       }
       if (def.type !== 'entity-picker') continue;
+      if (key === 'adguard_protection' || key === 'adguard_filtering') {
+        const feature = key === 'adguard_protection' ? /protect|schutz|protection/i : /filter/i;
+        const switchIds = Object.keys(states).filter(id =>
+          id.startsWith('switch.') && feature.test(id + ' ' + (states[id]?.attributes?.friendly_name || '')) &&
+          /ad.?guard/i.test(id + ' ' + (states[id]?.attributes?.friendly_name || ''))
+        );
+        const conventional = 'switch.adguard_' + (key === 'adguard_protection' ? 'protection' : 'filtering');
+        if (states[conventional]) suggestions[key] = conventional;
+        else if (switchIds.length === 1) suggestions[key] = switchIds[0];
+        continue;
+      }
       const candidate = def.suggest_entity;
       if (candidate && states[candidate]) { suggestions[key] = candidate; continue; }
       const domain = key.startsWith('switch_') ? 'switch' : key.startsWith('update_') ? 'update' : key.startsWith('binary_sensor_') ? 'binary_sensor' : 'sensor';
