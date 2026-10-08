@@ -139,6 +139,7 @@ export class DwainsBlueprintDialog extends LitElement {
     const states = this.hass?.states || {};
     for (const [key, def] of Object.entries(parsed.meta.input || {})) {
       if (def.type === 'entity-list') {
+        if (def.suggest === 'coin') { suggestions[key] = []; continue; }
         const matches = this._entitySuggestions(def);
         const preferred = def.suggest === 'coin'
           ? matches.filter(id => /^(?:sensor\\.)wallet_value_(?!total)/i.test(id))
@@ -160,6 +161,17 @@ export class DwainsBlueprintDialog extends LitElement {
         continue;
       }
       if (def.type !== 'entity-picker') continue;
+      if (key === 'adguard_protection' || key === 'adguard_filtering') {
+        const feature = key === 'adguard_protection' ? /protect|schutz|protection/i : /filter/i;
+        const switchIds = Object.keys(states).filter(id =>
+          id.startsWith('switch.') && feature.test(id + ' ' + (states[id]?.attributes?.friendly_name || '')) &&
+          /ad.?guard/i.test(id + ' ' + (states[id]?.attributes?.friendly_name || ''))
+        );
+        const conventional = 'switch.adguard_' + (key === 'adguard_protection' ? 'protection' : 'filtering');
+        if (states[conventional]) suggestions[key] = conventional;
+        else if (switchIds.length === 1) suggestions[key] = switchIds[0];
+        continue;
+      }
       const candidate = def.suggest_entity;
       if (candidate && states[candidate]) { suggestions[key] = candidate; continue; }
       const domain = key.startsWith('switch_') ? 'switch' : key.startsWith('update_') ? 'update' : key.startsWith('binary_sensor_') ? 'binary_sensor' : 'sensor';
@@ -517,7 +529,7 @@ export class DwainsBlueprintDialog extends LitElement {
     if (!this._parsed || !this._params) return;
     for (const [key, def] of Object.entries(this._parsed.meta.input || {})) {
       const value = this._values[key];
-      if (def.type === 'entity-picker' && !def.default && !value) {
+      if (def.type === 'entity-picker' && def.default === undefined && !value) {
         this._error = this._german ? 'Bitte zuerst eine Entität für „' + this._label(def, key) + '“ auswählen.' : 'Select an entity for “' + this._label(def, key) + '” first.';
         return;
       }
@@ -525,6 +537,10 @@ export class DwainsBlueprintDialog extends LitElement {
       const entries = Array.isArray(value) ? value : [];
       if (!entries.length || entries.some((item: any) => !item.entity)) {
         this._error = this._german ? 'Bitte mindestens einen vollständigen Eintrag hinzufügen.' : 'Add at least one complete entry.';
+        return;
+      }
+      if (def.suggest === 'coin' && new Set(entries.map((item: any) => item.entity)).size !== entries.length) {
+        this._error = this._german ? 'Ein Coin-Wertsensor darf nur einmal vorkommen.' : 'Each coin value sensor can only be used once.';
         return;
       }
       if (def.suggest === 'coin' && entries.some((item: any) => !item.price_entity || !item.amount_entity)) {
@@ -865,11 +881,41 @@ export class DwainsBlueprintDialog extends LitElement {
     `;
   }
 
+  private _coinSuggestions(): { name: string; entity: string; price_entity: string; amount_entity: string; icon: string }[] {
+    const states = this.hass?.states || {};
+    const ids = Object.keys(states);
+    const values = ids.filter(id => /^sensor\\.wallet_value_(?!total$)/i.test(id));
+    const normalized = (text: string) => text.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const displayName = (id: string) => {
+      const friendly = String(states[id]?.attributes?.friendly_name || '');
+      return (friendly.replace(/^(?:wert|value|wallet|price|kurs|volume|volumen|bestand|holdings)\\s*[:\\-]?\\s*/i, '').trim() || id.replace(/^sensor\\.wallet_value_/, '').replace(/_/g, ' ')).trim();
+    };
+    return values.map(entity => {
+      const suffix = entity.replace(/^sensor\\.wallet_value_/, '');
+      const name = displayName(entity);
+      const possible = [suffix, name].map(normalized);
+      const priceMatches = ids.filter(id => id.startsWith('sensor.') && (/cryptoinfo|(?:^|_)price_|(?:^|_)kurs_/.test(id) || id.includes('price')) && possible.some(word => word && normalized(id).includes(word)));
+      const amountMatches = ids.filter(id => id.startsWith('sensor.') && /wallet_volume_|wallet_amount_|holdings_|balance_/.test(id) && possible.some(word => word && normalized(id).includes(word)));
+      const price = 'sensor.cryptoinfo_' + suffix + '_eur';
+      const amount = 'sensor.wallet_volume_' + suffix;
+      return {
+        name,
+        entity,
+        price_entity: states[price] ? price : priceMatches.length === 1 ? (priceMatches[0] || '') : '',
+        amount_entity: states[amount] ? amount : amountMatches.length === 1 ? (amountMatches[0] || '') : '',
+        icon: '',
+      };
+    }).sort((a,b)=>a.name.localeCompare(b.name)).filter((row,index,rows)=>rows.findIndex(other=>other.entity===row.entity)===index);
+  }
+
   private _entitySuggestions(def: any): string[] {
     const rx = def.suggest === 'waste'
       ? /waste|garbage|rubbish|trash|refuse|recycl|papier|paper|bio(?:m[uü]ll)?|rest(?:m[uü]ll)?|abfall|gelber.?sack|altglas|muell|mull|collection|pickup|tonne/i
       : /wallet|crypto|bitcoin|ethereum|cardano|coin|token|asset|portfolio|balance|cryptoinfo|wallet_value/i;
-    return Object.keys(this.hass?.states || {}).filter((id) => id.startsWith((def.entity_domain || 'sensor') + '.') && rx.test(id + ' ' + (this.hass.states[id]?.attributes?.friendly_name || '')));
+    return Object.keys(this.hass?.states || {}).filter(id =>
+      id.startsWith((def.entity_domain || 'sensor') + '.') &&
+      rx.test(id + ' ' + (this.hass.states[id]?.attributes?.friendly_name || ''))
+    );
   }
 
   private _renderEntityList(key: string, def: any) {
@@ -880,7 +926,9 @@ export class DwainsBlueprintDialog extends LitElement {
       if (prop === 'entity' && value && !next[index].name) next[index].name = this.hass.states[value]?.attributes?.friendly_name || value.split('.').pop()?.replace(/_/g, ' ') || '';
       this._setValue(key, next);
     };
-    const suggestions = this._entitySuggestions(def).filter(id => !items.some((x: any) => x.entity === id));
+    const suggestions = def.suggest === 'coin'
+      ? this._coinSuggestions().filter(row => !items.some((x: any) => x.entity === row.entity))
+      : this._entitySuggestions(def).filter(id => !items.some((x: any) => x.entity === id));
     return html`<div class="entity-list">
       ${items.map((item: any, index: number) => html`<div class="entity-list-row">
         <div class="entity-list-header"><strong>${this._listTitle(def.suggest)} ${index + 1}</strong>
@@ -894,7 +942,7 @@ export class DwainsBlueprintDialog extends LitElement {
       </div>`)}
       <ha-button appearance="outlined" @click=${() => this._setValue(key, [...items, { name: '', icon: '', entity: '' }])}>${this._german ? 'Hinzufügen' : 'Add'} ${this._listTitle(def.suggest)}</ha-button>
       ${suggestions.length ? html`<div class="field-desc">${this._german ? 'Vorschläge aus Home Assistant:' : 'Suggested Home Assistant entities:'}</div>
-        <div class="entity-list-suggestions">${suggestions.slice(0, 16).map(id => html`<ha-button appearance="plain" size="s" @click=${() => this._setValue(key, [...items, { entity: id, name: this.hass.states[id]?.attributes?.friendly_name || (id.split('.')[1] || id).replace(/_/g,' '), icon: '' }])}>${this.hass.states[id]?.attributes?.friendly_name || id}</ha-button>`)}</div>` : nothing}
+        <div class="entity-list-suggestions">${suggestions.slice(0, 32).map(entry => { const item = typeof entry === 'string' ? { entity: entry, name: this.hass.states[entry]?.attributes?.friendly_name || (entry.split('.')[1] || entry).replace(/_/g, ' '), icon: '' } : entry; return html`<ha-button appearance="plain" size="s" @click=${() => this._setValue(key, [...items, item])}>${item.name}</ha-button>`; })}</div>` : nothing}
     </div>`;
   }
 

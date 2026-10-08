@@ -179,12 +179,18 @@ export function resolveBlueprintCard(
         const items = values[entry.repeat];
         return Array.isArray(items) ? items.filter((x) => x?.entity).map((item, index) => renderItem(entry.template, { ...item, icon: item.icon || meta.input?.[entry.repeat]?.default_icon || 'mdi:shape' }, index)) : [];
       }
-      return [walk(entry)];
+      const resolved = walk(entry);
+      return resolved === undefined ? [] : [resolved];
     });
     if (node && typeof node === 'object') {
       if (node.i18n) return walk(localized(node));
+      if (typeof node.requires_input === 'string' && !values[node.requires_input]) return undefined;
       const out: Record<string, any> = {};
-      for (const k of Object.keys(node)) out[k] = walk(node[k]);
+      for (const k of Object.keys(node)) {
+        if (k === 'requires_input') continue;
+        const next = walk(node[k]);
+        if (next !== undefined) out[k] = next;
+      }
       return out;
     }
     return node;
@@ -192,6 +198,8 @@ export function resolveBlueprintCard(
 
   function substituteString(str: string): any {
     // Exact één placeholder? Behoud type van de waarde.
+    const entities = str.match(/^\$entities\.([a-zA-Z0-9_]+)\$/);
+    if (entities) return [...new Set((Array.isArray(values[entities[1] || '']) ? values[entities[1] || ''] : []).flatMap((item: any) => [item.entity, item.price_entity, item.amount_entity]).filter(Boolean).concat(values.portfolio_total ? [values.portfolio_total] : []))];
     for (const key of keys) {
       if (str === `$${key}$`) {
         return coerce(values[key]);

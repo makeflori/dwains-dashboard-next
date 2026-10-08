@@ -3,10 +3,10 @@ import { readFileSync } from 'node:fs';
 import { parseBlueprintYaml, resolveBlueprintCard, defaultValues } from '../src/utils/blueprints';
 
 const pages = [
-  ['WasteCollection', 'Waste Collection', '1.0.0'],
-  ['CryptoWallet', 'Crypto Wallet', '1.0.0'],
+  ['WasteCollection', 'Waste Collection', '1.0.1'],
+  ['CryptoWallet', 'Crypto Wallet', '1.0.1'],
   ['SystemMonitor', 'System Monitor', '1.0.0'],
-  ['AdGuard', 'AdGuard', '1.1'],
+  ['AdGuard', 'AdGuard', '1.2'],
 ] as const;
 
 describe('import actual published Dashboard Next page YAML', () => {
@@ -41,4 +41,18 @@ describe('import actual published Dashboard Next page YAML', () => {
       validateJS(card);
     });
   }
+  it('computes optional wallet sections without a portfolio total sensor', () => {
+    const yaml = readFileSync('blueprint-source/page-blueprints/CryptoWallet/blueprint.yaml', 'utf8');
+    const parsed = parseBlueprintYaml(yaml);
+    const coins = [{ name: 'Bitcoin', entity: 'sensor.bitcoin_value', price_entity: 'sensor.bitcoin_price', amount_entity: 'sensor.bitcoin_holdings', icon: '' }];
+    const result = resolveBlueprintCard(parsed.card, parsed.meta, { ...defaultValues(parsed.meta), portfolio_total: '', coins, __language: 'en' });
+    const left = result.cards[0];
+    expect(left.entity).toBe('');
+    expect(left.triggers_update).toContain('sensor.bitcoin_value');
+    expect(left.triggers_update).toContain('sensor.bitcoin_price');
+    expect(left.custom_fields.graph24).toBeUndefined();
+    expect(left.custom_fields.graph7).toBeUndefined();
+    expect(left.custom_fields.header).toContain('sensor.bitcoin_value');
+  });
+
 });
