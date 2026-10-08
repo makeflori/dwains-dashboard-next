@@ -1025,7 +1025,7 @@ export const pageHeaderStyles = css`
         min-height: 0;
         height: auto;
         border-radius: 0;
-        opacity: 0.17;
+        opacity: 0.22;
         filter: saturate(0.72) contrast(0.92);
         pointer-events: none;
       }
