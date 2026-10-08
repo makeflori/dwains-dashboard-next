@@ -139,6 +139,7 @@ export class DwainsBlueprintDialog extends LitElement {
     const states = this.hass?.states || {};
     for (const [key, def] of Object.entries(parsed.meta.input || {})) {
       if (def.type === 'entity-list') {
+        if (def.suggest === 'coin') { suggestions[key] = []; continue; }
         const matches = this._entitySuggestions(def);
         const preferred = def.suggest === 'coin'
           ? matches.filter(id => /^(?:sensor\\.)wallet_value_(?!total)/i.test(id))
@@ -528,7 +529,7 @@ export class DwainsBlueprintDialog extends LitElement {
     if (!this._parsed || !this._params) return;
     for (const [key, def] of Object.entries(this._parsed.meta.input || {})) {
       const value = this._values[key];
-      if (def.type === 'entity-picker' && !def.default && !value) {
+      if (def.type === 'entity-picker' && def.default === undefined && !value) {
         this._error = this._german ? 'Bitte zuerst eine Entität für „' + this._label(def, key) + '“ auswählen.' : 'Select an entity for “' + this._label(def, key) + '” first.';
         return;
       }
