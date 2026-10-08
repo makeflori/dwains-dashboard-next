@@ -133,9 +133,26 @@ export class DwainsBlueprintDialog extends LitElement {
     }
   }
 
+  private _suggestInputValues(parsed: ParsedBlueprint): Record<string, any> {
+    const suggestions: Record<string, any> = {};
+    const states = this.hass?.states || {};
+    for (const [key, def] of Object.entries(parsed.meta.input || {})) {
+      if (def.type !== 'entity-picker') continue;
+      const candidate = def.suggest_entity;
+      if (candidate && states[candidate]) { suggestions[key] = candidate; continue; }
+      const domain = key.startsWith('switch_') ? 'switch' : key.startsWith('update_') ? 'update' : key.startsWith('binary_sensor_') ? 'binary_sensor' : 'sensor';
+      const suffix = key.replace(/^(sensor|switch|update|binary_sensor)_/, '');
+      const exact = domain + '.' + suffix;
+      if (states[exact]) { suggestions[key] = exact; continue; }
+      const matches = Object.keys(states).filter(id => id.startsWith(domain + '.') && (id.split('.')[1] === suffix || id.split('.')[1].endsWith('_' + suffix)));
+      if (matches.length === 1) suggestions[key] = matches[0];
+    }
+    return suggestions;
+  }
+
   private _applyParsed(parsed: ParsedBlueprint): void {
     this._parsed = parsed;
-    this._values = { ...defaultValues(parsed.meta), __language: this._german ? "de" : "en" };
+    this._values = { ...defaultValues(parsed.meta), ...this._suggestInputValues(parsed), __language: this._german ? "de" : "en" };
     this._pageName = (this._german && parsed.meta.name_de) || parsed.meta.name || this._t("blueprint.new_page");
     this._pageIcon = parsed.meta.icon || "mdi:puzzle";
   }
