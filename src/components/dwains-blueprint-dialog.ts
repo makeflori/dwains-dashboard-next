@@ -138,6 +138,27 @@ export class DwainsBlueprintDialog extends LitElement {
     const suggestions: Record<string, any> = {};
     const states = this.hass?.states || {};
     for (const [key, def] of Object.entries(parsed.meta.input || {})) {
+      if (def.type === 'entity-list') {
+        const matches = this._entitySuggestions(def);
+        const preferred = def.suggest === 'coin'
+          ? matches.filter(id => /^(?:sensor\\.)wallet_value_(?!total)/i.test(id))
+          : matches;
+        suggestions[key] = preferred.slice(0, 30).map(id => {
+          const suffix = id.replace(/^sensor\\.wallet_value_/, '');
+          const price = 'sensor.cryptoinfo_' + suffix + '_eur';
+          const amount = 'sensor.wallet_volume_' + suffix;
+          return {
+            entity: id,
+            name: states[id]?.attributes?.friendly_name || (id.split('.')[1] || id).replace(/_/g, ' '),
+            icon: '',
+            ...(def.suggest === 'coin' ? {
+              price_entity: states[price] ? price : '',
+              amount_entity: states[amount] ? amount : '',
+            } : {}),
+          };
+        });
+        continue;
+      }
       if (def.type !== 'entity-picker') continue;
       const candidate = def.suggest_entity;
       if (candidate && states[candidate]) { suggestions[key] = candidate; continue; }
@@ -828,7 +849,9 @@ export class DwainsBlueprintDialog extends LitElement {
   }
 
   private _entitySuggestions(def: any): string[] {
-    const rx = def.suggest === 'waste' ? /waste|garbage|rubbish|trash|refuse|recycl|papier|paper|biom[uü]ll|restm[uü]ll|abfall|gelber.sack|altglas|muell|mull/i : /wallet|crypto|bitcoin|ethereum|cardano|coin|token|asset|portfolio|balance/i;
+    const rx = def.suggest === 'waste'
+      ? /waste|garbage|rubbish|trash|refuse|recycl|papier|paper|bio(?:m[uü]ll)?|rest(?:m[uü]ll)?|abfall|gelber.?sack|altglas|muell|mull|collection|pickup|tonne/i
+      : /wallet|crypto|bitcoin|ethereum|cardano|coin|token|asset|portfolio|balance|cryptoinfo|wallet_value/i;
     return Object.keys(this.hass?.states || {}).filter((id) => id.startsWith((def.entity_domain || 'sensor') + '.') && rx.test(id + ' ' + (this.hass.states[id]?.attributes?.friendly_name || '')));
   }
 
