@@ -35,6 +35,7 @@ import { isHassDarkTheme } from '../utils/theme';
 import { formatEntityStateWithUnit, formatValueWithUnit } from '../utils/unit-format';
 import { stripAreaNameFromEntityName } from '../utils/entity-names';
 import './utils/dd-card-host';
+import './dwains-person-tile';
 
 const NEW_DEVICES_KEY = '__new_devices__';
 const MAINTENANCE_KEY = '__maintenance__';
@@ -1890,20 +1891,36 @@ export class DwainsDevicesCard extends LitElement {
 
     const domain = entity.entity_id.split('.')[0] || 'unknown';
     const deviceClass = state.attributes?.device_class;
-    const icon = this._hass.entities?.[entity.entity_id]?.icon ||
-      state.attributes?.icon ||
-      getDeviceClassIcon(domain, deviceClass) ||
-      getDomainIcon(domain);
-    const entityPicture = domain === 'person' ? state.attributes?.entity_picture : undefined;
-    const personHasLocation = domain === 'person' &&
-      Number.isFinite(Number(state.attributes?.latitude)) &&
-      Number.isFinite(Number(state.attributes?.longitude));
     const rawName = state.attributes?.friendly_name ||
       this._hass.entities?.[entity.entity_id]?.name ||
       entity.entity_id;
     const name = this.config?.settings?.hide_area_name_in_entity_names === true
       ? stripAreaNameFromEntityName(rawName, area.name)
       : rawName;
+
+    if (domain === 'person') {
+      return html`
+        <dwains-dashboard-next-person-tile
+          .hass=${this._hass}
+          .entityId=${entity.entity_id}
+          .displayName=${name}
+          role="button"
+          tabindex="0"
+          aria-label=${name}
+          @click=${() => this._showMoreInfo(entity.entity_id)}
+          @keydown=${(event: KeyboardEvent) => {
+            if (event.key !== 'Enter' && event.key !== ' ') return;
+            event.preventDefault();
+            this._showMoreInfo(entity.entity_id);
+          }}
+        ></dwains-dashboard-next-person-tile>
+      `;
+    }
+
+    const icon = this._hass.entities?.[entity.entity_id]?.icon ||
+      state.attributes?.icon ||
+      getDeviceClassIcon(domain, deviceClass) ||
+      getDomainIcon(domain);
     const active = this._roomStyleEntityActive(state, domain);
     const unavailable = ['unavailable', 'unknown'].includes(String(state.state).toLowerCase()) &&
       !['scene', 'event'].includes(domain);
@@ -1911,7 +1928,7 @@ export class DwainsDevicesCard extends LitElement {
 
     return html`
       <article
-        class="mobile-entity-card ${domain === 'person' ? 'person-card' : ''} ${personHasLocation ? 'has-location-preview' : ''} ${active ? 'is-active' : 'is-off'} ${unavailable ? 'is-unavailable' : ''}"
+        class="mobile-entity-card ${active ? 'is-active' : 'is-off'} ${unavailable ? 'is-unavailable' : ''}"
         style=${`--entity-color: ${getDomainColor(domain, deviceClass)};`}
         role="button"
         tabindex="0"
@@ -1924,10 +1941,8 @@ export class DwainsDevicesCard extends LitElement {
         }}
       >
         <div class="mobile-entity-main">
-          <span class="mobile-entity-icon ${entityPicture ? 'has-entity-picture' : ''}">
-            ${entityPicture
-              ? html`<img class="mobile-entity-avatar" src=${entityPicture} alt=${name}>`
-              : html`<ha-icon icon=${icon}></ha-icon>`}
+          <span class="mobile-entity-icon">
+            <ha-icon icon=${icon}></ha-icon>
           </span>
           <div class="mobile-entity-content">
             <div class="mobile-entity-name" title=${name}>${name}</div>
@@ -1949,24 +1964,6 @@ export class DwainsDevicesCard extends LitElement {
             ` : nothing}
           </div>
         </div>
-        ${personHasLocation ? html`
-          <div class="person-location-preview" aria-label=${`${name} location`}>
-            <dwains-dashboard-next-card-host
-              eager
-              .hass=${this._hass}
-              .config=${{
-                type: 'map',
-                entities: [entity.entity_id],
-                hours_to_show: 0,
-                default_zoom: 14,
-                auto_fit: true,
-                fit_zones: false,
-                show_zone_radius: false,
-                aspect_ratio: '4:1',
-              }}
-            ></dwains-dashboard-next-card-host>
-          </div>
-        ` : nothing}
       </article>
     `;
   }
@@ -3458,6 +3455,7 @@ export class DwainsDevicesCard extends LitElement {
 
     .person-device-grid {
       margin: 0;
+      align-items: start;
     }
 
     .device-room-groups {
