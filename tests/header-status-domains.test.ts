@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { getGroupMemberIds, getStatusDomains, shouldSkipGroupEntity } from '../src/utils/header-status-domains';
 import { isEntityVisibleInArea, isRegistryEntryVisible } from '../src/utils/entity-visibility';
@@ -215,5 +216,30 @@ describe('group entities', () => {
     ]);
     const covers = getStatusDomains(hass, config).find((item) => item.domain === 'cover');
     expect(covers?.entities).toEqual(['cover.left']);
+  });
+});
+
+
+describe('domain popup layout regression contract', () => {
+  const source = readFileSync(new URL('../src/components/dwains-domain-entities-dialog.ts', import.meta.url), 'utf8');
+
+  it('renders global bulk actions once above grouped room sections', () => {
+    expect(source).toContain('class="dialog-global-actions"');
+    expect(source).toContain('this._renderDomainActions(entities)');
+    expect(source).not.toContain('this._renderDomainActions(group.entities)');
+  });
+
+  it('provides individual room masters with counts and keeps room names visible', () => {
+    expect(source).toContain('class="area-master-toggle"');
+    expect(source).toContain('const showAreaHeader = this._params?.domain !== \'person\'');
+    expect(source).toContain('class="area-name"');
+  });
+
+  it('uses its own unclipped header and pointer-based sheet drag', () => {
+    expect(source).toContain('slot="header" class="dd-domain-header"');
+    expect(source).toContain('@pointerdown=${this._onSheetPointerDown}');
+    expect(source).toContain('setPointerCapture(event.pointerId)');
+    expect(source).toContain('--dialog-surface-margin-top: auto');
+    expect(source).not.toContain('slot="header" @touchstart');
   });
 });
