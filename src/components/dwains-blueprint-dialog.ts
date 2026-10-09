@@ -548,6 +548,23 @@ export class DwainsBlueprintDialog extends LitElement {
         return;
       }
     }
+    // Put the nearest upcoming collection first, independently of selection order.
+    if (Array.isArray(this._values.waste_types)) {
+      const nextDate = (entityId: string): number => {
+        const state = this.hass?.states?.[entityId];
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const candidates = [state?.state, ...Object.keys(state?.attributes || {}), ...Object.values(state?.attributes || {})];
+        const valid = candidates.flatMap(raw => {
+          if (typeof raw !== 'string' || !/^\\d{4}-\\d{2}-\\d{2}$/.test(raw)) return [];
+          const dt = new Date(raw + 'T12:00:00');
+          return Number.isFinite(dt.getTime()) && dt.getTime() >= today.getTime() ? [dt.getTime()] : [];
+        });
+        return valid.length ? Math.min(...valid) : Number.POSITIVE_INFINITY;
+      };
+      this._values.waste_types = [...this._values.waste_types].sort((a: any, b: any) =>
+        nextDate(a.entity) - nextDate(b.entity));
+    }
     let card: any;
     try {
       card = resolveBlueprintCard(this._parsed.card, this._parsed.meta, this._values);
