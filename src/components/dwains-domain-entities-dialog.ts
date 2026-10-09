@@ -7,10 +7,11 @@ import type { HomeAssistant } from '../types/home-assistant';
 import type { DwainsDashboardConfig, EntityConfig } from '../types/strategy';
 import { getDomainName } from '../utils/domain-names';
 import { getDeviceClassIcon, getDomainColor, getDomainIcon } from '../utils/icons';
-import { ddLocalize, ddLocalizePlural } from '../utils/localize';
+import { ddLocale, ddLocalize, ddLocalizePlural } from '../utils/localize';
 import { fireEvent } from './utils/fire-event';
 import { formatEntityStateWithUnit, formatValueWithUnit } from '../utils/unit-format';
 import { stripAreaNameFromEntityName } from '../utils/entity-names';
+import { sortAreas } from '../utils/area-entities';
 import { findReplacementAssignment, resolveDeviceViewCardConfig } from '../utils/blueprint-replacements';
 import './utils/dd-card-host';
 import './dwains-person-tile';
@@ -2034,12 +2035,28 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       <div class="dialog-global-actions">${this._renderDomainActions(entities)}</div>
       <div class="area-sections-grid">
         ${repeat(
-          Object.entries(this._groupedEntities),
+          this._orderedGroupedEntries(),
           ([areaId]) => areaId,
           ([areaId, group]) => this._renderAreaSection(areaId, group)
         )}
       </div>
     `;
+  }
+
+  private _orderedGroupedEntries(): Array<[string, GroupedEntities[string]]> {
+    const entries = Object.entries(this._groupedEntities) as Array<[string, GroupedEntities[string]]>;
+    if (!this._params?.homeInformation || this._params.domain === 'person') return entries;
+
+    const config = this._params.config;
+    const orderedAreas = sortAreas(config?.areas || [], config?.areas_display, ddLocale(this.hass));
+    const areaOrder = new Map(orderedAreas.map((area, index) => [area.area_id, index]));
+
+    return [...entries].sort(([aId, a], [bId, b]) => {
+      const aOrder = areaOrder.get(aId) ?? Number.MAX_SAFE_INTEGER;
+      const bOrder = areaOrder.get(bId) ?? Number.MAX_SAFE_INTEGER;
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      return a.areaName.localeCompare(b.areaName);
+    });
   }
 
   private _handleViewAll = (): void => {
@@ -2242,6 +2259,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
             <dwains-dashboard-next-card-host
               eager
               framed
+              ?refresh-layout=${domain === 'climate'}
               style=${domain === 'cover'
                 ? `--primary-color: ${getDomainColor('cover')}; --state-cover-open-color: ${getDomainColor('cover')}; --state-cover-opening-color: ${getDomainColor('cover')}; --state-cover-active-color: ${getDomainColor('cover')};`
                 : ''}
