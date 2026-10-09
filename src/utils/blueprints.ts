@@ -161,7 +161,7 @@ export function resolveBlueprintCard(
 
   function renderItem(node: any, item: any, index: number): any {
     if (typeof node === 'string') {
-      const value = node.replace(/\$item\.(name|icon|entity|price_entity|amount_entity|index)\$/g, (_: string, key: string) => String(key === 'index' ? index : (item[key] ?? '')));
+      const value = node.replace(/\$item\.(name|icon|image|entity|price_entity|amount_entity|index|last)\$/g, (_: string, key: string) => String(key === 'index' ? index : (item[key] ?? '')));
       return walk(value);
     }
     if (Array.isArray(node)) return node.map((x) => renderItem(x, item, index));
@@ -177,7 +177,7 @@ export function resolveBlueprintCard(
     if (Array.isArray(node)) return node.flatMap((entry) => {
       if (entry && typeof entry === 'object' && typeof entry.repeat === 'string' && entry.template) {
         const items = values[entry.repeat];
-        return Array.isArray(items) ? items.filter((x) => x?.entity).map((item, index) => renderItem(entry.template, { ...item, icon: item.icon || meta.input?.[entry.repeat]?.default_icon || 'mdi:shape' }, index)) : [];
+        return Array.isArray(items) ? items.filter((x) => x?.entity).map((item, index) => renderItem(entry.template, { ...item, icon: item.icon || meta.input?.[entry.repeat]?.default_icon || 'mdi:shape', last: index === items.filter((x: any) => x?.entity).length - 1 }, index)) : [];
       }
       const resolved = walk(entry);
       return resolved === undefined ? [] : [resolved];
