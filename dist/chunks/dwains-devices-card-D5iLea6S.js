@@ -1,4 +1,4 @@
-import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as r,b as a,A as n,r as o,a as s}from"./lit-element-CR7MDbd3.js";import{e as c}from"./class-map-5ivNZjtx.js";import{f as d,s as l,g as p,A as h,a as m,h as v,b as g,c as u,d as x,e as b,i as y,j as _,k as f,r as w,l as k,m as $,n as D,N as E,o as z,p as S}from"./entity-names-42hTIqe3.js";import{d as C,a as M,b as j}from"./index-Cy1h285Y.js";import{e as N,f as A,i as I,a as O}from"./dwains-bottom-nav-B6gUvCiG.js";import{f as P}from"./fire-event-DQiSssdY.js";import"./dd-card-host-COJOAdKz.js";import"./blueprints-YXvSQBN2.js";import"./screensaver-media-Dt3mXObn.js";const B="__new_devices__",L="__maintenance__",T="energy",F="__overview__",G="person",R="__people__";let W=class extends r{constructor(){super(...arguments),this._selectedDomain=null,this._isMobile=!1,this._mobileNavOpen=!1,this._pendingDomainSelection=null,this._resizeHandler=()=>this._checkMobile(),this._locationHandler=()=>this._handleLocationChanged(),this._t=(e,i)=>C(this._hass,e,i),this._tp=(e,i,t)=>M(this._hass,e,i,t),this._handleSelectDeviceDomain=e=>{const i=e.detail?.domain;i&&(this._pendingDomainSelection=i,this._applyPendingDomainSelection(),this.requestUpdate())},this._handleDevicesNavToggle=e=>{if(!this._isMobile)return;if(e?.detail?.open)return window.dispatchEvent(new CustomEvent("dwains-dashboard-next-mobile-nav-sheet",{detail:{kind:"devices"}})),void(this._mobileNavOpen=!0);const i=!this._mobileNavOpen;i&&window.dispatchEvent(new CustomEvent("dwains-dashboard-next-mobile-nav-sheet",{detail:{kind:"devices"}})),this._mobileNavOpen=i},this._handleMobileNavSheet=e=>{"devices"!==e.detail?.kind&&(this._mobileNavOpen=!1)},this._closeMobileNav=()=>{this._mobileNavOpen=!1}}set hass(e){this._hass=e,this._syncThemeAttribute(),N(e,this.config?.settings),this._syncBottomNavDeviceContext();const i=this.renderRoot?.querySelectorAll("dwains-dashboard-next-card-host");i&&i.forEach(i=>i.hass=e)}get hass(){return this._hass}setConfig(e){if(!e)throw new Error(C(this._hass,"devices.invalid_configuration"));this.config={areas:e.areas,devices:e.devices,entities:e.entities,floors:e.floors,areas_display:e.areas_display,areas_options:e.areas_options,settings:e.settings,blueprint_replacements:e.blueprint_replacements,device_admission:e.device_admission},this._hass&&N(this._hass,this.config.settings);const i=this._getUrlDomain();if(i&&(this._pendingDomainSelection=i),!this._selectedDomain){const e=this._buildData(),t=this._buildMaintenanceData(),r=this._maintenanceSummary(t).totalCount>0,a=this._showEnergyMenu();i===B?this._selectedDomain=B:i===L&&r?this._selectedDomain=L:i===T&&a?this._selectedDomain=T:i&&e.has(i)?this._selectedDomain=i:this._selectedDomain=F,this._syncBottomNavDeviceContext()}}getCardSize(){return 12}connectedCallback(){super.connectedCallback(),this._syncThemeAttribute(),this._checkMobile(),window.addEventListener("resize",this._resizeHandler),window.addEventListener("dwains-dashboard-next-toggle-devices-nav",this._handleDevicesNavToggle),window.addEventListener("dwains-dashboard-next-mobile-nav-sheet",this._handleMobileNavSheet),window.addEventListener("dwains-dashboard-next-select-device-domain",this._handleSelectDeviceDomain),window.addEventListener("location-changed",this._locationHandler),window.addEventListener("popstate",this._locationHandler),this._handleLocationChanged(),this._syncBottomNavDeviceContext()}disconnectedCallback(){super.disconnectedCallback(),window.removeEventListener("resize",this._resizeHandler),window.removeEventListener("dwains-dashboard-next-toggle-devices-nav",this._handleDevicesNavToggle),window.removeEventListener("dwains-dashboard-next-mobile-nav-sheet",this._handleMobileNavSheet),window.removeEventListener("dwains-dashboard-next-select-device-domain",this._handleSelectDeviceDomain),window.removeEventListener("location-changed",this._locationHandler),window.removeEventListener("popstate",this._locationHandler)}_checkMobile(){const e=this._isMobile;this._isMobile=window.innerWidth<=768,e!==this._isMobile&&(this._mobileNavOpen=!1)}_getUrlDomain(){try{return new URL(window.location.href).searchParams.get("dd_device")}catch{return null}}_updateUrlDomain(e){try{const i=new URL(window.location.href);e?i.searchParams.set("dd_device",e):i.searchParams.delete("dd_device"),window.history.replaceState(window.history.state,"",i.toString())}catch{}}_handleLocationChanged(){const e=this._getUrlDomain();e&&(this._pendingDomainSelection=e,this._applyPendingDomainSelection(),this.requestUpdate())}_getAreaEntities(e){const i=[],t=new Set;if(this.config?.entities){const r=new Set;this.config.devices&&this.config.devices.forEach(i=>{i.area_id===e&&r.add(i.device_id)}),this.config.entities.forEach(a=>{if(a.area_id===e||a.device_id&&r.has(a.device_id)){const e=this._hass.entities?.[a.entity_id];if(e?.hidden_by||"diagnostic"===e?.entity_category||"config"===e?.entity_category)return;i.push(a),t.add(a.entity_id)}})}return Object.values(this._hass.states).forEach(r=>{if(!t.has(r.entity_id)&&r.attributes?.area_id===e){const t=this._hass.entities?.[r.entity_id];if(t?.hidden_by||"diagnostic"===t?.entity_category||"config"===t?.entity_category)return;i.push({entity_id:r.entity_id,area_id:e,hidden:!1})}}),i}_getFilteredAreaEntities(e){let i=this._getAreaEntities(e);if(i=i.filter(e=>{const i=this._hass.entities?.[e.entity_id];return!(i?.hidden_by||"diagnostic"===i?.entity_category||"config"===i?.entity_category)}),this.config?.areas_options){const t=this.config.areas_options[e];if(t?.groups_options){const e=new Set;for(const i of Object.values(t.groups_options))i.hidden&&i.hidden.forEach(i=>e.add(i));i=i.filter(i=>!e.has(i.entity_id))}}!1!==this.config?.settings?.hide_unavailable_entities_on_devices&&(i=i.filter(e=>{const i=this._hass.states[e.entity_id];return i&&"unavailable"!==i.state&&"unknown"!==i.state})),i=d(this._hass,this.config,i);const t=new Set(this.config?.device_admission?.hidden_entities||[]);return t.size&&(i=i.filter(e=>!t.has(e.entity_id))),i}_getVisibleSortedAreas(){return this.config?.areas?l(this.config.areas,this.config.areas_display,j(this._hass)):[]}_buildData(){const e=new Map;if(!this._hass)return e;const i=this._getVisibleSortedAreas();for(const t of i){const i=this._getFilteredAreaEntities(t.area_id);for(const r of i){const i=this._typeKeyFor(r.entity_id);if(!i)continue;let a=e.get(i);a||(a=new Map,e.set(i,a));let n=a.get(t.area_id);n||(n={area:t,entities:[]},a.set(t.area_id,n)),n.entities.push(r)}}return this._addPersonData(e),e.forEach(e=>{e.forEach(e=>{e.entities=this._sortDeviceAreaEntities(e.area.area_id,e.entities)})}),this._hiddenDeviceTypes().forEach(i=>e.delete(i)),e}_deviceEntityGroupKey(e){return p(e,this._hass)||this._typeKeyFor(e)||e.split(".")[0]||"other"}_deviceGroupOrderIndex(e,i){const t=this.config?.areas_options?.[e]?.group_order||[],r=t.indexOf(i);if(r>=0)return r;if("cover_gates"===i&&t.includes("cover_shading"))return t.indexOf("cover_shading");if(["cover_openings","cover_shading","cover_gates"].includes(i)&&t.includes("cover"))return t.indexOf("cover");if(h.includes(i)){const e=t.indexOf(m(i));if(e>=0)return e}const a=h.indexOf(i);return a>=0?t.length+a:Number.MAX_SAFE_INTEGER}_deviceConfiguredEntityOrder(e,i){const t=this.config?.areas_options?.[e];if(!t)return[];if("ungrouped"===t.entity_layout)return t.entity_order||[];const r=t.groups_options||{},a=r[i]?.order;if(a?.length)return a;if("cover_gates"===i){const e=r.cover_shading?.order;if(e?.length)return e}if(["cover_openings","cover_shading","cover_gates"].includes(i)){const e=r.cover?.order;if(e?.length)return e}if(h.includes(i)){const e=r[m(i)]?.order;if(e?.length)return e}return[]}_sortDeviceAreaEntities(e,i){const t=new Intl.Collator(j(this._hass),{sensitivity:"base",numeric:!0});return[...i].sort((i,r)=>{const a=this._deviceEntityGroupKey(i.entity_id),n=this._deviceEntityGroupKey(r.entity_id);if(a!==n){const i=this._deviceGroupOrderIndex(e,a),t=this._deviceGroupOrderIndex(e,n);if(i!==t)return i-t}const o=this._deviceConfiguredEntityOrder(e,a);if(a===n&&o.length){const e=o.indexOf(i.entity_id),t=o.indexOf(r.entity_id);if(-1!==e&&-1!==t)return e-t;if(-1!==e)return-1;if(-1!==t)return 1}const s=this._hass.states[i.entity_id]?.attributes?.friendly_name||this._hass.entities?.[i.entity_id]?.name||i.entity_id,c=this._hass.states[r.entity_id]?.attributes?.friendly_name||this._hass.entities?.[r.entity_id]?.name||r.entity_id,d=i.device_id||this._hass.entities?.[i.entity_id]?.device_id||"",l=r.device_id||this._hass.entities?.[r.entity_id]?.device_id||"";if(d!==l){const e=(e,i)=>e?this.config?.devices?.find(i=>i.device_id===e)?.name||e:i,i=t.compare(e(d,String(s)),e(l,String(c)));if(0!==i)return i}return t.compare(String(s),String(c))})}_buildMaintenanceData(){const e=new Map;if(!this._hass||!this.config)return e;const i=v(this.config);return Object.values(this._hass.states).forEach(t=>{const r=t?.entity_id;if(!r)return;const a=this._hass.entities?.[r];if(a?.hidden_by)return;const n=this._deviceIdForEntity(r,a);if(n&&i.has(n))return;const o=this._maintenanceKind(r,t);if(!o)return;const s=this._maintenanceAreaForEntity(r,t,a);if(!s)return;let c=e.get(s.area_id);c||(c={area:s,items:[]},e.set(s.area_id,c)),c.items.push({entityId:r,deviceId:n,areaId:s.area_id,name:t.attributes?.friendly_name||a?.name||r,stateLabel:this._formatMaintenanceState(t,o),icon:this._maintenanceIcon(r,t,o),kind:o})}),e.forEach(e=>{const i=this._sortDeviceAreaEntities(e.area.area_id,e.items.map(i=>({entity_id:i.entityId,area_id:e.area.area_id,hidden:!1}))).map(e=>e.entity_id),t=new Map(i.map((e,i)=>[e,i]));e.items.sort((e,i)=>(t.get(e.entityId)??Number.MAX_SAFE_INTEGER)-(t.get(i.entityId)??Number.MAX_SAFE_INTEGER))}),e}_maintenanceSummary(e){let i=0;const t=new Set;let r=0;e.forEach(e=>{e.items.forEach(e=>{"battery"!==e.kind?e.deviceId?t.add(e.deviceId):r+=1:i+=1})});const a=t.size+r;return{lowBatteryCount:i,unavailableDeviceCount:a,totalCount:i+a}}_maintenanceSubtitle(e){const i=this._maintenanceSummary(e),t=[];return i.lowBatteryCount&&t.push(this._tp("devices.low_battery",i.lowBatteryCount)),i.unavailableDeviceCount&&t.push(this._tp("devices.unavailable_device",i.unavailableDeviceCount)),t.length?t.join(", "):this._t("devices.all_good")}_showEnergyMenu(){return!0}_energySummary(){return g(this._hass,this.config)}_maintenanceKind(e,i){return"unavailable"===i.state?"unavailable":this._isLowBatteryEntity(e,i)?"battery":void 0}_isLowBatteryEntity(e,i){const t=e.split(".")[0],r=i.attributes?.device_class;if("battery"!==r)return!1;if("binary_sensor"===t)return"on"===i.state;const a=Number(i.state);return Number.isFinite(a)&&a<=20}_deviceIdForEntity(e,i){return i?.device_id||this.config?.entities?.find(i=>i.entity_id===e)?.device_id}_maintenanceAreaForEntity(e,i,t){const r=this.config?.entities?.find(i=>i.entity_id===e),a=this._deviceIdForEntity(e,t),n=a?this.config?.devices?.find(e=>e.device_id===a):void 0,o=a?this._hass?.devices?.[a]:void 0,s=t?.area_id||r?.area_id||i.attributes?.area_id||n?.area_id||o?.area_id;if(!s||(this.config?.areas_display?.hidden||[]).includes(s))return;const c=s?this.config?.areas?.find(e=>e.area_id===s):void 0;return c||void 0}_maintenanceIcon(e,i,t){if("battery"===t)return"mdi:battery-alert";const r=e.split(".")[0]||"";return i.attributes?.icon||u(r)||"mdi:help-box"}_formatMaintenanceState(e,i){if("unavailable"===i)return"unknown"===e.state?this._t("common.unknown"):this._t("common.unavailable");const t=e.attributes?.unit_of_measurement||"%";return A(e.state,t)}_addPersonData(e){const i=this._getVisiblePersonEntities();if(!i.length)return;let t=e.get(G);t||(t=new Map,e.set(G,t));const r=new Set;t.forEach(e=>e.entities.forEach(e=>r.add(e.entity_id)));const a=t.get(R)??{area:{area_id:R,name:x(this._hass,G),icon:"mdi:account-group"},entities:[]};a.entities=[...a.entities,...i.filter(e=>!r.has(e.entity_id))],a.entities.length&&t.set(R,a)}_getVisiblePersonEntities(){if(!this._hass||!this.config)return[];const e=new Set(this.config.settings?.hidden_persons||[]);return Object.values(this._hass.states).filter(i=>!!i.entity_id?.startsWith(`${G}.`)&&(!e.has(i.entity_id)&&!this._hass.entities?.[i.entity_id]?.hidden_by)).sort((e,i)=>{const t=e.attributes?.friendly_name||e.entity_id,r=i.attributes?.friendly_name||i.entity_id;return String(t).localeCompare(String(r))}).map(e=>({entity_id:e.entity_id,area_id:R,hidden:!1}))}_typeKeyFor(e){const i=e.split(".")[0];if(i){if("cover"===i)return p(e,this._hass)||"cover_shading";if("binary_sensor"===i){const i=this._hass?.states?.[e]?.attributes?.device_class;return i?`binary_sensor.${i}`:"binary_sensor"}return i}}_hiddenDeviceTypes(){return new Set((this.config?.settings?.hidden_device_types||[]).filter(e=>"string"==typeof e&&e.length>0))}_typeName(e){return e===L?this._t("devices.maintenance"):e===T?this._t("devices.energy"):e===F?this._t("navigation.overview"):"cover_openings"===e?String(this._hass?.language||"").toLowerCase().startsWith("de")?"Fenster & Türen":"Windows & doors":"cover_shading"===e?String(this._hass?.language||"").toLowerCase().startsWith("de")?"Beschattung":"Shading":"cover_gates"===e?String(this._hass?.language||"").toLowerCase().startsWith("de")?"Tore":"Gates":e.startsWith("binary_sensor.")?b(this._hass,e.slice(14)):x(this._hass,e)}_typeIcon(e){return e===L?"mdi:wrench":e===T?"mdi:flash":e===F?"mdi:view-grid-outline":e===G?"mdi:account-group":"cover_openings"===e?"mdi:door-open":"cover_shading"===e?"mdi:blinds-horizontal":"cover_gates"===e?"mdi:gate":e.startsWith("binary_sensor.")?y("binary_sensor",e.slice(14)):u(e)}_typeColor(e){return e===L?"var(--warning-color, #ff9800)":e===T?_("energy"):e===F?"var(--primary-color)":"cover_openings"===e||"cover_shading"===e||"cover_gates"===e?_("cover"):e.startsWith("binary_sensor.")?_("binary_sensor",e.slice(14)):_(e)}_syncBottomNavDeviceContext(){const e=this._selectedDomain;window.dispatchEvent(new CustomEvent("dwains-dashboard-next-device-context-changed",{detail:{domain:e,icon:e===B?"mdi:new-box":e===L?"mdi:wrench":e===T?"mdi:flash":e!==F&&e&&e?this._typeIcon(e):"mdi:format-list-bulleted-type",label:e===B?this._t("devices.new"):e===L?this._t("devices.maintenance"):e===T?this._t("devices.energy"):e!==F&&e&&e?this._typeName(e):this._t("devices.title")}}))}updated(e){e.has("_hass")&&this._syncThemeAttribute(),e.has("_selectedDomain")&&this._syncBottomNavDeviceContext()}_syncThemeAttribute(){this.toggleAttribute("data-theme-dark",I(this._hass,this))}_sortedDomains(e){return[...e.keys()].sort((e,i)=>this._typeName(e).localeCompare(this._typeName(i)))}_domainCount(e){let i=0;return e.forEach(e=>i+=e.entities.length),i}_applyPendingDomainSelection(e,i,t,r){if(!this._hass||!this.config)return!1;const a=this._pendingDomainSelection||this._getUrlDomain();if(!a)return!1;const n=e??this._buildData(),o=i??(f(this.config)&&this._newDevices().length>0),s=t??this._maintenanceSummary(this._buildMaintenanceData()).totalCount>0,c=r??this._showEnergyMenu();if(a===F);else if(a===B){if(!o)return!1}else if(a===L){if(!s)return!1}else if(a===T){if(!c)return!1}else if(!n.has(a))return!1;return this._pendingDomainSelection=null,this._selectedDomain!==a&&(this._selectedDomain=a,this._syncBottomNavDeviceContext()),!0}_entityCardConfig(e){return e.startsWith("todo.")?{type:"todo-list",entity:e}:w({hass:this._hass,config:this.config,entity:e,surface:"devices_cards"})}_selectDomain(e){this._pendingDomainSelection=null,this._selectedDomain=e,this._updateUrlDomain(e===F?null:e),this._syncBottomNavDeviceContext(),this._closeMobileNav()}render(){if(!this._hass||!this.config)return a`<div class="loading">${this._t("common.loading")}</div>`;const e=this._buildData(),i=this._sortedDomains(e);this._ensureDeviceTracking();const t=this._newDevices(),r=v(this.config).size,n=f(this.config)&&(t.length>0||r>0),o=this._buildMaintenanceData(),s=this._maintenanceSummary(o).totalCount>0,c=this._showEnergyMenu();return this._applyPendingDomainSelection(e,n,s,c),0!==i.length||n||s||c?(this._selectedDomain===F||(this._selectedDomain===B?n||(this._selectedDomain=F):this._selectedDomain===L?s||(this._selectedDomain=F):this._selectedDomain===T?c||(this._selectedDomain=F):this._selectedDomain&&e.has(this._selectedDomain)||(this._selectedDomain=F)),a`
+import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as a,b as r,A as n,r as o,a as s}from"./lit-element-CR7MDbd3.js";import{e as c}from"./class-map-5ivNZjtx.js";import{f as d,s as l,g as p,A as h,a as m,h as v,b as g,c as u,d as x,e as b,i as y,j as _,k as f,r as w,l as k,m as $,n as D,N as E,o as z,p as S}from"./entity-names-B4hlz83-.js";import{d as C,a as M,b as j}from"./index-DKWemRsD.js";import{e as N,f as A,i as I,a as O}from"./dwains-bottom-nav-16QfgDvd.js";import{f as P}from"./fire-event-DQiSssdY.js";import"./dd-card-host-COJOAdKz.js";import"./blueprints-YXvSQBN2.js";import"./screensaver-media-Dt3mXObn.js";const B="__new_devices__",L="__maintenance__",T="energy",F="__overview__",G="person",R="__people__";let W=class extends a{constructor(){super(...arguments),this._selectedDomain=null,this._isMobile=!1,this._mobileNavOpen=!1,this._pendingDomainSelection=null,this._resizeHandler=()=>this._checkMobile(),this._locationHandler=()=>this._handleLocationChanged(),this._t=(e,i)=>C(this._hass,e,i),this._tp=(e,i,t)=>M(this._hass,e,i,t),this._handleSelectDeviceDomain=e=>{const i=e.detail?.domain;i&&(this._pendingDomainSelection=i,this._applyPendingDomainSelection(),this.requestUpdate())},this._handleDevicesNavToggle=e=>{if(!this._isMobile)return;if(e?.detail?.open)return window.dispatchEvent(new CustomEvent("dwains-dashboard-next-mobile-nav-sheet",{detail:{kind:"devices"}})),void(this._mobileNavOpen=!0);const i=!this._mobileNavOpen;i&&window.dispatchEvent(new CustomEvent("dwains-dashboard-next-mobile-nav-sheet",{detail:{kind:"devices"}})),this._mobileNavOpen=i},this._handleMobileNavSheet=e=>{"devices"!==e.detail?.kind&&(this._mobileNavOpen=!1)},this._closeMobileNav=()=>{this._mobileNavOpen=!1}}set hass(e){this._hass=e,this._syncThemeAttribute(),N(e,this.config?.settings),this._syncBottomNavDeviceContext();const i=this.renderRoot?.querySelectorAll("dwains-dashboard-next-card-host");i&&i.forEach(i=>i.hass=e)}get hass(){return this._hass}setConfig(e){if(!e)throw new Error(C(this._hass,"devices.invalid_configuration"));this.config={areas:e.areas,devices:e.devices,entities:e.entities,floors:e.floors,areas_display:e.areas_display,areas_options:e.areas_options,settings:e.settings,blueprint_replacements:e.blueprint_replacements,device_admission:e.device_admission},this._hass&&N(this._hass,this.config.settings);const i=this._getUrlDomain();if(i&&(this._pendingDomainSelection=i),!this._selectedDomain){const e=this._buildData(),t=this._buildMaintenanceData(),a=this._maintenanceSummary(t).totalCount>0,r=this._showEnergyMenu();i===B?this._selectedDomain=B:i===L&&a?this._selectedDomain=L:i===T&&r?this._selectedDomain=T:i&&e.has(i)?this._selectedDomain=i:this._selectedDomain=F,this._syncBottomNavDeviceContext()}}getCardSize(){return 12}connectedCallback(){super.connectedCallback(),this._syncThemeAttribute(),this._checkMobile(),window.addEventListener("resize",this._resizeHandler),window.addEventListener("dwains-dashboard-next-toggle-devices-nav",this._handleDevicesNavToggle),window.addEventListener("dwains-dashboard-next-mobile-nav-sheet",this._handleMobileNavSheet),window.addEventListener("dwains-dashboard-next-select-device-domain",this._handleSelectDeviceDomain),window.addEventListener("location-changed",this._locationHandler),window.addEventListener("popstate",this._locationHandler),this._handleLocationChanged(),this._syncBottomNavDeviceContext()}disconnectedCallback(){super.disconnectedCallback(),window.removeEventListener("resize",this._resizeHandler),window.removeEventListener("dwains-dashboard-next-toggle-devices-nav",this._handleDevicesNavToggle),window.removeEventListener("dwains-dashboard-next-mobile-nav-sheet",this._handleMobileNavSheet),window.removeEventListener("dwains-dashboard-next-select-device-domain",this._handleSelectDeviceDomain),window.removeEventListener("location-changed",this._locationHandler),window.removeEventListener("popstate",this._locationHandler)}_checkMobile(){const e=this._isMobile;this._isMobile=window.innerWidth<=768,e!==this._isMobile&&(this._mobileNavOpen=!1)}_getUrlDomain(){try{return new URL(window.location.href).searchParams.get("dd_device")}catch{return null}}_updateUrlDomain(e){try{const i=new URL(window.location.href);e?i.searchParams.set("dd_device",e):i.searchParams.delete("dd_device"),window.history.replaceState(window.history.state,"",i.toString())}catch{}}_handleLocationChanged(){const e=this._getUrlDomain();e&&(this._pendingDomainSelection=e,this._applyPendingDomainSelection(),this.requestUpdate())}_getAreaEntities(e){const i=[],t=new Set;if(this.config?.entities){const a=new Set;this.config.devices&&this.config.devices.forEach(i=>{i.area_id===e&&a.add(i.device_id)}),this.config.entities.forEach(r=>{if(r.area_id===e||r.device_id&&a.has(r.device_id)){const e=this._hass.entities?.[r.entity_id];if(e?.hidden_by||"diagnostic"===e?.entity_category||"config"===e?.entity_category)return;i.push(r),t.add(r.entity_id)}})}return Object.values(this._hass.states).forEach(a=>{if(!t.has(a.entity_id)&&a.attributes?.area_id===e){const t=this._hass.entities?.[a.entity_id];if(t?.hidden_by||"diagnostic"===t?.entity_category||"config"===t?.entity_category)return;i.push({entity_id:a.entity_id,area_id:e,hidden:!1})}}),i}_getFilteredAreaEntities(e){let i=this._getAreaEntities(e);if(i=i.filter(e=>{const i=this._hass.entities?.[e.entity_id];return!(i?.hidden_by||"diagnostic"===i?.entity_category||"config"===i?.entity_category)}),this.config?.areas_options){const t=this.config.areas_options[e];if(t?.groups_options){const e=new Set;for(const i of Object.values(t.groups_options))i.hidden&&i.hidden.forEach(i=>e.add(i));i=i.filter(i=>!e.has(i.entity_id))}}!1!==this.config?.settings?.hide_unavailable_entities_on_devices&&(i=i.filter(e=>{const i=this._hass.states[e.entity_id];return i&&"unavailable"!==i.state&&"unknown"!==i.state})),i=d(this._hass,this.config,i);const t=new Set(this.config?.device_admission?.hidden_entities||[]);return t.size&&(i=i.filter(e=>!t.has(e.entity_id))),i}_getVisibleSortedAreas(){return this.config?.areas?l(this.config.areas,this.config.areas_display,j(this._hass)):[]}_buildData(){const e=new Map;if(!this._hass)return e;const i=this._getVisibleSortedAreas();for(const t of i){const i=this._getFilteredAreaEntities(t.area_id);for(const a of i){const i=this._typeKeyFor(a.entity_id);if(!i)continue;let r=e.get(i);r||(r=new Map,e.set(i,r));let n=r.get(t.area_id);n||(n={area:t,entities:[]},r.set(t.area_id,n)),n.entities.push(a)}}return this._addPersonData(e),e.forEach(e=>{e.forEach(e=>{e.entities=this._sortDeviceAreaEntities(e.area.area_id,e.entities)})}),this._hiddenDeviceTypes().forEach(i=>e.delete(i)),e}_deviceEntityGroupKey(e){return p(e,this._hass)||this._typeKeyFor(e)||e.split(".")[0]||"other"}_deviceGroupOrderIndex(e,i){const t=this.config?.areas_options?.[e]?.group_order||[],a=t.indexOf(i);if(a>=0)return a;if("cover_gates"===i&&t.includes("cover_shading"))return t.indexOf("cover_shading");if(["cover_openings","cover_shading","cover_gates"].includes(i)&&t.includes("cover"))return t.indexOf("cover");if(h.includes(i)){const e=t.indexOf(m(i));if(e>=0)return e}const r=h.indexOf(i);return r>=0?t.length+r:Number.MAX_SAFE_INTEGER}_deviceConfiguredEntityOrder(e,i){const t=this.config?.areas_options?.[e];if(!t)return[];if("ungrouped"===t.entity_layout)return t.entity_order||[];const a=t.groups_options||{},r=a[i]?.order;if(r?.length)return r;if("cover_gates"===i){const e=a.cover_shading?.order;if(e?.length)return e}if(["cover_openings","cover_shading","cover_gates"].includes(i)){const e=a.cover?.order;if(e?.length)return e}if(h.includes(i)){const e=a[m(i)]?.order;if(e?.length)return e}return[]}_sortDeviceAreaEntities(e,i){const t=new Intl.Collator(j(this._hass),{sensitivity:"base",numeric:!0});return[...i].sort((i,a)=>{const r=this._deviceEntityGroupKey(i.entity_id),n=this._deviceEntityGroupKey(a.entity_id);if(r!==n){const i=this._deviceGroupOrderIndex(e,r),t=this._deviceGroupOrderIndex(e,n);if(i!==t)return i-t}const o=this._deviceConfiguredEntityOrder(e,r);if(r===n&&o.length){const e=o.indexOf(i.entity_id),t=o.indexOf(a.entity_id);if(-1!==e&&-1!==t)return e-t;if(-1!==e)return-1;if(-1!==t)return 1}const s=this._hass.states[i.entity_id]?.attributes?.friendly_name||this._hass.entities?.[i.entity_id]?.name||i.entity_id,c=this._hass.states[a.entity_id]?.attributes?.friendly_name||this._hass.entities?.[a.entity_id]?.name||a.entity_id,d=i.device_id||this._hass.entities?.[i.entity_id]?.device_id||"",l=a.device_id||this._hass.entities?.[a.entity_id]?.device_id||"";if(d!==l){const e=(e,i)=>e?this.config?.devices?.find(i=>i.device_id===e)?.name||e:i,i=t.compare(e(d,String(s)),e(l,String(c)));if(0!==i)return i}return t.compare(String(s),String(c))})}_buildMaintenanceData(){const e=new Map;if(!this._hass||!this.config)return e;const i=v(this.config);return Object.values(this._hass.states).forEach(t=>{const a=t?.entity_id;if(!a)return;const r=this._hass.entities?.[a];if(r?.hidden_by)return;const n=this._deviceIdForEntity(a,r);if(n&&i.has(n))return;const o=this._maintenanceKind(a,t);if(!o)return;const s=this._maintenanceAreaForEntity(a,t,r);if(!s)return;let c=e.get(s.area_id);c||(c={area:s,items:[]},e.set(s.area_id,c)),c.items.push({entityId:a,deviceId:n,areaId:s.area_id,name:t.attributes?.friendly_name||r?.name||a,stateLabel:this._formatMaintenanceState(t,o),icon:this._maintenanceIcon(a,t,o),kind:o})}),e.forEach(e=>{const i=this._sortDeviceAreaEntities(e.area.area_id,e.items.map(i=>({entity_id:i.entityId,area_id:e.area.area_id,hidden:!1}))).map(e=>e.entity_id),t=new Map(i.map((e,i)=>[e,i]));e.items.sort((e,i)=>(t.get(e.entityId)??Number.MAX_SAFE_INTEGER)-(t.get(i.entityId)??Number.MAX_SAFE_INTEGER))}),e}_maintenanceSummary(e){let i=0;const t=new Set;let a=0;e.forEach(e=>{e.items.forEach(e=>{"battery"!==e.kind?e.deviceId?t.add(e.deviceId):a+=1:i+=1})});const r=t.size+a;return{lowBatteryCount:i,unavailableDeviceCount:r,totalCount:i+r}}_maintenanceSubtitle(e){const i=this._maintenanceSummary(e),t=[];return i.lowBatteryCount&&t.push(this._tp("devices.low_battery",i.lowBatteryCount)),i.unavailableDeviceCount&&t.push(this._tp("devices.unavailable_device",i.unavailableDeviceCount)),t.length?t.join(", "):this._t("devices.all_good")}_showEnergyMenu(){return!0}_energySummary(){return g(this._hass,this.config)}_maintenanceKind(e,i){return"unavailable"===i.state?"unavailable":this._isLowBatteryEntity(e,i)?"battery":void 0}_isLowBatteryEntity(e,i){const t=e.split(".")[0],a=i.attributes?.device_class;if("battery"!==a)return!1;if("binary_sensor"===t)return"on"===i.state;const r=Number(i.state);return Number.isFinite(r)&&r<=20}_deviceIdForEntity(e,i){return i?.device_id||this.config?.entities?.find(i=>i.entity_id===e)?.device_id}_maintenanceAreaForEntity(e,i,t){const a=this.config?.entities?.find(i=>i.entity_id===e),r=this._deviceIdForEntity(e,t),n=r?this.config?.devices?.find(e=>e.device_id===r):void 0,o=r?this._hass?.devices?.[r]:void 0,s=t?.area_id||a?.area_id||i.attributes?.area_id||n?.area_id||o?.area_id;if(!s||(this.config?.areas_display?.hidden||[]).includes(s))return;const c=s?this.config?.areas?.find(e=>e.area_id===s):void 0;return c||void 0}_maintenanceIcon(e,i,t){if("battery"===t)return"mdi:battery-alert";const a=e.split(".")[0]||"";return i.attributes?.icon||u(a)||"mdi:help-box"}_formatMaintenanceState(e,i){if("unavailable"===i)return"unknown"===e.state?this._t("common.unknown"):this._t("common.unavailable");const t=e.attributes?.unit_of_measurement||"%";return A(e.state,t)}_addPersonData(e){const i=this._getVisiblePersonEntities();if(!i.length)return;let t=e.get(G);t||(t=new Map,e.set(G,t));const a=new Set;t.forEach(e=>e.entities.forEach(e=>a.add(e.entity_id)));const r=t.get(R)??{area:{area_id:R,name:x(this._hass,G),icon:"mdi:account-group"},entities:[]};r.entities=[...r.entities,...i.filter(e=>!a.has(e.entity_id))],r.entities.length&&t.set(R,r)}_getVisiblePersonEntities(){if(!this._hass||!this.config)return[];const e=new Set(this.config.settings?.hidden_persons||[]);return Object.values(this._hass.states).filter(i=>!!i.entity_id?.startsWith(`${G}.`)&&(!e.has(i.entity_id)&&!this._hass.entities?.[i.entity_id]?.hidden_by)).sort((e,i)=>{const t=e.attributes?.friendly_name||e.entity_id,a=i.attributes?.friendly_name||i.entity_id;return String(t).localeCompare(String(a))}).map(e=>({entity_id:e.entity_id,area_id:R,hidden:!1}))}_typeKeyFor(e){const i=e.split(".")[0];if(i){if("cover"===i)return p(e,this._hass)||"cover_shading";if("binary_sensor"===i){const i=this._hass?.states?.[e]?.attributes?.device_class;return i?`binary_sensor.${i}`:"binary_sensor"}return i}}_hiddenDeviceTypes(){return new Set((this.config?.settings?.hidden_device_types||[]).filter(e=>"string"==typeof e&&e.length>0))}_typeName(e){return e===L?this._t("devices.maintenance"):e===T?this._t("devices.energy"):e===F?this._t("navigation.overview"):"cover_openings"===e?String(this._hass?.language||"").toLowerCase().startsWith("de")?"Fenster & Türen":"Windows & doors":"cover_shading"===e?String(this._hass?.language||"").toLowerCase().startsWith("de")?"Beschattung":"Shading":"cover_gates"===e?String(this._hass?.language||"").toLowerCase().startsWith("de")?"Tore":"Gates":e.startsWith("binary_sensor.")?b(this._hass,e.slice(14)):x(this._hass,e)}_typeIcon(e){return e===L?"mdi:wrench":e===T?"mdi:flash":e===F?"mdi:view-grid-outline":e===G?"mdi:account-group":"cover_openings"===e?"mdi:door-open":"cover_shading"===e?"mdi:blinds-horizontal":"cover_gates"===e?"mdi:gate":e.startsWith("binary_sensor.")?y("binary_sensor",e.slice(14)):u(e)}_typeColor(e){return e===L?"var(--warning-color, #ff9800)":e===T?_("energy"):e===F?"var(--primary-color)":"cover_openings"===e||"cover_shading"===e||"cover_gates"===e?_("cover"):e.startsWith("binary_sensor.")?_("binary_sensor",e.slice(14)):_(e)}_syncBottomNavDeviceContext(){const e=this._selectedDomain;window.dispatchEvent(new CustomEvent("dwains-dashboard-next-device-context-changed",{detail:{domain:e,icon:e===B?"mdi:new-box":e===L?"mdi:wrench":e===T?"mdi:flash":e!==F&&e&&e?this._typeIcon(e):"mdi:format-list-bulleted-type",label:e===B?this._t("devices.new"):e===L?this._t("devices.maintenance"):e===T?this._t("devices.energy"):e!==F&&e&&e?this._typeName(e):this._t("devices.title")}}))}updated(e){e.has("_hass")&&this._syncThemeAttribute(),e.has("_selectedDomain")&&this._syncBottomNavDeviceContext()}_syncThemeAttribute(){this.toggleAttribute("data-theme-dark",I(this._hass,this))}_sortedDomains(e){return[...e.keys()].sort((e,i)=>this._typeName(e).localeCompare(this._typeName(i)))}_domainCount(e){let i=0;return e.forEach(e=>i+=e.entities.length),i}_applyPendingDomainSelection(e,i,t,a){if(!this._hass||!this.config)return!1;const r=this._pendingDomainSelection||this._getUrlDomain();if(!r)return!1;const n=e??this._buildData(),o=i??(f(this.config)&&this._newDevices().length>0),s=t??this._maintenanceSummary(this._buildMaintenanceData()).totalCount>0,c=a??this._showEnergyMenu();if(r===F);else if(r===B){if(!o)return!1}else if(r===L){if(!s)return!1}else if(r===T){if(!c)return!1}else if(!n.has(r))return!1;return this._pendingDomainSelection=null,this._selectedDomain!==r&&(this._selectedDomain=r,this._syncBottomNavDeviceContext()),!0}_entityCardConfig(e){return e.startsWith("todo.")?{type:"todo-list",entity:e}:w({hass:this._hass,config:this.config,entity:e,surface:"devices_cards"})}_selectDomain(e){this._pendingDomainSelection=null,this._selectedDomain=e,this._updateUrlDomain(e===F?null:e),this._syncBottomNavDeviceContext(),this._closeMobileNav()}render(){if(!this._hass||!this.config)return r`<div class="loading">${this._t("common.loading")}</div>`;const e=this._buildData(),i=this._sortedDomains(e);this._ensureDeviceTracking();const t=this._newDevices(),a=v(this.config).size,n=f(this.config)&&(t.length>0||a>0),o=this._buildMaintenanceData(),s=this._maintenanceSummary(o).totalCount>0,c=this._showEnergyMenu();return this._applyPendingDomainSelection(e,n,s,c),0!==i.length||n||s||c?(this._selectedDomain===F||(this._selectedDomain===B?n||(this._selectedDomain=F):this._selectedDomain===L?s||(this._selectedDomain=F):this._selectedDomain===T?c||(this._selectedDomain=F):this._selectedDomain&&e.has(this._selectedDomain)||(this._selectedDomain=F)),r`
       <div class="layout-container">
         ${this._renderMobileOverlay()}
         ${this._renderSidebar(e,i,t,n,o,s,c)}
@@ -8,7 +8,7 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as r,b as a,A as n,r a
           </div>
         </div>
       </div>
-    `):a`
+    `):r`
         <div class="layout-container">
           ${this._renderMobileOverlay()}
           <div class="main-content">
@@ -19,14 +19,14 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as r,b as a,A as n,r a
             </div>
           </div>
         </div>
-      `}_renderMobileOverlay(){return this._isMobile?a`
+      `}_renderMobileOverlay(){return this._isMobile?r`
       <div
         class="mobile-nav-overlay ${this._mobileNavOpen?"open":""}"
         @click=${this._closeMobileNav}
       ></div>
-    `:n}_renderSidebar(e,i,t,r,o,s,d){const l={sidebar:!0,open:this._isMobile&&this._mobileNavOpen},p=this._energySummary();return a`
+    `:n}_renderSidebar(e,i,t,a,o,s,d){const l={sidebar:!0,open:this._isMobile&&this._mobileNavOpen},p=this._energySummary();return r`
       <nav class=${c(l)}>
-        ${this._isMobile?a`
+        ${this._isMobile?r`
           <div class="mobile-device-picker-head">
             <div class="mobile-device-picker-title">${this._t("devices.title")}</div>
             <button
@@ -39,7 +39,7 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as r,b as a,A as n,r a
               <ha-icon icon="mdi:close"></ha-icon>
             </button>
           </div>
-        `:a`<div class="sidebar-title">${this._t("devices.title")}</div>`}
+        `:r`<div class="sidebar-title">${this._t("devices.title")}</div>`}
         <div class="area-list">
           <button
             class="area-button overview ${this._selectedDomain===F?"selected":""}"
@@ -56,7 +56,7 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as r,b as a,A as n,r a
             <span class="domain-count">${i.length}</span>
             <ha-icon class="device-menu-chevron" icon="mdi:chevron-right"></ha-icon>
           </button>
-          ${r?a`
+          ${a?r`
                 <button
                   class="area-button new-devices ${this._selectedDomain===B?"selected":""}"
                   @click=${()=>this._selectDomain(B)}
@@ -74,7 +74,7 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as r,b as a,A as n,r a
                   <ha-icon class="device-menu-chevron" icon="mdi:chevron-right"></ha-icon>
                 </button>
               `:n}
-          ${s?a`
+          ${s?r`
                 <button
                   class="area-button maintenance ${this._selectedDomain===L?"selected":""}"
                   style=${`--domain-color: ${this._typeColor(L)};`}
@@ -91,7 +91,7 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as r,b as a,A as n,r a
                   <ha-icon class="device-menu-chevron" icon="mdi:chevron-right"></ha-icon>
                 </button>
               `:n}
-          ${d?a`
+          ${d?r`
                 <button
                   class="area-button energy ${this._selectedDomain===T?"selected":""}"
                   style=${`--domain-color: ${this._typeColor(T)};`}
@@ -110,9 +110,9 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as r,b as a,A as n,r a
                   <ha-icon class="device-menu-chevron" icon="mdi:chevron-right"></ha-icon>
                 </button>
               `:n}
-          ${e.has(G)?(()=>{const i=e.get(G),t=this._domainCount(i),r=this._selectedDomain===G;return a`
+          ${e.has(G)?(()=>{const i=e.get(G),t=this._domainCount(i),a=this._selectedDomain===G;return r`
               <button
-                class="area-button ${r?"selected":""}"
+                class="area-button ${a?"selected":""}"
                 style=${`--domain-color: ${this._typeColor(G)};`}
                 @click=${()=>this._selectDomain(G)}
               >
@@ -127,7 +127,7 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as r,b as a,A as n,r a
                 <ha-icon class="device-menu-chevron" icon="mdi:chevron-right"></ha-icon>
               </button>
             `})():n}
-          ${i.filter(e=>e!==G).map(i=>{const t=e.get(i),r=this._domainCount(t),n=this._selectedDomain===i;return a`
+          ${i.filter(e=>e!==G).map(i=>{const t=e.get(i),a=this._domainCount(t),n=this._selectedDomain===i;return r`
               <button
                 class="area-button ${n?"selected":""}"
                 style=${`--domain-color: ${this._typeColor(i)};`}
@@ -138,20 +138,20 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as r,b as a,A as n,r a
                 </div>
                 <div class="area-info">
                   <div class="area-name">${this._typeName(i)}</div>
-                  <div class="device-menu-subtitle">${this._tp("common.entity",r)}</div>
+                  <div class="device-menu-subtitle">${this._tp("common.entity",a)}</div>
                 </div>
-                <span class="domain-count">${r}</span>
+                <span class="domain-count">${a}</span>
                 <ha-icon class="device-menu-chevron" icon="mdi:chevron-right"></ha-icon>
               </button>
             `})}
         </div>
       </nav>
-    `}_renderDevicesOverview(e,i,t,r,n,o,s){const c=this._energySummary(),d=[];if(r&&d.push({key:B,icon:"mdi:new-box",title:this._t("devices.new"),subtitle:this._tp("devices.new",t.length),count:t.length,color:"var(--primary-color)"}),o){const e=this._maintenanceSummary(n);d.push({key:L,icon:"mdi:wrench",title:this._t("devices.maintenance"),subtitle:this._maintenanceSubtitle(n),count:e.totalCount,color:this._typeColor(L)})}return s&&d.push({key:T,icon:"mdi:flash",title:this._t("devices.energy"),subtitle:this._tp("devices.live_power_sensor",c.sensorCount),count:c.sensorCount,color:this._typeColor(T)}),i.forEach(i=>{const t=e.get(i);if(!t)return;const r=this._domainCount(t);d.push({key:i,icon:this._typeIcon(i),title:this._typeName(i),subtitle:this._tp("common.entity",r),count:r,color:this._typeColor(i)})}),a`
+    `}_renderDevicesOverview(e,i,t,a,n,o,s){const c=this._energySummary(),d=[];if(a&&d.push({key:B,icon:"mdi:new-box",title:this._t("devices.new"),subtitle:this._tp("devices.new",t.length),count:t.length,color:"var(--primary-color)"}),o){const e=this._maintenanceSummary(n);d.push({key:L,icon:"mdi:wrench",title:this._t("devices.maintenance"),subtitle:this._maintenanceSubtitle(n),count:e.totalCount,color:this._typeColor(L)})}return s&&d.push({key:T,icon:"mdi:flash",title:this._t("devices.energy"),subtitle:this._tp("devices.live_power_sensor",c.sensorCount),count:c.sensorCount,color:this._typeColor(T)}),i.forEach(i=>{const t=e.get(i);if(!t)return;const a=this._domainCount(t);d.push({key:i,icon:this._typeIcon(i),title:this._typeName(i),subtitle:this._tp("common.entity",a),count:a,color:this._typeColor(i)})}),r`
       <div class="device-view devices-overview-view">
         ${this._renderDevicePageHeader({icon:"mdi:format-list-bulleted-type",title:this._t("devices.title"),subtitle:this._tp("devices.group",d.length),color:this._typeColor(F)})}
 
         <div class="devices-overview-grid">
-          ${k(d,e=>e.key,e=>a`
+          ${k(d,e=>e.key,e=>r`
               <button
                 class="devices-overview-card"
                 type="button"
@@ -171,9 +171,9 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as r,b as a,A as n,r a
             `)}
         </div>
       </div>
-    `}_renderDevicePageHeader(e){const i=["device-page-header"];return e.back&&i.push("has-back"),e.actions&&i.push("has-actions"),e.className&&i.push(e.className),a`
+    `}_renderDevicePageHeader(e){const i=["device-page-header"];return e.back&&i.push("has-back"),e.actions&&i.push("has-actions"),e.className&&i.push(e.className),r`
       <div class=${i.join(" ")} style=${`--domain-color: ${e.color};`}>
-        ${e.back?a`
+        ${e.back?r`
           <button
             class="device-header-back"
             type="button"
@@ -190,24 +190,24 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as r,b as a,A as n,r a
           </span>
           <div class="device-header-copy">
             <h1 class="device-title">${e.title}</h1>
-            ${e.subtitle?a`<div class="device-subtitle">${e.subtitle}</div>`:n}
+            ${e.subtitle?r`<div class="device-subtitle">${e.subtitle}</div>`:n}
           </div>
         </div>
-        ${e.actions?a`<div class="device-header-actions">${e.actions}</div>`:n}
+        ${e.actions?r`<div class="device-header-actions">${e.actions}</div>`:n}
       </div>
-    `}_renderDeviceView(e){const i=this._selectedDomain;if(!i)return n;const t=e.get(i);if(!t)return n;const r=!this._isSpecialDeviceType(i),o=i===G?[...t.values()].map(e=>e.area):this._getVisibleSortedAreas().filter(e=>t.has(e.area_id)),s=[...t.values()].flatMap(e=>e.entities),c=i===G?[...new Map(s.map(e=>[e.entity_id,e])).values()]:[],d=o[0]||{area_id:R,name:"",icon:"mdi:account-group"};return a`
-      <div class="device-view ${r?"room-style-device-view":"special-device-view"}">
+    `}_renderDeviceView(e){const i=this._selectedDomain;if(!i)return n;const t=e.get(i);if(!t)return n;const a=!this._isSpecialDeviceType(i),o=i===G?[...t.values()].map(e=>e.area):this._getVisibleSortedAreas().filter(e=>t.has(e.area_id)),s=[...t.values()].flatMap(e=>e.entities),c=i===G?[...new Map(s.map(e=>[e.entity_id,e])).values()]:[],d=o[0]||{area_id:R,name:"",icon:"mdi:account-group"};return r`
+      <div class="device-view ${a?"room-style-device-view":"special-device-view"}">
         ${this._renderDevicePageHeader({icon:this._typeIcon(i),title:this._typeName(i),subtitle:this._tp("common.entity",this._domainCount(t)),color:this._typeColor(i),back:!0})}
 
         ${this._renderDeviceGlobalActions(i,s)}
 
-        ${i===G?a`
+        ${i===G?r`
               <div class="person-device-grid ${this._entitiesGridClass(i,!0)}">
                 ${k(c,e=>e.entity_id,e=>this._renderRoomStyleEntityCard(e,d))}
               </div>
-            `:a`
+            `:r`
               <div class="device-room-groups">
-                ${o.map(e=>{const n=t.get(e.area_id),o=n.entities.length<=2;return a`
+                ${o.map(e=>{const n=t.get(e.area_id),o=n.entities.length<=2;return r`
                     <div class="domain-group ${o?"half-room":"full-room"}">
                       <div class="domain-header">
                         <div class="domain-header-title">
@@ -216,19 +216,19 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as r,b as a,A as n,r a
                         </div>
                         ${this._renderDeviceRoomActions(i,n.entities)}
                       </div>
-                      <div class=${this._entitiesGridClass(i,r)}>
-                        ${k(n.entities,e=>e.entity_id,i=>r?this._renderRoomStyleEntityCard(i,e):this._renderEntityCard(i))}
+                      <div class=${this._entitiesGridClass(i,a)}>
+                        ${k(n.entities,e=>e.entity_id,i=>a?this._renderRoomStyleEntityCard(i,e):this._renderEntityCard(i))}
                       </div>
                     </div>
                   `})}
               </div>
             `}
       </div>
-    `}_renderEnergyView(){const e=this._energySummary(),i=e.areas[0],t=this._energyStatisticsEntities(e.areas.flatMap(e=>e.entities),8);return a`
+    `}_renderEnergyView(){const e=this._energySummary(),i=e.areas[0],t=this._energyStatisticsEntities(e.areas.flatMap(e=>e.entities),8);return r`
       <div class="device-view energy-view">
         ${this._renderDevicePageHeader({icon:"mdi:flash",title:this._t("devices.energy"),subtitle:this._t("devices.live_power_usage"),color:this._typeColor(T),back:!0})}
 
-        ${e.sensorCount?a`
+        ${e.sensorCount?r`
               <div class="energy-overview-grid">
                 <section class="energy-overview-card total">
                   <div class="energy-overview-head">
@@ -244,7 +244,7 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as r,b as a,A as n,r a
                   ${this._renderEnergyStatisticsGraph(t,this._t("devices.whole_house_history"))}
                 </section>
 
-                ${i?a`
+                ${i?r`
                   <section class="energy-overview-card top-area">
                     <div class="energy-overview-head">
                       <span class="energy-overview-icon">
@@ -266,7 +266,7 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as r,b as a,A as n,r a
               <div class="energy-areas-grid">
                 ${k(e.areas,e=>e.areaId,e=>this._renderEnergyAreaCard(e))}
               </div>
-            `:a`
+            `:r`
               <div class="energy-empty">
                 <ha-icon icon="mdi:flash-off-outline"></ha-icon>
                 <h2>${this._t("devices.no_power_title")}</h2>
@@ -274,7 +274,7 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as r,b as a,A as n,r a
               </div>
             `}
       </div>
-    `}_renderEnergyAreaCard(e){const i=!e.areaId.startsWith("__");return a`
+    `}_renderEnergyAreaCard(e){const i=!e.areaId.startsWith("__");return r`
       <section class="energy-area-card">
         <header class="energy-area-head">
           <button
@@ -303,7 +303,7 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as r,b as a,A as n,r a
           ${k(e.entities,e=>e.entityId,i=>this._renderEnergyEntityRow(i,e.totalWatts))}
         </div>
       </section>
-    `}_renderEnergyEntityMini(e,i){const t=this._energyEntityPercentage(e,i);return a`
+    `}_renderEnergyEntityMini(e,i){const t=this._energyEntityPercentage(e,i);return r`
       <button
         class="energy-entity-mini"
         type="button"
@@ -313,7 +313,7 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as r,b as a,A as n,r a
         <span>${e.name}</span>
         <strong>${e.formatted}</strong>
       </button>
-    `}_renderEnergyEntityRow(e,i){const t=this._energyEntityPercentage(e,i);return a`
+    `}_renderEnergyEntityRow(e,i){const t=this._energyEntityPercentage(e,i);return r`
       <button
         class="energy-entity-row"
         type="button"
@@ -330,18 +330,18 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as r,b as a,A as n,r a
         </span>
         <span class="energy-entity-value">${e.formatted}</span>
       </button>
-    `}_energyEntityPercentage(e,i){return i<=0?0:Math.max(4,Math.min(100,Math.round(e.watts/i*100)))}_energyStatisticsEntities(e,i){const t=["#65A83F","#E5B83B","#239CB5","#D98928","#50A789","#8065C7","#AD7253","#367DD5"];return e.filter(e=>["measurement","total","total_increasing"].includes(e.stateClass||"")).sort((e,i)=>i.watts-e.watts).slice(0,i).map((e,i)=>({entity:e.entityId,name:e.name,color:t[i%t.length]}))}_renderEnergyStatisticsGraph(e,i){if(!e.length)return n;const t={type:"statistics-graph",entities:e,days_to_show:1,period:"5minute",stat_types:["mean"],chart_type:"line",hide_legend:!0,fit_y_data:!0,min_y_axis:0};return a`
+    `}_energyEntityPercentage(e,i){return i<=0?0:Math.max(4,Math.min(100,Math.round(e.watts/i*100)))}_energyStatisticsEntities(e,i){const t=["#65A83F","#E5B83B","#239CB5","#D98928","#50A789","#8065C7","#AD7253","#367DD5"];return e.filter(e=>["measurement","total","total_increasing"].includes(e.stateClass||"")).sort((e,i)=>i.watts-e.watts).slice(0,i).map((e,i)=>({entity:e.entityId,name:e.name,color:t[i%t.length]}))}_renderEnergyStatisticsGraph(e,i){if(!e.length)return n;const t={type:"statistics-graph",entities:e,days_to_show:1,period:"5minute",stat_types:["mean"],chart_type:"line",hide_legend:!0,fit_y_data:!0,min_y_axis:0};return r`
       <dwains-dashboard-next-card-host
         class="energy-statistics-card"
         aria-label=${i}
         .hass=${this._hass}
         .config=${t}
       ></dwains-dashboard-next-card-host>
-    `}_renderMaintenanceView(e){const i=this._orderedMaintenanceBuckets(e);return a`
+    `}_renderMaintenanceView(e){const i=this._orderedMaintenanceBuckets(e);return r`
       <div class="device-view maintenance-view">
         ${this._renderDevicePageHeader({icon:"mdi:wrench",title:this._t("devices.maintenance"),subtitle:this._maintenanceSubtitle(e),color:this._typeColor(L),back:!0})}
 
-        ${i.length?i.map(e=>a`
+        ${i.length?i.map(e=>r`
               <div class="domain-group maintenance-area-group">
                 <div class="domain-header">
                   <div class="domain-header-title">
@@ -353,14 +353,14 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as r,b as a,A as n,r a
                   ${k(e.items,e=>e.entityId,e=>this._renderMaintenanceCard(e))}
                 </div>
               </div>
-            `):a`
+            `):r`
               <div class="maintenance-empty">
                 <ha-icon icon="mdi:check-circle-outline"></ha-icon>
                 <span>${this._t("devices.maintenance_empty")}</span>
               </div>
             `}
       </div>
-    `}_orderedMaintenanceBuckets(e){const i=new Map(this._getVisibleSortedAreas().map((e,i)=>[e.area_id,i]));return[...e.values()].sort((e,t)=>{const r=i.get(e.area.area_id)??Number.MAX_SAFE_INTEGER,a=i.get(t.area.area_id)??Number.MAX_SAFE_INTEGER;return r!==a?r-a:e.area.name.localeCompare(t.area.name)})}_renderMaintenanceCard(e){return a`
+    `}_orderedMaintenanceBuckets(e){const i=new Map(this._getVisibleSortedAreas().map((e,i)=>[e.area_id,i]));return[...e.values()].sort((e,t)=>{const a=i.get(e.area.area_id)??Number.MAX_SAFE_INTEGER,r=i.get(t.area.area_id)??Number.MAX_SAFE_INTEGER;return a!==r?a-r:e.area.name.localeCompare(t.area.name)})}_renderMaintenanceCard(e){return r`
       <button
         class="maintenance-card ${e.kind}"
         type="button"
@@ -368,31 +368,31 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as r,b as a,A as n,r a
       >
         <div class="maintenance-card-icon">
           <ha-icon icon=${e.icon}></ha-icon>
-          ${"unavailable"===e.kind?a`<span class="maintenance-alert-dot">!</span>`:n}
+          ${"unavailable"===e.kind?r`<span class="maintenance-alert-dot">!</span>`:n}
         </div>
         <div class="maintenance-card-copy">
           <div class="maintenance-card-title">${e.name}</div>
           <div class="maintenance-card-state">${e.stateLabel}</div>
         </div>
       </button>
-    `}_showMoreInfo(e){P(this,"hass-more-info",{entityId:e})}_navigateToArea(e){if(!e||"__maintenance_no_area__"===e)return;const i=window.location.pathname.split("/")[1]||"lovelace",t=new URL(window.location.href);t.pathname=`/${i}/home`,t.searchParams.set("dd_area",e),t.searchParams.delete("dd_device"),window.history.pushState(null,"",t.toString());const r=new Event("location-changed",{bubbles:!0,composed:!0});r.detail={replace:!1},window.dispatchEvent(r)}_deviceGroupDomain(e){if(["cover_openings","cover_shading","cover_gates"].includes(e))return"cover";const i=e.split(".")[0]||e;return["light","switch","fan","input_boolean","cover","lock"].includes(i)?i:void 0}_renderDeviceGlobalActions(e,i){const t=this._deviceGroupDomain(e);return t&&i.length?a`
+    `}_showMoreInfo(e){P(this,"hass-more-info",{entityId:e})}_navigateToArea(e){if(!e||"__maintenance_no_area__"===e)return;const i=window.location.pathname.split("/")[1]||"lovelace",t=new URL(window.location.href);t.pathname=`/${i}/home`,t.searchParams.set("dd_area",e),t.searchParams.delete("dd_device"),window.history.pushState(null,"",t.toString());const a=new Event("location-changed",{bubbles:!0,composed:!0});a.detail={replace:!1},window.dispatchEvent(a)}_deviceGroupDomain(e){if(["cover_openings","cover_shading","cover_gates"].includes(e))return"cover";const i=e.split(".")[0]||e;return["light","switch","fan","input_boolean","cover","lock"].includes(i)?i:void 0}_renderDeviceGlobalActions(e,i){const t=this._deviceGroupDomain(e);return t&&i.length?r`
       <div class="device-global-actions">
         ${this._renderDeviceBulkButtons(t,i,!0)}
       </div>
-    `:n}_renderDeviceRoomActions(e,i){const t=this._deviceGroupDomain(e);if(!t||!i.length)return n;if(["light","switch","fan","input_boolean"].includes(t)){const e=i.filter(e=>{const i=this._hass.states?.[e.entity_id];return i&&this._roomStyleEntityActive(i,t)}).length,r=e===i.length&&i.length>0;return a`
+    `:n}_renderDeviceRoomActions(e,i){const t=this._deviceGroupDomain(e);if(!t||!i.length)return n;if(["light","switch","fan","input_boolean"].includes(t)){const e=i.filter(e=>{const i=this._hass.states?.[e.entity_id];return i&&this._roomStyleEntityActive(i,t)}).length,a=e===i.length&&i.length>0;return r`
         <button
           class="device-room-master"
           type="button"
           style=${`--entity-color: ${_(t)};`}
-          title=${r?this._t("action.turn_off_all"):this._t("action.turn_on_all")}
-          @click=${e=>{e.stopPropagation(),this._runDeviceBulkAction(i,r?"turn_off":"turn_on")}}
+          title=${a?this._t("action.turn_off_all"):this._t("action.turn_on_all")}
+          @click=${e=>{e.stopPropagation(),this._runDeviceBulkAction(i,a?"turn_off":"turn_on")}}
         >
           <span>${e}/${i.length}</span>
-          <span class="device-room-master-track ${r?"is-on":""}"></span>
+          <span class="device-room-master-track ${a?"is-on":""}"></span>
         </button>
-      `}if("cover"===t||"lock"===t){const e=i.some(e=>{const i=this._hass.states?.[e.entity_id];return i&&this._roomStyleEntityActive(i,t)}),r="cover"===t?[{action:"open_cover",label:this._t("action.open_all"),icon:"mdi:arrow-up",active:e},{action:"close_cover",label:this._t("action.close_all"),icon:"mdi:arrow-down",active:!e}]:[{action:"lock",label:this._t("action.lock_all"),icon:"mdi:lock-outline",active:!e},{action:"unlock",label:this._t("action.unlock_all"),icon:"mdi:lock-open-variant-outline",active:e}];return a`
+      `}if("cover"===t||"lock"===t){const e=i.some(e=>{const i=this._hass.states?.[e.entity_id];return i&&this._roomStyleEntityActive(i,t)}),a="cover"===t?[{action:"open_cover",label:this._t("action.open_all"),icon:"mdi:arrow-up",active:e},{action:"close_cover",label:this._t("action.close_all"),icon:"mdi:arrow-down",active:!e}]:[{action:"lock",label:this._t("action.lock_all"),icon:"mdi:lock-outline",active:!e},{action:"unlock",label:this._t("action.unlock_all"),icon:"mdi:lock-open-variant-outline",active:e}];return r`
         <div class="device-room-master-actions domain-${t}" role="group">
-          ${r.map(e=>a`
+          ${a.map(e=>r`
             <button
               class="device-room-master-action ${e.active?"active":""}"
               type="button"
@@ -404,28 +404,28 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as r,b as a,A as n,r a
             </button>
           `)}
         </div>
-      `}return n}_renderDeviceBulkButtons(e,i,t){const r=(r,o,s)=>a`
+      `}return n}_renderDeviceBulkButtons(e,i,t){const a=(a,o,s)=>r`
       <button
         class="device-bulk-action ${t?"with-label":"icon-only"}"
         type="button"
-        title=${r}
-        aria-label=${r}
+        title=${a}
+        aria-label=${a}
         style=${`--domain-color: ${_(e)};`}
         @click=${e=>{e.stopPropagation(),this._runDeviceBulkAction(i,s)}}
       >
         <ha-icon icon=${o}></ha-icon>
-        ${t?a`<span>${r}</span>`:n}
+        ${t?r`<span>${a}</span>`:n}
       </button>
-    `;return["light","switch","fan","input_boolean"].includes(e)?a`
-        ${r(this._t("action.turn_on_all"),"mdi:power","turn_on")}
-        ${r(this._t("action.turn_off_all"),"mdi:power-off","turn_off")}
-      `:"cover"===e?a`
-        ${r(this._t("action.open_all"),"mdi:arrow-up","open_cover")}
-        ${r(this._t("action.close_all"),"mdi:arrow-down","close_cover")}
-      `:"lock"===e?a`
-        ${r(this._t("action.unlock_all"),"mdi:lock-open-variant-outline","unlock")}
-        ${r(this._t("action.lock_all"),"mdi:lock-outline","lock")}
-      `:n}async _runDeviceBulkAction(e,i){const t=new Map;for(const i of e){if(!this._hass.states?.[i.entity_id])continue;const e=i.entity_id.split(".")[0]||"",r=t.get(e)||[];r.push(i.entity_id),t.set(e,r)}try{for(const[e,r]of t)["light","switch","fan","input_boolean"].includes(e)&&["turn_on","turn_off"].includes(i)?await this._hass.callService(e,i,{entity_id:r}):"cover"===e&&["open_cover","close_cover"].includes(i)?await this._hass.callService("cover",i,{entity_id:r}):"lock"===e&&["lock","unlock"].includes(i)&&await this._hass.callService("lock",i,{entity_id:r})}catch(e){console.warn(`Failed to run device bulk action ${i}`,e)}}_renderEntityCard(e){return this._hass.states[e.entity_id]?a`
+    `;return["light","switch","fan","input_boolean"].includes(e)?r`
+        ${a(this._t("action.turn_on_all"),"mdi:power","turn_on")}
+        ${a(this._t("action.turn_off_all"),"mdi:power-off","turn_off")}
+      `:"cover"===e?r`
+        ${a(this._t("action.open_all"),"mdi:arrow-up","open_cover")}
+        ${a(this._t("action.close_all"),"mdi:arrow-down","close_cover")}
+      `:"lock"===e?r`
+        ${a(this._t("action.unlock_all"),"mdi:lock-open-variant-outline","unlock")}
+        ${a(this._t("action.lock_all"),"mdi:lock-outline","lock")}
+      `:n}async _runDeviceBulkAction(e,i){const t=new Map;for(const i of e){if(!this._hass.states?.[i.entity_id])continue;const e=i.entity_id.split(".")[0]||"",a=t.get(e)||[];a.push(i.entity_id),t.set(e,a)}try{for(const[e,a]of t)["light","switch","fan","input_boolean"].includes(e)&&["turn_on","turn_off"].includes(i)?await this._hass.callService(e,i,{entity_id:a}):"cover"===e&&["open_cover","close_cover"].includes(i)?await this._hass.callService("cover",i,{entity_id:a}):"lock"===e&&["lock","unlock"].includes(i)&&await this._hass.callService("lock",i,{entity_id:a})}catch(e){console.warn(`Failed to run device bulk action ${i}`,e)}}_renderEntityCard(e){return this._hass.states[e.entity_id]?r`
       <div class="${this._entityWrapperClass(e.entity_id)}">
         <dwains-dashboard-next-card-host
           framed
@@ -434,7 +434,7 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as r,b as a,A as n,r a
           .config=${this._entityCardConfig(e.entity_id)}
         ></dwains-dashboard-next-card-host>
       </div>
-    `:n}_isSpecialDeviceType(e){return["light","cover","cover_openings","cover_shading","cover_gates","climate","sensor"].includes(e)}_renderRoomStyleEntityCard(e,i){const t=this._hass.states[e.entity_id];if(!t)return n;const r=$({hass:this._hass,config:this.config,entity:e,surface:"devices_cards"});if(r&&!1!==r.enabled)return a`
+    `:n}_isSpecialDeviceType(e){return["light","cover","cover_openings","cover_shading","cover_gates","climate","sensor"].includes(e)}_renderRoomStyleEntityCard(e,i){const t=this._hass.states[e.entity_id];if(!t)return n;const a=$({hass:this._hass,config:this.config,entity:e,surface:"devices_cards"});if(a&&!1!==a.enabled)return r`
         <div class="entity-card-wrapper room-style-replacement-card">
           <dwains-dashboard-next-card-host
             framed
@@ -442,7 +442,7 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as r,b as a,A as n,r a
             .config=${this._entityCardConfig(e.entity_id)}
           ></dwains-dashboard-next-card-host>
         </div>
-      `;const o=e.entity_id.split(".")[0]||"unknown",s=t.attributes?.device_class,c=this._hass.entities?.[e.entity_id]?.icon||t.attributes?.icon||y(o,s)||u(o),d="person"===o?t.attributes?.entity_picture:void 0,l="person"===o&&Number.isFinite(Number(t.attributes?.latitude))&&Number.isFinite(Number(t.attributes?.longitude)),p=t.attributes?.friendly_name||this._hass.entities?.[e.entity_id]?.name||e.entity_id,h=!0===this.config?.settings?.hide_area_name_in_entity_names?D(p,i.name):p,m=this._roomStyleEntityActive(t,o),v=["unavailable","unknown"].includes(String(t.state).toLowerCase())&&!["scene","event"].includes(o),g=["switch","fan","input_boolean"].includes(o);return a`
+      `;const o=e.entity_id.split(".")[0]||"unknown",s=t.attributes?.device_class,c=this._hass.entities?.[e.entity_id]?.icon||t.attributes?.icon||y(o,s)||u(o),d="person"===o?t.attributes?.entity_picture:void 0,l="person"===o&&Number.isFinite(Number(t.attributes?.latitude))&&Number.isFinite(Number(t.attributes?.longitude)),p=t.attributes?.friendly_name||this._hass.entities?.[e.entity_id]?.name||e.entity_id,h=!0===this.config?.settings?.hide_area_name_in_entity_names?D(p,i.name):p,m=this._roomStyleEntityActive(t,o),v=["unavailable","unknown"].includes(String(t.state).toLowerCase())&&!["scene","event"].includes(o),g=["switch","fan","input_boolean"].includes(o);return r`
       <article
         class="mobile-entity-card ${"person"===o?"person-card":""} ${l?"has-location-preview":""} ${m?"is-active":"is-off"} ${v?"is-unavailable":""}"
         style=${`--entity-color: ${_(o,s)};`}
@@ -454,14 +454,14 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as r,b as a,A as n,r a
       >
         <div class="mobile-entity-main">
           <span class="mobile-entity-icon ${d?"has-entity-picture":""}">
-            ${d?a`<img class="mobile-entity-avatar" src=${d} alt=${h}>`:a`<ha-icon icon=${c}></ha-icon>`}
+            ${d?r`<img class="mobile-entity-avatar" src=${d} alt=${h}>`:r`<ha-icon icon=${c}></ha-icon>`}
           </span>
           <div class="mobile-entity-content">
             <div class="mobile-entity-name" title=${h}>${h}</div>
             <div class="mobile-entity-state ${m?"active":""}">${O(this._hass,t)}</div>
           </div>
           <div class="mobile-entity-right">
-            ${g?a`
+            ${g?r`
               <button
                 class="mobile-entity-action mobile-entity-toggle"
                 type="button"
@@ -472,7 +472,7 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as r,b as a,A as n,r a
             `:n}
           </div>
         </div>
-        ${l?a`
+        ${l?r`
           <div class="person-location-preview" aria-label=${`${h} location`}>
             <dwains-dashboard-next-card-host
               eager
@@ -482,12 +482,12 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as r,b as a,A as n,r a
           </div>
         `:n}
       </article>
-    `}_roomStyleEntityActive(e,i){const t=String(e?.state||"").toLowerCase();return"lock"===i?"unlocked"===t:"person"===i?"home"===t:"binary_sensor"===i?"on"===t:["on","open","opening","playing","active","home"].includes(t)}async _toggleRoomStyleEntity(e,i,t){const r="input_boolean"===i?"input_boolean":i;try{await this._hass.callService(r,t?"turn_off":"turn_on",{entity_id:e})}catch(i){console.warn(`Failed to toggle ${e} from Devices view`,i)}}_entitiesGridClass(e,i=!1){return["entities-grid",i?"room-style-entities-grid":"special-entities-grid","cover"===e||e.startsWith("cover_")?"cover-entities-grid":"","light"===e?"light-entities-grid":"","sensor"===e?"sensor-entities-grid":"","binary_sensor.motion"===e?"motion-entities-grid":"","todo"===e?"todo-entities-grid":""].filter(Boolean).join(" ")}_entityWrapperClass(e){const i=e.split(".")[0]||"",t=this._hass.states?.[e]?.attributes?.device_class;return["entity-card-wrapper",`${i}-entity-card`,"binary_sensor"===i&&["motion","occupancy","presence"].includes(String(t))?"motion-entity-card":""].filter(Boolean).join(" ")}_renderNewDevicesView(e){return a`
+    `}_roomStyleEntityActive(e,i){const t=String(e?.state||"").toLowerCase();return"lock"===i?"unlocked"===t:"person"===i?"home"===t:"binary_sensor"===i?"on"===t:["on","open","opening","playing","active","home"].includes(t)}async _toggleRoomStyleEntity(e,i,t){const a="input_boolean"===i?"input_boolean":i;try{await this._hass.callService(a,t?"turn_off":"turn_on",{entity_id:e})}catch(i){console.warn(`Failed to toggle ${e} from Devices view`,i)}}_entitiesGridClass(e,i=!1){return["entities-grid",i?"room-style-entities-grid":"special-entities-grid","cover"===e||e.startsWith("cover_")?"cover-entities-grid":"","light"===e?"light-entities-grid":"","sensor"===e?"sensor-entities-grid":"","binary_sensor.motion"===e?"motion-entities-grid":"","todo"===e?"todo-entities-grid":""].filter(Boolean).join(" ")}_entityWrapperClass(e){const i=e.split(".")[0]||"",t=this._hass.states?.[e]?.attributes?.device_class;return["entity-card-wrapper",`${i}-entity-card`,"binary_sensor"===i&&["motion","occupancy","presence"].includes(String(t))?"motion-entity-card":""].filter(Boolean).join(" ")}_renderNewDevicesView(e){return r`
       <div class="device-view">
         ${this._renderDevicePageHeader({icon:"mdi:new-box",title:this._t("devices.new"),subtitle:this._t("devices.new_description",{hours:E}),color:this._typeColor(B),back:!0})}
         <section class="recent-devices new-devices-view">
           <div class="recent-grid">
-            ${e.length?e.map(e=>this._renderRecentDevice(e)):a`
+            ${e.length?e.map(e=>this._renderRecentDevice(e)):r`
                   <div class="recent-empty">
                     ${this._t("devices.new_empty",{hours:E})}
                   </div>
@@ -495,7 +495,7 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as r,b as a,A as n,r a
           </div>
         </section>
       </div>
-    `}_newDevices(e=999){return this._hass&&f(this.config)?z(this._hass,this.config,e):[]}_ensureDeviceTracking(){const e=S(this._hass,this.config);e&&(this.config={...this.config,device_admission:e},this._saveDeviceAdmission(e,!0))}_renderRecentDevice(e){return a`
+    `}_newDevices(e=999){return this._hass&&f(this.config)?z(this._hass,this.config,e):[]}_ensureDeviceTracking(){const e=S(this._hass,this.config);e&&(this.config={...this.config,device_admission:e},this._saveDeviceAdmission(e,!0))}_renderRecentDevice(e){return r`
       <div class="recent-device ${e.hidden?"is-hidden":""}">
         <div class="recent-device-main">
           <div class="recent-device-icon">
@@ -509,14 +509,14 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as r,b as a,A as n,r a
               <span>${this._formatAddedAge(e.createdAtMs)}</span>
             </div>
             <div class="recent-domains">
-              ${e.domains.slice(0,4).map(e=>a`
+              ${e.domains.slice(0,4).map(e=>r`
                 <span>${x(this._hass,e)}</span>
               `)}
             </div>
           </div>
         </div>
       </div>
-    `}_getDashboardUrlPath(){const e=window.location.pathname.split("/")[1];if(e&&"lovelace"!==e)return e}_formatAddedAge(e){const i=Math.max(0,Date.now()-e),t=Math.floor(i/36e5);if(t<1)return this._t("devices.added_just_now");const r=new Intl.RelativeTimeFormat(j(this._hass),{numeric:"always"});return t<24?r.format(-t,"hour"):r.format(-Math.floor(t/24),"day")}async _saveDeviceAdmission(e,i=!1){this.config={...this.config,device_admission:e},this.requestUpdate();try{const i=this._getDashboardUrlPath(),t=i?{url_path:i}:{},r=await this._hass.callWS({type:"lovelace/config",...t}),a=r?.strategy||{};await this._hass.callWS({type:"lovelace/config/save",...t,config:{...r,strategy:{...a,device_admission:e}}})}catch(e){console.error("❌ Device visibility save failed:",e),i||alert(this._t("devices.save_visibility_failed",{error:String(e)}))}}};W.styles=s`
+    `}_getDashboardUrlPath(){const e=window.location.pathname.split("/")[1];if(e&&"lovelace"!==e)return e}_formatAddedAge(e){const i=Math.max(0,Date.now()-e),t=Math.floor(i/36e5);if(t<1)return this._t("devices.added_just_now");const a=new Intl.RelativeTimeFormat(j(this._hass),{numeric:"always"});return t<24?a.format(-t,"hour"):a.format(-Math.floor(t/24),"day")}async _saveDeviceAdmission(e,i=!1){this.config={...this.config,device_admission:e},this.requestUpdate();try{const i=this._getDashboardUrlPath(),t=i?{url_path:i}:{},a=await this._hass.callWS({type:"lovelace/config",...t}),r=a?.strategy||{};await this._hass.callWS({type:"lovelace/config/save",...t,config:{...a,strategy:{...r,device_admission:e}}})}catch(e){console.error("❌ Device visibility save failed:",e),i||alert(this._t("devices.save_visibility_failed",{error:String(e)}))}}};W.styles=s`
     :host {
       display: block;
       -webkit-tap-highlight-color: transparent;
@@ -2008,9 +2008,9 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as r,b as a,A as n,r a
     }
 
     /* Person cards keep the existing four-column layout and are only
-       enlarged vertically to roughly three times the former height. */
+       enlarged vertically to roughly three times the normal 62px tile height. */
     .room-style-device-view .mobile-entity-card.person-card.has-location-preview {
-      min-height: 378px !important;
+      min-height: 186px !important;
       align-items: stretch;
       justify-content: flex-start;
     }
@@ -2023,7 +2023,7 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as r,b as a,A as n,r a
        of that section's width, centred beneath the identity row. */
     .room-style-device-view .person-location-preview {
       width: 66.666%;
-      height: 250px;
+      height: 90px;
       margin-top: 10px;
       align-self: center;
       overflow: hidden;
