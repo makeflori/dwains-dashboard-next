@@ -1536,11 +1536,17 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       overflow: visible !important;
     }
 
-    .content.home-information-context.device-presentation-context.domain-person .entities-grid {
+    .content.home-information-context.device-presentation-context.domain-person .entities-grid,
+    .content.home-information-context.device-presentation-context.domain-person .area-sections-grid .area-section.half-room .entities-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
       align-items: start !important;
       gap: 8px !important;
       padding: 0 !important;
+    }
+
+    .content.home-information-context.device-presentation-context.domain-person dwains-dashboard-next-person-tile {
+      --dd-person-tile-location-height: 186px;
+      --dd-person-map-height: 124px;
     }
 
     .content.home-information-context.device-presentation-context .device-presentation-card {
