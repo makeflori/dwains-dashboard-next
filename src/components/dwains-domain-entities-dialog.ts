@@ -11,6 +11,7 @@ import { ddLocalize, ddLocalizePlural } from '../utils/localize';
 import { fireEvent } from './utils/fire-event';
 import { formatEntityStateWithUnit, formatValueWithUnit } from '../utils/unit-format';
 import { stripAreaNameFromEntityName } from '../utils/entity-names';
+import { resolveEntityCardConfig } from '../utils/blueprint-replacements';
 import './utils/dd-card-host';
 
 export interface DomainEntitiesDialogParams {
@@ -22,8 +23,9 @@ export interface DomainEntitiesDialogParams {
   entityIds?: string[];
   viewAllLabel?: string;
   onViewAll?: () => void;
-  /** Use the same compact entity-tile presentation as the Home/room views. */
+  /** Home-information popup; room/device presentation is chosen per caller. */
   homeInformation?: boolean;
+  homeInformationPresentation?: 'room' | 'devices';
   customTitle?: string;
   customEntities?: string[];
   customDescription?: string;
@@ -55,9 +57,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
 
   private _entityCards = new Map<string, HTMLElement>();
   private _updateInterval?: number;
-  private _mobileSheetAnimated = false;
-  private _sheetDragStartY: number | null = null;
-  private _sheetDragOffset = 0;
   private _optimisticCleanupTimer?: number;
 
   private _t(key: string, vars?: Record<string, string | number>): string {
@@ -1364,41 +1363,63 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       }
     }
 
-    /* Home-information dialogs deliberately reuse the compact room-tile language.
-       Keep this scoped so generic domain dialogs retain their existing density. */
+    /* Home-information popups mirror the current room/device presentation.
+       Desktop room tiles are compact horizontal rows; mobile room tiles use
+       the same vertical card language as the mobile room view. */
     .content.home-information-context .entities-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-      gap: 12px !important;
-      padding: 12px !important;
+      gap: 10px !important;
+      padding: 8px 10px 10px !important;
     }
 
     .content.home-information-context .area-section {
       padding: 0 !important;
-      margin-bottom: 12px !important;
-      border-radius: 14px !important;
+      margin-bottom: 10px !important;
+      border-radius: 12px !important;
     }
 
     .content.home-information-context .area-header {
-      min-height: 48px !important;
-      padding: 10px 12px 0 !important;
+      min-height: 38px !important;
+      padding: 7px 10px 0 !important;
+      gap: 8px !important;
+    }
+
+    .content.home-information-context .area-icon {
+      width: 28px !important;
+      height: 28px !important;
+      border-radius: 8px !important;
+    }
+
+    .content.home-information-context .area-icon ha-icon {
+      --mdc-icon-size: 16px;
+    }
+
+    .content.home-information-context .area-name {
+      font-size: 14px !important;
+    }
+
+    .content.home-information-context .area-master-toggle {
+      min-height: 28px;
+      padding: 3px 6px;
+      font-size: 11px;
     }
 
     .content.home-information-context .domain-entity-card {
       min-width: 0 !important;
-      min-height: 88px !important;
-      height: 88px !important;
-      padding: 12px 14px !important;
+      min-height: 72px !important;
+      height: 72px !important;
+      padding: 9px 11px !important;
       display: grid !important;
-      grid-template-columns: 56px minmax(0, 1fr) auto !important;
+      grid-template-columns: 44px minmax(0, 1fr) auto !important;
       grid-template-rows: 1fr !important;
       align-items: center !important;
-      gap: 12px !important;
-      border-radius: 12px !important;
+      gap: 9px !important;
+      border-radius: 11px !important;
       overflow: hidden !important;
       background: var(--card-background-color) !important;
       box-shadow:
         inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 7%, transparent),
-        0 5px 14px rgba(15, 23, 42, 0.045) !important;
+        0 4px 10px rgba(15, 23, 42, 0.04) !important;
     }
 
     .content.home-information-context .domain-entity-top {
@@ -1408,13 +1429,13 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     .content.home-information-context .domain-entity-icon {
       grid-column: 1 !important;
       grid-row: 1 !important;
-      width: 56px !important;
-      height: 56px !important;
-      border-radius: 12px !important;
+      width: 44px !important;
+      height: 44px !important;
+      border-radius: 10px !important;
     }
 
     .content.home-information-context .domain-entity-icon ha-icon {
-      --mdc-icon-size: 25px;
+      --mdc-icon-size: 21px;
     }
 
     .content.home-information-context .domain-entity-copy {
@@ -1424,7 +1445,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       display: flex !important;
       flex-direction: column !important;
       justify-content: center !important;
-      gap: 4px !important;
+      gap: 3px !important;
     }
 
     .content.home-information-context .domain-entity-top > :not(.domain-entity-icon) {
@@ -1440,9 +1461,9 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       text-overflow: ellipsis !important;
       white-space: nowrap !important;
       overflow-wrap: normal !important;
-      font-size: 15px !important;
+      font-size: 14px !important;
       font-weight: 850 !important;
-      line-height: 1.12 !important;
+      line-height: 1.1 !important;
     }
 
     .content.home-information-context .domain-entity-status {
@@ -1451,158 +1472,207 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       text-overflow: ellipsis !important;
       white-space: nowrap !important;
       color: var(--entity-color) !important;
-      font-size: 12px !important;
+      font-size: 11px !important;
       font-weight: 850 !important;
       line-height: 1.1 !important;
     }
 
+    /* Persons and indoor/outdoor climate deliberately use the same Lovelace
+       cards as their Devices view rather than room-view tiles. */
+    .content.home-information-context.device-presentation-context .entities-grid {
+      align-items: start !important;
+      gap: 10px !important;
+    }
+
+    .content.home-information-context.device-presentation-context .device-presentation-card {
+      min-width: 0;
+      position: relative;
+    }
+
+    .content.home-information-context.device-presentation-context .device-presentation-card.sensor-card {
+      min-height: 150px;
+    }
+
+    .content.home-information-context.device-presentation-context .device-presentation-card dwains-dashboard-next-card-host {
+      display: block;
+      width: 100%;
+    }
+
     @media (max-width: 600px) {
       :host {
-        overscroll-behavior: none;
+        --mdc-dialog-min-width: min(calc(100vw - 24px), 520px) !important;
+        --mdc-dialog-max-width: min(calc(100vw - 24px), 520px) !important;
+        --mdc-dialog-min-height: 0px !important;
+        --ha-dialog-min-height: 0px !important;
+        --mdc-dialog-max-height: calc(100dvh - 32px) !important;
+        --ha-dialog-max-height: calc(100dvh - 32px) !important;
+        --vertical-align-dialog: center !important;
+        --dialog-surface-margin-top: 0 !important;
+        --dialog-container-padding: 12px !important;
+      }
+
+      ha-dialog {
+        margin: auto !important;
+        height: auto !important;
+        max-height: calc(100dvh - 32px) !important;
+        border-radius: 16px !important;
+        --ha-dialog-border-radius: 16px;
+        --ha-dialog-show-duration: 180ms;
+        --show-duration: 180ms;
+      }
+
+      ha-dialog .mdc-dialog__surface {
+        border-radius: 16px !important;
       }
 
       .dd-domain-header {
-        touch-action: pan-x !important;
+        padding: 11px 12px !important;
+        touch-action: auto !important;
       }
 
+      .dd-domain-header .sheet-handle,
       .sheet-handle {
-        touch-action: none !important;
+        display: none !important;
+      }
+
+      .dd-domain-header-line {
+        align-items: center !important;
+        gap: 9px !important;
+      }
+
+      .dd-domain-header-line .dialog-heading-copy,
+      .dialog-heading-copy {
+        height: 52px;
+        min-height: 52px;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        justify-content: center !important;
+        gap: 4px !important;
+        flex-wrap: nowrap !important;
+      }
+
+      .dd-domain-header .dialog-title-icon,
+      .dialog-title-icon {
+        flex: 0 0 52px !important;
+        width: 52px !important;
+        height: 52px !important;
+        border-radius: 11px !important;
+      }
+
+      .dd-domain-header .dialog-title-icon ha-icon,
+      .dialog-title-icon ha-icon {
+        --mdc-icon-size: 27px !important;
+      }
+
+      .dd-domain-header-line .dialog-title-text,
+      .dialog-title-text {
+        font-size: 18px !important;
+        line-height: 20px !important;
+      }
+
+      .dd-domain-header .dialog-header-destination,
+      .dialog-header-destination {
+        min-height: 28px !important;
+        height: 28px !important;
+        padding: 0 9px !important;
+        font-size: 10px !important;
+        line-height: 1 !important;
+        white-space: nowrap !important;
       }
 
       .content {
+        max-height: calc(100dvh - 132px) !important;
         overscroll-behavior-y: contain;
       }
 
       .content.home-information-context {
-        padding: 10px 10px calc(14px + env(safe-area-inset-bottom, 0px)) !important;
+        padding: 10px !important;
       }
 
       .content.home-information-context .area-section {
         margin-bottom: 10px !important;
         padding: 0 !important;
+        border-radius: 12px !important;
       }
 
       .content.home-information-context .area-header {
-        min-height: 42px !important;
-        padding: 8px 10px 0 !important;
-        gap: 8px !important;
+        min-height: 40px !important;
+        padding: 7px 9px 0 !important;
       }
 
       .content.home-information-context .entities-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
         gap: 8px !important;
-        padding: 8px 10px 10px !important;
+        padding: 8px 9px 9px !important;
       }
 
-      .content.home-information-context .domain-entity-card {
-        min-height: 76px !important;
-        height: 76px !important;
-        padding: 9px 10px !important;
-        grid-template-columns: 42px minmax(0, 1fr) auto !important;
+      /* Mobile room-view language: vertical cards, not the desktop row tile. */
+      .content.home-information-context:not(.device-presentation-context) .domain-entity-card {
+        min-height: 128px !important;
+        height: auto !important;
+        padding: 12px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
         gap: 8px !important;
-        border-radius: 11px !important;
-      }
-
-      .content.home-information-context .domain-entity-icon {
-        width: 42px !important;
-        height: 42px !important;
         border-radius: 10px !important;
       }
 
-      .content.home-information-context .domain-entity-icon ha-icon {
-        --mdc-icon-size: 21px;
+      .content.home-information-context:not(.device-presentation-context) .domain-entity-top {
+        display: flex !important;
+        align-items: flex-start !important;
+        justify-content: space-between !important;
+        gap: 8px !important;
       }
 
-      .content.home-information-context .domain-entity-name {
-        font-size: 13px !important;
-        line-height: 1.1 !important;
+      .content.home-information-context:not(.device-presentation-context) .domain-entity-icon {
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 11px !important;
       }
 
-      .content.home-information-context .domain-entity-status {
+      .content.home-information-context:not(.device-presentation-context) .domain-entity-icon ha-icon {
+        --mdc-icon-size: 20px !important;
+      }
+
+      .content.home-information-context:not(.device-presentation-context) .domain-entity-copy {
+        display: block !important;
+        min-width: 0 !important;
+      }
+
+      .content.home-information-context:not(.device-presentation-context) .domain-entity-name {
+        margin-top: 3px !important;
+        font-size: 15px !important;
+        font-weight: 900 !important;
+        line-height: 1.08 !important;
+        white-space: normal !important;
+        overflow-wrap: anywhere !important;
+        display: -webkit-box !important;
+        -webkit-line-clamp: 2 !important;
+        -webkit-box-orient: vertical !important;
+      }
+
+      .content.home-information-context:not(.device-presentation-context) .domain-entity-status {
+        margin-top: 5px !important;
         font-size: 11px !important;
+        font-weight: 750 !important;
+        color: color-mix(in srgb, var(--primary-text-color) 46%, transparent) !important;
+      }
+
+      .content.home-information-context.device-presentation-context .entities-grid {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+      }
+
+      .content.home-information-context.device-presentation-context .device-presentation-card.sensor-card {
+        min-height: 150px;
       }
     }
   `;
 
-  private _onSheetPointerDown = (event: PointerEvent): void => {
-    if (event.pointerType === 'mouse' && event.button !== 0) return;
-    event.preventDefault();
-    event.stopPropagation();
-    this._sheetDragStartY = event.clientY;
-    this._sheetDragOffset = 0;
-    const panel = this._dialogPanel();
-    panel?.getAnimations().forEach(animation => animation.cancel());
-    if (panel) {
-      this._prepareMobileSheetPanel(panel);
-      panel.style.transition = 'none';
-    }
-    (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
-  };
-
-  private _onSheetPointerMove = (event: PointerEvent): void => {
-    if (this._sheetDragStartY === null) return;
-    event.preventDefault();
-    event.stopPropagation();
-    this._sheetDragOffset = Math.max(0, event.clientY - this._sheetDragStartY);
-    const panel = this._dialogPanel();
-    if (panel) panel.style.transform = `translate3d(0, ${this._sheetDragOffset}px, 0)`;
-  };
-
-  private _onSheetPointerEnd = (event: PointerEvent): void => {
-    if (this._sheetDragStartY === null) return;
-    event.preventDefault();
-    event.stopPropagation();
-    this._finishSheetDrag();
-  };
-
-  private _finishSheetDrag(): void {
-    if (this._sheetDragStartY === null) return;
-    const offset = this._sheetDragOffset;
-    const shouldClose = offset >= 90;
-    this._sheetDragStartY = null;
-    this._sheetDragOffset = 0;
-
-    const panel = this._dialogPanel();
-    if (!panel) {
-      if (shouldClose) this.closeDialog();
-      return;
-    }
-
-    panel.style.transition = '';
-    panel.getAnimations().forEach(animation => animation.cancel());
-
-    if (shouldClose && panel.animate) {
-      const animation = panel.animate(
-        [
-          { transform: `translate3d(0, ${offset}px, 0)` },
-          { transform: 'translate3d(0, 100dvh, 0)' },
-        ],
-        { duration: 170, easing: 'cubic-bezier(0.4, 0, 1, 1)' }
-      );
-      animation.addEventListener('finish', () => this.closeDialog(), { once: true });
-      return;
-    }
-
-    if (panel.animate) {
-      const animation = panel.animate(
-        [
-          { transform: `translate3d(0, ${offset}px, 0)` },
-          { transform: 'translate3d(0, 0, 0)' },
-        ],
-        { duration: 190, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
-      );
-      animation.addEventListener('finish', () => {
-        panel.style.transform = '';
-      }, { once: true });
-    } else {
-      panel.style.transform = '';
-    }
-  }
-
   public async showDialog(params: DomainEntitiesDialogParams): Promise<void> {
     this._params = params;
     this._loading = true;
-    this._mobileSheetAnimated = false;
     await this._loadEntities();
   }
 
@@ -1611,9 +1681,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     this._groupedEntities = {};
     this._optimisticEntityStates = {};
     this._entityCards.clear();
-    this._mobileSheetAnimated = false;
-    this._sheetDragStartY = null;
-    this._sheetDragOffset = 0;
     if (this._updateInterval) {
       clearInterval(this._updateInterval);
       this._updateInterval = undefined;
@@ -1633,7 +1700,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       this._updateEntityCards();
     }
 
-    this._animateMobileSheetIn();
   }
 
   disconnectedCallback(): void {
@@ -1642,65 +1708,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       window.clearTimeout(this._optimisticCleanupTimer);
       this._optimisticCleanupTimer = undefined;
     }
-  }
-
-  private _dialogPanel(): HTMLElement | null {
-    const haDialog = this.renderRoot.querySelector('ha-dialog') as HTMLElement | null;
-    const haDialogRoot = haDialog?.shadowRoot;
-    const waDialog = haDialogRoot?.querySelector('wa-dialog') as HTMLElement | null;
-    const waDialogRoot = waDialog?.shadowRoot;
-    return (
-      waDialogRoot?.querySelector('[part~="panel"]') ||
-      waDialogRoot?.querySelector('dialog') ||
-      haDialogRoot?.querySelector('.mdc-dialog__surface') ||
-      haDialogRoot?.querySelector('[part~="surface"]')
-    ) as HTMLElement | null;
-  }
-
-  private _prepareMobileSheetPanel(panel: HTMLElement): void {
-    panel.style.position = 'fixed';
-    panel.style.inset = 'auto 0 0 0';
-    panel.style.margin = '0 auto';
-    panel.style.width = 'min(100vw, 600px)';
-    panel.style.maxWidth = '600px';
-    panel.style.maxHeight = 'calc(100dvh - 54px)';
-    panel.style.boxSizing = 'border-box';
-    panel.style.borderRadius = '24px 24px 0 0';
-    panel.style.transformOrigin = 'bottom center';
-  }
-
-  private _animateMobileSheetIn(): void {
-    if (
-      this._mobileSheetAnimated ||
-      !this._params ||
-      typeof window === 'undefined' ||
-      !window.matchMedia('(max-width: 600px)').matches
-    ) {
-      return;
-    }
-
-    requestAnimationFrame(() => {
-      const panel = this._dialogPanel();
-      if (!panel) return;
-
-      this._prepareMobileSheetPanel(panel);
-      this._mobileSheetAnimated = true;
-
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !panel.animate) {
-        return;
-      }
-
-      panel.animate(
-        [
-          { transform: 'translate3d(0, 100%, 0)', opacity: 0.98 },
-          { transform: 'translate3d(0, 0, 0)', opacity: 1 },
-        ],
-        {
-          duration: 280,
-          easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
-        }
-      );
-    });
   }
 
   private async _loadEntities(): Promise<void> {
@@ -1912,14 +1919,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
         hideActions
       >
         <div slot="header" class="dd-domain-header">
-          <div class="sheet-handle" role="button" tabindex="0"
-            aria-label=${this._t('common.close')}
-            @pointerdown=${this._onSheetPointerDown}
-            @pointermove=${this._onSheetPointerMove}
-            @pointerup=${this._onSheetPointerEnd}
-            @pointercancel=${this._onSheetPointerEnd}
-            @lostpointercapture=${this._onSheetPointerEnd}
-          ></div>
           <div class="dd-domain-header-line" style=${`--dialog-accent: ${headerColor};`}>
             <span class="dialog-title-icon" aria-hidden="true"><ha-icon icon=${headerIcon}></ha-icon></span>
             <span class="dialog-heading-copy">
@@ -1939,7 +1938,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
           </div>
         </div>
 
-        <div class="content ${this._params?.areaId ? 'room-context' : ''} ${this._params?.customEntities ? 'custom-entities-context' : ''} ${this._params?.homeInformation ? 'home-information-context' : ''}">
+        <div class="content ${this._params?.areaId ? 'room-context' : ''} ${this._params?.customEntities ? 'custom-entities-context' : ''} ${this._params?.homeInformation ? 'home-information-context' : ''} ${this._params?.homeInformationPresentation === 'devices' ? 'device-presentation-context' : ''}">
           ${this._loading
             ? html`<div class="loading">${this._t('common.loading')}</div>`
             : this._renderContent()
@@ -2135,6 +2134,23 @@ export class DwainsDomainEntitiesDialog extends LitElement {
   private _renderEntityCard(entity: EntityConfig) {
     const rawState = this.hass.states[entity.entity_id];
     if (!rawState) return nothing;
+
+    if (this._params?.homeInformationPresentation === 'devices') {
+      const domain = entity.entity_id.split('.')[0] || '';
+      return html`
+        <div class="device-presentation-card ${domain === 'sensor' ? 'sensor-card' : ''}">
+          <dwains-dashboard-next-card-host
+            .hass=${this.hass}
+            .config=${resolveEntityCardConfig({
+              hass: this.hass,
+              config: this._params.config,
+              entity: entity.entity_id,
+              surface: 'devices_cards',
+            })}
+          ></dwains-dashboard-next-card-host>
+        </div>
+      `;
+    }
 
     const state = this._getEffectiveEntityState(rawState);
     const domain = entity.entity_id.split('.')[0] || 'unknown';
