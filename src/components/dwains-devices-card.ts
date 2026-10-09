@@ -1558,7 +1558,7 @@ export class DwainsDevicesCard extends LitElement {
 
     return html`
       <article
-        class="room-style-entity-card ${active ? 'is-active' : 'is-off'} ${unavailable ? 'is-unavailable' : ''}"
+        class="mobile-entity-card ${active ? 'is-active' : 'is-off'} ${unavailable ? 'is-unavailable' : ''}"
         style=${`--entity-color: ${getDomainColor(domain, deviceClass)};`}
         role="button"
         tabindex="0"
@@ -1570,25 +1570,27 @@ export class DwainsDevicesCard extends LitElement {
           this._showMoreInfo(entity.entity_id);
         }}
       >
-        <div class="room-style-entity-top">
-          <span class="room-style-entity-icon"><ha-icon icon=${icon}></ha-icon></span>
-          ${canToggle ? html`
-            <button
-              class="room-style-entity-toggle"
-              type="button"
-              aria-label=${active ? this._t('action.turn_off') : this._t('action.turn_on')}
-              ?disabled=${unavailable}
-              @click=${(event: Event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                void this._toggleRoomStyleEntity(entity.entity_id, domain, active);
-              }}
-            ></button>
-          ` : nothing}
-        </div>
-        <div class="room-style-entity-copy">
-          <div class="room-style-entity-name" title=${name}>${name}</div>
-          <div class="room-style-entity-state">${formatEntityStateWithUnit(this._hass, state)}</div>
+        <div class="mobile-entity-main">
+          <span class="mobile-entity-icon"><ha-icon icon=${icon}></ha-icon></span>
+          <div class="mobile-entity-content">
+            <div class="mobile-entity-name" title=${name}>${name}</div>
+            <div class="mobile-entity-state ${active ? 'active' : ''}">${formatEntityStateWithUnit(this._hass, state)}</div>
+          </div>
+          <div class="mobile-entity-right">
+            ${canToggle ? html`
+              <button
+                class="mobile-entity-action mobile-entity-toggle"
+                type="button"
+                aria-label=${active ? this._t('action.turn_off') : this._t('action.turn_on')}
+                ?disabled=${unavailable}
+                @click=${(event: Event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  void this._toggleRoomStyleEntity(entity.entity_id, domain, active);
+                }}
+              ></button>
+            ` : nothing}
+          </div>
         </div>
       </article>
     `;
@@ -2980,133 +2982,162 @@ export class DwainsDevicesCard extends LitElement {
     }
 
     .room-style-entities-grid {
-      grid-template-columns: repeat(auto-fill, minmax(178px, 1fr));
-      gap: 14px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       align-items: stretch;
+      gap: 8px;
     }
 
-    .room-style-entity-card {
+    .room-style-device-view .mobile-entity-card {
       --entity-color: var(--primary-color);
+      width: 100% !important;
+      min-width: 0 !important;
+      min-height: 62px !important;
+      height: auto !important;
+      margin: 0 !important;
+      padding: 8px 10px !important;
       box-sizing: border-box;
-      width: 100%;
-      min-width: 0;
-      min-height: 152px;
-      padding: 16px;
-      display: flex;
+      display: flex !important;
       flex-direction: column;
-      justify-content: space-between;
+      justify-content: center;
       overflow: hidden;
-      border: 1px solid color-mix(in srgb, var(--primary-text-color) 7%, transparent);
-      border-radius: 12px;
+      border: 1px solid color-mix(in srgb, var(--primary-text-color) 6%, transparent);
+      border-radius: 8px;
       background: var(--card-background-color);
       color: var(--primary-text-color);
       font: inherit;
       text-align: left;
+      box-shadow: 0 3px 9px rgba(15, 23, 42, 0.035);
       cursor: pointer;
-      box-shadow: 0 5px 14px rgba(15, 23, 42, 0.035);
-      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
     }
 
-    .room-style-entity-card:hover {
+    .room-style-device-view .mobile-entity-card:hover {
       transform: translateY(-1px);
-      border-color: color-mix(in srgb, var(--entity-color) 20%, var(--divider-color));
-      box-shadow: 0 12px 24px rgba(15, 23, 42, 0.07);
+      border-color: color-mix(in srgb, var(--primary-color) 14%, transparent);
+      box-shadow: 0 6px 14px rgba(15, 23, 42, 0.055);
     }
 
-    .room-style-entity-card.is-active {
-      border-color: color-mix(in srgb, var(--entity-color) 22%, transparent);
-    }
-
-    .room-style-entity-card.is-unavailable {
+    .room-style-device-view .mobile-entity-card.is-unavailable {
       opacity: .62;
     }
 
-    .room-style-entity-top {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 10px;
+    .room-style-device-view .mobile-entity-main {
+      width: 100%;
+      min-width: 0;
+      display: grid;
+      grid-template-columns: 36px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 9px;
     }
 
-    .room-style-entity-icon {
-      width: 38px;
-      height: 38px;
+    .room-style-device-view .mobile-entity-icon {
+      width: 36px;
+      height: 36px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      flex: 0 0 38px;
-      border-radius: 11px;
+      flex: 0 0 auto;
+      border-radius: 8px;
       color: var(--entity-color);
       background: color-mix(in srgb, var(--entity-color) 13%, transparent);
     }
 
-    .room-style-entity-icon ha-icon {
-      --mdc-icon-size: 21px;
+    .room-style-device-view .mobile-entity-icon ha-icon {
+      --mdc-icon-size: 20px;
     }
 
-    .room-style-entity-toggle {
-      width: 38px;
-      height: 22px;
-      padding: 0;
-      display: inline-flex;
-      justify-content: flex-start;
-      align-items: center;
-      flex: 0 0 auto;
-      border: 0;
-      border-radius: 999px;
-      background: color-mix(in srgb, var(--secondary-background-color) 80%, #ffffff);
-      box-shadow: inset 0 0 0 1px rgba(15,23,42,.07), 0 4px 10px rgba(15,23,42,.08);
-      cursor: pointer;
-    }
-
-    .room-style-entity-toggle::before {
-      content: '';
-      width: 18px;
-      height: 18px;
-      margin-left: 2px;
-      border-radius: 999px;
-      background: #fff;
-      box-shadow: 0 2px 7px rgba(15,23,42,.2);
-      transition: transform .18s ease;
-    }
-
-    .room-style-entity-card.is-active .room-style-entity-toggle {
-      background: var(--entity-color);
-    }
-
-    .room-style-entity-card.is-active .room-style-entity-toggle::before {
-      transform: translateX(16px);
-    }
-
-    .room-style-entity-copy {
+    .room-style-device-view .mobile-entity-content {
       min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 2px;
     }
 
-    .room-style-entity-name {
-      margin-top: 3px;
+    .room-style-device-view .mobile-entity-name {
+      overflow: hidden;
       color: var(--primary-text-color);
-      font-size: 15px;
-      font-weight: 900;
-      line-height: 1.08;
-      overflow: hidden;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-    }
-
-    .room-style-entity-state {
-      margin-top: 5px;
-      color: color-mix(in srgb, var(--primary-text-color) 46%, transparent);
-      font-size: 11px;
-      font-weight: 750;
-      line-height: 1.1;
-      overflow: hidden;
+      font-size: 12px;
+      font-weight: 850;
+      line-height: 1.15;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
+    .room-style-device-view .mobile-entity-state {
+      overflow: hidden;
+      color: var(--secondary-text-color);
+      font-size: 10px;
+      font-weight: 650;
+      line-height: 1.1;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .room-style-device-view .mobile-entity-state.active {
+      color: var(--entity-color);
+    }
+
+    .room-style-device-view .mobile-entity-right {
+      min-width: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 5px;
+    }
+
+    .room-style-device-view .mobile-entity-action {
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      border: 0;
+      cursor: pointer;
+      transition: background-color .18s ease, color .18s ease, transform .18s ease, opacity .18s ease;
+    }
+
+    .room-style-device-view .mobile-entity-action:active {
+      transform: scale(.94);
+    }
+
+    .room-style-device-view .mobile-entity-action:disabled {
+      opacity: .36;
+      cursor: not-allowed;
+    }
+
+    .room-style-device-view .mobile-entity-toggle {
+      width: 38px;
+      height: 22px;
+      justify-content: flex-start;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--secondary-background-color) 80%, #ffffff);
+      box-shadow:
+        inset 0 0 0 1px rgba(15, 23, 42, 0.07),
+        0 4px 10px rgba(15, 23, 42, 0.08);
+    }
+
+    .room-style-device-view .mobile-entity-toggle::before {
+      content: "";
+      width: 18px;
+      height: 18px;
+      margin-left: 2px;
+      border-radius: 999px;
+      background: #ffffff;
+      box-shadow: 0 2px 7px rgba(15, 23, 42, 0.2);
+      transition: transform .18s ease;
+    }
+
+    .room-style-device-view .mobile-entity-card.is-active .mobile-entity-toggle {
+      background: var(--entity-color);
+    }
+
+    .room-style-device-view .mobile-entity-card.is-active .mobile-entity-toggle::before {
+      transform: translateX(16px);
+    }
+
     .room-style-replacement-card {
-      min-height: 152px;
+      min-height: 62px;
     }
 
     .cover-entity-card {
@@ -3404,24 +3435,23 @@ export class DwainsDevicesCard extends LitElement {
       }
 
       .room-style-device-view .room-style-entities-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+
+      .room-style-device-view .mobile-entity-card {
+        min-height: 58px !important;
+        padding: 7px 9px !important;
+      }
+
+      .room-style-device-view .mobile-entity-main {
+        grid-template-columns: 34px minmax(0, 1fr) auto;
         gap: 8px;
       }
 
-      .room-style-device-view .room-style-entity-card {
-        min-height: 138px;
-        padding: 12px;
-        border-radius: 10px;
-      }
-
-      .room-style-device-view .room-style-entity-icon {
+      .room-style-device-view .mobile-entity-icon {
         width: 34px;
         height: 34px;
-        flex-basis: 34px;
-      }
-
-      .room-style-device-view .room-style-entity-icon ha-icon {
-        --mdc-icon-size: 20px;
       }
 
       .room-style-device-view .domain-group,
@@ -3607,6 +3637,12 @@ export class DwainsDevicesCard extends LitElement {
       }
     }
     /* Compact device headers and stable desktop grids */
+    @media (max-width: 1180px) and (min-width: 769px) {
+      .room-style-device-view .room-style-entities-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
     @media (min-width: 769px) {
       .content-area {
         scrollbar-gutter: stable;
@@ -3675,7 +3711,7 @@ export class DwainsDevicesCard extends LitElement {
       }
 
       .room-style-device-view .room-style-entities-grid {
-        grid-template-columns: repeat(auto-fill, minmax(178px, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
       }
 
       .entities-grid.todo-entities-grid {
