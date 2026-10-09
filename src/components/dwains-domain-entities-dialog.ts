@@ -1074,6 +1074,23 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       }
     }
 
+    .area-master-toggle {
+      display: inline-flex; align-items: center; gap: 7px; flex: 0 0 auto;
+      padding: 4px 7px; border: 1px solid var(--divider-color);
+      border-radius: 999px; background: var(--card-background-color);
+      color: var(--secondary-text-color); font: inherit; font-size: 12px;
+      font-weight: 750; cursor: pointer;
+    }
+    .area-master-track {
+      width: 31px; height: 18px; position: relative; display: inline-block;
+      border-radius: 999px; background: color-mix(in srgb,var(--primary-text-color) 20%,transparent);
+    }
+    .area-master-track::after {
+      content: ''; position:absolute; top:2px; left:2px; width:14px; height:14px;
+      border-radius: 50%; background: #fff; transition:transform .18s;
+    }
+    .area-master-track.is-on { background: var(--entity-color); }
+    .area-master-track.is-on::after { transform:translateX(13px); }
     /* Room-view alignment: shared layout language for room groups and entity rows. */
     .dialog-global-actions .domain-actions {
       justify-content: center;
@@ -1799,6 +1816,14 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     // Preserve area context even when there is only one room: entity tiles omit room names.
     // Persons are not area-grouped, and the dialog title already identifies that domain.
     const showAreaHeader = this._params?.domain !== 'person';
+    const kind = this._params?.domain || '';
+    const bulkToggle = ['light', 'switch', 'fan', 'input_boolean'].includes(kind);
+    const activeCount = group.entities.filter(entity => {
+      const state = this.hass.states[entity.entity_id];
+      return state && this._isEntityActiveForUi(state, kind);
+    }).length;
+    const allOn = activeCount === group.entities.length;
+    const roomEntityIds = group.entities.map(entity => entity.entity_id);
 
     return html`
       <div class="area-section">
@@ -1809,7 +1834,20 @@ export class DwainsDomainEntitiesDialog extends LitElement {
             </div>
           ` : nothing}
           <div class="area-name">${group.areaName}</div>
-          <div class="entity-count">${group.entities.length}</div>
+          ${bulkToggle ? html`
+            <button class="area-master-toggle" type="button"
+              style=${`--entity-color: ${this._entityColor(kind)};`}
+              title=${allOn ? this._t('action.turn_off_all') : this._t('action.turn_on_all')}
+              @click=${(event: Event) => {
+                event.stopPropagation();
+                void this._runBulkDomainAction(roomEntityIds,
+                  allOn ? 'turn_off' : 'turn_on',
+                  allOn ? this._t('action.turn_off_all') : this._t('action.turn_on_all'));
+              }}>
+              <span>${activeCount}/${group.entities.length}</span>
+              <span class="area-master-track ${allOn ? 'is-on' : ''}"></span>
+            </button>
+          ` : html`<div class="entity-count">${group.entities.length}</div>`}
         </div>` : nothing}
         <div class="entities-grid">
           ${repeat(
