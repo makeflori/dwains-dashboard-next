@@ -3615,9 +3615,9 @@ export class DwainsDevicesCard extends LitElement {
     }
 
     /* Person cards keep the existing four-column layout and are only
-       enlarged vertically to roughly three times the former height. */
+       enlarged vertically to roughly three times the normal 62px tile height. */
     .room-style-device-view .mobile-entity-card.person-card.has-location-preview {
-      min-height: 378px !important;
+      min-height: 186px !important;
       align-items: stretch;
       justify-content: flex-start;
     }
@@ -3630,7 +3630,7 @@ export class DwainsDevicesCard extends LitElement {
        of that section's width, centred beneath the identity row. */
     .room-style-device-view .person-location-preview {
       width: 66.666%;
-      height: 250px;
+      height: 90px;
       margin-top: 10px;
       align-self: center;
       overflow: hidden;
