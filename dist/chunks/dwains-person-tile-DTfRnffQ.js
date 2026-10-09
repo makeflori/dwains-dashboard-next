@@ -1,4 +1,4 @@
-import{_ as t,n as e,t as o}from"./state-Bpx-nWN3.js";import{r as i,a as r,i as s,A as a,b as n}from"./lit-element-CR7MDbd3.js";import{j as p,c as d}from"./entity-names-D18PC6Vx.js";import{a as l}from"./dwains-bottom-nav-KPIe-ECs.js";let c=class extends s{constructor(){super(...arguments),this.entityId="",this.displayName=""}render(){const t=this.hass?.states?.[this.entityId];if(!t)return a;const e=this.displayName||t.attributes?.friendly_name||this.entityId,o=t.attributes?.entity_picture,i=Number.isFinite(Number(t.attributes?.latitude))&&Number.isFinite(Number(t.attributes?.longitude)),r="home"===String(t.state||"").toLowerCase(),s=["unavailable","unknown"].includes(String(t.state||"").toLowerCase()),p=this.hass?.entities?.[this.entityId]?.icon||t.attributes?.icon||d("person");return n`
+import{_ as t,n as e,t as o}from"./state-Bpx-nWN3.js";import{r as i,a as r,i as s,A as a,b as n}from"./lit-element-CR7MDbd3.js";import{j as p,c as d}from"./entity-names-CyRWqhm1.js";import{a as l}from"./dwains-bottom-nav-BtqvtOVX.js";let c=class extends s{constructor(){super(...arguments),this.entityId="",this.displayName=""}render(){const t=this.hass?.states?.[this.entityId];if(!t)return a;const e=this.displayName||t.attributes?.friendly_name||this.entityId,o=t.attributes?.entity_picture,i=Number.isFinite(Number(t.attributes?.latitude))&&Number.isFinite(Number(t.attributes?.longitude)),r="home"===String(t.state||"").toLowerCase(),s=["unavailable","unknown"].includes(String(t.state||"").toLowerCase()),p=this.hass?.entities?.[this.entityId]?.icon||t.attributes?.icon||d("person");return n`
       <article class="person-tile ${i?"has-location":""} ${r?"is-active":"is-off"} ${s?"is-unavailable":""}">
         <div class="person-main">
           <span class="person-icon ${o?"has-picture":""}">
@@ -49,7 +49,7 @@ import{_ as t,n as e,t as o}from"./state-Bpx-nWN3.js";import{r as i,a as r,i as 
     }
 
     .person-tile.has-location {
-      height: 186px;
+      height: var(--dd-person-tile-location-height, 248px);
       justify-content: flex-start;
     }
 
@@ -147,7 +147,7 @@ import{_ as t,n as e,t as o}from"./state-Bpx-nWN3.js";import{r as i,a as r,i as 
 
     .person-map {
       width: 100%;
-      height: 124px;
+      height: var(--dd-person-map-height, 186px);
       min-height: 0;
       margin-top: 10px;
       overflow: hidden;
