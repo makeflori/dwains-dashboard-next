@@ -1,4 +1,4 @@
-import { LitElement, css, html, nothing } from 'lit';
+import { LitElement, css, html, nothing, unsafeCSS } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
 import type { HomeAssistant } from '../types/home-assistant';
@@ -67,7 +67,7 @@ export class DwainsDashboardNextPersonTile extends LitElement {
       display: block;
       min-width: 0;
       width: 100%;
-      --person-color: ${getDomainColor('person')};
+      --person-color: ${unsafeCSS(getDomainColor('person'))};
     }
 
     .person-tile {
