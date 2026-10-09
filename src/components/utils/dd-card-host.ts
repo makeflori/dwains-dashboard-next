@@ -15,12 +15,15 @@ export class DwainsCardHost extends HTMLElement {
   private _frameRequest = 0;
 
   static get observedAttributes() {
-    return ['framed'];
+    return ['framed', 'strip-card-surface', 'refresh-layout'];
   }
 
   attributeChangedCallback() {
     this._applyFrame();
-    if (this._child) void this._frameChild(this._child);
+    if (this._child) {
+      void this._frameChild(this._child);
+      this._refreshChildLayout(this._child);
+    }
   }
 
   set hass(value: any) {
@@ -95,7 +98,7 @@ export class DwainsCardHost extends HTMLElement {
   private async _frameChild(child: any) {
     this._clearFrameChild();
     const request = this._frameRequest;
-    if (!this.hasAttribute('framed')) return;
+    if (!this.hasAttribute('framed') && !this.hasAttribute('strip-card-surface')) return;
     // Lit cards create their shadow content asynchronously after mounting.
     await child.updateComplete;
     if (request !== this._frameRequest || this._child !== child || !this.isConnected || !this.hasAttribute('framed')) return;
@@ -121,6 +124,47 @@ export class DwainsCardHost extends HTMLElement {
     this._frameObserver = new MutationObserver(normalize);
     this._frameObserver.observe(root, { childList: true, subtree: true });
     normalize();
+  }
+
+  private _refreshChildLayout(child: any) {
+    if (!this.hasAttribute('refresh-layout') || !child) return;
+
+    const refresh = () => {
+      if (!this.isConnected || this._child !== child) return;
+
+      try {
+        if (this._hass) child.hass = this._hass;
+        child.requestUpdate?.();
+
+        const roots: any[] = [child, child.shadowRoot].filter(Boolean);
+        for (const root of roots) {
+          const map = root?.querySelector?.('ha-map') as any;
+          const mapCandidates = [
+            map,
+            map?.map,
+            map?._map,
+            (child as any).map,
+            (child as any)._map,
+          ].filter(Boolean);
+
+          for (const candidate of mapCandidates) {
+            candidate.invalidateSize?.();
+          }
+
+          map?.fitMap?.();
+          map?._fitMap?.();
+        }
+
+        (child as any).fitMap?.();
+        (child as any)._fitMap?.();
+        window.dispatchEvent(new Event('resize'));
+      } catch {
+        // Layout refresh is best-effort for native HA cards.
+      }
+    };
+
+    requestAnimationFrame(() => requestAnimationFrame(refresh));
+    window.setTimeout(refresh, 160);
   }
 
   private _renderWhenVisible() {
@@ -207,6 +251,7 @@ export class DwainsCardHost extends HTMLElement {
       this._renderedConfigKey = configKey;
       this.replaceChildren(child);
       void this._frameChild(child);
+      this._refreshChildLayout(child);
     } catch (e) {
       if (request !== this._renderRequest || !this.isConnected) return;
       // eslint-disable-next-line no-console
