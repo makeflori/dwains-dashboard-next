@@ -1074,6 +1074,72 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       }
     }
 
+    /* Room-view alignment: shared layout language for room groups and entity rows. */
+    .dialog-global-actions .domain-actions {
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 0 0 14px;
+    }
+    .area-section {
+      border-radius: 14px !important;
+      padding: 12px !important;
+      background: var(--card-background-color) !important;
+    }
+    .area-header { padding: 0 0 10px !important; min-height: 40px !important; }
+    .entities-grid {
+      padding: 0 !important;
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+      gap: 10px !important;
+    }
+    .domain-entity-card {
+      display: grid !important;
+      grid-template-columns: 44px minmax(0,1fr) auto !important;
+      grid-template-rows: auto !important;
+      align-items: center !important;
+      gap: 10px !important;
+      min-height: 82px !important;
+      height: auto !important;
+      padding: 12px !important;
+    }
+    .domain-entity-top { display: contents !important; }
+    .domain-entity-icon { grid-column:1 !important; grid-row:1 !important; }
+    .domain-entity-copy { grid-column:2 !important; grid-row:1 !important; }
+    .domain-entity-top > :not(.domain-entity-icon) {
+      grid-column:3 !important; grid-row:1 !important; justify-self:end !important;
+    }
+    @media (min-width: 601px) and (max-width: 1000px) {
+      .entities-grid { grid-template-columns: repeat(2,minmax(0,1fr)) !important; }
+    }
+    @media (max-width: 600px) {
+      :host {
+        --vertical-align-dialog: flex-end !important;
+        --dialog-surface-margin-top: auto !important;
+      }
+      ha-dialog { --vertical-align-dialog: flex-end; }
+      .entities-grid { grid-template-columns: 1fr !important; }
+      .domain-entity-card { min-height: 68px !important; }
+      ha-dialog-header {
+        min-height: 0 !important;
+        padding: 24px 14px 14px !important;
+        touch-action: none !important;
+      }
+      .dialog-title-icon {
+        width: 48px !important;
+        height: 48px !important;
+        flex-basis: 48px !important;
+        border-radius: 12px !important;
+      }
+      .dialog-title-icon ha-icon { --mdc-icon-size: 26px !important; }
+      .dialog-heading-copy { gap: 6px !important; }
+      .dialog-header-destination {
+        min-height: 28px !important;
+        padding-block: 4px !important;
+        max-width: 100%;
+      }
+      .dialog-global-actions .domain-actions { justify-content: center; }
+      .content { padding-bottom: calc(12px + env(safe-area-inset-bottom,0px)) !important; }
+    }
+
     /* The modal grows with its actual content, not with the entire viewport. */
     @media (max-width: 600px) {
       :host {
@@ -1218,6 +1284,19 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       }
     }
   `;
+
+  private _onDialogTouchStart = (event: TouchEvent): void => {
+    // A slotted HA header lives in the dialog shadow tree: handle the composed
+    // event on the dialog host, and only start swipes from its visual header.
+    const path = event.composedPath();
+    const fromHeader = path.some(node => node instanceof Element &&
+      (node.matches('ha-dialog-header') || node.matches('.sheet-handle')));
+    if (fromHeader) this._onSheetTouchStart(event);
+  };
+
+  private _onDialogTouchMove = (event: TouchEvent): void => {
+    if (this._sheetDragStartY !== null) this._onSheetTouchMove(event);
+  };
 
   private _onSheetTouchStart = (event: TouchEvent): void => {
     if (event.touches.length !== 1) return;
@@ -1532,6 +1611,10 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     return html`
       <ha-dialog
         open
+        @touchstart=${this._onDialogTouchStart}
+        @touchmove=${this._onDialogTouchMove}
+        @touchend=${this._onSheetTouchEnd}
+        @touchcancel=${this._onSheetTouchEnd}
         @closed=${this.closeDialog}
         @cancel=${() => this.closeDialog()}
         .heading=${domainTitle}
@@ -1539,7 +1622,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
         flexContent
         hideActions
       >
-        <ha-dialog-header slot="header" @touchstart=${this._onSheetTouchStart} @touchmove=${this._onSheetTouchMove} @touchend=${this._onSheetTouchEnd} @touchcancel=${this._onSheetTouchEnd}>
+        <ha-dialog-header slot="header">
           <div class="sheet-handle" aria-hidden="true"></div>
           <span slot="title" class="dialog-title-line" style=${`--dialog-accent: ${headerColor};`}>
             <span class="dialog-title-icon" aria-hidden="true">
@@ -1598,6 +1681,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     }
 
     return html`
+      <div class="dialog-global-actions">${this._renderDomainActions(entities)}</div>
       ${repeat(
         Object.entries(this._groupedEntities),
         ([areaId]) => areaId,
@@ -1727,7 +1811,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
           <div class="area-name">${group.areaName}</div>
           <div class="entity-count">${group.entities.length}</div>
         </div>` : nothing}
-        ${showAreaHeader ? html`<div class="area-group-actions">${this._renderDomainActions(group.entities)}</div>` : this._renderDomainActions(group.entities)}
         <div class="entities-grid">
           ${repeat(
             group.entities,
