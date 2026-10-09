@@ -714,11 +714,13 @@ export class DwainsDevicesCard extends LitElement {
       }));
   }
 
-  // Type-sleutel per entiteit: binary_sensors splitsen we op device-class
-  // (motion → "Motion"), de rest groepeert op domein.
+  // Device types use the same concrete grouping model as the room view.
   private _typeKeyFor(entityId: string): string | undefined {
     const domain = entityId.split('.')[0];
     if (!domain) return undefined;
+    if (domain === 'cover') {
+      return getAreaEntityGroupKey(entityId, this._hass) || 'cover_shading';
+    }
     if (domain === 'binary_sensor') {
       const dc = this._hass?.states?.[entityId]?.attributes?.device_class;
       if (dc) return `binary_sensor.${dc}`;
@@ -739,6 +741,15 @@ export class DwainsDevicesCard extends LitElement {
     if (key === MAINTENANCE_KEY) return this._t('devices.maintenance');
     if (key === ENERGY_KEY) return this._t('devices.energy');
     if (key === DEVICES_OVERVIEW_KEY) return this._t('navigation.overview');
+    if (key === 'cover_openings') {
+      return String(this._hass?.language || '').toLowerCase().startsWith('de') ? 'Fenster & Türen' : 'Windows & doors';
+    }
+    if (key === 'cover_shading') {
+      return String(this._hass?.language || '').toLowerCase().startsWith('de') ? 'Beschattung' : 'Shading';
+    }
+    if (key === 'cover_gates') {
+      return String(this._hass?.language || '').toLowerCase().startsWith('de') ? 'Tore' : 'Gates';
+    }
     if (key.startsWith('binary_sensor.')) {
       return getDeviceClassName(this._hass, key.slice('binary_sensor.'.length));
     }
@@ -751,6 +762,9 @@ export class DwainsDevicesCard extends LitElement {
     if (key === ENERGY_KEY) return 'mdi:flash';
     if (key === DEVICES_OVERVIEW_KEY) return 'mdi:view-grid-outline';
     if (key === PERSON_DOMAIN) return 'mdi:account-group';
+    if (key === 'cover_openings') return 'mdi:door-open';
+    if (key === 'cover_shading') return 'mdi:blinds-horizontal';
+    if (key === 'cover_gates') return 'mdi:gate';
     if (key.startsWith('binary_sensor.')) {
       return getDeviceClassIcon('binary_sensor', key.slice('binary_sensor.'.length));
     }
@@ -761,6 +775,9 @@ export class DwainsDevicesCard extends LitElement {
     if (key === MAINTENANCE_KEY) return 'var(--warning-color, #ff9800)';
     if (key === ENERGY_KEY) return getDomainColor('energy');
     if (key === DEVICES_OVERVIEW_KEY) return 'var(--primary-color)';
+    if (key === 'cover_openings' || key === 'cover_shading' || key === 'cover_gates') {
+      return getDomainColor('cover');
+    }
     if (key.startsWith('binary_sensor.')) {
       return getDomainColor('binary_sensor', key.slice('binary_sensor.'.length));
     }
@@ -1328,29 +1345,34 @@ export class DwainsDevicesCard extends LitElement {
                 )}
               </div>
             `
-          : orderedAreas.map((area) => {
-              const bucket = byArea.get(area.area_id)!;
-              return html`
-                <div class="domain-group">
-                  <div class="domain-header">
-                    <div class="domain-header-title">
-                      <ha-icon icon="mdi:floor-plan"></ha-icon>
-                      <span>${area.name}</span>
+          : html`
+              <div class="device-room-groups">
+                ${orderedAreas.map((area) => {
+                  const bucket = byArea.get(area.area_id)!;
+                  const compactRoom = bucket.entities.length <= 2;
+                  return html`
+                    <div class="domain-group ${compactRoom ? 'half-room' : 'full-room'}">
+                      <div class="domain-header">
+                        <div class="domain-header-title">
+                          <ha-icon icon="mdi:floor-plan"></ha-icon>
+                          <span>${area.name}</span>
+                        </div>
+                        ${this._renderDeviceRoomActions(domain, bucket.entities)}
+                      </div>
+                      <div class=${this._entitiesGridClass(domain, roomStyle)}>
+                        ${repeat(
+                          bucket.entities,
+                          (e) => e.entity_id,
+                          (entity) => roomStyle
+                            ? this._renderRoomStyleEntityCard(entity, area)
+                            : this._renderEntityCard(entity)
+                        )}
+                      </div>
                     </div>
-                    ${this._renderDeviceRoomActions(domain, bucket.entities)}
-                  </div>
-                  <div class=${this._entitiesGridClass(domain, roomStyle)}>
-                    ${repeat(
-                      bucket.entities,
-                      (e) => e.entity_id,
-                      (entity) => roomStyle
-                        ? this._renderRoomStyleEntityCard(entity, area)
-                        : this._renderEntityCard(entity)
-                    )}
-                  </div>
-                </div>
-              `;
-            })}
+                  `;
+                })}
+              </div>
+            `}
       </div>
     `;
   }
@@ -1655,6 +1677,7 @@ export class DwainsDevicesCard extends LitElement {
   }
 
   private _deviceGroupDomain(typeKey: string): string | undefined {
+    if (['cover_openings', 'cover_shading', 'cover_gates'].includes(typeKey)) return 'cover';
     const domain = typeKey.split('.')[0] || typeKey;
     return ['light', 'switch', 'fan', 'input_boolean', 'cover', 'lock'].includes(domain)
       ? domain
@@ -1818,7 +1841,7 @@ export class DwainsDevicesCard extends LitElement {
   }
 
   private _isSpecialDeviceType(typeKey: string): boolean {
-    return ['light', 'cover', 'climate', 'sensor'].includes(typeKey);
+    return ['light', 'cover', 'cover_openings', 'cover_shading', 'cover_gates', 'climate', 'sensor'].includes(typeKey);
   }
 
   private _renderRoomStyleEntityCard(entity: EntityConfig, area: AreaConfig) {
@@ -1849,6 +1872,7 @@ export class DwainsDevicesCard extends LitElement {
       state.attributes?.icon ||
       getDeviceClassIcon(domain, deviceClass) ||
       getDomainIcon(domain);
+    const entityPicture = domain === 'person' ? state.attributes?.entity_picture : undefined;
     const rawName = state.attributes?.friendly_name ||
       this._hass.entities?.[entity.entity_id]?.name ||
       entity.entity_id;
@@ -1875,7 +1899,11 @@ export class DwainsDevicesCard extends LitElement {
         }}
       >
         <div class="mobile-entity-main">
-          <span class="mobile-entity-icon"><ha-icon icon=${icon}></ha-icon></span>
+          <span class="mobile-entity-icon ${entityPicture ? 'has-entity-picture' : ''}">
+            ${entityPicture
+              ? html`<img class="mobile-entity-avatar" src=${entityPicture} alt=${name}>`
+              : html`<ha-icon icon=${icon}></ha-icon>`}
+          </span>
           <div class="mobile-entity-content">
             <div class="mobile-entity-name" title=${name}>${name}</div>
             <div class="mobile-entity-state ${active ? 'active' : ''}">${formatEntityStateWithUnit(this._hass, state)}</div>
@@ -1921,7 +1949,7 @@ export class DwainsDevicesCard extends LitElement {
     return [
       'entities-grid',
       roomStyle ? 'room-style-entities-grid' : 'special-entities-grid',
-      typeKey === 'cover' ? 'cover-entities-grid' : '',
+      (typeKey === 'cover' || typeKey.startsWith('cover_')) ? 'cover-entities-grid' : '',
       typeKey === 'light' ? 'light-entities-grid' : '',
       typeKey === 'sensor' ? 'sensor-entities-grid' : '',
       typeKey === 'binary_sensor.motion' ? 'motion-entities-grid' : '',
@@ -3389,6 +3417,27 @@ export class DwainsDevicesCard extends LitElement {
       margin: 0;
     }
 
+    .device-room-groups {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      align-items: start;
+    }
+
+    .device-room-groups .domain-group {
+      grid-column: 1 / -1;
+      margin-bottom: 0;
+      min-width: 0;
+    }
+
+    .device-room-groups .domain-group.half-room {
+      grid-column: span 1;
+    }
+
+    .device-room-groups .domain-group.half-room .entities-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
     .entities-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -3434,12 +3483,12 @@ export class DwainsDevicesCard extends LitElement {
     /* Thermostat cards need their normal internal width to render all controls.
        Scale the finished card down by 30% instead of squeezing its internals. */
     .special-device-view .climate-entity-card {
-      overflow: hidden;
+      overflow: visible;
     }
 
     .special-device-view .climate-entity-card > dwains-dashboard-next-card-host {
       width: calc(100% / 0.7);
-      zoom: 0.7;
+      transform: scale(0.7);
       transform-origin: top left;
     }
 
@@ -3506,6 +3555,20 @@ export class DwainsDevicesCard extends LitElement {
 
     .room-style-device-view .mobile-entity-icon ha-icon {
       --mdc-icon-size: 20px;
+    }
+
+    .room-style-device-view .mobile-entity-icon.has-entity-picture {
+      overflow: hidden;
+      padding: 0;
+      background: var(--secondary-background-color);
+    }
+
+    .room-style-device-view .mobile-entity-avatar {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      border-radius: inherit;
     }
 
     .room-style-device-view .mobile-entity-content {
@@ -3920,6 +3983,20 @@ export class DwainsDevicesCard extends LitElement {
       .maintenance-area-group {
         padding: 10px;
         margin-bottom: 10px;
+      }
+
+      .device-room-groups {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .device-room-groups .domain-group,
+      .device-room-groups .domain-group.half-room {
+        grid-column: 1;
+      }
+
+      .device-room-groups .domain-group.half-room .entities-grid {
+        grid-template-columns: 1fr !important;
       }
 
       .device-global-actions {

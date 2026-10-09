@@ -19024,7 +19024,7 @@ copy{
     }
 
     const title = kind
-      ? metrics[0]?.label || this._houseClimateTitle(scope)
+      ? (kind === 'temperature' ? this._t('home.temperature') : this._t('home.humidity'))
       : this._houseClimateTitle(scope);
 
     showDomainEntitiesDialog(this, {
@@ -23597,6 +23597,11 @@ copy{
   }
 
   private _statusDeviceDomainKey(domain: DomainCount): string {
+    if (domain.domain === 'cover') {
+      if (domain.statusKind === 'shading') return 'cover_shading';
+      if (domain.statusKind === 'gate') return 'cover_gates';
+      if (domain.statusKind === 'window' || domain.statusKind === 'door') return 'cover_openings';
+    }
     return domain.deviceClass ? `${domain.domain}.${domain.deviceClass}` : domain.domain;
   }
 

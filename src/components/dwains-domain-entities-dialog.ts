@@ -1378,6 +1378,27 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       border-radius: 12px !important;
     }
 
+    .content.home-information-context .area-sections-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      align-items: start;
+    }
+
+    .content.home-information-context .area-sections-grid .area-section {
+      grid-column: 1 / -1;
+      margin-bottom: 0 !important;
+      min-width: 0;
+    }
+
+    .content.home-information-context .area-sections-grid .area-section.half-room {
+      grid-column: span 1;
+    }
+
+    .content.home-information-context .area-sections-grid .area-section.half-room .entities-grid {
+      grid-template-columns: 1fr !important;
+    }
+
     .content.home-information-context .area-header {
       min-height: 38px !important;
       padding: 7px 10px 0 !important;
@@ -1594,6 +1615,15 @@ export class DwainsDomainEntitiesDialog extends LitElement {
         margin-bottom: 10px !important;
         padding: 0 !important;
         border-radius: 12px !important;
+      }
+
+      .content.home-information-context .area-sections-grid {
+        grid-template-columns: 1fr !important;
+      }
+
+      .content.home-information-context .area-sections-grid .area-section,
+      .content.home-information-context .area-sections-grid .area-section.half-room {
+        grid-column: 1 !important;
       }
 
       .content.home-information-context .area-header {
@@ -1971,11 +2001,13 @@ export class DwainsDomainEntitiesDialog extends LitElement {
 
     return html`
       <div class="dialog-global-actions">${this._renderDomainActions(entities)}</div>
-      ${repeat(
-        Object.entries(this._groupedEntities),
-        ([areaId]) => areaId,
-        ([areaId, group]) => this._renderAreaSection(areaId, group)
-      )}
+      <div class="area-sections-grid">
+        ${repeat(
+          Object.entries(this._groupedEntities),
+          ([areaId]) => areaId,
+          ([areaId, group]) => this._renderAreaSection(areaId, group)
+        )}
+      </div>
     `;
   }
 
@@ -2097,8 +2129,10 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     const allOn = activeCount === group.entities.length;
     const roomEntityIds = group.entities.map(entity => entity.entity_id);
 
+    const compactRoom = group.entities.length <= 1;
+
     return html`
-      <div class="area-section">
+      <div class="area-section ${compactRoom ? 'half-room' : 'full-room'}">
         ${showAreaHeader ? html`<div class="area-header">
           ${areaIcon ? html`
             <div class="area-icon">
@@ -2406,13 +2440,17 @@ export class DwainsDomainEntitiesDialog extends LitElement {
 
     .content.home-information-context.device-presentation-context .device-presentation-card {
       min-width: 0;
-      overflow: hidden;
+      overflow: visible;
+    }
+
+    .content.home-information-context.device-presentation-context .device-presentation-card.climate-card {
+      min-height: 260px;
     }
 
     .content.home-information-context.device-presentation-context .device-presentation-card.climate-card > dwains-dashboard-next-card-host {
-      width: calc(100% / 0.7);
-      zoom: 0.7;
-      transform-origin: top left;
+      display: block;
+      width: 100%;
+      min-width: 0;
     }
 
     @media (max-width: 600px) {
