@@ -1508,6 +1508,24 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       gap: 10px !important;
     }
 
+    /* Match the Devices view's domain-specific grids instead of forcing all
+       Home Information popups into one generic two-column layout. */
+    .content.home-information-context.device-presentation-context.domain-cover .entities-grid {
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)) !important;
+      gap: 12px !important;
+    }
+
+    .content.home-information-context.device-presentation-context.domain-climate .entities-grid {
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)) !important;
+      gap: 8px !important;
+    }
+
+    /* Person cards use the same ~3x footprint as Geräte > Personen. */
+    .content.home-information-context.device-presentation-context.domain-person .entities-grid {
+      grid-template-columns: 1fr !important;
+      gap: 12px !important;
+    }
+
     .content.home-information-context.device-presentation-context .device-presentation-card {
       min-width: 0;
       position: relative;
@@ -1980,7 +1998,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
           </div>
         </div>
 
-        <div class="content ${this._params?.areaId ? 'room-context' : ''} ${this._params?.customEntities ? 'custom-entities-context' : ''} ${this._params?.homeInformation ? 'home-information-context' : ''} ${this._params?.homeInformationPresentation === 'devices' ? 'device-presentation-context' : ''}">
+        <div class="content ${this._params?.areaId ? 'room-context' : ''} ${this._params?.customEntities ? 'custom-entities-context' : ''} ${this._params?.homeInformation ? 'home-information-context' : ''} ${this._params?.homeInformationPresentation === 'devices' ? 'device-presentation-context' : ''} ${this._params?.domain ? `domain-${this._params.domain}` : ''}">
           ${this._loading
             ? html`<div class="loading">${this._t('common.loading')}</div>`
             : this._renderContent()
@@ -2274,25 +2292,25 @@ export class DwainsDomainEntitiesDialog extends LitElement {
         <div class="domain-entity-copy">
           <div class="domain-entity-name">${name}</div>
           <div class="domain-entity-status">${this._entityStatusText(state, domain)}</div>
-          ${personHasLocation ? html`
-            <div class="person-location-preview" aria-label=${`${name} location`}>
-              <dwains-dashboard-next-card-host
-                eager
-                .hass=${this.hass}
-                .config=${{
-                  type: 'map',
-                  entities: [entity.entity_id],
-                  hours_to_show: 0,
-                  default_zoom: 14,
-                  auto_fit: true,
-                  fit_zones: false,
-                  show_zone_radius: false,
-                  aspect_ratio: '4:1',
-                }}
-              ></dwains-dashboard-next-card-host>
-            </div>
-          ` : nothing}
         </div>
+        ${personHasLocation ? html`
+          <div class="person-location-preview" aria-label=${`${name} location`}>
+            <dwains-dashboard-next-card-host
+              eager
+              .hass=${this.hass}
+              .config=${{
+                type: 'map',
+                entities: [entity.entity_id],
+                hours_to_show: 0,
+                default_zoom: 14,
+                auto_fit: true,
+                fit_zones: false,
+                show_zone_radius: false,
+                aspect_ratio: '4:1',
+              }}
+            ></dwains-dashboard-next-card-host>
+          </div>
+        ` : nothing}
       </article>
     `;
   }
@@ -2446,14 +2464,19 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     }
 
     .content.home-information-context.device-presentation-context .domain-entity-card.person-card.has-location-preview {
-      min-height: 126px !important;
+      min-height: 190px !important;
       height: auto !important;
-      align-items: start !important;
+      grid-template-rows: auto 112px !important;
+      align-items: center !important;
     }
 
     .content.home-information-context.device-presentation-context .person-location-preview {
-      height: 58px;
-      margin-top: 7px;
+      grid-column: 1 / -1 !important;
+      grid-row: 2 !important;
+      width: 66.666%;
+      height: 112px;
+      margin-top: 10px;
+      justify-self: center;
       overflow: hidden;
       border-radius: 8px;
       pointer-events: none;
@@ -2517,14 +2540,19 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       overflow: visible;
     }
 
+    /* Thermostat rendering exactly mirrors Geräte > Klima: render at its
+       natural width and scale the finished card down by 30%. */
     .content.home-information-context.device-presentation-context .device-presentation-card.climate-card {
-      min-height: 260px;
+      min-height: 0;
+      overflow: visible;
     }
 
     .content.home-information-context.device-presentation-context .device-presentation-card.climate-card > dwains-dashboard-next-card-host {
       display: block;
-      width: 100%;
+      width: calc(100% / 0.7);
       min-width: 0;
+      transform: scale(0.7);
+      transform-origin: top left;
     }
 
     @media (max-width: 600px) {
