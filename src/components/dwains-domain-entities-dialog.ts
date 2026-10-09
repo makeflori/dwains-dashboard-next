@@ -1927,7 +1927,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
                 event.stopPropagation();
                 void this._runBulkDomainAction(roomEntityIds,
                   allOn ? 'turn_off' : 'turn_on',
-                  allOn ? this._t('action.turn_off_all') : this._t('action.turn_on_all'));
+                  allOn ? this._t('action.turn_off_all') : this._t('action.turn_on_all'), false);
               }}>
               <span>${activeCount}/${group.entities.length}</span>
               <span class="area-master-track ${allOn ? 'is-on' : ''}"></span>
@@ -2104,10 +2104,10 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     `;
   }
 
-  private async _runBulkDomainAction(entityIds: string[], action: BulkDomainAction, label: string): Promise<void> {
+  private async _runBulkDomainAction(entityIds: string[], action: BulkDomainAction, label: string, requireConfirmation = true): Promise<void> {
     const domain = this._params?.domain || '';
     const count = entityIds.length;
-    const confirmed = window.confirm(this._t('action.confirm_bulk', {
+    const confirmed = !requireConfirmation || window.confirm(this._t('action.confirm_bulk', {
       action: label,
       entities: this._tp('common.entity', count),
     }));
