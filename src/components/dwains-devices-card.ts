@@ -26,7 +26,8 @@ import { ensureBottomNav } from './dwains-bottom-nav';
 import { fireEvent } from './utils/fire-event';
 import { buildHousePowerUsage, type PowerAreaSummary, type PowerEntitySummary } from '../utils/power-usage';
 import { isHassDarkTheme } from '../utils/theme';
-import { formatValueWithUnit } from '../utils/unit-format';
+import { formatEntityStateWithUnit, formatValueWithUnit } from '../utils/unit-format';
+import { stripAreaNameFromEntityName } from '../utils/entity-names';
 import './utils/dd-card-host';
 
 const NEW_DEVICES_KEY = '__new_devices__';
@@ -1167,6 +1168,7 @@ export class DwainsDevicesCard extends LitElement {
 
     const byArea = data.get(domain);
     if (!byArea) return nothing;
+    const roomStyle = !this._isSpecialDeviceType(domain);
 
     // Areas in zichtbare, gesorteerde volgorde (gefilterd op aanwezigheid).
     const orderedAreas = domain === PERSON_DOMAIN
@@ -1174,7 +1176,7 @@ export class DwainsDevicesCard extends LitElement {
       : this._getVisibleSortedAreas().filter((a) => byArea.has(a.area_id));
 
     return html`
-      <div class="device-view">
+      <div class="device-view ${roomStyle ? 'room-style-device-view' : 'special-device-view'}">
         ${this._renderDevicePageHeader({
           icon: this._typeIcon(domain),
           title: this._typeName(domain),
@@ -1193,11 +1195,13 @@ export class DwainsDevicesCard extends LitElement {
                   <span>${area.name}</span>
                 </div>
               </div>
-              <div class=${this._entitiesGridClass(domain)}>
+              <div class=${this._entitiesGridClass(domain, roomStyle)}>
                 ${repeat(
                   bucket.entities,
                   (e) => e.entity_id,
-                  (entity) => this._renderEntityCard(entity)
+                  (entity) => roomStyle
+                    ? this._renderRoomStyleEntityCard(entity, area)
+                    : this._renderEntityCard(entity)
                 )}
               </div>
             </div>
@@ -1498,17 +1502,10 @@ export class DwainsDevicesCard extends LitElement {
   private _renderEntityCard(entity: EntityConfig) {
     const state = this._hass.states[entity.entity_id];
     if (!state) return nothing;
-    const replacement = findReplacementAssignment({
-      hass: this._hass,
-      config: this.config,
-      entity,
-      surface: 'devices_cards',
-    });
-
     return html`
       <div class="${this._entityWrapperClass(entity.entity_id)}">
         <dwains-dashboard-next-card-host
-          ?framed=${!!replacement && replacement.enabled !== false && !entity.entity_id.startsWith('todo.')}
+          framed
           .hass=${this._hass}
           .config=${this._entityCardConfig(entity.entity_id)}
         ></dwains-dashboard-next-card-host>
@@ -1516,9 +1513,108 @@ export class DwainsDevicesCard extends LitElement {
     `;
   }
 
-  private _entitiesGridClass(typeKey: string): string {
+  private _isSpecialDeviceType(typeKey: string): boolean {
+    return ['light', 'cover', 'climate', 'sensor'].includes(typeKey);
+  }
+
+  private _renderRoomStyleEntityCard(entity: EntityConfig, area: AreaConfig) {
+    const state = this._hass.states[entity.entity_id];
+    if (!state) return nothing;
+
+    const replacement = findReplacementAssignment({
+      hass: this._hass,
+      config: this.config,
+      entity,
+      surface: 'devices_cards',
+    });
+    if (replacement && replacement.enabled !== false) {
+      return html`
+        <div class="entity-card-wrapper room-style-replacement-card">
+          <dwains-dashboard-next-card-host
+            framed
+            .hass=${this._hass}
+            .config=${this._entityCardConfig(entity.entity_id)}
+          ></dwains-dashboard-next-card-host>
+        </div>
+      `;
+    }
+
+    const domain = entity.entity_id.split('.')[0] || 'unknown';
+    const deviceClass = state.attributes?.device_class;
+    const icon = this._hass.entities?.[entity.entity_id]?.icon ||
+      state.attributes?.icon ||
+      getDeviceClassIcon(domain, deviceClass) ||
+      getDomainIcon(domain);
+    const rawName = state.attributes?.friendly_name ||
+      this._hass.entities?.[entity.entity_id]?.name ||
+      entity.entity_id;
+    const name = this.config?.settings?.hide_area_name_in_entity_names === true
+      ? stripAreaNameFromEntityName(rawName, area.name)
+      : rawName;
+    const active = this._roomStyleEntityActive(state, domain);
+    const unavailable = ['unavailable', 'unknown'].includes(String(state.state).toLowerCase()) &&
+      !['scene', 'event'].includes(domain);
+    const canToggle = ['switch', 'fan', 'input_boolean'].includes(domain);
+
+    return html`
+      <article
+        class="room-style-entity-card ${active ? 'is-active' : 'is-off'} ${unavailable ? 'is-unavailable' : ''}"
+        style=${`--entity-color: ${getDomainColor(domain, deviceClass)};`}
+        role="button"
+        tabindex="0"
+        aria-label=${name}
+        @click=${() => this._showMoreInfo(entity.entity_id)}
+        @keydown=${(event: KeyboardEvent) => {
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+          event.preventDefault();
+          this._showMoreInfo(entity.entity_id);
+        }}
+      >
+        <div class="room-style-entity-top">
+          <span class="room-style-entity-icon"><ha-icon icon=${icon}></ha-icon></span>
+          ${canToggle ? html`
+            <button
+              class="room-style-entity-toggle"
+              type="button"
+              aria-label=${active ? this._t('action.turn_off') : this._t('action.turn_on')}
+              ?disabled=${unavailable}
+              @click=${(event: Event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                void this._toggleRoomStyleEntity(entity.entity_id, domain, active);
+              }}
+            ></button>
+          ` : nothing}
+        </div>
+        <div class="room-style-entity-copy">
+          <div class="room-style-entity-name" title=${name}>${name}</div>
+          <div class="room-style-entity-state">${formatEntityStateWithUnit(this._hass, state)}</div>
+        </div>
+      </article>
+    `;
+  }
+
+  private _roomStyleEntityActive(state: any, domain: string): boolean {
+    const value = String(state?.state || '').toLowerCase();
+    if (domain === 'lock') return value === 'unlocked';
+    if (domain === 'person') return value === 'home';
+    if (domain === 'binary_sensor') return value === 'on';
+    return ['on', 'open', 'opening', 'playing', 'active', 'home'].includes(value);
+  }
+
+  private async _toggleRoomStyleEntity(entityId: string, domain: string, active: boolean): Promise<void> {
+    const serviceDomain = domain === 'input_boolean' ? 'input_boolean' : domain;
+    try {
+      await this._hass.callService(serviceDomain, active ? 'turn_off' : 'turn_on', { entity_id: entityId });
+    } catch (error) {
+      console.warn(`Failed to toggle ${entityId} from Devices view`, error);
+    }
+  }
+
+  private _entitiesGridClass(typeKey: string, roomStyle = false): string {
     return [
       'entities-grid',
+      roomStyle ? 'room-style-entities-grid' : 'special-entities-grid',
       typeKey === 'cover' ? 'cover-entities-grid' : '',
       typeKey === 'light' ? 'light-entities-grid' : '',
       typeKey === 'sensor' ? 'sensor-entities-grid' : '',
@@ -2283,7 +2379,12 @@ export class DwainsDevicesCard extends LitElement {
     }
 
     .maintenance-area-group {
-      margin-bottom: 18px;
+      margin-bottom: 14px;
+      padding: 12px;
+      border: 1px solid color-mix(in srgb, var(--primary-text-color) 7%, transparent);
+      border-radius: 12px;
+      background: var(--card-background-color);
+      box-shadow: 0 5px 14px rgba(15, 23, 42, 0.035);
     }
 
     .maintenance-area-title {
@@ -2807,9 +2908,11 @@ export class DwainsDevicesCard extends LitElement {
     /* Domain (per area) groups */
     .domain-group {
       background: var(--card-background-color);
+      border: 1px solid color-mix(in srgb, var(--primary-text-color) 7%, transparent);
       border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 16px;
+      padding: 14px;
+      margin-bottom: 14px;
+      box-shadow: 0 5px 14px rgba(15, 23, 42, 0.035);
     }
 
     .domain-header {
@@ -2868,6 +2971,142 @@ export class DwainsDevicesCard extends LitElement {
     .entity-card-wrapper {
       min-height: 60px;
       position: relative;
+      min-width: 0;
+    }
+
+    .special-device-view .entity-card-wrapper > dwains-dashboard-next-card-host {
+      --dd-replacement-border: 1px solid color-mix(in srgb, var(--primary-text-color) 8%, transparent);
+      --dd-replacement-radius: 10px;
+    }
+
+    .room-style-entities-grid {
+      grid-template-columns: repeat(auto-fill, minmax(178px, 1fr));
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .room-style-entity-card {
+      --entity-color: var(--primary-color);
+      box-sizing: border-box;
+      width: 100%;
+      min-width: 0;
+      min-height: 152px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      border: 1px solid color-mix(in srgb, var(--primary-text-color) 7%, transparent);
+      border-radius: 12px;
+      background: var(--card-background-color);
+      color: var(--primary-text-color);
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      box-shadow: 0 5px 14px rgba(15, 23, 42, 0.035);
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+
+    .room-style-entity-card:hover {
+      transform: translateY(-1px);
+      border-color: color-mix(in srgb, var(--entity-color) 20%, var(--divider-color));
+      box-shadow: 0 12px 24px rgba(15, 23, 42, 0.07);
+    }
+
+    .room-style-entity-card.is-active {
+      border-color: color-mix(in srgb, var(--entity-color) 22%, transparent);
+    }
+
+    .room-style-entity-card.is-unavailable {
+      opacity: .62;
+    }
+
+    .room-style-entity-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .room-style-entity-icon {
+      width: 38px;
+      height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 38px;
+      border-radius: 11px;
+      color: var(--entity-color);
+      background: color-mix(in srgb, var(--entity-color) 13%, transparent);
+    }
+
+    .room-style-entity-icon ha-icon {
+      --mdc-icon-size: 21px;
+    }
+
+    .room-style-entity-toggle {
+      width: 38px;
+      height: 22px;
+      padding: 0;
+      display: inline-flex;
+      justify-content: flex-start;
+      align-items: center;
+      flex: 0 0 auto;
+      border: 0;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--secondary-background-color) 80%, #ffffff);
+      box-shadow: inset 0 0 0 1px rgba(15,23,42,.07), 0 4px 10px rgba(15,23,42,.08);
+      cursor: pointer;
+    }
+
+    .room-style-entity-toggle::before {
+      content: '';
+      width: 18px;
+      height: 18px;
+      margin-left: 2px;
+      border-radius: 999px;
+      background: #fff;
+      box-shadow: 0 2px 7px rgba(15,23,42,.2);
+      transition: transform .18s ease;
+    }
+
+    .room-style-entity-card.is-active .room-style-entity-toggle {
+      background: var(--entity-color);
+    }
+
+    .room-style-entity-card.is-active .room-style-entity-toggle::before {
+      transform: translateX(16px);
+    }
+
+    .room-style-entity-copy {
+      min-width: 0;
+    }
+
+    .room-style-entity-name {
+      margin-top: 3px;
+      color: var(--primary-text-color);
+      font-size: 15px;
+      font-weight: 900;
+      line-height: 1.08;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .room-style-entity-state {
+      margin-top: 5px;
+      color: color-mix(in srgb, var(--primary-text-color) 46%, transparent);
+      font-size: 11px;
+      font-weight: 750;
+      line-height: 1.1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .room-style-replacement-card {
+      min-height: 152px;
     }
 
     .cover-entity-card {
@@ -3157,21 +3396,38 @@ export class DwainsDevicesCard extends LitElement {
         }
       }
 
-      .entities-grid {
+      .special-device-view .entities-grid,
+      .special-device-view .entities-grid.cover-entities-grid,
+      .special-device-view .entities-grid.light-entities-grid,
+      .special-device-view .entities-grid.sensor-entities-grid {
         grid-template-columns: 1fr;
       }
 
-      .entities-grid.cover-entities-grid {
-        grid-template-columns: 1fr;
+      .room-style-device-view .room-style-entities-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
       }
 
-      .entities-grid.light-entities-grid {
-        grid-template-columns: 1fr;
+      .room-style-device-view .room-style-entity-card {
+        min-height: 138px;
+        padding: 12px;
+        border-radius: 10px;
       }
 
-      .entities-grid.sensor-entities-grid,
-      .entities-grid.motion-entities-grid {
-        grid-template-columns: 1fr;
+      .room-style-device-view .room-style-entity-icon {
+        width: 34px;
+        height: 34px;
+        flex-basis: 34px;
+      }
+
+      .room-style-device-view .room-style-entity-icon ha-icon {
+        --mdc-icon-size: 20px;
+      }
+
+      .room-style-device-view .domain-group,
+      .maintenance-area-group {
+        padding: 10px;
+        margin-bottom: 10px;
       }
 
       .devices-overview-view {
@@ -3410,13 +3666,16 @@ export class DwainsDevicesCard extends LitElement {
         font-size: 12px;
       }
 
-      .entities-grid,
-      .entities-grid.cover-entities-grid,
-      .entities-grid.light-entities-grid,
-      .entities-grid.sensor-entities-grid,
-      .entities-grid.motion-entities-grid,
+      .special-device-view .entities-grid,
+      .special-device-view .entities-grid.cover-entities-grid,
+      .special-device-view .entities-grid.light-entities-grid,
+      .special-device-view .entities-grid.sensor-entities-grid,
       .maintenance-grid {
         grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .room-style-device-view .room-style-entities-grid {
+        grid-template-columns: repeat(auto-fill, minmax(178px, 1fr));
       }
 
       .entities-grid.todo-entities-grid {
