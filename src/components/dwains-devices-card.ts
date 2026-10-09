@@ -9,7 +9,13 @@ import type {
   EntityConfig,
 } from '../types/strategy';
 import { ddLocale, ddLocalize, ddLocalizePlural } from '../utils/localize';
-import { sortAreas } from '../utils/area-entities';
+import {
+  AREA_STRATEGY_GROUPS,
+  getAreaEntityGroupKey,
+  getLegacyAreaGroupKey,
+  sortAreas,
+  type AreaStrategyGroup,
+} from '../utils/area-entities';
 import { getDomainIcon, getDeviceClassIcon, getDomainColor } from '../utils/icons';
 import { getDomainName, getDeviceClassName } from '../utils/domain-names';
 import { findReplacementAssignment, resolveEntityCardConfig } from '../utils/blueprint-replacements';
@@ -378,9 +384,108 @@ export class DwainsDevicesCard extends LitElement {
     }
 
     this._addPersonData(data);
+
+    data.forEach((byArea) => {
+      byArea.forEach((bucket) => {
+        bucket.entities = this._sortDeviceAreaEntities(bucket.area.area_id, bucket.entities);
+      });
+    });
+
     this._hiddenDeviceTypes().forEach((typeKey) => data.delete(typeKey));
 
     return data;
+  }
+
+  private _deviceEntityGroupKey(entityId: string): string {
+    return getAreaEntityGroupKey(entityId, this._hass) || this._typeKeyFor(entityId) || entityId.split('.')[0] || 'other';
+  }
+
+  private _deviceGroupOrderIndex(areaId: string, groupKey: string): number {
+    const configuredOrder = this.config?.areas_options?.[areaId]?.group_order || [];
+
+    const direct = configuredOrder.indexOf(groupKey);
+    if (direct >= 0) return direct;
+
+    if (groupKey === 'cover_gates' && configuredOrder.includes('cover_shading')) {
+      return configuredOrder.indexOf('cover_shading');
+    }
+
+    if (
+      ['cover_openings', 'cover_shading', 'cover_gates'].includes(groupKey) &&
+      configuredOrder.includes('cover')
+    ) {
+      return configuredOrder.indexOf('cover');
+    }
+
+    if ((AREA_STRATEGY_GROUPS as readonly string[]).includes(groupKey)) {
+      const legacy = configuredOrder.indexOf(getLegacyAreaGroupKey(groupKey as AreaStrategyGroup));
+      if (legacy >= 0) return legacy;
+    }
+
+    const defaultIndex = (AREA_STRATEGY_GROUPS as readonly string[]).indexOf(groupKey);
+    return defaultIndex >= 0 ? configuredOrder.length + defaultIndex : Number.MAX_SAFE_INTEGER;
+  }
+
+  private _deviceConfiguredEntityOrder(areaId: string, groupKey: string): string[] {
+    const areaOptions = this.config?.areas_options?.[areaId];
+    if (!areaOptions) return [];
+
+    if (areaOptions.entity_layout === 'ungrouped') {
+      return areaOptions.entity_order || [];
+    }
+
+    const groupsOptions = areaOptions.groups_options || {};
+    const direct = groupsOptions[groupKey]?.order;
+    if (direct?.length) return direct;
+
+    if (groupKey === 'cover_gates') {
+      const formerCombined = groupsOptions.cover_shading?.order;
+      if (formerCombined?.length) return formerCombined;
+    }
+
+    if (['cover_openings', 'cover_shading', 'cover_gates'].includes(groupKey)) {
+      const formerCover = groupsOptions.cover?.order;
+      if (formerCover?.length) return formerCover;
+    }
+
+    if ((AREA_STRATEGY_GROUPS as readonly string[]).includes(groupKey)) {
+      const legacy = groupsOptions[getLegacyAreaGroupKey(groupKey as AreaStrategyGroup)]?.order;
+      if (legacy?.length) return legacy;
+    }
+
+    return [];
+  }
+
+  private _sortDeviceAreaEntities(areaId: string, entities: EntityConfig[]): EntityConfig[] {
+    const collator = new Intl.Collator(ddLocale(this._hass), { sensitivity: 'base', numeric: true });
+
+    return [...entities].sort((a, b) => {
+      const groupA = this._deviceEntityGroupKey(a.entity_id);
+      const groupB = this._deviceEntityGroupKey(b.entity_id);
+
+      if (groupA !== groupB) {
+        const rankA = this._deviceGroupOrderIndex(areaId, groupA);
+        const rankB = this._deviceGroupOrderIndex(areaId, groupB);
+        if (rankA !== rankB) return rankA - rankB;
+      }
+
+      const order = this._deviceConfiguredEntityOrder(areaId, groupA);
+      if (groupA === groupB && order.length) {
+        const indexA = order.indexOf(a.entity_id);
+        const indexB = order.indexOf(b.entity_id);
+        if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+        if (indexA !== -1) return -1;
+        if (indexB !== -1) return 1;
+      }
+
+      const nameA = this._hass.states[a.entity_id]?.attributes?.friendly_name ||
+        this._hass.entities?.[a.entity_id]?.name ||
+        a.entity_id;
+      const nameB = this._hass.states[b.entity_id]?.attributes?.friendly_name ||
+        this._hass.entities?.[b.entity_id]?.name ||
+        b.entity_id;
+      return collator.compare(String(nameA), String(nameB));
+    });
   }
 
   private _buildMaintenanceData(): Map<string, MaintenanceBucket> {
@@ -420,10 +525,15 @@ export class DwainsDevicesCard extends LitElement {
     });
 
     buckets.forEach((bucket) => {
-      bucket.items.sort((a, b) => {
-        if (a.kind !== b.kind) return a.kind === 'unavailable' ? -1 : 1;
-        return a.name.localeCompare(b.name);
-      });
+      const orderedIds = this._sortDeviceAreaEntities(
+        bucket.area.area_id,
+        bucket.items.map((item) => ({ entity_id: item.entityId, area_id: bucket.area.area_id, hidden: false }))
+      ).map((entity) => entity.entity_id);
+      const orderIndex = new Map(orderedIds.map((entityId, index) => [entityId, index]));
+      bucket.items.sort((a, b) =>
+        (orderIndex.get(a.entityId) ?? Number.MAX_SAFE_INTEGER) -
+        (orderIndex.get(b.entityId) ?? Number.MAX_SAFE_INTEGER)
+      );
     });
 
     return buckets;
@@ -1424,16 +1534,31 @@ export class DwainsDevicesCard extends LitElement {
   private _energyStatisticsEntities(
     entities: PowerEntitySummary[],
     limit: number
-  ): Array<{ entity: string; name: string }> {
+  ): Array<{ entity: string; name: string; color: string }> {
+    const energyGraphPalette = [
+      '#4F8F3A',
+      '#65A83F',
+      '#7FB344',
+      '#9DBB3F',
+      '#B8BE3A',
+      '#D1BC37',
+      '#E5B83B',
+      '#D9A62F',
+    ];
+
     return entities
       .filter((entity) => ['measurement', 'total', 'total_increasing'].includes(entity.stateClass || ''))
       .sort((a, b) => b.watts - a.watts)
       .slice(0, limit)
-      .map((entity) => ({ entity: entity.entityId, name: entity.name }));
+      .map((entity, index) => ({
+        entity: entity.entityId,
+        name: entity.name,
+        color: energyGraphPalette[index % energyGraphPalette.length]!,
+      }));
   }
 
   private _renderEnergyStatisticsGraph(
-    entities: Array<{ entity: string; name: string }>,
+    entities: Array<{ entity: string; name: string; color: string }>,
     label: string
   ) {
     if (!entities.length) return nothing;
@@ -1481,7 +1606,6 @@ export class DwainsDevicesCard extends LitElement {
                     <ha-icon icon="mdi:floor-plan"></ha-icon>
                     <span>${bucket.area.name}</span>
                   </div>
-                  <span class="maintenance-room-count">${bucket.items.length}</span>
                 </div>
                 <div class="maintenance-grid">
                   ${repeat(
@@ -1594,7 +1718,42 @@ export class DwainsDevicesCard extends LitElement {
       `;
     }
 
-    return html`<div class="device-room-actions">${this._renderDeviceBulkButtons(domain, entities, false)}</div>`;
+    if (domain === 'cover' || domain === 'lock') {
+      const active = entities.some((entity) => {
+        const state = this._hass.states?.[entity.entity_id];
+        return state && this._roomStyleEntityActive(state, domain);
+      });
+      const actions = domain === 'cover'
+        ? [
+            { action: 'open_cover', label: this._t('action.open_all'), icon: 'mdi:arrow-up', active },
+            { action: 'close_cover', label: this._t('action.close_all'), icon: 'mdi:arrow-down', active: !active },
+          ]
+        : [
+            { action: 'lock', label: this._t('action.lock_all'), icon: 'mdi:lock-outline', active: !active },
+            { action: 'unlock', label: this._t('action.unlock_all'), icon: 'mdi:lock-open-variant-outline', active },
+          ];
+
+      return html`
+        <div class="device-room-master-actions domain-${domain}" role="group">
+          ${actions.map((item) => html`
+            <button
+              class="device-room-master-action ${item.active ? 'active' : ''}"
+              type="button"
+              title=${item.label}
+              aria-label=${item.label}
+              @click=${(event: Event) => {
+                event.stopPropagation();
+                void this._runDeviceBulkAction(entities, item.action);
+              }}
+            >
+              <ha-icon icon=${item.icon}></ha-icon>
+            </button>
+          `)}
+        </div>
+      `;
+    }
+
+    return nothing;
   }
 
   private _renderDeviceBulkButtons(domain: string, entities: EntityConfig[], withLabels: boolean) {
@@ -2547,21 +2706,6 @@ export class DwainsDevicesCard extends LitElement {
       margin-bottom: 14px;
     }
 
-    .maintenance-room-count {
-      min-width: 22px;
-      height: 22px;
-      padding: 0 7px;
-      margin-left: auto;
-      border-radius: 999px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--secondary-text-color);
-      background: var(--secondary-background-color);
-      font-size: 11px;
-      font-weight: 800;
-    }
-
     .maintenance-area-title {
       min-height: 34px;
       margin: 0 0 7px;
@@ -3156,11 +3300,60 @@ export class DwainsDevicesCard extends LitElement {
       box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 7%, transparent);
     }
 
-    .device-room-actions {
+    .device-room-master-actions {
+      --mobile-domain-accent: var(--primary-color);
+      height: 30px;
       margin-left: auto;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      overflow: hidden;
+      border: 1px solid color-mix(in srgb, var(--divider-color) 72%, transparent);
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--card-background-color) 92%, transparent);
+      color: color-mix(in srgb, var(--primary-text-color) 58%, transparent);
+    }
+
+    .device-room-master-actions.domain-cover {
+      --mobile-domain-accent: #0d98aa;
+    }
+
+    .device-room-master-actions.domain-lock {
+      --mobile-domain-accent: #7657c8;
+    }
+
+    .device-room-master-action {
+      width: 34px;
+      height: 30px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
+      transition:
+        background-color 0.18s ease,
+        color 0.18s ease,
+        transform 0.18s ease;
+    }
+
+    .device-room-master-action + .device-room-master-action {
+      border-left: 1px solid color-mix(in srgb, var(--divider-color) 72%, transparent);
+    }
+
+    .device-room-master-action:hover,
+    .device-room-master-action.active {
+      background: color-mix(in srgb, var(--mobile-domain-accent) 12%, var(--card-background-color));
+      color: var(--mobile-domain-accent);
+    }
+
+    .device-room-master-action:active {
+      transform: scale(0.88);
+    }
+
+    .device-room-master-action ha-icon {
+      --mdc-icon-size: 17px;
     }
 
     .device-room-master {
