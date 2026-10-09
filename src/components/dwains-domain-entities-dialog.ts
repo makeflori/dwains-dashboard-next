@@ -1520,10 +1520,11 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       gap: 8px !important;
     }
 
-    /* Person cards use the same ~3x footprint as Geräte > Personen. */
+    /* Person cards keep the same four-column layout as Geräte > Personen
+       and are enlarged vertically only. */
     .content.home-information-context.device-presentation-context.domain-person .entities-grid {
-      grid-template-columns: 1fr !important;
-      gap: 12px !important;
+      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+      gap: 8px !important;
     }
 
     .content.home-information-context.device-presentation-context .device-presentation-card {
@@ -2464,9 +2465,9 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     }
 
     .content.home-information-context.device-presentation-context .domain-entity-card.person-card.has-location-preview {
-      min-height: 190px !important;
+      min-height: 378px !important;
       height: auto !important;
-      grid-template-rows: auto 112px !important;
+      grid-template-rows: auto 250px !important;
       align-items: center !important;
     }
 
@@ -2474,7 +2475,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       grid-column: 1 / -1 !important;
       grid-row: 2 !important;
       width: 66.666%;
-      height: 112px;
+      height: 250px;
       margin-top: 10px;
       justify-self: center;
       overflow: hidden;
