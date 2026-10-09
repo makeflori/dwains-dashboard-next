@@ -547,7 +547,8 @@ export class DwainsBlueprintDialog extends LitElement {
         return;
       }
     }
-    // Put the nearest upcoming collection first, independently of selection order.
+    const sortedDisplay: Record<string, any> = { ...this._values };
+    // Sort rendered cards only; retain configuration order.
     if (Array.isArray(this._values.waste_types)) {
       const nextDate = (entityId: string): number => {
         const state = this.hass?.states?.[entityId];
@@ -561,7 +562,7 @@ export class DwainsBlueprintDialog extends LitElement {
         });
         return valid.length ? Math.min(...valid) : Number.POSITIVE_INFINITY;
       };
-      this._values.waste_types = [...this._values.waste_types].sort((a: any, b: any) =>
+      sortedDisplay.waste_types = [...this._values.waste_types].sort((a: any, b: any) =>
         nextDate(a.entity) - nextDate(b.entity));
     }
     if (Array.isArray(this._values.coins)) {
@@ -569,11 +570,11 @@ export class DwainsBlueprintDialog extends LitElement {
         const amount = Number(this.hass?.states?.[item.entity]?.state);
         return Number.isFinite(amount) ? amount : -Infinity;
       };
-      this._values.coins = [...this._values.coins].sort((a: any, b: any) => coinValue(b) - coinValue(a));
+      sortedDisplay.coins = [...this._values.coins].sort((a: any, b: any) => coinValue(b) - coinValue(a));
     }
     let card: any;
     try {
-      card = resolveBlueprintCard(this._parsed.card, this._parsed.meta, this._values);
+      card = resolveBlueprintCard(this._parsed.card, this._parsed.meta, sortedDisplay);
     } catch (e: any) {
       this._error = this._t("blueprint.fill_failed", {
         error: String(e?.message || e),
