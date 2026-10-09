@@ -11,7 +11,7 @@ import { ddLocalize, ddLocalizePlural } from '../utils/localize';
 import { fireEvent } from './utils/fire-event';
 import { formatEntityStateWithUnit, formatValueWithUnit } from '../utils/unit-format';
 import { stripAreaNameFromEntityName } from '../utils/entity-names';
-import { resolveEntityCardConfig } from '../utils/blueprint-replacements';
+import { resolveDeviceViewCardConfig } from '../utils/blueprint-replacements';
 import './utils/dd-card-host';
 
 export interface DomainEntitiesDialogParams {
@@ -1480,6 +1480,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     /* Persons and indoor/outdoor climate deliberately use the same Lovelace
        cards as their Devices view rather than room-view tiles. */
     .content.home-information-context.device-presentation-context .entities-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
       align-items: start !important;
       gap: 10px !important;
     }
@@ -2140,8 +2141,12 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       return html`
         <div class="device-presentation-card ${domain === 'sensor' ? 'sensor-card' : ''}">
           <dwains-dashboard-next-card-host
+            framed
+            style=${domain === 'cover'
+              ? `--primary-color: ${getDomainColor('cover')}; --state-cover-open-color: ${getDomainColor('cover')}; --state-cover-opening-color: ${getDomainColor('cover')}; --state-cover-active-color: ${getDomainColor('cover')};`
+              : ''}
             .hass=${this.hass}
-            .config=${resolveEntityCardConfig({
+            .config=${resolveDeviceViewCardConfig({
               hass: this.hass,
               config: this._params.config,
               entity: entity.entity_id,

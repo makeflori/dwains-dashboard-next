@@ -23590,7 +23590,7 @@ copy{
       entityIds,
       customTitle: domain.name,
       homeInformation: true,
-      homeInformationPresentation: 'room',
+      homeInformationPresentation: 'devices',
       viewAllLabel: this._houseInfoDeviceViewLabel(),
       onViewAll: () => this._openDeviceDomain(this._statusDeviceDomainKey(domain)),
     });

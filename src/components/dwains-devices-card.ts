@@ -18,7 +18,7 @@ import {
 } from '../utils/area-entities';
 import { getDomainIcon, getDeviceClassIcon, getDomainColor } from '../utils/icons';
 import { getDomainName, getDeviceClassName } from '../utils/domain-names';
-import { findReplacementAssignment, resolveEntityCardConfig } from '../utils/blueprint-replacements';
+import { findReplacementAssignment, resolveDeviceViewCardConfig } from '../utils/blueprint-replacements';
 import {
   NEW_DEVICE_WINDOW_HOURS,
   buildRecentDeviceSummaries,
@@ -484,6 +484,18 @@ export class DwainsDevicesCard extends LitElement {
       const nameB = this._hass.states[b.entity_id]?.attributes?.friendly_name ||
         this._hass.entities?.[b.entity_id]?.name ||
         b.entity_id;
+
+      const deviceIdA = a.device_id || (this._hass.entities?.[a.entity_id] as any)?.device_id || '';
+      const deviceIdB = b.device_id || (this._hass.entities?.[b.entity_id] as any)?.device_id || '';
+      if (deviceIdA !== deviceIdB) {
+        const deviceName = (deviceId: string, fallback: string) => {
+          if (!deviceId) return fallback;
+          return this.config?.devices?.find(item => item.device_id === deviceId)?.name || deviceId;
+        };
+        const byDevice = collator.compare(deviceName(deviceIdA, String(nameA)), deviceName(deviceIdB, String(nameB)));
+        if (byDevice !== 0) return byDevice;
+      }
+
       return collator.compare(String(nameA), String(nameB));
     });
   }
@@ -862,39 +874,7 @@ export class DwainsDevicesCard extends LitElement {
       return { type: 'todo-list', entity: entityId };
     }
 
-    const replacement = findReplacementAssignment({
-      hass: this._hass,
-      config: this.config,
-      entity: entityId,
-      surface: 'devices_cards',
-    });
-
-    if (replacement && replacement.enabled !== false) {
-      return resolveEntityCardConfig({
-        hass: this._hass,
-        config: this.config,
-        entity: entityId,
-        surface: 'devices_cards',
-      });
-    }
-
-    if (entityId.startsWith('light.')) {
-      const state = this._hass.states?.[entityId];
-      return {
-        type: 'custom:mushroom-light-card',
-        entity: entityId,
-        name: state?.attributes?.friendly_name,
-        hide_state: false,
-        show_brightness_control: true,
-        show_color_control: true,
-        show_color_temp_control: true,
-        use_light_color: true,
-        collapsible_controls: true,
-        fill_container: false,
-      };
-    }
-
-    return resolveEntityCardConfig({
+    return resolveDeviceViewCardConfig({
       hass: this._hass,
       config: this.config,
       entity: entityId,
@@ -1536,14 +1516,14 @@ export class DwainsDevicesCard extends LitElement {
     limit: number
   ): Array<{ entity: string; name: string; color: string }> {
     const energyGraphPalette = [
-      '#4F8F3A',
       '#65A83F',
-      '#7FB344',
-      '#9DBB3F',
-      '#B8BE3A',
-      '#D1BC37',
       '#E5B83B',
-      '#D9A62F',
+      '#239CB5',
+      '#D98928',
+      '#50A789',
+      '#8065C7',
+      '#AD7253',
+      '#367DD5',
     ];
 
     return entities
@@ -1827,6 +1807,9 @@ export class DwainsDevicesCard extends LitElement {
       <div class="${this._entityWrapperClass(entity.entity_id)}">
         <dwains-dashboard-next-card-host
           framed
+          style=${entity.entity_id.startsWith('cover.')
+            ? `--primary-color: ${getDomainColor('cover')}; --state-cover-open-color: ${getDomainColor('cover')}; --state-cover-opening-color: ${getDomainColor('cover')}; --state-cover-active-color: ${getDomainColor('cover')};`
+            : ''}
           .hass=${this._hass}
           .config=${this._entityCardConfig(entity.entity_id)}
         ></dwains-dashboard-next-card-host>

@@ -15,6 +15,7 @@ import {
   type ParsedBlueprint,
 } from './blueprints';
 import { getEntityRegistry } from './entity-registry';
+import { getDomainColor } from './icons';
 
 interface ResolveReplacementParams {
   hass: HomeAssistant;
@@ -131,6 +132,41 @@ export function resolveEntityCardConfig(params: ResolveReplacementParams): Lovel
     console.warn('Dwains replacement blueprint failed; using default card.', assignment.name, e);
     return defaultEntityCardConfig(entityId, params.hass);
   }
+}
+
+export function resolveDeviceViewCardConfig(params: ResolveReplacementParams): LovelaceCardConfig {
+  const entityId = typeof params.entity === 'string' ? params.entity : params.entity.entity_id;
+  const assignment = findReplacementAssignment(params);
+
+  // Explicit replacement assignments always win.
+  if (assignment && assignment.enabled !== false) {
+    return resolveEntityCardConfig(params);
+  }
+
+  if (entityId.startsWith('light.')) {
+    const state = params.hass?.states?.[entityId];
+    return {
+      type: 'custom:mushroom-light-card',
+      entity: entityId,
+      name: state?.attributes?.friendly_name,
+      hide_state: false,
+      show_brightness_control: true,
+      show_color_control: true,
+      show_color_temp_control: true,
+      use_light_color: true,
+      collapsible_controls: true,
+      fill_container: false,
+    };
+  }
+
+  if (entityId.startsWith('cover.')) {
+    return {
+      ...defaultCoverCardConfig(entityId, params.hass),
+      color: getDomainColor('cover'),
+    };
+  }
+
+  return defaultEntityCardConfig(entityId, params.hass);
 }
 
 export function findReplacementAssignment(
