@@ -192,4 +192,12 @@ See [LICENSE](LICENSE) for the full license terms.
 - Size mobile domain dialogs to their contents up to the viewport limit.
 - Use a two-line mobile header with a full-height icon and a swipe-down dismissal gesture.
 - Display entities as single-column mobile rows and room-grouped desktop tiles.
-- Give each room section its own bulk controls for supported domains.
+- Provide global bulk-action buttons once above all rooms, plus compact per-room master toggles.
+
+## Entity popup layout correction
+
+- Use a dedicated responsive dialog header with icon, title, destination link, and aligned close button.
+- Capture drag gestures on the visible mobile sheet handle to close the dialog without pulling the background page.
+- Keep mobile dialogs anchored at the bottom and sized to their content.
+- Match the room-view entity layout: single-row cards on mobile, two or three columns on desktop.
+- Preserve room headings, put all-room actions at the top, and show a compact group switch in each room.
