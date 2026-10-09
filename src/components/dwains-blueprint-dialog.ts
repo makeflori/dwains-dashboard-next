@@ -48,7 +48,6 @@ export class DwainsBlueprintDialog extends LitElement {
   private get _german(): boolean { return (this.hass?.locale?.language || this.hass?.language || 'en').toLowerCase().split('-')[0] === 'de'; }
   private _label(def: any, key: string): string { return (this._german ? def.name_de : undefined) || def.name || key; }
   private _desc(def: any): string { return (this._german ? def.description_de : undefined) || def.description || ''; }
-  private _listTitle(type: string): string { return this._german ? (type === 'waste' ? 'Müllart' : 'Coin') : (type === 'waste' ? 'Waste type' : 'Coin'); }
 
   private _t = (key: string, vars?: Record<string, string | number>) =>
     ddLocalize(this.hass, key, vars);
