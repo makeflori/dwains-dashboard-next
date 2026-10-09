@@ -13,6 +13,7 @@ import { formatEntityStateWithUnit, formatValueWithUnit } from '../utils/unit-fo
 import { stripAreaNameFromEntityName } from '../utils/entity-names';
 import { findReplacementAssignment, resolveDeviceViewCardConfig } from '../utils/blueprint-replacements';
 import './utils/dd-card-host';
+import './dwains-person-tile';
 
 export interface DomainEntitiesDialogParams {
   domain: string;
@@ -1520,9 +1521,10 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       gap: 8px !important;
     }
 
-    /* Personen mirrors Geräte > Personen: four columns, same tile dimensions. */
+    /* Same person tile as Geräte > Personen; the popup only changes the grid. */
     .content.home-information-context.device-presentation-context.domain-person .entities-grid {
-      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      align-items: start !important;
       gap: 8px !important;
     }
 
@@ -2203,55 +2205,22 @@ export class DwainsDomainEntitiesDialog extends LitElement {
 
     if (this._params?.homeInformationPresentation === 'devices' && domain === 'person') {
       const state = this._getEffectiveEntityState(rawState);
-      const entityPicture = state.attributes?.entity_picture;
-      const personHasLocation =
-        Number.isFinite(Number(state.attributes?.latitude)) &&
-        Number.isFinite(Number(state.attributes?.longitude));
-      const rawName = state.attributes?.friendly_name || this.hass.entities?.[entity.entity_id]?.name || entity.entity_id;
+      const rawName = state.attributes?.friendly_name ||
+        this.hass.entities?.[entity.entity_id]?.name ||
+        entity.entity_id;
       const name = stripAreaNameFromEntityName(rawName, this._entityAreaName(entity));
-      const active = this._isEntityActiveForUi(state, domain);
-      const unavailable = this._isUnavailable(state);
 
       return html`
-        <article
-          class="mobile-entity-card person-card ${personHasLocation ? 'has-location-preview' : ''} ${active ? 'is-active' : 'is-off'} ${unavailable ? 'is-unavailable' : ''}"
-          style=${`--entity-color: ${this._entityColor(domain)};`}
+        <dwains-dashboard-next-person-tile
+          .hass=${this.hass}
+          .entityId=${entity.entity_id}
+          .displayName=${name}
           role="button"
           tabindex="0"
           aria-label=${name}
           @click=${() => this._showMoreInfo(entity.entity_id)}
           @keydown=${(event: KeyboardEvent) => this._handleEntityKeydown(event, entity.entity_id)}
-        >
-          <div class="mobile-entity-main">
-            <span class="mobile-entity-icon ${entityPicture ? 'has-entity-picture' : ''}">
-              ${entityPicture
-                ? html`<img class="mobile-entity-avatar" src=${entityPicture} alt=${name}>`
-                : html`<ha-icon icon=${getDomainIcon('person')}></ha-icon>`}
-            </span>
-            <div class="mobile-entity-content">
-              <div class="mobile-entity-name" title=${name}>${name}</div>
-              <div class="mobile-entity-state ${active ? 'active' : ''}">${formatEntityStateWithUnit(this.hass, state)}</div>
-            </div>
-          </div>
-          ${personHasLocation ? html`
-            <div class="person-location-preview" aria-label=${`${name} location`}>
-              <dwains-dashboard-next-card-host
-                eager
-                .hass=${this.hass}
-                .config=${{
-                  type: 'map',
-                  entities: [entity.entity_id],
-                  hours_to_show: 0,
-                  default_zoom: 14,
-                  auto_fit: true,
-                  fit_zones: false,
-                  show_zone_radius: false,
-                  aspect_ratio: '2:1',
-                }}
-              ></dwains-dashboard-next-card-host>
-            </div>
-          ` : nothing}
-        </article>
+        ></dwains-dashboard-next-person-tile>
       `;
     }
 
@@ -2515,120 +2484,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       display: block;
       object-fit: cover;
       border-radius: inherit;
-    }
-
-    .content.home-information-context.device-presentation-context.domain-person .mobile-entity-card {
-      --entity-color: var(--primary-color);
-      width: 100% !important;
-      min-width: 0 !important;
-      min-height: 62px !important;
-      height: auto !important;
-      margin: 0 !important;
-      padding: 8px 10px !important;
-      box-sizing: border-box;
-      display: flex !important;
-      flex-direction: column;
-      justify-content: center;
-      overflow: hidden;
-      border: 1px solid color-mix(in srgb, var(--primary-text-color) 6%, transparent);
-      border-radius: 8px;
-      background: var(--card-background-color);
-      color: var(--primary-text-color);
-      font: inherit;
-      text-align: left;
-      box-shadow: 0 3px 9px rgba(15, 23, 42, 0.035);
-      cursor: pointer;
-    }
-
-    .content.home-information-context.device-presentation-context.domain-person .mobile-entity-card.person-card.has-location-preview {
-      min-height: 186px !important;
-      align-items: stretch;
-      justify-content: flex-start;
-    }
-
-    .content.home-information-context.device-presentation-context.domain-person .mobile-entity-main {
-      width: 100%;
-      min-width: 0;
-      display: grid;
-      grid-template-columns: 36px minmax(0, 1fr) auto;
-      align-items: center;
-      gap: 9px;
-    }
-
-    .content.home-information-context.device-presentation-context.domain-person .mobile-entity-icon {
-      width: 36px;
-      height: 36px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 8px;
-      color: var(--entity-color);
-      background: color-mix(in srgb, var(--entity-color) 13%, transparent);
-    }
-
-    .content.home-information-context.device-presentation-context.domain-person .mobile-entity-icon.has-entity-picture {
-      overflow: hidden;
-      padding: 0;
-      background: var(--secondary-background-color);
-    }
-
-    .content.home-information-context.device-presentation-context.domain-person .mobile-entity-avatar {
-      width: 100%;
-      height: 100%;
-      display: block;
-      object-fit: cover;
-      border-radius: inherit;
-    }
-
-    .content.home-information-context.device-presentation-context.domain-person .mobile-entity-content {
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 2px;
-    }
-
-    .content.home-information-context.device-presentation-context.domain-person .mobile-entity-name {
-      overflow: hidden;
-      color: var(--primary-text-color);
-      font-size: 12px;
-      font-weight: 850;
-      line-height: 1.15;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .content.home-information-context.device-presentation-context.domain-person .mobile-entity-state {
-      overflow: hidden;
-      color: var(--secondary-text-color);
-      font-size: 10px;
-      font-weight: 650;
-      line-height: 1.1;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .content.home-information-context.device-presentation-context.domain-person .mobile-entity-state.active {
-      color: var(--entity-color);
-    }
-
-    .content.home-information-context.device-presentation-context.domain-person .person-location-preview {
-      width: 66.666%;
-      height: 90px;
-      margin-top: 10px;
-      align-self: center;
-      overflow: hidden;
-      border-radius: 8px;
-      pointer-events: none;
-      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 6%, transparent);
-    }
-
-    .content.home-information-context.device-presentation-context.domain-person .person-location-preview dwains-dashboard-next-card-host {
-      display: block;
-      width: 100%;
-      height: 100%;
-      --ha-card-border-width: 0;
-      --ha-card-border-radius: 8px;
     }
 
     .content.home-information-context.device-presentation-context .domain-entity-copy {
