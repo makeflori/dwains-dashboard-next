@@ -564,6 +564,13 @@ export class DwainsBlueprintDialog extends LitElement {
       this._values.waste_types = [...this._values.waste_types].sort((a: any, b: any) =>
         nextDate(a.entity) - nextDate(b.entity));
     }
+    if (Array.isArray(this._values.coins)) {
+      const coinValue = (item: any) => {
+        const amount = Number(this.hass?.states?.[item.entity]?.state);
+        return Number.isFinite(amount) ? amount : -Infinity;
+      };
+      this._values.coins = [...this._values.coins].sort((a: any, b: any) => coinValue(b) - coinValue(a));
+    }
     let card: any;
     try {
       card = resolveBlueprintCard(this._parsed.card, this._parsed.meta, this._values);
