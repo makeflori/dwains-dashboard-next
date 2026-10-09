@@ -19034,6 +19034,8 @@ copy{
       customTitle: title,
       homeInformation: true,
       homeInformationPresentation: 'devices',
+      deviceClass: kind,
+      deviceViewKey: 'sensor',
       viewAllLabel: this._houseInfoDeviceViewLabel(),
       onViewAll: () => this._openDeviceDomain('sensor'),
     });
@@ -23591,6 +23593,7 @@ copy{
       customTitle: domain.name,
       homeInformation: true,
       homeInformationPresentation: 'devices',
+      deviceViewKey: this._statusDeviceDomainKey(domain),
       viewAllLabel: this._houseInfoDeviceViewLabel(),
       onViewAll: () => this._openDeviceDomain(this._statusDeviceDomainKey(domain)),
     });
@@ -23614,6 +23617,7 @@ copy{
       customTitle: this._t('home.people'),
       homeInformation: true,
       homeInformationPresentation: 'devices',
+      deviceViewKey: 'person',
       viewAllLabel: this._houseInfoDeviceViewLabel(),
       onViewAll: () => this._openDeviceDomain('person'),
     });

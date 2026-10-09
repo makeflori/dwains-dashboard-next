@@ -26,6 +26,8 @@ export interface DomainEntitiesDialogParams {
   /** Home-information popup; room/device presentation is chosen per caller. */
   homeInformation?: boolean;
   homeInformationPresentation?: 'room' | 'devices';
+  /** Concrete Devices-tab key used for matching header icon/color (e.g. cover_shading). */
+  deviceViewKey?: string;
   customTitle?: string;
   customEntities?: string[];
   customDescription?: string;
@@ -1932,12 +1934,21 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       domainTitle = deviceClassTitles[deviceClass] || this._getLocalizedDomainTitle(domain);
     }
 
+    const deviceViewKey = this._params?.deviceViewKey;
     const headerIcon = filterByUnitOfMeasurement === 'W'
       ? 'mdi:flash'
-      : getDeviceClassIcon(domain, deviceClass) || getDomainIcon(domain);
+      : deviceViewKey === 'cover_openings'
+        ? 'mdi:door-open'
+        : deviceViewKey === 'cover_shading'
+          ? 'mdi:blinds-horizontal'
+          : deviceViewKey === 'cover_gates'
+            ? 'mdi:gate'
+            : getDeviceClassIcon(domain, deviceClass) || getDomainIcon(domain);
     const headerColor = filterByUnitOfMeasurement === 'W'
       ? getDomainColor('wattage')
-      : this._entityColor(domain, deviceClass);
+      : deviceViewKey && deviceViewKey.startsWith('cover_')
+        ? getDomainColor('cover')
+        : this._entityColor(domain, deviceClass);
 
     return html`
       <ha-dialog
@@ -2224,6 +2235,10 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       state.attributes?.icon ||
       getDeviceClassIcon(domain, deviceClass) ||
       getDomainIcon(domain);
+    const entityPicture = domain === 'person' ? state.attributes?.entity_picture : undefined;
+    const personHasLocation = domain === 'person' &&
+      Number.isFinite(Number(state.attributes?.latitude)) &&
+      Number.isFinite(Number(state.attributes?.longitude));
     const rawName = state.attributes?.friendly_name || this.hass.entities?.[entity.entity_id]?.name || entity.entity_id;
     const areaName = this._entityAreaName(entity);
     const name = stripAreaNameFromEntityName(rawName, areaName);
@@ -2232,6 +2247,8 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     const classes = [
       'domain-entity-card',
       `domain-entity-${domain}`,
+      domain === 'person' ? 'person-card' : '',
+      personHasLocation ? 'has-location-preview' : '',
       active ? 'is-active' : 'is-off',
       unavailable ? 'is-unavailable' : '',
     ].join(' ');
@@ -2247,14 +2264,34 @@ export class DwainsDomainEntitiesDialog extends LitElement {
         @keydown=${(event: KeyboardEvent) => this._handleEntityKeydown(event, entity.entity_id)}
       >
         <div class="domain-entity-top">
-          <div class="domain-entity-icon">
-            <ha-icon icon=${icon}></ha-icon>
+          <div class="domain-entity-icon ${entityPicture ? 'has-entity-picture' : ''}">
+            ${entityPicture
+              ? html`<img class="domain-entity-avatar" src=${entityPicture} alt=${name}>`
+              : html`<ha-icon icon=${icon}></ha-icon>`}
           </div>
           ${this._renderEntityActions(state, domain, active)}
         </div>
         <div class="domain-entity-copy">
           <div class="domain-entity-name">${name}</div>
           <div class="domain-entity-status">${this._entityStatusText(state, domain)}</div>
+          ${personHasLocation ? html`
+            <div class="person-location-preview" aria-label=${`${name} location`}>
+              <dwains-dashboard-next-card-host
+                eager
+                .hass=${this.hass}
+                .config=${{
+                  type: 'map',
+                  entities: [entity.entity_id],
+                  hours_to_show: 0,
+                  default_zoom: 14,
+                  auto_fit: true,
+                  fit_zones: false,
+                  show_zone_radius: false,
+                  aspect_ratio: '4:1',
+                }}
+              ></dwains-dashboard-next-card-host>
+            </div>
+          ` : nothing}
         </div>
       </article>
     `;
@@ -2392,6 +2429,43 @@ export class DwainsDomainEntitiesDialog extends LitElement {
 
     .content.home-information-context.device-presentation-context .domain-entity-icon ha-icon {
       --mdc-icon-size: 20px !important;
+    }
+
+    .content.home-information-context.device-presentation-context .domain-entity-icon.has-entity-picture {
+      overflow: hidden;
+      padding: 0 !important;
+      background: var(--secondary-background-color) !important;
+    }
+
+    .content.home-information-context.device-presentation-context .domain-entity-avatar {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      border-radius: inherit;
+    }
+
+    .content.home-information-context.device-presentation-context .domain-entity-card.person-card.has-location-preview {
+      min-height: 126px !important;
+      height: auto !important;
+      align-items: start !important;
+    }
+
+    .content.home-information-context.device-presentation-context .person-location-preview {
+      height: 58px;
+      margin-top: 7px;
+      overflow: hidden;
+      border-radius: 8px;
+      pointer-events: none;
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 6%, transparent);
+    }
+
+    .content.home-information-context.device-presentation-context .person-location-preview dwains-dashboard-next-card-host {
+      display: block;
+      width: 100%;
+      height: 100%;
+      --ha-card-border-width: 0;
+      --ha-card-border-radius: 8px;
     }
 
     .content.home-information-context.device-presentation-context .domain-entity-copy {

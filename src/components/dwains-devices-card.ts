@@ -1127,7 +1127,29 @@ export class DwainsDevicesCard extends LitElement {
                 </button>
               `
             : nothing}
-          ${domains.map((domain) => {
+          ${data.has(PERSON_DOMAIN) ? (() => {
+            const byArea = data.get(PERSON_DOMAIN)!;
+            const count = this._domainCount(byArea);
+            const isSelected = this._selectedDomain === PERSON_DOMAIN;
+            return html`
+              <button
+                class="area-button ${isSelected ? 'selected' : ''}"
+                style=${`--domain-color: ${this._typeColor(PERSON_DOMAIN)};`}
+                @click=${() => this._selectDomain(PERSON_DOMAIN)}
+              >
+                <div class="area-icon">
+                  <ha-icon icon=${this._typeIcon(PERSON_DOMAIN)}></ha-icon>
+                </div>
+                <div class="area-info">
+                  <div class="area-name">${this._typeName(PERSON_DOMAIN)}</div>
+                  <div class="device-menu-subtitle">${this._tp('common.entity', count)}</div>
+                </div>
+                <span class="domain-count">${count}</span>
+                <ha-icon class="device-menu-chevron" icon="mdi:chevron-right"></ha-icon>
+              </button>
+            `;
+          })() : nothing}
+          ${domains.filter((domain) => domain !== PERSON_DOMAIN).map((domain) => {
             const byArea = data.get(domain)!;
             const count = this._domainCount(byArea);
             const isSelected = this._selectedDomain === domain;
@@ -1873,6 +1895,9 @@ export class DwainsDevicesCard extends LitElement {
       getDeviceClassIcon(domain, deviceClass) ||
       getDomainIcon(domain);
     const entityPicture = domain === 'person' ? state.attributes?.entity_picture : undefined;
+    const personHasLocation = domain === 'person' &&
+      Number.isFinite(Number(state.attributes?.latitude)) &&
+      Number.isFinite(Number(state.attributes?.longitude));
     const rawName = state.attributes?.friendly_name ||
       this._hass.entities?.[entity.entity_id]?.name ||
       entity.entity_id;
@@ -1886,7 +1911,7 @@ export class DwainsDevicesCard extends LitElement {
 
     return html`
       <article
-        class="mobile-entity-card ${active ? 'is-active' : 'is-off'} ${unavailable ? 'is-unavailable' : ''}"
+        class="mobile-entity-card ${domain === 'person' ? 'person-card' : ''} ${personHasLocation ? 'has-location-preview' : ''} ${active ? 'is-active' : 'is-off'} ${unavailable ? 'is-unavailable' : ''}"
         style=${`--entity-color: ${getDomainColor(domain, deviceClass)};`}
         role="button"
         tabindex="0"
@@ -1907,6 +1932,24 @@ export class DwainsDevicesCard extends LitElement {
           <div class="mobile-entity-content">
             <div class="mobile-entity-name" title=${name}>${name}</div>
             <div class="mobile-entity-state ${active ? 'active' : ''}">${formatEntityStateWithUnit(this._hass, state)}</div>
+            ${personHasLocation ? html`
+              <div class="person-location-preview" aria-label=${`${name} location`}>
+                <dwains-dashboard-next-card-host
+                  eager
+                  .hass=${this._hass}
+                  .config=${{
+                    type: 'map',
+                    entities: [entity.entity_id],
+                    hours_to_show: 0,
+                    default_zoom: 14,
+                    auto_fit: true,
+                    fit_zones: false,
+                    show_zone_radius: false,
+                    aspect_ratio: '4:1',
+                  }}
+                ></dwains-dashboard-next-card-host>
+              </div>
+            ` : nothing}
           </div>
           <div class="mobile-entity-right">
             ${canToggle ? html`
@@ -3569,6 +3612,32 @@ export class DwainsDevicesCard extends LitElement {
       display: block;
       object-fit: cover;
       border-radius: inherit;
+    }
+
+    .room-style-device-view .mobile-entity-card.person-card.has-location-preview {
+      min-height: 126px !important;
+      align-items: stretch;
+    }
+
+    .room-style-device-view .mobile-entity-card.person-card.has-location-preview .mobile-entity-main {
+      align-items: start;
+    }
+
+    .room-style-device-view .person-location-preview {
+      height: 58px;
+      margin-top: 7px;
+      overflow: hidden;
+      border-radius: 8px;
+      pointer-events: none;
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 6%, transparent);
+    }
+
+    .room-style-device-view .person-location-preview dwains-dashboard-next-card-host {
+      display: block;
+      width: 100%;
+      height: 100%;
+      --ha-card-border-width: 0;
+      --ha-card-border-radius: 8px;
     }
 
     .room-style-device-view .mobile-entity-content {
