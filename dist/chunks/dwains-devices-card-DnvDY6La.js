@@ -1,10 +1,10 @@
-import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as a,b as n,A as r,r as o,a as s}from"./lit-element-CR7MDbd3.js";import{e as c}from"./class-map--nNT6Kl8.js";import{f as d,s as l,h as p,b as h,g as m,a as g,c as v,d as x,e as b,i as u,r as y,j as f,k as _,l as w,N as k,m as $,n as D}from"./entity-names-DU0QrlWt.js";import{d as z,a as E,b as C}from"./index-oICRKVTd.js";import{e as S,f as M,i as j,a as N}from"./dwains-bottom-nav-BvrC9Zz2.js";import{f as A}from"./fire-event-DQiSssdY.js";import"./dd-card-host-COJOAdKz.js";import"./blueprints-CLD6dn9m.js";import"./screensaver-media-Dt3mXObn.js";const I="__new_devices__",L="__maintenance__",P="__maintenance_no_area__",T="energy",O="__overview__",B="person",R="__people__";let F=class extends a{constructor(){super(...arguments),this._selectedDomain=null,this._isMobile=!1,this._mobileNavOpen=!1,this._pendingDomainSelection=null,this._resizeHandler=()=>this._checkMobile(),this._locationHandler=()=>this._handleLocationChanged(),this._t=(e,i)=>z(this._hass,e,i),this._tp=(e,i,t)=>E(this._hass,e,i,t),this._handleSelectDeviceDomain=e=>{const i=e.detail?.domain;i&&(this._pendingDomainSelection=i,this._applyPendingDomainSelection(),this.requestUpdate())},this._handleDevicesNavToggle=e=>{if(!this._isMobile)return;if(e?.detail?.open)return window.dispatchEvent(new CustomEvent("dwains-dashboard-next-mobile-nav-sheet",{detail:{kind:"devices"}})),void(this._mobileNavOpen=!0);const i=!this._mobileNavOpen;i&&window.dispatchEvent(new CustomEvent("dwains-dashboard-next-mobile-nav-sheet",{detail:{kind:"devices"}})),this._mobileNavOpen=i},this._handleMobileNavSheet=e=>{"devices"!==e.detail?.kind&&(this._mobileNavOpen=!1)},this._closeMobileNav=()=>{this._mobileNavOpen=!1}}set hass(e){this._hass=e,this._syncThemeAttribute(),S(e,this.config?.settings),this._syncBottomNavDeviceContext();const i=this.renderRoot?.querySelectorAll("dwains-dashboard-next-card-host");i&&i.forEach(i=>i.hass=e)}get hass(){return this._hass}setConfig(e){if(!e)throw new Error(z(this._hass,"devices.invalid_configuration"));this.config={areas:e.areas,devices:e.devices,entities:e.entities,floors:e.floors,areas_display:e.areas_display,areas_options:e.areas_options,settings:e.settings,blueprint_replacements:e.blueprint_replacements,device_admission:e.device_admission},this._hass&&S(this._hass,this.config.settings);const i=this._getUrlDomain();if(i&&(this._pendingDomainSelection=i),!this._selectedDomain){const e=this._buildData(),t=this._buildMaintenanceData(),a=this._maintenanceSummary(t).totalCount>0,n=this._showEnergyMenu();i===I?this._selectedDomain=I:i===L&&a?this._selectedDomain=L:i===T&&n?this._selectedDomain=T:i&&e.has(i)?this._selectedDomain=i:this._selectedDomain=O,this._syncBottomNavDeviceContext()}}getCardSize(){return 12}connectedCallback(){super.connectedCallback(),this._syncThemeAttribute(),this._checkMobile(),window.addEventListener("resize",this._resizeHandler),window.addEventListener("dwains-dashboard-next-toggle-devices-nav",this._handleDevicesNavToggle),window.addEventListener("dwains-dashboard-next-mobile-nav-sheet",this._handleMobileNavSheet),window.addEventListener("dwains-dashboard-next-select-device-domain",this._handleSelectDeviceDomain),window.addEventListener("location-changed",this._locationHandler),window.addEventListener("popstate",this._locationHandler),this._handleLocationChanged(),this._syncBottomNavDeviceContext()}disconnectedCallback(){super.disconnectedCallback(),window.removeEventListener("resize",this._resizeHandler),window.removeEventListener("dwains-dashboard-next-toggle-devices-nav",this._handleDevicesNavToggle),window.removeEventListener("dwains-dashboard-next-mobile-nav-sheet",this._handleMobileNavSheet),window.removeEventListener("dwains-dashboard-next-select-device-domain",this._handleSelectDeviceDomain),window.removeEventListener("location-changed",this._locationHandler),window.removeEventListener("popstate",this._locationHandler)}_checkMobile(){const e=this._isMobile;this._isMobile=window.innerWidth<=768,e!==this._isMobile&&(this._mobileNavOpen=!1)}_getUrlDomain(){try{return new URL(window.location.href).searchParams.get("dd_device")}catch{return null}}_updateUrlDomain(e){try{const i=new URL(window.location.href);e?i.searchParams.set("dd_device",e):i.searchParams.delete("dd_device"),window.history.replaceState(window.history.state,"",i.toString())}catch{}}_handleLocationChanged(){const e=this._getUrlDomain();e&&(this._pendingDomainSelection=e,this._applyPendingDomainSelection(),this.requestUpdate())}_getAreaEntities(e){const i=[],t=new Set;if(this.config?.entities){const a=new Set;this.config.devices&&this.config.devices.forEach(i=>{i.area_id===e&&a.add(i.device_id)}),this.config.entities.forEach(n=>{if(n.area_id===e||n.device_id&&a.has(n.device_id)){const e=this._hass.entities?.[n.entity_id];if(e?.hidden_by||"diagnostic"===e?.entity_category||"config"===e?.entity_category)return;i.push(n),t.add(n.entity_id)}})}return Object.values(this._hass.states).forEach(a=>{if(!t.has(a.entity_id)&&a.attributes?.area_id===e){const t=this._hass.entities?.[a.entity_id];if(t?.hidden_by||"diagnostic"===t?.entity_category||"config"===t?.entity_category)return;i.push({entity_id:a.entity_id,area_id:e,hidden:!1})}}),i}_getFilteredAreaEntities(e){let i=this._getAreaEntities(e);if(i=i.filter(e=>{const i=this._hass.entities?.[e.entity_id];return!(i?.hidden_by||"diagnostic"===i?.entity_category||"config"===i?.entity_category)}),this.config?.areas_options){const t=this.config.areas_options[e];if(t?.groups_options){const e=new Set;for(const i of Object.values(t.groups_options))i.hidden&&i.hidden.forEach(i=>e.add(i));i=i.filter(i=>!e.has(i.entity_id))}}!1!==this.config?.settings?.hide_unavailable_entities_on_devices&&(i=i.filter(e=>{const i=this._hass.states[e.entity_id];return i&&"unavailable"!==i.state&&"unknown"!==i.state})),i=d(this._hass,this.config,i);const t=new Set(this.config?.device_admission?.hidden_entities||[]);return t.size&&(i=i.filter(e=>!t.has(e.entity_id))),i}_getVisibleSortedAreas(){return this.config?.areas?l(this.config.areas,this.config.areas_display,C(this._hass)):[]}_buildData(){const e=new Map;if(!this._hass)return e;const i=this._getVisibleSortedAreas();for(const t of i){const i=this._getFilteredAreaEntities(t.area_id);for(const a of i){const i=this._typeKeyFor(a.entity_id);if(!i)continue;let n=e.get(i);n||(n=new Map,e.set(i,n));let r=n.get(t.area_id);r||(r={area:t,entities:[]},n.set(t.area_id,r)),r.entities.push(a)}}return this._addPersonData(e),this._hiddenDeviceTypes().forEach(i=>e.delete(i)),e}_buildMaintenanceData(){const e=new Map;if(!this._hass||!this.config)return e;const i=p(this.config);return Object.values(this._hass.states).forEach(t=>{const a=t?.entity_id;if(!a)return;const n=this._hass.entities?.[a];if(n?.hidden_by)return;const r=this._deviceIdForEntity(a,n);if(r&&i.has(r))return;const o=this._maintenanceKind(a,t);if(!o)return;const s=this._maintenanceAreaForEntity(a,t,n);if(!s)return;let c=e.get(s.area_id);c||(c={area:s,items:[]},e.set(s.area_id,c)),c.items.push({entityId:a,deviceId:r,areaId:s.area_id,name:t.attributes?.friendly_name||n?.name||a,stateLabel:this._formatMaintenanceState(t,o),icon:this._maintenanceIcon(a,t,o),kind:o})}),e.forEach(e=>{e.items.sort((e,i)=>e.kind!==i.kind?"unavailable"===e.kind?-1:1:e.name.localeCompare(i.name))}),e}_maintenanceSummary(e){let i=0;const t=new Set;let a=0;e.forEach(e=>{e.items.forEach(e=>{"battery"!==e.kind?e.deviceId?t.add(e.deviceId):a+=1:i+=1})});const n=t.size+a;return{lowBatteryCount:i,unavailableDeviceCount:n,totalCount:i+n}}_maintenanceSubtitle(e){const i=this._maintenanceSummary(e),t=[];return i.lowBatteryCount&&t.push(this._tp("devices.low_battery",i.lowBatteryCount)),i.unavailableDeviceCount&&t.push(this._tp("devices.unavailable_device",i.unavailableDeviceCount)),t.length?t.join(", "):this._t("devices.all_good")}_showEnergyMenu(){return!0}_energySummary(){return h(this._hass,this.config)}_maintenanceKind(e,i){return"unavailable"===i.state?"unavailable":this._isLowBatteryEntity(e,i)?"battery":void 0}_isLowBatteryEntity(e,i){const t=e.split(".")[0],a=i.attributes?.device_class;if("battery"!==a)return!1;if("binary_sensor"===t)return"on"===i.state;const n=Number(i.state);return Number.isFinite(n)&&n<=20}_deviceIdForEntity(e,i){return i?.device_id||this.config?.entities?.find(i=>i.entity_id===e)?.device_id}_maintenanceAreaForEntity(e,i,t){const a=this.config?.entities?.find(i=>i.entity_id===e),n=this._deviceIdForEntity(e,t),r=n?this.config?.devices?.find(e=>e.device_id===n):void 0,o=n?this._hass?.devices?.[n]:void 0,s=t?.area_id||a?.area_id||i.attributes?.area_id||r?.area_id||o?.area_id;if(!s||(this.config?.areas_display?.hidden||[]).includes(s))return;const c=s?this.config?.areas?.find(e=>e.area_id===s):void 0;return c||void 0}_maintenanceIcon(e,i,t){if("battery"===t)return"mdi:battery-alert";const a=e.split(".")[0]||"";return i.attributes?.icon||m(a)||"mdi:help-box"}_formatMaintenanceState(e,i){if("unavailable"===i)return"unknown"===e.state?this._t("common.unknown"):this._t("common.unavailable");const t=e.attributes?.unit_of_measurement||"%";return M(e.state,t)}_addPersonData(e){const i=this._getVisiblePersonEntities();if(!i.length)return;let t=e.get(B);t||(t=new Map,e.set(B,t));const a=new Set;t.forEach(e=>e.entities.forEach(e=>a.add(e.entity_id)));const n=t.get(R)??{area:{area_id:R,name:g(this._hass,B),icon:"mdi:account-group"},entities:[]};n.entities=[...n.entities,...i.filter(e=>!a.has(e.entity_id))],n.entities.length&&t.set(R,n)}_getVisiblePersonEntities(){if(!this._hass||!this.config)return[];const e=new Set(this.config.settings?.hidden_persons||[]);return Object.values(this._hass.states).filter(i=>!!i.entity_id?.startsWith(`${B}.`)&&(!e.has(i.entity_id)&&!this._hass.entities?.[i.entity_id]?.hidden_by)).sort((e,i)=>{const t=e.attributes?.friendly_name||e.entity_id,a=i.attributes?.friendly_name||i.entity_id;return String(t).localeCompare(String(a))}).map(e=>({entity_id:e.entity_id,area_id:R,hidden:!1}))}_typeKeyFor(e){const i=e.split(".")[0];if(i){if("binary_sensor"===i){const i=this._hass?.states?.[e]?.attributes?.device_class;return i?`binary_sensor.${i}`:"binary_sensor"}return i}}_hiddenDeviceTypes(){return new Set((this.config?.settings?.hidden_device_types||[]).filter(e=>"string"==typeof e&&e.length>0))}_typeName(e){return e===L?this._t("devices.maintenance"):e===T?this._t("devices.energy"):e===O?this._t("navigation.overview"):e.startsWith("binary_sensor.")?v(this._hass,e.slice(14)):g(this._hass,e)}_typeIcon(e){return e===L?"mdi:wrench":e===T?"mdi:flash":e===O?"mdi:view-grid-outline":e===B?"mdi:account-group":e.startsWith("binary_sensor.")?x("binary_sensor",e.slice(14)):m(e)}_typeColor(e){return e===L?"var(--warning-color, #ff9800)":e===T?b("energy"):e===O?"var(--primary-color)":e.startsWith("binary_sensor.")?b("binary_sensor",e.slice(14)):b(e)}_syncBottomNavDeviceContext(){const e=this._selectedDomain;window.dispatchEvent(new CustomEvent("dwains-dashboard-next-device-context-changed",{detail:{domain:e,icon:e===I?"mdi:new-box":e===L?"mdi:wrench":e===T?"mdi:flash":e!==O&&e&&e?this._typeIcon(e):"mdi:format-list-bulleted-type",label:e===I?this._t("devices.new"):e===L?this._t("devices.maintenance"):e===T?this._t("devices.energy"):e!==O&&e&&e?this._typeName(e):this._t("devices.title")}}))}updated(e){e.has("_hass")&&this._syncThemeAttribute(),e.has("_selectedDomain")&&this._syncBottomNavDeviceContext()}_syncThemeAttribute(){this.toggleAttribute("data-theme-dark",j(this._hass,this))}_sortedDomains(e){return[...e.keys()].sort((e,i)=>this._typeName(e).localeCompare(this._typeName(i)))}_domainCount(e){let i=0;return e.forEach(e=>i+=e.entities.length),i}_applyPendingDomainSelection(e,i,t,a){if(!this._hass||!this.config)return!1;const n=this._pendingDomainSelection||this._getUrlDomain();if(!n)return!1;const r=e??this._buildData(),o=i??(u(this.config)&&this._newDevices().length>0),s=t??this._maintenanceSummary(this._buildMaintenanceData()).totalCount>0,c=a??this._showEnergyMenu();if(n===O);else if(n===I){if(!o)return!1}else if(n===L){if(!s)return!1}else if(n===T){if(!c)return!1}else if(!r.has(n))return!1;return this._pendingDomainSelection=null,this._selectedDomain!==n&&(this._selectedDomain=n,this._syncBottomNavDeviceContext()),!0}_entityCardConfig(e){return e.startsWith("todo.")?{type:"todo-list",entity:e}:y({hass:this._hass,config:this.config,entity:e,surface:"devices_cards"})}_selectDomain(e){this._pendingDomainSelection=null,this._selectedDomain=e,this._updateUrlDomain(e===O?null:e),this._syncBottomNavDeviceContext(),this._closeMobileNav()}render(){if(!this._hass||!this.config)return n`<div class="loading">${this._t("common.loading")}</div>`;const e=this._buildData(),i=this._sortedDomains(e);this._ensureDeviceTracking();const t=this._newDevices(),a=p(this.config).size,r=u(this.config)&&(t.length>0||a>0),o=this._buildMaintenanceData(),s=this._maintenanceSummary(o).totalCount>0,c=this._showEnergyMenu();return this._applyPendingDomainSelection(e,r,s,c),0!==i.length||r||s||c?(this._selectedDomain===O||(this._selectedDomain===I?r||(this._selectedDomain=O):this._selectedDomain===L?s||(this._selectedDomain=O):this._selectedDomain===T?c||(this._selectedDomain=O):this._selectedDomain&&e.has(this._selectedDomain)||(this._selectedDomain=O)),n`
+import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as a,b as n,A as r,r as o,a as s}from"./lit-element-CR7MDbd3.js";import{e as c}from"./class-map--nNT6Kl8.js";import{f as d,s as l,h as p,b as h,g as m,a as g,c as v,d as x,e as u,i as b,j as y,r as _,k as f,l as w,N as k,m as $,n as D}from"./entity-names-DCoIN-Bi.js";import{d as z,a as E,b as C}from"./index-yZS5LGGU.js";import{e as S,f as M,i as j,a as N}from"./dwains-bottom-nav-DnW-NjoG.js";import{f as A}from"./fire-event-DQiSssdY.js";import"./dd-card-host-COJOAdKz.js";import"./blueprints-CLD6dn9m.js";import"./screensaver-media-Dt3mXObn.js";const I="__new_devices__",P="__maintenance__",B="energy",L="__overview__",T="person",O="__people__";let R=class extends a{constructor(){super(...arguments),this._selectedDomain=null,this._isMobile=!1,this._mobileNavOpen=!1,this._pendingDomainSelection=null,this._resizeHandler=()=>this._checkMobile(),this._locationHandler=()=>this._handleLocationChanged(),this._t=(e,i)=>z(this._hass,e,i),this._tp=(e,i,t)=>E(this._hass,e,i,t),this._handleSelectDeviceDomain=e=>{const i=e.detail?.domain;i&&(this._pendingDomainSelection=i,this._applyPendingDomainSelection(),this.requestUpdate())},this._handleDevicesNavToggle=e=>{if(!this._isMobile)return;if(e?.detail?.open)return window.dispatchEvent(new CustomEvent("dwains-dashboard-next-mobile-nav-sheet",{detail:{kind:"devices"}})),void(this._mobileNavOpen=!0);const i=!this._mobileNavOpen;i&&window.dispatchEvent(new CustomEvent("dwains-dashboard-next-mobile-nav-sheet",{detail:{kind:"devices"}})),this._mobileNavOpen=i},this._handleMobileNavSheet=e=>{"devices"!==e.detail?.kind&&(this._mobileNavOpen=!1)},this._closeMobileNav=()=>{this._mobileNavOpen=!1}}set hass(e){this._hass=e,this._syncThemeAttribute(),S(e,this.config?.settings),this._syncBottomNavDeviceContext();const i=this.renderRoot?.querySelectorAll("dwains-dashboard-next-card-host");i&&i.forEach(i=>i.hass=e)}get hass(){return this._hass}setConfig(e){if(!e)throw new Error(z(this._hass,"devices.invalid_configuration"));this.config={areas:e.areas,devices:e.devices,entities:e.entities,floors:e.floors,areas_display:e.areas_display,areas_options:e.areas_options,settings:e.settings,blueprint_replacements:e.blueprint_replacements,device_admission:e.device_admission},this._hass&&S(this._hass,this.config.settings);const i=this._getUrlDomain();if(i&&(this._pendingDomainSelection=i),!this._selectedDomain){const e=this._buildData(),t=this._buildMaintenanceData(),a=this._maintenanceSummary(t).totalCount>0,n=this._showEnergyMenu();i===I?this._selectedDomain=I:i===P&&a?this._selectedDomain=P:i===B&&n?this._selectedDomain=B:i&&e.has(i)?this._selectedDomain=i:this._selectedDomain=L,this._syncBottomNavDeviceContext()}}getCardSize(){return 12}connectedCallback(){super.connectedCallback(),this._syncThemeAttribute(),this._checkMobile(),window.addEventListener("resize",this._resizeHandler),window.addEventListener("dwains-dashboard-next-toggle-devices-nav",this._handleDevicesNavToggle),window.addEventListener("dwains-dashboard-next-mobile-nav-sheet",this._handleMobileNavSheet),window.addEventListener("dwains-dashboard-next-select-device-domain",this._handleSelectDeviceDomain),window.addEventListener("location-changed",this._locationHandler),window.addEventListener("popstate",this._locationHandler),this._handleLocationChanged(),this._syncBottomNavDeviceContext()}disconnectedCallback(){super.disconnectedCallback(),window.removeEventListener("resize",this._resizeHandler),window.removeEventListener("dwains-dashboard-next-toggle-devices-nav",this._handleDevicesNavToggle),window.removeEventListener("dwains-dashboard-next-mobile-nav-sheet",this._handleMobileNavSheet),window.removeEventListener("dwains-dashboard-next-select-device-domain",this._handleSelectDeviceDomain),window.removeEventListener("location-changed",this._locationHandler),window.removeEventListener("popstate",this._locationHandler)}_checkMobile(){const e=this._isMobile;this._isMobile=window.innerWidth<=768,e!==this._isMobile&&(this._mobileNavOpen=!1)}_getUrlDomain(){try{return new URL(window.location.href).searchParams.get("dd_device")}catch{return null}}_updateUrlDomain(e){try{const i=new URL(window.location.href);e?i.searchParams.set("dd_device",e):i.searchParams.delete("dd_device"),window.history.replaceState(window.history.state,"",i.toString())}catch{}}_handleLocationChanged(){const e=this._getUrlDomain();e&&(this._pendingDomainSelection=e,this._applyPendingDomainSelection(),this.requestUpdate())}_getAreaEntities(e){const i=[],t=new Set;if(this.config?.entities){const a=new Set;this.config.devices&&this.config.devices.forEach(i=>{i.area_id===e&&a.add(i.device_id)}),this.config.entities.forEach(n=>{if(n.area_id===e||n.device_id&&a.has(n.device_id)){const e=this._hass.entities?.[n.entity_id];if(e?.hidden_by||"diagnostic"===e?.entity_category||"config"===e?.entity_category)return;i.push(n),t.add(n.entity_id)}})}return Object.values(this._hass.states).forEach(a=>{if(!t.has(a.entity_id)&&a.attributes?.area_id===e){const t=this._hass.entities?.[a.entity_id];if(t?.hidden_by||"diagnostic"===t?.entity_category||"config"===t?.entity_category)return;i.push({entity_id:a.entity_id,area_id:e,hidden:!1})}}),i}_getFilteredAreaEntities(e){let i=this._getAreaEntities(e);if(i=i.filter(e=>{const i=this._hass.entities?.[e.entity_id];return!(i?.hidden_by||"diagnostic"===i?.entity_category||"config"===i?.entity_category)}),this.config?.areas_options){const t=this.config.areas_options[e];if(t?.groups_options){const e=new Set;for(const i of Object.values(t.groups_options))i.hidden&&i.hidden.forEach(i=>e.add(i));i=i.filter(i=>!e.has(i.entity_id))}}!1!==this.config?.settings?.hide_unavailable_entities_on_devices&&(i=i.filter(e=>{const i=this._hass.states[e.entity_id];return i&&"unavailable"!==i.state&&"unknown"!==i.state})),i=d(this._hass,this.config,i);const t=new Set(this.config?.device_admission?.hidden_entities||[]);return t.size&&(i=i.filter(e=>!t.has(e.entity_id))),i}_getVisibleSortedAreas(){return this.config?.areas?l(this.config.areas,this.config.areas_display,C(this._hass)):[]}_buildData(){const e=new Map;if(!this._hass)return e;const i=this._getVisibleSortedAreas();for(const t of i){const i=this._getFilteredAreaEntities(t.area_id);for(const a of i){const i=this._typeKeyFor(a.entity_id);if(!i)continue;let n=e.get(i);n||(n=new Map,e.set(i,n));let r=n.get(t.area_id);r||(r={area:t,entities:[]},n.set(t.area_id,r)),r.entities.push(a)}}return this._addPersonData(e),this._hiddenDeviceTypes().forEach(i=>e.delete(i)),e}_buildMaintenanceData(){const e=new Map;if(!this._hass||!this.config)return e;const i=p(this.config);return Object.values(this._hass.states).forEach(t=>{const a=t?.entity_id;if(!a)return;const n=this._hass.entities?.[a];if(n?.hidden_by)return;const r=this._deviceIdForEntity(a,n);if(r&&i.has(r))return;const o=this._maintenanceKind(a,t);if(!o)return;const s=this._maintenanceAreaForEntity(a,t,n);if(!s)return;let c=e.get(s.area_id);c||(c={area:s,items:[]},e.set(s.area_id,c)),c.items.push({entityId:a,deviceId:r,areaId:s.area_id,name:t.attributes?.friendly_name||n?.name||a,stateLabel:this._formatMaintenanceState(t,o),icon:this._maintenanceIcon(a,t,o),kind:o})}),e.forEach(e=>{e.items.sort((e,i)=>e.kind!==i.kind?"unavailable"===e.kind?-1:1:e.name.localeCompare(i.name))}),e}_maintenanceSummary(e){let i=0;const t=new Set;let a=0;e.forEach(e=>{e.items.forEach(e=>{"battery"!==e.kind?e.deviceId?t.add(e.deviceId):a+=1:i+=1})});const n=t.size+a;return{lowBatteryCount:i,unavailableDeviceCount:n,totalCount:i+n}}_maintenanceSubtitle(e){const i=this._maintenanceSummary(e),t=[];return i.lowBatteryCount&&t.push(this._tp("devices.low_battery",i.lowBatteryCount)),i.unavailableDeviceCount&&t.push(this._tp("devices.unavailable_device",i.unavailableDeviceCount)),t.length?t.join(", "):this._t("devices.all_good")}_showEnergyMenu(){return!0}_energySummary(){return h(this._hass,this.config)}_maintenanceKind(e,i){return"unavailable"===i.state?"unavailable":this._isLowBatteryEntity(e,i)?"battery":void 0}_isLowBatteryEntity(e,i){const t=e.split(".")[0],a=i.attributes?.device_class;if("battery"!==a)return!1;if("binary_sensor"===t)return"on"===i.state;const n=Number(i.state);return Number.isFinite(n)&&n<=20}_deviceIdForEntity(e,i){return i?.device_id||this.config?.entities?.find(i=>i.entity_id===e)?.device_id}_maintenanceAreaForEntity(e,i,t){const a=this.config?.entities?.find(i=>i.entity_id===e),n=this._deviceIdForEntity(e,t),r=n?this.config?.devices?.find(e=>e.device_id===n):void 0,o=n?this._hass?.devices?.[n]:void 0,s=t?.area_id||a?.area_id||i.attributes?.area_id||r?.area_id||o?.area_id;if(!s||(this.config?.areas_display?.hidden||[]).includes(s))return;const c=s?this.config?.areas?.find(e=>e.area_id===s):void 0;return c||void 0}_maintenanceIcon(e,i,t){if("battery"===t)return"mdi:battery-alert";const a=e.split(".")[0]||"";return i.attributes?.icon||m(a)||"mdi:help-box"}_formatMaintenanceState(e,i){if("unavailable"===i)return"unknown"===e.state?this._t("common.unknown"):this._t("common.unavailable");const t=e.attributes?.unit_of_measurement||"%";return M(e.state,t)}_addPersonData(e){const i=this._getVisiblePersonEntities();if(!i.length)return;let t=e.get(T);t||(t=new Map,e.set(T,t));const a=new Set;t.forEach(e=>e.entities.forEach(e=>a.add(e.entity_id)));const n=t.get(O)??{area:{area_id:O,name:g(this._hass,T),icon:"mdi:account-group"},entities:[]};n.entities=[...n.entities,...i.filter(e=>!a.has(e.entity_id))],n.entities.length&&t.set(O,n)}_getVisiblePersonEntities(){if(!this._hass||!this.config)return[];const e=new Set(this.config.settings?.hidden_persons||[]);return Object.values(this._hass.states).filter(i=>!!i.entity_id?.startsWith(`${T}.`)&&(!e.has(i.entity_id)&&!this._hass.entities?.[i.entity_id]?.hidden_by)).sort((e,i)=>{const t=e.attributes?.friendly_name||e.entity_id,a=i.attributes?.friendly_name||i.entity_id;return String(t).localeCompare(String(a))}).map(e=>({entity_id:e.entity_id,area_id:O,hidden:!1}))}_typeKeyFor(e){const i=e.split(".")[0];if(i){if("binary_sensor"===i){const i=this._hass?.states?.[e]?.attributes?.device_class;return i?`binary_sensor.${i}`:"binary_sensor"}return i}}_hiddenDeviceTypes(){return new Set((this.config?.settings?.hidden_device_types||[]).filter(e=>"string"==typeof e&&e.length>0))}_typeName(e){return e===P?this._t("devices.maintenance"):e===B?this._t("devices.energy"):e===L?this._t("navigation.overview"):e.startsWith("binary_sensor.")?v(this._hass,e.slice(14)):g(this._hass,e)}_typeIcon(e){return e===P?"mdi:wrench":e===B?"mdi:flash":e===L?"mdi:view-grid-outline":e===T?"mdi:account-group":e.startsWith("binary_sensor.")?x("binary_sensor",e.slice(14)):m(e)}_typeColor(e){return e===P?"var(--warning-color, #ff9800)":e===B?u("energy"):e===L?"var(--primary-color)":e.startsWith("binary_sensor.")?u("binary_sensor",e.slice(14)):u(e)}_syncBottomNavDeviceContext(){const e=this._selectedDomain;window.dispatchEvent(new CustomEvent("dwains-dashboard-next-device-context-changed",{detail:{domain:e,icon:e===I?"mdi:new-box":e===P?"mdi:wrench":e===B?"mdi:flash":e!==L&&e&&e?this._typeIcon(e):"mdi:format-list-bulleted-type",label:e===I?this._t("devices.new"):e===P?this._t("devices.maintenance"):e===B?this._t("devices.energy"):e!==L&&e&&e?this._typeName(e):this._t("devices.title")}}))}updated(e){e.has("_hass")&&this._syncThemeAttribute(),e.has("_selectedDomain")&&this._syncBottomNavDeviceContext()}_syncThemeAttribute(){this.toggleAttribute("data-theme-dark",j(this._hass,this))}_sortedDomains(e){return[...e.keys()].sort((e,i)=>this._typeName(e).localeCompare(this._typeName(i)))}_domainCount(e){let i=0;return e.forEach(e=>i+=e.entities.length),i}_applyPendingDomainSelection(e,i,t,a){if(!this._hass||!this.config)return!1;const n=this._pendingDomainSelection||this._getUrlDomain();if(!n)return!1;const r=e??this._buildData(),o=i??(b(this.config)&&this._newDevices().length>0),s=t??this._maintenanceSummary(this._buildMaintenanceData()).totalCount>0,c=a??this._showEnergyMenu();if(n===L);else if(n===I){if(!o)return!1}else if(n===P){if(!s)return!1}else if(n===B){if(!c)return!1}else if(!r.has(n))return!1;return this._pendingDomainSelection=null,this._selectedDomain!==n&&(this._selectedDomain=n,this._syncBottomNavDeviceContext()),!0}_entityCardConfig(e){if(e.startsWith("todo."))return{type:"todo-list",entity:e};const i=y({hass:this._hass,config:this.config,entity:e,surface:"devices_cards"});if(i&&!1!==i.enabled)return _({hass:this._hass,config:this.config,entity:e,surface:"devices_cards"});if(e.startsWith("light.")){const i=this._hass.states?.[e];return{type:"custom:mushroom-light-card",entity:e,name:i?.attributes?.friendly_name,hide_state:!1,show_brightness_control:!0,show_color_control:!0,show_color_temp_control:!0,use_light_color:!0,collapsible_controls:!0,fill_container:!1}}return _({hass:this._hass,config:this.config,entity:e,surface:"devices_cards"})}_selectDomain(e){this._pendingDomainSelection=null,this._selectedDomain=e,this._updateUrlDomain(e===L?null:e),this._syncBottomNavDeviceContext(),this._closeMobileNav()}render(){if(!this._hass||!this.config)return n`<div class="loading">${this._t("common.loading")}</div>`;const e=this._buildData(),i=this._sortedDomains(e);this._ensureDeviceTracking();const t=this._newDevices(),a=p(this.config).size,r=b(this.config)&&(t.length>0||a>0),o=this._buildMaintenanceData(),s=this._maintenanceSummary(o).totalCount>0,c=this._showEnergyMenu();return this._applyPendingDomainSelection(e,r,s,c),0!==i.length||r||s||c?(this._selectedDomain===L||(this._selectedDomain===I?r||(this._selectedDomain=L):this._selectedDomain===P?s||(this._selectedDomain=L):this._selectedDomain===B?c||(this._selectedDomain=L):this._selectedDomain&&e.has(this._selectedDomain)||(this._selectedDomain=L)),n`
       <div class="layout-container">
         ${this._renderMobileOverlay()}
         ${this._renderSidebar(e,i,t,r,o,s,c)}
         <div class="main-content">
           <div class="content-area">
-            ${this._selectedDomain===I?this._renderNewDevicesView(t):this._selectedDomain===L?this._renderMaintenanceView(o):this._selectedDomain===T?this._renderEnergyView():this._selectedDomain===O?this._renderDevicesOverview(e,i,t,r,o,s,c):this._renderDeviceView(e)}
+            ${this._selectedDomain===I?this._renderNewDevicesView(t):this._selectedDomain===P?this._renderMaintenanceView(o):this._selectedDomain===B?this._renderEnergyView():this._selectedDomain===L?this._renderDevicesOverview(e,i,t,r,o,s,c):this._renderDeviceView(e)}
           </div>
         </div>
       </div>
@@ -42,9 +42,9 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as a,b as n,A as r,r a
         `:n`<div class="sidebar-title">${this._t("devices.title")}</div>`}
         <div class="area-list">
           <button
-            class="area-button overview ${this._selectedDomain===O?"selected":""}"
-            style=${`--domain-color: ${this._typeColor(O)};`}
-            @click=${()=>this._selectDomain(O)}
+            class="area-button overview ${this._selectedDomain===L?"selected":""}"
+            style=${`--domain-color: ${this._typeColor(L)};`}
+            @click=${()=>this._selectDomain(L)}
           >
             <div class="area-icon">
               <ha-icon icon="mdi:view-grid-outline"></ha-icon>
@@ -76,9 +76,9 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as a,b as n,A as r,r a
               `:r}
           ${s?n`
                 <button
-                  class="area-button maintenance ${this._selectedDomain===L?"selected":""}"
-                  style=${`--domain-color: ${this._typeColor(L)};`}
-                  @click=${()=>this._selectDomain(L)}
+                  class="area-button maintenance ${this._selectedDomain===P?"selected":""}"
+                  style=${`--domain-color: ${this._typeColor(P)};`}
+                  @click=${()=>this._selectDomain(P)}
                 >
                   <div class="area-icon">
                     <ha-icon icon="mdi:wrench"></ha-icon>
@@ -93,9 +93,9 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as a,b as n,A as r,r a
               `:r}
           ${d?n`
                 <button
-                  class="area-button energy ${this._selectedDomain===T?"selected":""}"
-                  style=${`--domain-color: ${this._typeColor(T)};`}
-                  @click=${()=>this._selectDomain(T)}
+                  class="area-button energy ${this._selectedDomain===B?"selected":""}"
+                  style=${`--domain-color: ${this._typeColor(B)};`}
+                  @click=${()=>this._selectDomain(B)}
                 >
                   <div class="area-icon">
                     <ha-icon icon="mdi:flash"></ha-icon>
@@ -129,9 +129,9 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as a,b as n,A as r,r a
             `})}
         </div>
       </nav>
-    `}_renderDevicesOverview(e,i,t,a,r,o,s){const c=this._energySummary(),d=[];if(a&&d.push({key:I,icon:"mdi:new-box",title:this._t("devices.new"),subtitle:this._tp("devices.new",t.length),count:t.length,color:"var(--primary-color)"}),o){const e=this._maintenanceSummary(r);d.push({key:L,icon:"mdi:wrench",title:this._t("devices.maintenance"),subtitle:this._maintenanceSubtitle(r),count:e.totalCount,color:this._typeColor(L)})}return s&&d.push({key:T,icon:"mdi:flash",title:this._t("devices.energy"),subtitle:this._tp("devices.live_power_sensor",c.sensorCount),count:c.sensorCount,color:this._typeColor(T)}),i.forEach(i=>{const t=e.get(i);if(!t)return;const a=this._domainCount(t);d.push({key:i,icon:this._typeIcon(i),title:this._typeName(i),subtitle:this._tp("common.entity",a),count:a,color:this._typeColor(i)})}),n`
+    `}_renderDevicesOverview(e,i,t,a,r,o,s){const c=this._energySummary(),d=[];if(a&&d.push({key:I,icon:"mdi:new-box",title:this._t("devices.new"),subtitle:this._tp("devices.new",t.length),count:t.length,color:"var(--primary-color)"}),o){const e=this._maintenanceSummary(r);d.push({key:P,icon:"mdi:wrench",title:this._t("devices.maintenance"),subtitle:this._maintenanceSubtitle(r),count:e.totalCount,color:this._typeColor(P)})}return s&&d.push({key:B,icon:"mdi:flash",title:this._t("devices.energy"),subtitle:this._tp("devices.live_power_sensor",c.sensorCount),count:c.sensorCount,color:this._typeColor(B)}),i.forEach(i=>{const t=e.get(i);if(!t)return;const a=this._domainCount(t);d.push({key:i,icon:this._typeIcon(i),title:this._typeName(i),subtitle:this._tp("common.entity",a),count:a,color:this._typeColor(i)})}),n`
       <div class="device-view devices-overview-view">
-        ${this._renderDevicePageHeader({icon:"mdi:format-list-bulleted-type",title:this._t("devices.title"),subtitle:this._tp("devices.group",d.length),color:this._typeColor(O)})}
+        ${this._renderDevicePageHeader({icon:"mdi:format-list-bulleted-type",title:this._t("devices.title"),subtitle:this._tp("devices.group",d.length),color:this._typeColor(L)})}
 
         <div class="devices-overview-grid">
           ${f(d,e=>e.key,e=>n`
@@ -162,7 +162,7 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as a,b as n,A as r,r a
             type="button"
             title=${this._t("navigation.overview")}
             aria-label=${this._t("navigation.overview")}
-            @click=${()=>this._selectDomain(O)}
+            @click=${()=>this._selectDomain(L)}
           >
             <ha-icon icon="mdi:arrow-left"></ha-icon>
           </button>
@@ -178,27 +178,34 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as a,b as n,A as r,r a
         </div>
         ${e.actions?n`<div class="device-header-actions">${e.actions}</div>`:r}
       </div>
-    `}_renderDeviceView(e){const i=this._selectedDomain;if(!i)return r;const t=e.get(i);if(!t)return r;const a=!this._isSpecialDeviceType(i),o=i===B?[...t.values()].map(e=>e.area):this._getVisibleSortedAreas().filter(e=>t.has(e.area_id));return n`
+    `}_renderDeviceView(e){const i=this._selectedDomain;if(!i)return r;const t=e.get(i);if(!t)return r;const a=!this._isSpecialDeviceType(i),o=i===T?[...t.values()].map(e=>e.area):this._getVisibleSortedAreas().filter(e=>t.has(e.area_id)),s=[...t.values()].flatMap(e=>e.entities),c=i===T?[...new Map(s.map(e=>[e.entity_id,e])).values()]:[],d=o[0]||{area_id:O,name:"",icon:"mdi:account-group"};return n`
       <div class="device-view ${a?"room-style-device-view":"special-device-view"}">
         ${this._renderDevicePageHeader({icon:this._typeIcon(i),title:this._typeName(i),subtitle:this._tp("common.entity",this._domainCount(t)),color:this._typeColor(i),back:!0})}
 
-        ${o.map(e=>{const r=t.get(e.area_id);return n`
-            <div class="domain-group">
-              <div class="domain-header">
-                <div class="domain-header-title">
-                  <ha-icon icon="mdi:floor-plan"></ha-icon>
-                  <span>${e.name}</span>
+        ${this._renderDeviceGlobalActions(i,s)}
+
+        ${i===T?n`
+              <div class="person-device-grid ${this._entitiesGridClass(i,!0)}">
+                ${f(c,e=>e.entity_id,e=>this._renderRoomStyleEntityCard(e,d))}
+              </div>
+            `:o.map(e=>{const r=t.get(e.area_id);return n`
+                <div class="domain-group">
+                  <div class="domain-header">
+                    <div class="domain-header-title">
+                      <ha-icon icon="mdi:floor-plan"></ha-icon>
+                      <span>${e.name}</span>
+                    </div>
+                    ${this._renderDeviceRoomActions(i,r.entities)}
+                  </div>
+                  <div class=${this._entitiesGridClass(i,a)}>
+                    ${f(r.entities,e=>e.entity_id,i=>a?this._renderRoomStyleEntityCard(i,e):this._renderEntityCard(i))}
+                  </div>
                 </div>
-              </div>
-              <div class=${this._entitiesGridClass(i,a)}>
-                ${f(r.entities,e=>e.entity_id,i=>a?this._renderRoomStyleEntityCard(i,e):this._renderEntityCard(i))}
-              </div>
-            </div>
-          `})}
+              `})}
       </div>
     `}_renderEnergyView(){const e=this._energySummary(),i=e.areas[0],t=this._energyStatisticsEntities(e.areas.flatMap(e=>e.entities),8);return n`
       <div class="device-view energy-view">
-        ${this._renderDevicePageHeader({icon:"mdi:flash",title:this._t("devices.energy"),subtitle:this._t("devices.live_power_usage"),color:this._typeColor(T),back:!0})}
+        ${this._renderDevicePageHeader({icon:"mdi:flash",title:this._t("devices.energy"),subtitle:this._t("devices.live_power_usage"),color:this._typeColor(B),back:!0})}
 
         ${e.sensorCount?n`
               <div class="energy-overview-grid">
@@ -311,20 +318,17 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as a,b as n,A as r,r a
       ></dwains-dashboard-next-card-host>
     `}_renderMaintenanceView(e){const i=this._orderedMaintenanceBuckets(e);return n`
       <div class="device-view maintenance-view">
-        ${this._renderDevicePageHeader({icon:"mdi:wrench",title:this._t("devices.maintenance"),subtitle:this._maintenanceSubtitle(e),color:this._typeColor(L),back:!0})}
+        ${this._renderDevicePageHeader({icon:"mdi:wrench",title:this._t("devices.maintenance"),subtitle:this._maintenanceSubtitle(e),color:this._typeColor(P),back:!0})}
 
         ${i.length?i.map(e=>n`
-              <div class="maintenance-area-group">
-                <button
-                  class="maintenance-area-title"
-                  type="button"
-                  @click=${()=>this._navigateToArea(e.area.area_id)}
-                  ?disabled=${e.area.area_id===P}
-                >
-                  <span>${e.area.name}</span>
-                  <span>${e.items.length}</span>
-                  <ha-icon icon="mdi:chevron-right"></ha-icon>
-                </button>
+              <div class="domain-group maintenance-area-group">
+                <div class="domain-header">
+                  <div class="domain-header-title">
+                    <ha-icon icon="mdi:floor-plan"></ha-icon>
+                    <span>${e.area.name}</span>
+                  </div>
+                  <span class="maintenance-room-count">${e.items.length}</span>
+                </div>
                 <div class="maintenance-grid">
                   ${f(e.items,e=>e.entityId,e=>this._renderMaintenanceCard(e))}
                 </div>
@@ -351,7 +355,43 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as a,b as n,A as r,r a
           <div class="maintenance-card-state">${e.stateLabel}</div>
         </div>
       </button>
-    `}_showMoreInfo(e){A(this,"hass-more-info",{entityId:e})}_navigateToArea(e){if(!e||e===P)return;const i=window.location.pathname.split("/")[1]||"lovelace",t=new URL(window.location.href);t.pathname=`/${i}/home`,t.searchParams.set("dd_area",e),t.searchParams.delete("dd_device"),window.history.pushState(null,"",t.toString());const a=new Event("location-changed",{bubbles:!0,composed:!0});a.detail={replace:!1},window.dispatchEvent(a)}_renderEntityCard(e){return this._hass.states[e.entity_id]?n`
+    `}_showMoreInfo(e){A(this,"hass-more-info",{entityId:e})}_navigateToArea(e){if(!e||"__maintenance_no_area__"===e)return;const i=window.location.pathname.split("/")[1]||"lovelace",t=new URL(window.location.href);t.pathname=`/${i}/home`,t.searchParams.set("dd_area",e),t.searchParams.delete("dd_device"),window.history.pushState(null,"",t.toString());const a=new Event("location-changed",{bubbles:!0,composed:!0});a.detail={replace:!1},window.dispatchEvent(a)}_deviceGroupDomain(e){const i=e.split(".")[0]||e;return["light","switch","fan","input_boolean","cover","lock"].includes(i)?i:void 0}_renderDeviceGlobalActions(e,i){const t=this._deviceGroupDomain(e);return t&&i.length?n`
+      <div class="device-global-actions">
+        ${this._renderDeviceBulkButtons(t,i,!0)}
+      </div>
+    `:r}_renderDeviceRoomActions(e,i){const t=this._deviceGroupDomain(e);if(!t||!i.length)return r;if(["light","switch","fan","input_boolean"].includes(t)){const e=i.filter(e=>{const i=this._hass.states?.[e.entity_id];return i&&this._roomStyleEntityActive(i,t)}).length,a=e===i.length&&i.length>0;return n`
+        <button
+          class="device-room-master"
+          type="button"
+          style=${`--entity-color: ${u(t)};`}
+          title=${a?this._t("action.turn_off_all"):this._t("action.turn_on_all")}
+          @click=${e=>{e.stopPropagation(),this._runDeviceBulkAction(i,a?"turn_off":"turn_on")}}
+        >
+          <span>${e}/${i.length}</span>
+          <span class="device-room-master-track ${a?"is-on":""}"></span>
+        </button>
+      `}return n`<div class="device-room-actions">${this._renderDeviceBulkButtons(t,i,!1)}</div>`}_renderDeviceBulkButtons(e,i,t){const a=(a,o,s)=>n`
+      <button
+        class="device-bulk-action ${t?"with-label":"icon-only"}"
+        type="button"
+        title=${a}
+        aria-label=${a}
+        style=${`--domain-color: ${u(e)};`}
+        @click=${e=>{e.stopPropagation(),this._runDeviceBulkAction(i,s)}}
+      >
+        <ha-icon icon=${o}></ha-icon>
+        ${t?n`<span>${a}</span>`:r}
+      </button>
+    `;return["light","switch","fan","input_boolean"].includes(e)?n`
+        ${a(this._t("action.turn_on_all"),"mdi:power","turn_on")}
+        ${a(this._t("action.turn_off_all"),"mdi:power-off","turn_off")}
+      `:"cover"===e?n`
+        ${a(this._t("action.open_all"),"mdi:arrow-up","open_cover")}
+        ${a(this._t("action.close_all"),"mdi:arrow-down","close_cover")}
+      `:"lock"===e?n`
+        ${a(this._t("action.unlock_all"),"mdi:lock-open-variant-outline","unlock")}
+        ${a(this._t("action.lock_all"),"mdi:lock-outline","lock")}
+      `:r}async _runDeviceBulkAction(e,i){const t=new Map;for(const i of e){if(!this._hass.states?.[i.entity_id])continue;const e=i.entity_id.split(".")[0]||"",a=t.get(e)||[];a.push(i.entity_id),t.set(e,a)}try{for(const[e,a]of t)["light","switch","fan","input_boolean"].includes(e)&&["turn_on","turn_off"].includes(i)?await this._hass.callService(e,i,{entity_id:a}):"cover"===e&&["open_cover","close_cover"].includes(i)?await this._hass.callService("cover",i,{entity_id:a}):"lock"===e&&["lock","unlock"].includes(i)&&await this._hass.callService("lock",i,{entity_id:a})}catch(e){console.warn(`Failed to run device bulk action ${i}`,e)}}_renderEntityCard(e){return this._hass.states[e.entity_id]?n`
       <div class="${this._entityWrapperClass(e.entity_id)}">
         <dwains-dashboard-next-card-host
           framed
@@ -359,7 +399,7 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as a,b as n,A as r,r a
           .config=${this._entityCardConfig(e.entity_id)}
         ></dwains-dashboard-next-card-host>
       </div>
-    `:r}_isSpecialDeviceType(e){return["light","cover","climate","sensor"].includes(e)}_renderRoomStyleEntityCard(e,i){const t=this._hass.states[e.entity_id];if(!t)return r;const a=_({hass:this._hass,config:this.config,entity:e,surface:"devices_cards"});if(a&&!1!==a.enabled)return n`
+    `:r}_isSpecialDeviceType(e){return["light","cover","climate","sensor"].includes(e)}_renderRoomStyleEntityCard(e,i){const t=this._hass.states[e.entity_id];if(!t)return r;const a=y({hass:this._hass,config:this.config,entity:e,surface:"devices_cards"});if(a&&!1!==a.enabled)return n`
         <div class="entity-card-wrapper room-style-replacement-card">
           <dwains-dashboard-next-card-host
             framed
@@ -370,7 +410,7 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as a,b as n,A as r,r a
       `;const o=e.entity_id.split(".")[0]||"unknown",s=t.attributes?.device_class,c=this._hass.entities?.[e.entity_id]?.icon||t.attributes?.icon||x(o,s)||m(o),d=t.attributes?.friendly_name||this._hass.entities?.[e.entity_id]?.name||e.entity_id,l=!0===this.config?.settings?.hide_area_name_in_entity_names?w(d,i.name):d,p=this._roomStyleEntityActive(t,o),h=["unavailable","unknown"].includes(String(t.state).toLowerCase())&&!["scene","event"].includes(o),g=["switch","fan","input_boolean"].includes(o);return n`
       <article
         class="mobile-entity-card ${p?"is-active":"is-off"} ${h?"is-unavailable":""}"
-        style=${`--entity-color: ${b(o,s)};`}
+        style=${`--entity-color: ${u(o,s)};`}
         role="button"
         tabindex="0"
         aria-label=${l}
@@ -409,7 +449,7 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as a,b as n,A as r,r a
           </div>
         </section>
       </div>
-    `}_newDevices(e=999){return this._hass&&u(this.config)?$(this._hass,this.config,e):[]}_ensureDeviceTracking(){const e=D(this._hass,this.config);e&&(this.config={...this.config,device_admission:e},this._saveDeviceAdmission(e,!0))}_renderRecentDevice(e){return n`
+    `}_newDevices(e=999){return this._hass&&b(this.config)?$(this._hass,this.config,e):[]}_ensureDeviceTracking(){const e=D(this._hass,this.config);e&&(this.config={...this.config,device_admission:e},this._saveDeviceAdmission(e,!0))}_renderRecentDevice(e){return n`
       <div class="recent-device ${e.hidden?"is-hidden":""}">
         <div class="recent-device-main">
           <div class="recent-device-icon">
@@ -430,7 +470,7 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as a,b as n,A as r,r a
           </div>
         </div>
       </div>
-    `}_getDashboardUrlPath(){const e=window.location.pathname.split("/")[1];if(e&&"lovelace"!==e)return e}_formatAddedAge(e){const i=Math.max(0,Date.now()-e),t=Math.floor(i/36e5);if(t<1)return this._t("devices.added_just_now");const a=new Intl.RelativeTimeFormat(C(this._hass),{numeric:"always"});return t<24?a.format(-t,"hour"):a.format(-Math.floor(t/24),"day")}async _saveDeviceAdmission(e,i=!1){this.config={...this.config,device_admission:e},this.requestUpdate();try{const i=this._getDashboardUrlPath(),t=i?{url_path:i}:{},a=await this._hass.callWS({type:"lovelace/config",...t}),n=a?.strategy||{};await this._hass.callWS({type:"lovelace/config/save",...t,config:{...a,strategy:{...n,device_admission:e}}})}catch(e){console.error("❌ Device visibility save failed:",e),i||alert(this._t("devices.save_visibility_failed",{error:String(e)}))}}};F.styles=s`
+    `}_getDashboardUrlPath(){const e=window.location.pathname.split("/")[1];if(e&&"lovelace"!==e)return e}_formatAddedAge(e){const i=Math.max(0,Date.now()-e),t=Math.floor(i/36e5);if(t<1)return this._t("devices.added_just_now");const a=new Intl.RelativeTimeFormat(C(this._hass),{numeric:"always"});return t<24?a.format(-t,"hour"):a.format(-Math.floor(t/24),"day")}async _saveDeviceAdmission(e,i=!1){this.config={...this.config,device_admission:e},this.requestUpdate();try{const i=this._getDashboardUrlPath(),t=i?{url_path:i}:{},a=await this._hass.callWS({type:"lovelace/config",...t}),n=a?.strategy||{};await this._hass.callWS({type:"lovelace/config/save",...t,config:{...a,strategy:{...n,device_admission:e}}})}catch(e){console.error("❌ Device visibility save failed:",e),i||alert(this._t("devices.save_visibility_failed",{error:String(e)}))}}};R.styles=s`
     :host {
       display: block;
       -webkit-tap-highlight-color: transparent;
@@ -1022,7 +1062,8 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as a,b as n,A as r,r a
     }
 
     .maintenance-view {
-      max-width: 1200px;
+      width: 100%;
+      max-width: none;
     }
 
     .maintenance-header {
@@ -1064,11 +1105,21 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as a,b as n,A as r,r a
 
     .maintenance-area-group {
       margin-bottom: 14px;
-      padding: 12px;
-      border: 1px solid color-mix(in srgb, var(--primary-text-color) 7%, transparent);
-      border-radius: 12px;
-      background: var(--card-background-color);
-      box-shadow: 0 5px 14px rgba(15, 23, 42, 0.035);
+    }
+
+    .maintenance-room-count {
+      min-width: 22px;
+      height: 22px;
+      padding: 0 7px;
+      margin-left: auto;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--secondary-text-color);
+      background: var(--secondary-background-color);
+      font-size: 11px;
+      font-weight: 800;
     }
 
     .maintenance-area-title {
@@ -1230,12 +1281,13 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as a,b as n,A as r,r a
     }
 
     .area-button.energy {
-      --domain-color: ${o(b("energy"))};
+      --domain-color: ${o(u("energy"))};
     }
 
     .energy-view {
-      --domain-color: ${o(b("energy"))};
-      max-width: 1320px;
+      --domain-color: ${o(u("energy"))};
+      width: 100%;
+      max-width: none;
     }
 
     .energy-header {
@@ -1619,6 +1671,106 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as a,b as n,A as r,r a
     .domain-header ha-icon {
       --mdc-icon-size: 20px;
       opacity: 0.8;
+    }
+
+    .device-global-actions {
+      width: 100%;
+      margin: -2px 0 12px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .device-bulk-action {
+      min-height: 36px;
+      padding: 0 12px;
+      border: 0;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      color: var(--primary-text-color);
+      background: var(--card-background-color);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow:
+        0 8px 18px rgba(15, 23, 42, 0.055),
+        inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 6%, transparent);
+    }
+
+    .device-bulk-action ha-icon {
+      --mdc-icon-size: 17px;
+      color: var(--domain-color, var(--primary-color));
+    }
+
+    .device-bulk-action.icon-only {
+      width: 32px;
+      height: 30px;
+      min-height: 30px;
+      padding: 0;
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 7%, transparent);
+    }
+
+    .device-room-actions {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .device-room-master {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 30px;
+      padding: 4px 7px;
+      border: 1px solid var(--divider-color);
+      border-radius: 999px;
+      background: var(--card-background-color);
+      color: var(--secondary-text-color);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    .device-room-master-track {
+      width: 31px;
+      height: 18px;
+      position: relative;
+      display: inline-block;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--primary-text-color) 20%, transparent);
+    }
+
+    .device-room-master-track::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform .18s;
+    }
+
+    .device-room-master-track.is-on {
+      background: var(--entity-color);
+    }
+
+    .device-room-master-track.is-on::after {
+      transform: translateX(13px);
+    }
+
+    .person-device-grid {
+      margin: 0;
     }
 
     .entities-grid {
@@ -2142,6 +2294,22 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as a,b as n,A as r,r a
         margin-bottom: 10px;
       }
 
+      .device-global-actions {
+        margin-top: 0;
+        justify-content: flex-end;
+      }
+
+      .device-bulk-action.with-label {
+        min-height: 34px;
+        padding: 0 10px;
+        font-size: 11px;
+      }
+
+      .device-room-master {
+        min-height: 28px;
+        font-size: 11px;
+      }
+
       .devices-overview-view {
         padding: 2px 0;
       }
@@ -2439,4 +2607,4 @@ import{_ as e,r as i,t}from"./state-Bpx-nWN3.js";import{i as a,b as n,A as r,r a
       }
     }
 
-  `,e([i()],F.prototype,"_selectedDomain",void 0),e([i()],F.prototype,"_isMobile",void 0),e([i()],F.prototype,"_mobileNavOpen",void 0),F=e([t("dwains-dashboard-next-devices-card")],F);export{F as DwainsDevicesCard};
+  `,e([i()],R.prototype,"_selectedDomain",void 0),e([i()],R.prototype,"_isMobile",void 0),e([i()],R.prototype,"_mobileNavOpen",void 0),R=e([t("dwains-dashboard-next-devices-card")],R);export{R as DwainsDevicesCard};
