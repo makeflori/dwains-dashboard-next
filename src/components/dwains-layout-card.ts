@@ -22991,14 +22991,10 @@ copy{
 
   private _navigateToDeviceDomain(domain: string | null): void {
     const segment = window.location.pathname.split('/')[1] || 'lovelace';
-    const url = new URL(window.location.href);
-    url.pathname = `/${segment}/devices`;
-    url.search = '';
-    if (domain) url.searchParams.set('dd_device', domain);
-    window.history.pushState(null, '', `${url.pathname}${url.search}`);
-    const ev = new Event('location-changed', { bubbles: true, composed: true });
-    (ev as any).detail = { replace: false };
-    window.dispatchEvent(ev);
+    const params = new URLSearchParams();
+    if (domain) params.set('dd_device', domain);
+    const query = params.toString();
+    navigateHomeAssistant(`/${segment}/devices${query ? `?${query}` : ''}`);
   }
 
   private _renderFavoritesSection() {

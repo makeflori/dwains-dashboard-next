@@ -603,7 +603,7 @@ export const de = {
   'domain.fan': 'Ventilatoren',
   'domain.cover': 'Beschattung & Tore',
   'domain.lock': 'Schlösser',
-  'domain.climate': 'Klima',
+  'domain.climate': 'Thermostate',
   'domain.media_player': 'Mediaplayer',
   'domain.camera': 'Kameras',
   'domain.person': 'Personen',
