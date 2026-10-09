@@ -1523,10 +1523,24 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     }
 
     /* Same person tile as Geräte > Personen; the popup only changes the grid. */
+    .content.home-information-context.device-presentation-context.domain-person .area-sections-grid {
+      display: block !important;
+    }
+
+    .content.home-information-context.device-presentation-context.domain-person .area-section {
+      margin: 0 !important;
+      padding: 0 !important;
+      background: transparent !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      overflow: visible !important;
+    }
+
     .content.home-information-context.device-presentation-context.domain-person .entities-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
       align-items: start !important;
       gap: 8px !important;
+      padding: 0 !important;
     }
 
     .content.home-information-context.device-presentation-context .device-presentation-card {
@@ -2201,7 +2215,9 @@ export class DwainsDomainEntitiesDialog extends LitElement {
               <span>${activeCount}/${group.entities.length}</span>
               <span class="area-master-track ${allOn ? 'is-on' : ''}"></span>
             </button>
-          ` : html`<div class="entity-count">${group.entities.length}</div>`}
+          ` : (this._params?.homeInformation && kind === 'sensor')
+            ? nothing
+            : html`<div class="entity-count">${group.entities.length}</div>`}
         </div>` : nothing}
         <div class="entities-grid">
           ${repeat(
@@ -2257,9 +2273,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
         return html`
           <div class="device-presentation-card ${domain}-card ${domain === 'sensor' ? 'sensor-card' : ''}">
             <dwains-dashboard-next-card-host
-              eager
               framed
-              ?refresh-layout=${domain === 'climate'}
               style=${domain === 'cover'
                 ? `--primary-color: ${getDomainColor('cover')}; --state-cover-open-color: ${getDomainColor('cover')}; --state-cover-opening-color: ${getDomainColor('cover')}; --state-cover-active-color: ${getDomainColor('cover')};`
                 : ''}
