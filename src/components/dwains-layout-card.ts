@@ -12883,18 +12883,23 @@ no chip/background. */
 
     @media (max-width: 768px) {
       .house-power-dialog-overlay{
-        align-items: center;
+        align-items: flex-end;
         justify-content: center;
-        padding: 12px;
+        padding:
+          max(env(safe-area-inset-top, 0px), 12px)
+          env(safe-area-inset-right, 0px)
+          0
+          env(safe-area-inset-left, 0px);
         overscroll-behavior: none;
       }
 
       .house-power-dialog{
-        width: min(520px, calc(100vw - 24px));
-        max-height: calc(100dvh - 32px);
+        width: 100%;
+        max-width: 100%;
+        max-height: calc(100dvh - max(env(safe-area-inset-top, 0px), 12px));
         margin: 0;
-        padding: 14px;
-        border-radius: 16px;
+        padding: 14px 14px calc(16px + env(safe-area-inset-bottom, 0px));
+        border-radius: 24px 24px 0 0;
         animation: none;
       }
 

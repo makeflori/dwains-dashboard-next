@@ -2221,7 +2221,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
               <span>${activeCount}/${group.entities.length}</span>
               <span class="area-master-track ${allOn ? 'is-on' : ''}"></span>
             </button>
-          ` : (this._params?.homeInformation && kind === 'sensor')
+          ` : (this._params?.homeInformation && (kind === 'sensor' || kind === 'climate'))
             ? nothing
             : html`<div class="entity-count">${group.entities.length}</div>`}
         </div>` : nothing}
@@ -2605,6 +2605,124 @@ export class DwainsDomainEntitiesDialog extends LitElement {
         height: 34px !important;
       }
     }
+
+    /* Final mobile Home Information behavior:
+       bottom anchored, safe-area aware and compact. */
+    @media (max-width: 600px) {
+      :host {
+        --mdc-dialog-min-width: 100vw !important;
+        --mdc-dialog-max-width: 100vw !important;
+        --mdc-dialog-min-height: 0 !important;
+        --ha-dialog-min-height: 0 !important;
+        --mdc-dialog-max-height: calc(100dvh - max(env(safe-area-inset-top, 0px), 12px)) !important;
+        --ha-dialog-max-height: calc(100dvh - max(env(safe-area-inset-top, 0px), 12px)) !important;
+        --vertical-align-dialog: flex-end !important;
+        --dialog-surface-margin-top: auto !important;
+        --dialog-container-padding: 0 !important;
+      }
+
+      ha-dialog {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        margin: 0 !important;
+        height: auto !important;
+        max-height: calc(100dvh - max(env(safe-area-inset-top, 0px), 12px)) !important;
+        border-radius: 24px 24px 0 0 !important;
+        --ha-dialog-border-radius: 24px 24px 0 0;
+      }
+
+      ha-dialog .mdc-dialog__surface {
+        max-height: calc(100dvh - max(env(safe-area-inset-top, 0px), 12px)) !important;
+        border-radius: 24px 24px 0 0 !important;
+        overflow: hidden !important;
+      }
+
+      .dd-domain-header {
+        padding: 14px 14px 12px !important;
+        touch-action: auto !important;
+      }
+
+      .dd-domain-header .sheet-handle,
+      .sheet-handle {
+        display: none !important;
+      }
+
+      .dd-domain-header-line {
+        gap: 10px !important;
+        align-items: center !important;
+      }
+
+      .dd-domain-header-line .dialog-heading-copy,
+      .dialog-heading-copy {
+        height: auto !important;
+        min-height: 0 !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        justify-content: center !important;
+        gap: 5px !important;
+      }
+
+      .dd-domain-header .dialog-title-icon,
+      .dialog-title-icon {
+        flex: 0 0 48px !important;
+        width: 48px !important;
+        height: 48px !important;
+        border-radius: 12px !important;
+      }
+
+      .dd-domain-header .dialog-title-icon ha-icon,
+      .dialog-title-icon ha-icon {
+        --mdc-icon-size: 25px !important;
+      }
+
+      .dd-domain-header-line .dialog-title-text {
+        font-size: 20px !important;
+        line-height: 1.05 !important;
+      }
+
+      .dialog-header-destination {
+        min-height: 30px !important;
+        padding: 0 10px !important;
+        font-size: 11px !important;
+      }
+
+      .content {
+        max-height: calc(100dvh - max(env(safe-area-inset-top, 0px), 12px) - 92px) !important;
+        padding: 12px 12px calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+        overflow-y: auto !important;
+        overscroll-behavior-y: contain !important;
+      }
+
+      /* Phones use one card per row. Desktop/tablet remains two columns. */
+      .content.home-information-context.device-presentation-context.domain-person .entities-grid,
+      .content.home-information-context.device-presentation-context.domain-person .area-sections-grid .area-section.half-room .entities-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+      }
+
+      .content.home-information-context.device-presentation-context.domain-person dwains-dashboard-next-person-tile {
+        --dd-person-tile-location-height: 186px;
+        --dd-person-map-height: 124px;
+      }
+
+      .content.home-information-context.device-presentation-context.domain-climate .entities-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+      }
+
+      /* Native thermostat cards must measure the real phone width.
+         Scaling the host on mobile leaves the native controls unrendered. */
+      .content.home-information-context.device-presentation-context .device-presentation-card.climate-card {
+        min-height: 0 !important;
+        height: auto !important;
+        overflow: visible !important;
+      }
+
+      .content.home-information-context.device-presentation-context .device-presentation-card.climate-card > dwains-dashboard-next-card-host {
+        width: 100% !important;
+        min-width: 0 !important;
+        transform: none !important;
+      }
+    }
+
   `;
   }
 
