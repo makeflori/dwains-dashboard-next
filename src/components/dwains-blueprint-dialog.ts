@@ -555,7 +555,7 @@ export class DwainsBlueprintDialog extends LitElement {
         today.setHours(0, 0, 0, 0);
         const candidates = [state?.state, ...Object.keys(state?.attributes || {}), ...Object.values(state?.attributes || {})];
         const valid = candidates.flatMap(raw => {
-          if (typeof raw !== 'string' || !/^\\d{4}-\\d{2}-\\d{2}$/.test(raw)) return [];
+          if (typeof raw !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(raw)) return [];
           const dt = new Date(raw + 'T12:00:00');
           return Number.isFinite(dt.getTime()) && dt.getTime() >= today.getTime() ? [dt.getTime()] : [];
         });
@@ -563,6 +563,13 @@ export class DwainsBlueprintDialog extends LitElement {
       };
       this._values.waste_types = [...this._values.waste_types].sort((a: any, b: any) =>
         nextDate(a.entity) - nextDate(b.entity));
+    }
+    if (Array.isArray(this._values.coins)) {
+      const coinValue = (item: any) => {
+        const amount = Number(this.hass?.states?.[item.entity]?.state);
+        return Number.isFinite(amount) ? amount : -Infinity;
+      };
+      this._values.coins = [...this._values.coins].sort((a: any, b: any) => coinValue(b) - coinValue(a));
     }
     let card: any;
     try {
@@ -936,7 +943,7 @@ export class DwainsBlueprintDialog extends LitElement {
 
   private _renderEntityList(key: string, def: any) {
     const items = Array.isArray(this._values[key]) ? this._values[key] : [];
-    const update = (index: number, prop: 'name' | 'icon' | 'entity' | 'price_entity' | 'amount_entity', value: string) => {
+    const update = (index: number, prop: 'name' | 'icon' | 'image' | 'entity' | 'price_entity' | 'amount_entity', value: string) => {
       const next = items.map((item: any) => ({ ...item }));
       next[index][prop] = value;
       if (prop === 'entity' && value && !next[index].name) next[index].name = this.hass.states[value]?.attributes?.friendly_name || value.split('.').pop()?.replace(/_/g, ' ') || '';
@@ -953,6 +960,7 @@ export class DwainsBlueprintDialog extends LitElement {
         </div>
         <div class="field"><label>${this._german ? (def.suggest === "coin" ? "Wertsensor" : "Entität") : (def.suggest === "coin" ? "Value sensor" : "Entity")}</label><div class="field-desc">${def.suggest === "coin" ? "e.g. sensor.wallet_value_bitcoin" : "e.g. sensor.waste_paper"}</div><ha-entity-picker .hass=${this.hass} .value=${item.entity || ''} @value-changed=${(e: any) => update(index, 'entity', e.detail.value)}></ha-entity-picker></div>
         ${def.suggest === 'coin' ? html`<div class="field"><label>${this._german ? 'Kurssensor' : 'Price sensor'}</label><div class="field-desc">e.g. sensor.cryptoinfo_bitcoin_eur</div><ha-entity-picker .hass=${this.hass} .value=${item.price_entity || ''} @value-changed=${(e: any) => update(index, 'price_entity', e.detail.value)}></ha-entity-picker></div><div class="field"><label>${this._german ? 'Bestandssensor' : 'Holdings sensor'}</label><div class="field-desc">e.g. sensor.wallet_volume_bitcoin</div><ha-entity-picker .hass=${this.hass} .value=${item.amount_entity || ''} @value-changed=${(e: any) => update(index, 'amount_entity', e.detail.value)}></ha-entity-picker></div>` : nothing}
+        ${def.suggest === 'waste' ? html`<div class="field"><label>${this._german ? 'Bild' : 'Image'} <span style="font-size:12px;color:var(--secondary-text-color)">(${this._german ? 'optional' : 'optional'})</span></label><div class="field-desc">e.g. /local/waste/paper.png</div><input class="dd-input" placeholder="/local/waste/paper.png" .value=${item.image || ''} @input=${(e: any) => update(index, 'image', e.target.value)} />${item.image && /^(\/local\/|\/media\/|https?:\/\/)/.test(item.image) ? html`<img src=${item.image} alt=${item.name || ''} style="height:88px;max-width:100%;object-fit:contain;align-self:start;border-radius:8px" @error=${(e:any)=>{ e.target.style.display='none'; }} />` : nothing}</div>` : nothing}
         <div class="field"><label>${this._german ? "Icon" : "Icon"} <span style="font-size:12px;color:var(--secondary-text-color);font-weight:400">(${this._german ? "optional" : "optional"})</span></label><ha-icon-picker .hass=${this.hass} .value=${item.icon || ''} @value-changed=${(e: any) => update(index, 'icon', e.detail.value)}></ha-icon-picker></div>
       </div>`)}
       <ha-button appearance="outlined" @click=${() => this._setValue(key, [...items, { name: '', icon: '', entity: '' }])}>${this._german ? (def.suggest === "waste" ? "Müllart hinzufügen" : "Coin hinzufügen") : (def.suggest === "waste" ? "Add waste type" : "Add coin")}</ha-button>
