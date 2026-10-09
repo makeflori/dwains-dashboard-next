@@ -752,6 +752,38 @@ export class DwainsDevicesCard extends LitElement {
       return { type: 'todo-list', entity: entityId };
     }
 
+    const replacement = findReplacementAssignment({
+      hass: this._hass,
+      config: this.config,
+      entity: entityId,
+      surface: 'devices_cards',
+    });
+
+    if (replacement && replacement.enabled !== false) {
+      return resolveEntityCardConfig({
+        hass: this._hass,
+        config: this.config,
+        entity: entityId,
+        surface: 'devices_cards',
+      });
+    }
+
+    if (entityId.startsWith('light.')) {
+      const state = this._hass.states?.[entityId];
+      return {
+        type: 'custom:mushroom-light-card',
+        entity: entityId,
+        name: state?.attributes?.friendly_name,
+        hide_state: false,
+        show_brightness_control: true,
+        show_color_control: true,
+        show_color_temp_control: true,
+        use_light_color: true,
+        collapsible_controls: true,
+        fill_container: false,
+      };
+    }
+
     return resolveEntityCardConfig({
       hass: this._hass,
       config: this.config,
@@ -1174,6 +1206,15 @@ export class DwainsDevicesCard extends LitElement {
     const orderedAreas = domain === PERSON_DOMAIN
       ? [...byArea.values()].map((bucket) => bucket.area)
       : this._getVisibleSortedAreas().filter((a) => byArea.has(a.area_id));
+    const allEntities = [...byArea.values()].flatMap((bucket) => bucket.entities);
+    const personEntities = domain === PERSON_DOMAIN
+      ? [...new Map(allEntities.map((entity) => [entity.entity_id, entity])).values()]
+      : [];
+    const personArea = orderedAreas[0] || {
+      area_id: PERSON_AREA_KEY,
+      name: '',
+      icon: 'mdi:account-group',
+    };
 
     return html`
       <div class="device-view ${roomStyle ? 'room-style-device-view' : 'special-device-view'}">
@@ -1185,28 +1226,41 @@ export class DwainsDevicesCard extends LitElement {
           back: true,
         })}
 
-        ${orderedAreas.map((area) => {
-          const bucket = byArea.get(area.area_id)!;
-          return html`
-            <div class="domain-group">
-              <div class="domain-header">
-                <div class="domain-header-title">
-                  <ha-icon icon="mdi:floor-plan"></ha-icon>
-                  <span>${area.name}</span>
-                </div>
-              </div>
-              <div class=${this._entitiesGridClass(domain, roomStyle)}>
+        ${this._renderDeviceGlobalActions(domain, allEntities)}
+
+        ${domain === PERSON_DOMAIN
+          ? html`
+              <div class="person-device-grid ${this._entitiesGridClass(domain, true)}">
                 ${repeat(
-                  bucket.entities,
-                  (e) => e.entity_id,
-                  (entity) => roomStyle
-                    ? this._renderRoomStyleEntityCard(entity, area)
-                    : this._renderEntityCard(entity)
+                  personEntities,
+                  (entity) => entity.entity_id,
+                  (entity) => this._renderRoomStyleEntityCard(entity, personArea)
                 )}
               </div>
-            </div>
-          `;
-        })}
+            `
+          : orderedAreas.map((area) => {
+              const bucket = byArea.get(area.area_id)!;
+              return html`
+                <div class="domain-group">
+                  <div class="domain-header">
+                    <div class="domain-header-title">
+                      <ha-icon icon="mdi:floor-plan"></ha-icon>
+                      <span>${area.name}</span>
+                    </div>
+                    ${this._renderDeviceRoomActions(domain, bucket.entities)}
+                  </div>
+                  <div class=${this._entitiesGridClass(domain, roomStyle)}>
+                    ${repeat(
+                      bucket.entities,
+                      (e) => e.entity_id,
+                      (entity) => roomStyle
+                        ? this._renderRoomStyleEntityCard(entity, area)
+                        : this._renderEntityCard(entity)
+                    )}
+                  </div>
+                </div>
+              `;
+            })}
       </div>
     `;
   }
@@ -1421,17 +1475,14 @@ export class DwainsDevicesCard extends LitElement {
 
         ${orderedBuckets.length
           ? orderedBuckets.map((bucket) => html`
-              <div class="maintenance-area-group">
-                <button
-                  class="maintenance-area-title"
-                  type="button"
-                  @click=${() => this._navigateToArea(bucket.area.area_id)}
-                  ?disabled=${bucket.area.area_id === MAINTENANCE_AREA_KEY}
-                >
-                  <span>${bucket.area.name}</span>
-                  <span>${bucket.items.length}</span>
-                  <ha-icon icon="mdi:chevron-right"></ha-icon>
-                </button>
+              <div class="domain-group maintenance-area-group">
+                <div class="domain-header">
+                  <div class="domain-header-title">
+                    <ha-icon icon="mdi:floor-plan"></ha-icon>
+                    <span>${bucket.area.name}</span>
+                  </div>
+                  <span class="maintenance-room-count">${bucket.items.length}</span>
+                </div>
                 <div class="maintenance-grid">
                   ${repeat(
                     bucket.items,
@@ -1497,6 +1548,117 @@ export class DwainsDevicesCard extends LitElement {
     const ev = new Event('location-changed', { bubbles: true, composed: true });
     (ev as any).detail = { replace: false };
     window.dispatchEvent(ev);
+  }
+
+  private _deviceGroupDomain(typeKey: string): string | undefined {
+    const domain = typeKey.split('.')[0] || typeKey;
+    return ['light', 'switch', 'fan', 'input_boolean', 'cover', 'lock'].includes(domain)
+      ? domain
+      : undefined;
+  }
+
+  private _renderDeviceGlobalActions(typeKey: string, entities: EntityConfig[]) {
+    const domain = this._deviceGroupDomain(typeKey);
+    if (!domain || !entities.length) return nothing;
+    return html`
+      <div class="device-global-actions">
+        ${this._renderDeviceBulkButtons(domain, entities, true)}
+      </div>
+    `;
+  }
+
+  private _renderDeviceRoomActions(typeKey: string, entities: EntityConfig[]) {
+    const domain = this._deviceGroupDomain(typeKey);
+    if (!domain || !entities.length) return nothing;
+
+    if (['light', 'switch', 'fan', 'input_boolean'].includes(domain)) {
+      const activeCount = entities.filter((entity) => {
+        const state = this._hass.states?.[entity.entity_id];
+        return state && this._roomStyleEntityActive(state, domain);
+      }).length;
+      const allOn = activeCount === entities.length && entities.length > 0;
+      return html`
+        <button
+          class="device-room-master"
+          type="button"
+          style=${`--entity-color: ${getDomainColor(domain)};`}
+          title=${allOn ? this._t('action.turn_off_all') : this._t('action.turn_on_all')}
+          @click=${(event: Event) => {
+            event.stopPropagation();
+            void this._runDeviceBulkAction(entities, allOn ? 'turn_off' : 'turn_on');
+          }}
+        >
+          <span>${activeCount}/${entities.length}</span>
+          <span class="device-room-master-track ${allOn ? 'is-on' : ''}"></span>
+        </button>
+      `;
+    }
+
+    return html`<div class="device-room-actions">${this._renderDeviceBulkButtons(domain, entities, false)}</div>`;
+  }
+
+  private _renderDeviceBulkButtons(domain: string, entities: EntityConfig[], withLabels: boolean) {
+    const button = (label: string, icon: string, action: string) => html`
+      <button
+        class="device-bulk-action ${withLabels ? 'with-label' : 'icon-only'}"
+        type="button"
+        title=${label}
+        aria-label=${label}
+        style=${`--domain-color: ${getDomainColor(domain)};`}
+        @click=${(event: Event) => {
+          event.stopPropagation();
+          void this._runDeviceBulkAction(entities, action);
+        }}
+      >
+        <ha-icon icon=${icon}></ha-icon>
+        ${withLabels ? html`<span>${label}</span>` : nothing}
+      </button>
+    `;
+
+    if (['light', 'switch', 'fan', 'input_boolean'].includes(domain)) {
+      return html`
+        ${button(this._t('action.turn_on_all'), 'mdi:power', 'turn_on')}
+        ${button(this._t('action.turn_off_all'), 'mdi:power-off', 'turn_off')}
+      `;
+    }
+    if (domain === 'cover') {
+      return html`
+        ${button(this._t('action.open_all'), 'mdi:arrow-up', 'open_cover')}
+        ${button(this._t('action.close_all'), 'mdi:arrow-down', 'close_cover')}
+      `;
+    }
+    if (domain === 'lock') {
+      return html`
+        ${button(this._t('action.unlock_all'), 'mdi:lock-open-variant-outline', 'unlock')}
+        ${button(this._t('action.lock_all'), 'mdi:lock-outline', 'lock')}
+      `;
+    }
+    return nothing;
+  }
+
+  private async _runDeviceBulkAction(entities: EntityConfig[], action: string): Promise<void> {
+    const grouped = new Map<string, string[]>();
+    for (const entity of entities) {
+      if (!this._hass.states?.[entity.entity_id]) continue;
+      const domain = entity.entity_id.split('.')[0] || '';
+      const ids = grouped.get(domain) || [];
+      ids.push(entity.entity_id);
+      grouped.set(domain, ids);
+    }
+
+    try {
+      for (const [domain, entityIds] of grouped) {
+        if (['light', 'switch', 'fan', 'input_boolean'].includes(domain) && ['turn_on', 'turn_off'].includes(action)) {
+          await this._hass.callService(domain, action, { entity_id: entityIds });
+        } else if (domain === 'cover' && ['open_cover', 'close_cover'].includes(action)) {
+          await this._hass.callService('cover', action, { entity_id: entityIds });
+        } else if (domain === 'lock' && ['lock', 'unlock'].includes(action)) {
+          await this._hass.callService('lock', action, { entity_id: entityIds });
+        }
+      }
+    } catch (error) {
+      console.warn(`Failed to run device bulk action ${action}`, error);
+    }
   }
 
   private _renderEntityCard(entity: EntityConfig) {
@@ -2340,7 +2502,8 @@ export class DwainsDevicesCard extends LitElement {
     }
 
     .maintenance-view {
-      max-width: 1200px;
+      width: 100%;
+      max-width: none;
     }
 
     .maintenance-header {
@@ -2382,11 +2545,21 @@ export class DwainsDevicesCard extends LitElement {
 
     .maintenance-area-group {
       margin-bottom: 14px;
-      padding: 12px;
-      border: 1px solid color-mix(in srgb, var(--primary-text-color) 7%, transparent);
-      border-radius: 12px;
-      background: var(--card-background-color);
-      box-shadow: 0 5px 14px rgba(15, 23, 42, 0.035);
+    }
+
+    .maintenance-room-count {
+      min-width: 22px;
+      height: 22px;
+      padding: 0 7px;
+      margin-left: auto;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--secondary-text-color);
+      background: var(--secondary-background-color);
+      font-size: 11px;
+      font-weight: 800;
     }
 
     .maintenance-area-title {
@@ -2553,7 +2726,8 @@ export class DwainsDevicesCard extends LitElement {
 
     .energy-view {
       --domain-color: ${unsafeCSS(getDomainColor('energy'))};
-      max-width: 1320px;
+      width: 100%;
+      max-width: none;
     }
 
     .energy-header {
@@ -2937,6 +3111,106 @@ export class DwainsDevicesCard extends LitElement {
     .domain-header ha-icon {
       --mdc-icon-size: 20px;
       opacity: 0.8;
+    }
+
+    .device-global-actions {
+      width: 100%;
+      margin: -2px 0 12px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .device-bulk-action {
+      min-height: 36px;
+      padding: 0 12px;
+      border: 0;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      color: var(--primary-text-color);
+      background: var(--card-background-color);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow:
+        0 8px 18px rgba(15, 23, 42, 0.055),
+        inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 6%, transparent);
+    }
+
+    .device-bulk-action ha-icon {
+      --mdc-icon-size: 17px;
+      color: var(--domain-color, var(--primary-color));
+    }
+
+    .device-bulk-action.icon-only {
+      width: 32px;
+      height: 30px;
+      min-height: 30px;
+      padding: 0;
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 7%, transparent);
+    }
+
+    .device-room-actions {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .device-room-master {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 30px;
+      padding: 4px 7px;
+      border: 1px solid var(--divider-color);
+      border-radius: 999px;
+      background: var(--card-background-color);
+      color: var(--secondary-text-color);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    .device-room-master-track {
+      width: 31px;
+      height: 18px;
+      position: relative;
+      display: inline-block;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--primary-text-color) 20%, transparent);
+    }
+
+    .device-room-master-track::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform .18s;
+    }
+
+    .device-room-master-track.is-on {
+      background: var(--entity-color);
+    }
+
+    .device-room-master-track.is-on::after {
+      transform: translateX(13px);
+    }
+
+    .person-device-grid {
+      margin: 0;
     }
 
     .entities-grid {
@@ -3458,6 +3732,22 @@ export class DwainsDevicesCard extends LitElement {
       .maintenance-area-group {
         padding: 10px;
         margin-bottom: 10px;
+      }
+
+      .device-global-actions {
+        margin-top: 0;
+        justify-content: flex-end;
+      }
+
+      .device-bulk-action.with-label {
+        min-height: 34px;
+        padding: 0 10px;
+        font-size: 11px;
+      }
+
+      .device-room-master {
+        min-height: 28px;
+        font-size: 11px;
       }
 
       .devices-overview-view {

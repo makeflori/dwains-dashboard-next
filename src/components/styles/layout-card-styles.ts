@@ -3629,145 +3629,6 @@ export const layoutCardStyles = css`
         --mdc-icon-size: 18px;
       }
 
-    @media (min-width: 769px) {
-      .area-view .dd-generated-card-wrap.editing,
-      .area-view .mobile-entities-section.layout-grid .dd-generated-card-wrap.editing {
-        width: 100%;
-        min-width: 0;
-        flex: none;
-        scroll-snap-align: none;
-      }
-
-      .area-view .mobile-entities-section {
-        gap: 28px;
-        margin-top: 20px;
-      }
-
-      .area-view .mobile-domain-group {
-        min-width: 0;
-      }
-
-      .area-view .mobile-domain-header {
-        padding: 0;
-        margin-bottom: 12px;
-      }
-
-      .area-view .mobile-layout-toggle {
-        display: none;
-      }
-
-      .area-view .mobile-domain-title {
-        gap: 0;
-      }
-
-      .area-view .mobile-domain-title-label {
-        font-size: 20px;
-      }
-
-      .area-view .mobile-domain-count {
-        font-size: 12px;
-      }
-
-      .area-view .mobile-entity-rail,
-      .area-view .mobile-entities-section.layout-grid .mobile-entity-rail {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(178px, 1fr));
-        gap: 14px;
-        margin: 0;
-        padding: 0;
-        overflow: visible;
-        scroll-padding: 0;
-        scroll-snap-type: none;
-        align-items: stretch;
-      }
-
-      .area-view .mobile-entity-card,
-      .area-view .mobile-entities-section.layout-grid .mobile-entity-card {
-        width: 100%;
-        min-width: 0;
-        min-height: 152px;
-        flex: none;
-        padding: 16px;
-        border-radius: 12px;
-        scroll-snap-align: none;
-      }
-
-      .area-view .mobile-entity-card:hover {
-        transform: translateY(-1px);
-        box-shadow:
-          0 16px 32px rgba(15, 23, 42, 0.08),
-          inset 0 0 0 1px rgba(15, 23, 42, 0.045);
-      }
-
-      .area-view .mobile-entity-card.has-inline-select {
-        min-height: 178px;
-      }
-
-      .area-view .mobile-entity-icon,
-      .area-view .mobile-entities-section.layout-grid .mobile-entity-icon {
-        width: 38px;
-        height: 38px;
-        border-radius: 11px;
-      }
-
-      .area-view .mobile-entity-icon ha-icon {
-        --mdc-icon-size: 21px;
-      }
-
-      .area-view .mobile-entity-name {
-        font-size: 15px;
-      }
-
-      .area-view .mobile-entity-status {
-        font-size: 11px;
-      }
-
-      .area-view .mobile-cover-actions,
-      .area-view .mobile-entities-section.layout-grid .mobile-cover-actions {
-        min-height: 32px;
-        padding: 3px;
-        gap: 3px;
-      }
-
-      .area-view .mobile-cover-action,
-      .area-view .mobile-entities-section.layout-grid .mobile-cover-action {
-        width: 26px;
-        height: 26px;
-      }
-
-      .area-view .mobile-cover-action ha-icon,
-      .area-view .mobile-entities-section.layout-grid .mobile-cover-action ha-icon {
-        --mdc-icon-size: 16px;
-      }
-
-      .area-view .mobile-entity-rail .dd-custom-card-wrap,
-      .area-view .mobile-entity-rail .dd-domain-add-card,
-      .area-view .mobile-entities-section.layout-grid .mobile-entity-rail .dd-custom-card-wrap,
-      .area-view .mobile-entities-section.layout-grid .mobile-entity-rail .dd-domain-add-card {
-        width: 100%;
-        min-width: 0;
-        flex: none;
-        scroll-snap-align: none;
-      }
-
-      .area-view .mobile-todo-list-card,
-      .area-view .mobile-entities-section.layout-grid .mobile-todo-list-card {
-        grid-column: 1 / -1;
-        width: 100%;
-        max-width: 760px;
-        min-width: 0;
-        flex: none;
-        scroll-snap-align: none;
-      }
-    }
-
-    @media (min-width: 1200px) {
-      .area-view .mobile-entity-rail,
-      .area-view .mobile-entities-section.layout-grid .mobile-entity-rail {
-        grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-      }
-    }
-
     /* Sidebar: blueprint-pagina's + toevoegknop */
     .sidebar-divider {
       height: 1px;
@@ -8866,5 +8727,32 @@ which also swallowed pointer events for the new handle. */
     min-width: 0 !important;
   }
 }
+
+/* Room edit DnD handles intentionally match Settings > Areas. */
+.area-view .mobile-domain-leading-drag-handle,
+.area-view .dd-generated-card-leading-drag-handle {
+  width: 22px;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 22px;
+  color: var(--secondary-text-color);
+  background: transparent;
+  cursor: grab;
+}
+.area-view .mobile-domain-leading-drag-handle:hover,
+.area-view .dd-generated-card-leading-drag-handle:hover {
+  background: var(--primary-background-color);
+  color: var(--primary-color);
+}
+.area-view .mobile-domain-leading-drag-handle ha-icon,
+.area-view .dd-generated-card-leading-drag-handle ha-icon {
+  --mdc-icon-size: 20px;
+}
+
 
 `;
