@@ -3458,8 +3458,6 @@ export class DwainsDevicesCard extends LitElement {
 
     .person-device-grid {
       margin: 0;
-      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-      gap: 12px;
     }
 
     .device-room-groups {
@@ -3616,10 +3614,10 @@ export class DwainsDevicesCard extends LitElement {
       border-radius: inherit;
     }
 
-    /* Person cards deliberately occupy about 3x the former card area:
-       two columns instead of four and roughly 1.5x the former height. */
+    /* Person cards keep the existing four-column layout and are only
+       enlarged vertically to roughly three times the former height. */
     .room-style-device-view .mobile-entity-card.person-card.has-location-preview {
-      min-height: 190px !important;
+      min-height: 378px !important;
       align-items: stretch;
       justify-content: flex-start;
     }
@@ -3632,7 +3630,7 @@ export class DwainsDevicesCard extends LitElement {
        of that section's width, centred beneath the identity row. */
     .room-style-device-view .person-location-preview {
       width: 66.666%;
-      height: 112px;
+      height: 250px;
       margin-top: 10px;
       align-self: center;
       overflow: hidden;
