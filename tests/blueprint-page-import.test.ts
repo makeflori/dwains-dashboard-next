@@ -3,10 +3,10 @@ import { readFileSync } from 'node:fs';
 import { parseBlueprintYaml, resolveBlueprintCard, defaultValues } from '../src/utils/blueprints';
 
 const pages = [
-  ['WasteCollection', 'Waste Collection', '1.0.1'],
-  ['CryptoWallet', 'Crypto Wallet', '1.0.1'],
+  ['WasteCollection', 'Waste Collection', '1.0.0'],
+  ['CryptoWallet', 'Crypto Wallet', '1.0.0'],
   ['SystemMonitor', 'System Monitor', '1.0.0'],
-  ['AdGuard', 'AdGuard', '1.2'],
+  ['AdGuard', 'AdGuard', '1.1'],
 ] as const;
 
 describe('import actual published Dashboard Next page YAML', () => {
