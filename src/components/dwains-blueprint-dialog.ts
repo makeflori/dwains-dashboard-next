@@ -48,7 +48,6 @@ export class DwainsBlueprintDialog extends LitElement {
   private get _german(): boolean { return (this.hass?.locale?.language || this.hass?.language || 'en').toLowerCase().split('-')[0] === 'de'; }
   private _label(def: any, key: string): string { return (this._german ? def.name_de : undefined) || def.name || key; }
   private _desc(def: any): string { return (this._german ? def.description_de : undefined) || def.description || ''; }
-  private _listTitle(type: string): string { return this._german ? (type === 'waste' ? 'Müllart' : 'Coin') : (type === 'waste' ? 'Waste type' : 'Coin'); }
 
   private _t = (key: string, vars?: Record<string, string | number>) =>
     ddLocalize(this.hass, key, vars);
@@ -948,16 +947,15 @@ export class DwainsBlueprintDialog extends LitElement {
       : this._entitySuggestions(def).filter(id => !items.some((x: any) => x.entity === id));
     return html`<div class="entity-list">
       ${items.map((item: any, index: number) => html`<div class="entity-list-row">
-        <div class="entity-list-header"><strong>${def.suggest === "coin" ? (item.name || (this._german ? "Neuer Coin" : "New coin")) : (item.name || `${this._listTitle(def.suggest)} ${index + 1}`)}</strong>
+        <div class="entity-list-header">
+          <input class="dd-input entity-name-input" aria-label=${this._german ? 'Name' : 'Name'} placeholder=${this._german ? 'Name' : 'Name'} .value=${item.name || ''} @input=${(e: any) => update(index, 'name', e.target.value)} />
           <ha-button appearance="plain" size="s" @click=${() => this._setValue(key, items.filter((_: any, i: number) => i !== index))}>${this._german ? 'Entfernen' : 'Remove'}</ha-button>
         </div>
-        <div class="field"><label>${this._german ? (def.suggest === "coin" ? "Wertsensor" : "Entität") : (def.suggest === "coin" ? "Value sensor" : "Entity")}</label><ha-entity-picker .hass=${this.hass} .value=${item.entity || ''} @value-changed=${(e: any) => update(index, 'entity', e.detail.value)}></ha-entity-picker></div>
-        <div class="field"><label>${this._german ? "Name" : "Name"}</label><input class="dd-input" .value=${item.name || ''} @input=${(e: any) => update(index, 'name', e.target.value)} /></div>
-        ${def.suggest === 'coin' ? html`<div class="field"><label>${this._german ? 'Kurssensor' : 'Price sensor'}</label><ha-entity-picker .hass=${this.hass} .value=${item.price_entity || ''} @value-changed=${(e: any) => update(index, 'price_entity', e.detail.value)}></ha-entity-picker></div><div class="field"><label>${this._german ? 'Bestandssensor' : 'Holdings sensor'}</label><ha-entity-picker .hass=${this.hass} .value=${item.amount_entity || ''} @value-changed=${(e: any) => update(index, 'amount_entity', e.detail.value)}></ha-entity-picker></div>` : nothing}
-        <div class="field"><label>${this._german ? "Icon" : "Icon"}</label><ha-icon-picker .hass=${this.hass} .value=${item.icon || ''} @value-changed=${(e: any) => update(index, 'icon', e.detail.value)}></ha-icon-picker></div>
-        <div class="field-desc">${this._german ? 'Icon optional – Standard:' : 'Icon optional – default:'} ${def.default_icon || 'mdi:shape'}</div>
+        <div class="field"><label>${this._german ? (def.suggest === "coin" ? "Wertsensor" : "Entität") : (def.suggest === "coin" ? "Value sensor" : "Entity")}</label><div class="field-desc">${def.suggest === "coin" ? "e.g. sensor.wallet_value_bitcoin" : "e.g. sensor.waste_paper"}</div><ha-entity-picker .hass=${this.hass} .value=${item.entity || ''} @value-changed=${(e: any) => update(index, 'entity', e.detail.value)}></ha-entity-picker></div>
+        ${def.suggest === 'coin' ? html`<div class="field"><label>${this._german ? 'Kurssensor' : 'Price sensor'}</label><div class="field-desc">e.g. sensor.cryptoinfo_bitcoin_eur</div><ha-entity-picker .hass=${this.hass} .value=${item.price_entity || ''} @value-changed=${(e: any) => update(index, 'price_entity', e.detail.value)}></ha-entity-picker></div><div class="field"><label>${this._german ? 'Bestandssensor' : 'Holdings sensor'}</label><div class="field-desc">e.g. sensor.wallet_volume_bitcoin</div><ha-entity-picker .hass=${this.hass} .value=${item.amount_entity || ''} @value-changed=${(e: any) => update(index, 'amount_entity', e.detail.value)}></ha-entity-picker></div>` : nothing}
+        <div class="field"><label>${this._german ? "Icon" : "Icon"} <span style="font-size:12px;color:var(--secondary-text-color);font-weight:400">(${this._german ? "optional" : "optional"})</span></label><ha-icon-picker .hass=${this.hass} .value=${item.icon || ''} @value-changed=${(e: any) => update(index, 'icon', e.detail.value)}></ha-icon-picker></div>
       </div>`)}
-      <ha-button appearance="outlined" @click=${() => this._setValue(key, [...items, { name: '', icon: '', entity: '' }])}>${this._german ? 'Hinzufügen' : 'Add'} ${this._listTitle(def.suggest)}</ha-button>
+      <ha-button appearance="outlined" @click=${() => this._setValue(key, [...items, { name: '', icon: '', entity: '' }])}>${this._german ? (def.suggest === "waste" ? "Müllart hinzufügen" : "Coin hinzufügen") : (def.suggest === "waste" ? "Add waste type" : "Add coin")}</ha-button>
       ${suggestions.length ? html`<div class="field-desc">${this._german ? 'Vorschläge aus Home Assistant:' : 'Suggested Home Assistant entities:'}</div>
         <div class="entity-list-suggestions">${suggestions.slice(0, 32).map(entry => { const item = typeof entry === 'string' ? { entity: entry, name: this.hass.states[entry]?.attributes?.friendly_name || (entry.split('.')[1] || entry).replace(/_/g, ' '), icon: '' } : entry; return html`<ha-button appearance="plain" size="s" @click=${() => this._setValue(key, [...items, item])}>${item.name}</ha-button>`; })}</div>` : nothing}
     </div>`;
@@ -1099,7 +1097,8 @@ export class DwainsBlueprintDialog extends LitElement {
         margin: 14px 0 8px;
       }
       .entity-list-row { border: 1px solid var(--divider-color); border-radius: 10px; padding: 12px; margin-bottom: 10px; display: grid; gap: 9px; }
-      .entity-list-header { display: flex; align-items: center; justify-content: space-between; }
+      .entity-list-header { display: flex; align-items: center; gap: 12px; justify-content: space-between; }
+      .entity-name-input { flex: 1; min-width: 0; font-weight: 600; }
       .entity-list-suggestions { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
       .entity-list > ha-button { margin-top: 5px; }
       .field {
