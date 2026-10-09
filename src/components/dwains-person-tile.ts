@@ -91,7 +91,7 @@ export class DwainsDashboardNextPersonTile extends LitElement {
     }
 
     .person-tile.has-location {
-      height: 186px;
+      height: var(--dd-person-tile-location-height, 248px);
       justify-content: flex-start;
     }
 
@@ -189,7 +189,7 @@ export class DwainsDashboardNextPersonTile extends LitElement {
 
     .person-map {
       width: 100%;
-      height: 124px;
+      height: var(--dd-person-map-height, 186px);
       min-height: 0;
       margin-top: 10px;
       overflow: hidden;
