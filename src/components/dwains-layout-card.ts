@@ -237,6 +237,8 @@ export class DwainsLayoutCard extends LitElement {
   @state() private _settingsPageDescription = '';
   @state() private _confirmationDialog: ConfirmationDialogState | null = null;
   @state() private _housePowerDialogOpen = false;
+  private _housePowerDragStartY: number | null = null;
+  private _housePowerDragOffset = 0;
 
   // Performance optimizations
   private _areaEntitiesCache = new Map<string, { entities: EntityConfig[], timestamp: number }>();
@@ -12830,16 +12832,22 @@ no chip/background. */
     }
 
     .house-power-dialog{
-      width: min(720px, calc(100vw - 32px));
-      max-height: min(78vh, 760px);
+      position: relative;
+      width: min(760px, calc(100vw - 32px));
+      max-height: min(90vh, 760px);
       padding: 16px;
       overflow-y: auto;
+      overscroll-behavior-y: contain;
       border: 1px solid color-mix(in srgb, var(--divider-color) 72%, transparent);
       border-radius: 14px;
       background: var(--card-background-color);
       color: var(--primary-text-color);
       box-shadow: 0 24px 64px rgba(8, 13, 24, 0.24);
       outline: none;
+    }
+
+    .house-power-dialog-handle{
+      display: none;
     }
 
     .house-power-dialog-head{
@@ -12995,16 +13003,55 @@ no chip/background. */
       text-align: center;
     }
 
+    @keyframes house-power-sheet-in {
+      from { transform: translate3d(0, 100%, 0); opacity: 0.98; }
+      to { transform: translate3d(0, 0, 0); opacity: 1; }
+    }
+
     @media (max-width: 768px) {
       .house-power-dialog-overlay{
         align-items: flex-end;
-        padding: 12px 12px calc(96px + env(safe-area-inset-bottom, 0px));
+        padding: 0;
+        overscroll-behavior: none;
       }
 
       .house-power-dialog{
-        width: 100%;
-        max-height: 68vh;
-        border-radius: 18px;
+        width: min(100vw, 600px);
+        max-height: calc(100dvh - 54px);
+        margin: 0 auto;
+        padding: 30px 14px calc(18px + env(safe-area-inset-bottom, 0px));
+        border-bottom: 0;
+        border-radius: 24px 24px 0 0;
+        animation: house-power-sheet-in 280ms cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      .house-power-dialog-handle{
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: 96px;
+        height: 28px;
+        transform: translateX(-50%);
+        display: block;
+        border: 0;
+        background: transparent;
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
+        cursor: grab;
+        z-index: 3;
+      }
+
+      .house-power-dialog-handle::after{
+        content: '';
+        position: absolute;
+        top: 9px;
+        left: 50%;
+        width: 40px;
+        height: 5px;
+        transform: translateX(-50%);
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--secondary-text-color) 25%, transparent);
       }
     }
 
@@ -18965,11 +19012,81 @@ copy{
   };
 
   private _openHousePowerDialog = () => {
+    this._housePowerDragStartY = null;
+    this._housePowerDragOffset = 0;
     this._housePowerDialogOpen = true;
   };
 
   private _closeHousePowerDialog = () => {
     this._housePowerDialogOpen = false;
+    this._housePowerDragStartY = null;
+    this._housePowerDragOffset = 0;
+  };
+
+  private _onHousePowerDragStart = (event: PointerEvent): void => {
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    event.preventDefault();
+    event.stopPropagation();
+    this._housePowerDragStartY = event.clientY;
+    this._housePowerDragOffset = 0;
+    const dialog = this.renderRoot.querySelector<HTMLElement>('.house-power-dialog');
+    dialog?.getAnimations().forEach(animation => animation.cancel());
+    if (dialog) dialog.style.transition = 'none';
+    (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+  };
+
+  private _onHousePowerDragMove = (event: PointerEvent): void => {
+    if (this._housePowerDragStartY === null) return;
+    event.preventDefault();
+    event.stopPropagation();
+    this._housePowerDragOffset = Math.max(0, event.clientY - this._housePowerDragStartY);
+    const dialog = this.renderRoot.querySelector<HTMLElement>('.house-power-dialog');
+    if (dialog) dialog.style.transform = `translate3d(0, ${this._housePowerDragOffset}px, 0)`;
+  };
+
+  private _onHousePowerDragEnd = (event: PointerEvent): void => {
+    if (this._housePowerDragStartY === null) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const offset = this._housePowerDragOffset;
+    const shouldClose = offset >= 90;
+    this._housePowerDragStartY = null;
+    this._housePowerDragOffset = 0;
+
+    const dialog = this.renderRoot.querySelector<HTMLElement>('.house-power-dialog');
+    if (!dialog) {
+      if (shouldClose) this._closeHousePowerDialog();
+      return;
+    }
+
+    dialog.style.transition = '';
+    dialog.getAnimations().forEach(animation => animation.cancel());
+    if (shouldClose && dialog.animate) {
+      const animation = dialog.animate(
+        [
+          { transform: `translate3d(0, ${offset}px, 0)` },
+          { transform: 'translate3d(0, 100dvh, 0)' },
+        ],
+        { duration: 170, easing: 'cubic-bezier(0.4, 0, 1, 1)' }
+      );
+      animation.addEventListener('finish', () => this._closeHousePowerDialog(), { once: true });
+      return;
+    }
+
+    if (dialog.animate) {
+      const animation = dialog.animate(
+        [
+          { transform: `translate3d(0, ${offset}px, 0)` },
+          { transform: 'translate3d(0, 0, 0)' },
+        ],
+        { duration: 190, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
+      );
+      animation.addEventListener('finish', () => {
+        dialog.style.transform = '';
+      }, { once: true });
+    } else {
+      dialog.style.transform = '';
+    }
   };
 
   private _openEnergyFromPowerDialog = () => {
@@ -19004,6 +19121,17 @@ copy{
           @click=${(event: Event) => event.stopPropagation()}
           @keydown=${this._handleHousePowerDialogKeydown}
         >
+          <div
+            class="house-power-dialog-handle"
+            role="button"
+            tabindex="0"
+            aria-label=${this._t('common.close')}
+            @pointerdown=${this._onHousePowerDragStart}
+            @pointermove=${this._onHousePowerDragMove}
+            @pointerup=${this._onHousePowerDragEnd}
+            @pointercancel=${this._onHousePowerDragEnd}
+            @lostpointercapture=${this._onHousePowerDragEnd}
+          ></div>
           <div class="house-power-dialog-head">
             <div class="house-power-dialog-title-wrap">
               <span class="house-power-dialog-icon"><ha-icon icon="mdi:flash"></ha-icon></span>
@@ -19137,6 +19265,7 @@ copy{
       config: this.config,
       entityIds,
       customTitle: title,
+      homeInformation: true,
       viewAllLabel: this._houseInfoDeviceViewLabel(),
       onViewAll: () => this._openDeviceDomain('sensor'),
     });
@@ -23692,6 +23821,7 @@ copy{
       deviceClass: domain.deviceClass,
       entityIds,
       customTitle: domain.name,
+      homeInformation: true,
       viewAllLabel: this._houseInfoDeviceViewLabel(),
       onViewAll: () => this._openDeviceDomain(this._statusDeviceDomainKey(domain)),
     });
@@ -23708,6 +23838,7 @@ copy{
       config: this.config,
       entityIds: this._getVisiblePersonEntities().map(person => person.entity_id),
       customTitle: this._t('home.people'),
+      homeInformation: true,
       viewAllLabel: this._houseInfoDeviceViewLabel(),
       onViewAll: () => this._openDeviceDomain('person'),
     });

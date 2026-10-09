@@ -22,6 +22,8 @@ export interface DomainEntitiesDialogParams {
   entityIds?: string[];
   viewAllLabel?: string;
   onViewAll?: () => void;
+  /** Use the same compact entity-tile presentation as the Home/room views. */
+  homeInformation?: boolean;
   customTitle?: string;
   customEntities?: string[];
   customDescription?: string;
@@ -1358,7 +1360,166 @@ export class DwainsDomainEntitiesDialog extends LitElement {
         background: color-mix(in srgb, var(--secondary-text-color) 24%, transparent);
       }
       ha-dialog {
-        transform: translateY(var(--sheet-drag-offset, 0px));
+        transform: none !important;
+      }
+    }
+
+    /* Home-information dialogs deliberately reuse the compact room-tile language.
+       Keep this scoped so generic domain dialogs retain their existing density. */
+    .content.home-information-context .entities-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 12px !important;
+      padding: 12px !important;
+    }
+
+    .content.home-information-context .area-section {
+      padding: 0 !important;
+      margin-bottom: 12px !important;
+      border-radius: 14px !important;
+    }
+
+    .content.home-information-context .area-header {
+      min-height: 48px !important;
+      padding: 10px 12px 0 !important;
+    }
+
+    .content.home-information-context .domain-entity-card {
+      min-width: 0 !important;
+      min-height: 88px !important;
+      height: 88px !important;
+      padding: 12px 14px !important;
+      display: grid !important;
+      grid-template-columns: 56px minmax(0, 1fr) auto !important;
+      grid-template-rows: 1fr !important;
+      align-items: center !important;
+      gap: 12px !important;
+      border-radius: 12px !important;
+      overflow: hidden !important;
+      background: var(--card-background-color) !important;
+      box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 7%, transparent),
+        0 5px 14px rgba(15, 23, 42, 0.045) !important;
+    }
+
+    .content.home-information-context .domain-entity-top {
+      display: contents !important;
+    }
+
+    .content.home-information-context .domain-entity-icon {
+      grid-column: 1 !important;
+      grid-row: 1 !important;
+      width: 56px !important;
+      height: 56px !important;
+      border-radius: 12px !important;
+    }
+
+    .content.home-information-context .domain-entity-icon ha-icon {
+      --mdc-icon-size: 25px;
+    }
+
+    .content.home-information-context .domain-entity-copy {
+      grid-column: 2 !important;
+      grid-row: 1 !important;
+      min-width: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      gap: 4px !important;
+    }
+
+    .content.home-information-context .domain-entity-top > :not(.domain-entity-icon) {
+      grid-column: 3 !important;
+      grid-row: 1 !important;
+      align-self: center !important;
+      justify-self: end !important;
+    }
+
+    .content.home-information-context .domain-entity-name {
+      display: block !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      white-space: nowrap !important;
+      overflow-wrap: normal !important;
+      font-size: 15px !important;
+      font-weight: 850 !important;
+      line-height: 1.12 !important;
+    }
+
+    .content.home-information-context .domain-entity-status {
+      margin-top: 0 !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      white-space: nowrap !important;
+      color: var(--entity-color) !important;
+      font-size: 12px !important;
+      font-weight: 850 !important;
+      line-height: 1.1 !important;
+    }
+
+    @media (max-width: 600px) {
+      :host {
+        overscroll-behavior: none;
+      }
+
+      .dd-domain-header {
+        touch-action: pan-x !important;
+      }
+
+      .sheet-handle {
+        touch-action: none !important;
+      }
+
+      .content {
+        overscroll-behavior-y: contain;
+      }
+
+      .content.home-information-context {
+        padding: 10px 10px calc(14px + env(safe-area-inset-bottom, 0px)) !important;
+      }
+
+      .content.home-information-context .area-section {
+        margin-bottom: 10px !important;
+        padding: 0 !important;
+      }
+
+      .content.home-information-context .area-header {
+        min-height: 42px !important;
+        padding: 8px 10px 0 !important;
+        gap: 8px !important;
+      }
+
+      .content.home-information-context .entities-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+        padding: 8px 10px 10px !important;
+      }
+
+      .content.home-information-context .domain-entity-card {
+        min-height: 76px !important;
+        height: 76px !important;
+        padding: 9px 10px !important;
+        grid-template-columns: 42px minmax(0, 1fr) auto !important;
+        gap: 8px !important;
+        border-radius: 11px !important;
+      }
+
+      .content.home-information-context .domain-entity-icon {
+        width: 42px !important;
+        height: 42px !important;
+        border-radius: 10px !important;
+      }
+
+      .content.home-information-context .domain-entity-icon ha-icon {
+        --mdc-icon-size: 21px;
+      }
+
+      .content.home-information-context .domain-entity-name {
+        font-size: 13px !important;
+        line-height: 1.1 !important;
+      }
+
+      .content.home-information-context .domain-entity-status {
+        font-size: 11px !important;
       }
     }
   `;
@@ -1369,6 +1530,12 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     event.stopPropagation();
     this._sheetDragStartY = event.clientY;
     this._sheetDragOffset = 0;
+    const panel = this._dialogPanel();
+    panel?.getAnimations().forEach(animation => animation.cancel());
+    if (panel) {
+      this._prepareMobileSheetPanel(panel);
+      panel.style.transition = 'none';
+    }
     (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
   };
 
@@ -1377,8 +1544,8 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     event.preventDefault();
     event.stopPropagation();
     this._sheetDragOffset = Math.max(0, event.clientY - this._sheetDragStartY);
-    this.renderRoot.querySelector<HTMLElement>('ha-dialog')
-      ?.style.setProperty('--sheet-drag-offset', `${this._sheetDragOffset}px`);
+    const panel = this._dialogPanel();
+    if (panel) panel.style.transform = `translate3d(0, ${this._sheetDragOffset}px, 0)`;
   };
 
   private _onSheetPointerEnd = (event: PointerEvent): void => {
@@ -1390,11 +1557,46 @@ export class DwainsDomainEntitiesDialog extends LitElement {
 
   private _finishSheetDrag(): void {
     if (this._sheetDragStartY === null) return;
-    const shouldClose = this._sheetDragOffset >= 90;
+    const offset = this._sheetDragOffset;
+    const shouldClose = offset >= 90;
     this._sheetDragStartY = null;
     this._sheetDragOffset = 0;
-    this.renderRoot.querySelector<HTMLElement>('ha-dialog')?.style.removeProperty('--sheet-drag-offset');
-    if (shouldClose) this.closeDialog();
+
+    const panel = this._dialogPanel();
+    if (!panel) {
+      if (shouldClose) this.closeDialog();
+      return;
+    }
+
+    panel.style.transition = '';
+    panel.getAnimations().forEach(animation => animation.cancel());
+
+    if (shouldClose && panel.animate) {
+      const animation = panel.animate(
+        [
+          { transform: `translate3d(0, ${offset}px, 0)` },
+          { transform: 'translate3d(0, 100dvh, 0)' },
+        ],
+        { duration: 170, easing: 'cubic-bezier(0.4, 0, 1, 1)' }
+      );
+      animation.addEventListener('finish', () => this.closeDialog(), { once: true });
+      return;
+    }
+
+    if (panel.animate) {
+      const animation = panel.animate(
+        [
+          { transform: `translate3d(0, ${offset}px, 0)` },
+          { transform: 'translate3d(0, 0, 0)' },
+        ],
+        { duration: 190, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
+      );
+      animation.addEventListener('finish', () => {
+        panel.style.transform = '';
+      }, { once: true });
+    } else {
+      panel.style.transform = '';
+    }
   }
 
   public async showDialog(params: DomainEntitiesDialogParams): Promise<void> {
@@ -1442,32 +1644,51 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     }
   }
 
+  private _dialogPanel(): HTMLElement | null {
+    const haDialog = this.renderRoot.querySelector('ha-dialog') as HTMLElement | null;
+    const haDialogRoot = haDialog?.shadowRoot;
+    const waDialog = haDialogRoot?.querySelector('wa-dialog') as HTMLElement | null;
+    const waDialogRoot = waDialog?.shadowRoot;
+    return (
+      waDialogRoot?.querySelector('[part~="panel"]') ||
+      waDialogRoot?.querySelector('dialog') ||
+      haDialogRoot?.querySelector('.mdc-dialog__surface') ||
+      haDialogRoot?.querySelector('[part~="surface"]')
+    ) as HTMLElement | null;
+  }
+
+  private _prepareMobileSheetPanel(panel: HTMLElement): void {
+    panel.style.position = 'fixed';
+    panel.style.inset = 'auto 0 0 0';
+    panel.style.margin = '0 auto';
+    panel.style.width = 'min(100vw, 600px)';
+    panel.style.maxWidth = '600px';
+    panel.style.maxHeight = 'calc(100dvh - 54px)';
+    panel.style.boxSizing = 'border-box';
+    panel.style.borderRadius = '24px 24px 0 0';
+    panel.style.transformOrigin = 'bottom center';
+  }
+
   private _animateMobileSheetIn(): void {
     if (
       this._mobileSheetAnimated ||
       !this._params ||
       typeof window === 'undefined' ||
-      !window.matchMedia('(max-width: 600px)').matches ||
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      !window.matchMedia('(max-width: 600px)').matches
     ) {
       return;
     }
 
     requestAnimationFrame(() => {
-      const haDialog = this.renderRoot.querySelector('ha-dialog') as HTMLElement | null;
-      const haDialogRoot = haDialog?.shadowRoot;
-      const waDialog = haDialogRoot?.querySelector('wa-dialog') as HTMLElement | null;
-      const waDialogRoot = waDialog?.shadowRoot;
-      const panel = (
-        waDialogRoot?.querySelector('[part~="panel"]') ||
-        waDialogRoot?.querySelector('dialog') ||
-        haDialogRoot?.querySelector('.mdc-dialog__surface') ||
-        haDialogRoot?.querySelector('[part~="surface"]')
-      ) as HTMLElement | null;
+      const panel = this._dialogPanel();
+      if (!panel) return;
 
-      if (!panel?.animate) return;
-
+      this._prepareMobileSheetPanel(panel);
       this._mobileSheetAnimated = true;
+
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !panel.animate) {
+        return;
+      }
 
       panel.animate(
         [
@@ -1477,7 +1698,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
         {
           duration: 280,
           easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
-          fill: 'both',
         }
       );
     });
@@ -1698,6 +1918,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
             @pointermove=${this._onSheetPointerMove}
             @pointerup=${this._onSheetPointerEnd}
             @pointercancel=${this._onSheetPointerEnd}
+            @lostpointercapture=${this._onSheetPointerEnd}
           ></div>
           <div class="dd-domain-header-line" style=${`--dialog-accent: ${headerColor};`}>
             <span class="dialog-title-icon" aria-hidden="true"><ha-icon icon=${headerIcon}></ha-icon></span>
@@ -1718,7 +1939,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
           </div>
         </div>
 
-        <div class="content ${this._params?.areaId ? 'room-context' : ''} ${this._params?.customEntities ? 'custom-entities-context' : ''}">
+        <div class="content ${this._params?.areaId ? 'room-context' : ''} ${this._params?.customEntities ? 'custom-entities-context' : ''} ${this._params?.homeInformation ? 'home-information-context' : ''}">
           ${this._loading
             ? html`<div class="loading">${this._t('common.loading')}</div>`
             : this._renderContent()
@@ -2007,6 +2228,10 @@ export class DwainsDomainEntitiesDialog extends LitElement {
         </button>
       `;
     }
+
+    // Home-information tiles are themselves clickable. The room view also
+    // omits a redundant chevron for passive sensor/info entities.
+    if (this._params?.homeInformation) return nothing;
 
     return html`
       <button
