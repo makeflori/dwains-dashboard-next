@@ -1,33 +1,30 @@
-import{_ as t,n as e,t as o}from"./state-Bpx-nWN3.js";import{r,a as i,i as s,A as a,b as n}from"./lit-element-CR7MDbd3.js";import{j as p,c as d}from"./entity-names-CvSJdXb9.js";import{a as l}from"./dwains-bottom-nav-CAkjEXFb.js";let c=class extends s{constructor(){super(...arguments),this.entityId="",this.displayName=""}render(){const t=this.hass?.states?.[this.entityId];if(!t)return a;const e=this.displayName||t.attributes?.friendly_name||this.entityId,o=t.attributes?.entity_picture,r=Number.isFinite(Number(t.attributes?.latitude))&&Number.isFinite(Number(t.attributes?.longitude)),i="home"===String(t.state||"").toLowerCase(),s=["unavailable","unknown"].includes(String(t.state||"").toLowerCase()),p=this.hass?.entities?.[this.entityId]?.icon||t.attributes?.icon||d("person");return n`
-      <article class="person-tile ${r?"has-location":""} ${i?"is-active":"is-off"} ${s?"is-unavailable":""}">
+import{_ as t,n as e,t as o}from"./state-Bpx-nWN3.js";import{r as i,a as r,i as s,A as a,b as n}from"./lit-element-CR7MDbd3.js";import{j as p,c as d}from"./entity-names-D18PC6Vx.js";import{a as l}from"./dwains-bottom-nav-KPIe-ECs.js";let c=class extends s{constructor(){super(...arguments),this.entityId="",this.displayName=""}render(){const t=this.hass?.states?.[this.entityId];if(!t)return a;const e=this.displayName||t.attributes?.friendly_name||this.entityId,o=t.attributes?.entity_picture,i=Number.isFinite(Number(t.attributes?.latitude))&&Number.isFinite(Number(t.attributes?.longitude)),r="home"===String(t.state||"").toLowerCase(),s=["unavailable","unknown"].includes(String(t.state||"").toLowerCase()),p=this.hass?.entities?.[this.entityId]?.icon||t.attributes?.icon||d("person");return n`
+      <article class="person-tile ${i?"has-location":""} ${r?"is-active":"is-off"} ${s?"is-unavailable":""}">
         <div class="person-main">
           <span class="person-icon ${o?"has-picture":""}">
             ${o?n`<img class="person-avatar" src=${o} alt=${e}>`:n`<ha-icon icon=${p}></ha-icon>`}
           </span>
           <div class="person-copy">
             <div class="person-name" title=${e}>${e}</div>
-            <div class="person-state ${i?"active":""}">${l(this.hass,t)}</div>
+            <div class="person-state ${r?"active":""}">${l(this.hass,t)}</div>
           </div>
         </div>
 
-        ${r?n`
+        ${i?n`
           <div class="person-map" aria-label=${`${e} location`}>
             <dwains-dashboard-next-card-host
-              eager
-              strip-card-surface
-              refresh-layout
               .hass=${this.hass}
               .config=${{type:"map",entities:[this.entityId],hours_to_show:0,default_zoom:14,auto_fit:!0,fit_zones:!1,show_zone_radius:!1,aspect_ratio:"2:1"}}
             ></dwains-dashboard-next-card-host>
           </div>
         `:a}
       </article>
-    `}};c.styles=i`
+    `}};c.styles=r`
     :host {
       display: block;
       min-width: 0;
       width: 100%;
-      --person-color: ${r(p("person"))};
+      --person-color: ${i(p("person"))};
     }
 
     .person-tile {
