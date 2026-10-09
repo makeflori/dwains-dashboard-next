@@ -1385,47 +1385,17 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     if (this._sheetDragStartY === null) return;
     event.preventDefault();
     event.stopPropagation();
-    this._onSheetTouchEnd();
+    this._finishSheetDrag();
   };
 
-  private _onDialogTouchStart = (event: TouchEvent): void => {
-    // A slotted HA header lives in the dialog shadow tree: handle the composed
-    // event on the dialog host, and only start swipes from its visual header.
-    const path = event.composedPath();
-    const fromHeader = path.some(node => node instanceof Element &&
-      (node.matches('ha-dialog-header') || node.matches('.sheet-handle')));
-    if (fromHeader) this._onSheetTouchStart(event);
-  };
-
-  private _onDialogTouchMove = (event: TouchEvent): void => {
-    if (this._sheetDragStartY !== null) this._onSheetTouchMove(event);
-  };
-
-  private _onSheetTouchStart = (event: TouchEvent): void => {
-    if (event.touches.length !== 1) return;
-    this._sheetDragStartY = event.touches.item(0)?.clientY ?? null;
-    this._sheetDragOffset = 0;
-    event.stopPropagation();
-  };
-
-  private _onSheetTouchMove = (event: TouchEvent): void => {
-    if (this._sheetDragStartY === null || event.touches.length !== 1) return;
-    const distance = (event.touches.item(0)?.clientY ?? this._sheetDragStartY) - this._sheetDragStartY;
-    this._sheetDragOffset = Math.max(0, distance);
-    if (distance > 0 && event.cancelable) event.preventDefault();
-    event.stopPropagation();
-    const dialog = this.renderRoot.querySelector<HTMLElement>('ha-dialog');
-    if (dialog) dialog.style.setProperty('--sheet-drag-offset', `${this._sheetDragOffset}px`);
-  };
-
-  private _onSheetTouchEnd = (): void => {
+  private _finishSheetDrag(): void {
     if (this._sheetDragStartY === null) return;
     const shouldClose = this._sheetDragOffset >= 90;
     this._sheetDragStartY = null;
     this._sheetDragOffset = 0;
     this.renderRoot.querySelector<HTMLElement>('ha-dialog')?.style.removeProperty('--sheet-drag-offset');
     if (shouldClose) this.closeDialog();
-  };
+  }
 
   public async showDialog(params: DomainEntitiesDialogParams): Promise<void> {
     this._params = params;
@@ -1714,10 +1684,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     return html`
       <ha-dialog
         open
-        @touchstart=${this._onDialogTouchStart}
-        @touchmove=${this._onDialogTouchMove}
-        @touchend=${this._onSheetTouchEnd}
-        @touchcancel=${this._onSheetTouchEnd}
         @closed=${this.closeDialog}
         @cancel=${() => this.closeDialog()}
         .heading=${domainTitle}
