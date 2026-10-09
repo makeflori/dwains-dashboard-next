@@ -43,9 +43,6 @@ export class DwainsDashboardNextPersonTile extends LitElement {
         ${hasLocation ? html`
           <div class="person-map" aria-label=${`${name} location`}>
             <dwains-dashboard-next-card-host
-              eager
-              strip-card-surface
-              refresh-layout
               .hass=${this.hass}
               .config=${{
                 type: 'map',
