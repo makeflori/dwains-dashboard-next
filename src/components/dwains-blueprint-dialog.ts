@@ -139,13 +139,13 @@ export class DwainsBlueprintDialog extends LitElement {
     const states = this.hass?.states || {};
     for (const [key, def] of Object.entries(parsed.meta.input || {})) {
       if (def.type === 'entity-list') {
-        if (def.suggest === 'coin') { suggestions[key] = []; continue; }
+        if (def.suggest === 'coin') { suggestions[key] = this._coinSuggestions().filter(row => row.entity && row.price_entity && row.amount_entity); continue; }
         const matches = this._entitySuggestions(def);
         const preferred = def.suggest === 'coin'
           ? matches.filter(id => /^(?:sensor\\.)wallet_value_(?!total)/i.test(id))
           : matches;
         suggestions[key] = preferred.slice(0, 30).map(id => {
-          const suffix = id.replace(/^sensor\\.wallet_value_/, '');
+          const suffix = id.replace(/^sensor\.wallet_value_/, '');
           const price = 'sensor.cryptoinfo_' + suffix + '_eur';
           const amount = 'sensor.wallet_volume_' + suffix;
           return {
@@ -548,6 +548,23 @@ export class DwainsBlueprintDialog extends LitElement {
         return;
       }
     }
+    // Put the nearest upcoming collection first, independently of selection order.
+    if (Array.isArray(this._values.waste_types)) {
+      const nextDate = (entityId: string): number => {
+        const state = this.hass?.states?.[entityId];
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const candidates = [state?.state, ...Object.keys(state?.attributes || {}), ...Object.values(state?.attributes || {})];
+        const valid = candidates.flatMap(raw => {
+          if (typeof raw !== 'string' || !/^\\d{4}-\\d{2}-\\d{2}$/.test(raw)) return [];
+          const dt = new Date(raw + 'T12:00:00');
+          return Number.isFinite(dt.getTime()) && dt.getTime() >= today.getTime() ? [dt.getTime()] : [];
+        });
+        return valid.length ? Math.min(...valid) : Number.POSITIVE_INFINITY;
+      };
+      this._values.waste_types = [...this._values.waste_types].sort((a: any, b: any) =>
+        nextDate(a.entity) - nextDate(b.entity));
+    }
     let card: any;
     try {
       card = resolveBlueprintCard(this._parsed.card, this._parsed.meta, this._values);
@@ -884,15 +901,15 @@ export class DwainsBlueprintDialog extends LitElement {
   private _coinSuggestions(): { name: string; entity: string; price_entity: string; amount_entity: string; icon: string }[] {
     const states = this.hass?.states || {};
     const ids = Object.keys(states);
-    const values = ids.filter(id => /^sensor\\.wallet_value_(?!total$)/i.test(id));
+    const values = ids.filter(id => /^sensor\.wallet_value_(?!total$)/i.test(id));
     const normalized = (text: string) => text.toLowerCase().replace(/[^a-z0-9]/g, '');
     const displayName = (id: string) => {
       const friendly = String(states[id]?.attributes?.friendly_name || '');
-      return (friendly.replace(/^(?:wert|value|wallet|price|kurs|volume|volumen|bestand|holdings)\\s*[:\\-]?\\s*/i, '').trim() || id.replace(/^sensor\\.wallet_value_/, '').replace(/_/g, ' ')).trim();
+      return (friendly.replace(/^(?:wert|value|wallet|price|kurs|volume|volumen|bestand|holdings)\s*[:-]?\s*/i, '').trim() || id.replace(/^sensor\\.wallet_value_/, '').replace(/_/g, ' ')).trim();
     };
     return values.map(entity => {
-      const suffix = entity.replace(/^sensor\\.wallet_value_/, '');
-      const name = displayName(entity);
+      const suffix = entity.replace(/^sensor\.wallet_value_/, '');
+      const name = displayName(entity).replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
       const possible = [suffix, name].map(normalized);
       const priceMatches = ids.filter(id => id.startsWith('sensor.') && (/cryptoinfo|(?:^|_)price_|(?:^|_)kurs_/.test(id) || id.includes('price')) && possible.some(word => word && normalized(id).includes(word)));
       const amountMatches = ids.filter(id => id.startsWith('sensor.') && /wallet_volume_|wallet_amount_|holdings_|balance_/.test(id) && possible.some(word => word && normalized(id).includes(word)));
@@ -931,13 +948,13 @@ export class DwainsBlueprintDialog extends LitElement {
       : this._entitySuggestions(def).filter(id => !items.some((x: any) => x.entity === id));
     return html`<div class="entity-list">
       ${items.map((item: any, index: number) => html`<div class="entity-list-row">
-        <div class="entity-list-header"><strong>${this._listTitle(def.suggest)} ${index + 1}</strong>
+        <div class="entity-list-header"><strong>${def.suggest === "coin" ? (item.name || (this._german ? "Neuer Coin" : "New coin")) : (item.name || `${this._listTitle(def.suggest)} ${index + 1}`)}</strong>
           <ha-button appearance="plain" size="s" @click=${() => this._setValue(key, items.filter((_: any, i: number) => i !== index))}>${this._german ? 'Entfernen' : 'Remove'}</ha-button>
         </div>
-        <ha-entity-picker .hass=${this.hass} .value=${item.entity || ''} @value-changed=${(e: any) => update(index, 'entity', e.detail.value)}></ha-entity-picker>
-        <input class="dd-input" placeholder=${this._german ? 'Name' : 'Name'} .value=${item.name || ''} @input=${(e: any) => update(index, 'name', e.target.value)} />
-        ${def.suggest === 'coin' ? html`<div class="field-desc">${this._german ? 'Preissensor' : 'Price sensor'}</div><ha-entity-picker .hass=${this.hass} .value=${item.price_entity || ''} @value-changed=${(e: any) => update(index, 'price_entity', e.detail.value)}></ha-entity-picker><div class="field-desc">${this._german ? 'Bestandssensor' : 'Holdings sensor'}</div><ha-entity-picker .hass=${this.hass} .value=${item.amount_entity || ''} @value-changed=${(e: any) => update(index, 'amount_entity', e.detail.value)}></ha-entity-picker>` : nothing}
-        <ha-icon-picker .hass=${this.hass} .value=${item.icon || ''} @value-changed=${(e: any) => update(index, 'icon', e.detail.value)}></ha-icon-picker>
+        <div class="field"><label>${this._german ? (def.suggest === "coin" ? "Wertsensor" : "Entität") : (def.suggest === "coin" ? "Value sensor" : "Entity")}</label><ha-entity-picker .hass=${this.hass} .value=${item.entity || ''} @value-changed=${(e: any) => update(index, 'entity', e.detail.value)}></ha-entity-picker></div>
+        <div class="field"><label>${this._german ? "Name" : "Name"}</label><input class="dd-input" .value=${item.name || ''} @input=${(e: any) => update(index, 'name', e.target.value)} /></div>
+        ${def.suggest === 'coin' ? html`<div class="field"><label>${this._german ? 'Kurssensor' : 'Price sensor'}</label><ha-entity-picker .hass=${this.hass} .value=${item.price_entity || ''} @value-changed=${(e: any) => update(index, 'price_entity', e.detail.value)}></ha-entity-picker></div><div class="field"><label>${this._german ? 'Bestandssensor' : 'Holdings sensor'}</label><ha-entity-picker .hass=${this.hass} .value=${item.amount_entity || ''} @value-changed=${(e: any) => update(index, 'amount_entity', e.detail.value)}></ha-entity-picker></div>` : nothing}
+        <div class="field"><label>${this._german ? "Icon" : "Icon"}</label><ha-icon-picker .hass=${this.hass} .value=${item.icon || ''} @value-changed=${(e: any) => update(index, 'icon', e.detail.value)}></ha-icon-picker></div>
         <div class="field-desc">${this._german ? 'Icon optional – Standard:' : 'Icon optional – default:'} ${def.default_icon || 'mdi:shape'}</div>
       </div>`)}
       <ha-button appearance="outlined" @click=${() => this._setValue(key, [...items, { name: '', icon: '', entity: '' }])}>${this._german ? 'Hinzufügen' : 'Add'} ${this._listTitle(def.suggest)}</ha-button>
