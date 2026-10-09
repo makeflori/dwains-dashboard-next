@@ -1932,24 +1932,6 @@ export class DwainsDevicesCard extends LitElement {
           <div class="mobile-entity-content">
             <div class="mobile-entity-name" title=${name}>${name}</div>
             <div class="mobile-entity-state ${active ? 'active' : ''}">${formatEntityStateWithUnit(this._hass, state)}</div>
-            ${personHasLocation ? html`
-              <div class="person-location-preview" aria-label=${`${name} location`}>
-                <dwains-dashboard-next-card-host
-                  eager
-                  .hass=${this._hass}
-                  .config=${{
-                    type: 'map',
-                    entities: [entity.entity_id],
-                    hours_to_show: 0,
-                    default_zoom: 14,
-                    auto_fit: true,
-                    fit_zones: false,
-                    show_zone_radius: false,
-                    aspect_ratio: '4:1',
-                  }}
-                ></dwains-dashboard-next-card-host>
-              </div>
-            ` : nothing}
           </div>
           <div class="mobile-entity-right">
             ${canToggle ? html`
@@ -1967,6 +1949,24 @@ export class DwainsDevicesCard extends LitElement {
             ` : nothing}
           </div>
         </div>
+        ${personHasLocation ? html`
+          <div class="person-location-preview" aria-label=${`${name} location`}>
+            <dwains-dashboard-next-card-host
+              eager
+              .hass=${this._hass}
+              .config=${{
+                type: 'map',
+                entities: [entity.entity_id],
+                hours_to_show: 0,
+                default_zoom: 14,
+                auto_fit: true,
+                fit_zones: false,
+                show_zone_radius: false,
+                aspect_ratio: '4:1',
+              }}
+            ></dwains-dashboard-next-card-host>
+          </div>
+        ` : nothing}
       </article>
     `;
   }
@@ -3458,6 +3458,8 @@ export class DwainsDevicesCard extends LitElement {
 
     .person-device-grid {
       margin: 0;
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 12px;
     }
 
     .device-room-groups {
@@ -3614,18 +3616,25 @@ export class DwainsDevicesCard extends LitElement {
       border-radius: inherit;
     }
 
+    /* Person cards deliberately occupy about 3x the former card area:
+       two columns instead of four and roughly 1.5x the former height. */
     .room-style-device-view .mobile-entity-card.person-card.has-location-preview {
-      min-height: 126px !important;
+      min-height: 190px !important;
       align-items: stretch;
+      justify-content: flex-start;
     }
 
     .room-style-device-view .mobile-entity-card.person-card.has-location-preview .mobile-entity-main {
-      align-items: start;
+      align-items: center;
     }
 
+    /* The location map forms the lower card section and uses two thirds
+       of that section's width, centred beneath the identity row. */
     .room-style-device-view .person-location-preview {
-      height: 58px;
-      margin-top: 7px;
+      width: 66.666%;
+      height: 112px;
+      margin-top: 10px;
+      align-self: center;
       overflow: hidden;
       border-radius: 8px;
       pointer-events: none;
