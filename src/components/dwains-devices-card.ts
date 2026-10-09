@@ -3431,6 +3431,18 @@ export class DwainsDevicesCard extends LitElement {
       --dd-replacement-radius: 10px;
     }
 
+    /* Thermostat cards need their normal internal width to render all controls.
+       Scale the finished card down by 30% instead of squeezing its internals. */
+    .special-device-view .climate-entity-card {
+      overflow: hidden;
+    }
+
+    .special-device-view .climate-entity-card > dwains-dashboard-next-card-host {
+      width: calc(100% / 0.7);
+      zoom: 0.7;
+      transform-origin: top left;
+    }
+
     .room-style-entities-grid {
       grid-template-columns: repeat(4, minmax(0, 1fr));
       align-items: stretch;

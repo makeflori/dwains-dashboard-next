@@ -11,7 +11,7 @@ import { ddLocalize, ddLocalizePlural } from '../utils/localize';
 import { fireEvent } from './utils/fire-event';
 import { formatEntityStateWithUnit, formatValueWithUnit } from '../utils/unit-format';
 import { stripAreaNameFromEntityName } from '../utils/entity-names';
-import { resolveDeviceViewCardConfig } from '../utils/blueprint-replacements';
+import { findReplacementAssignment, resolveDeviceViewCardConfig } from '../utils/blueprint-replacements';
 import './utils/dd-card-host';
 
 export interface DomainEntitiesDialogParams {
@@ -2136,29 +2136,43 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     const rawState = this.hass.states[entity.entity_id];
     if (!rawState) return nothing;
 
+    const domain = entity.entity_id.split('.')[0] || 'unknown';
+
     if (this._params?.homeInformationPresentation === 'devices') {
-      const domain = entity.entity_id.split('.')[0] || '';
-      return html`
-        <div class="device-presentation-card ${domain === 'sensor' ? 'sensor-card' : ''}">
-          <dwains-dashboard-next-card-host
-            framed
-            style=${domain === 'cover'
-              ? `--primary-color: ${getDomainColor('cover')}; --state-cover-open-color: ${getDomainColor('cover')}; --state-cover-opening-color: ${getDomainColor('cover')}; --state-cover-active-color: ${getDomainColor('cover')};`
-              : ''}
-            .hass=${this.hass}
-            .config=${resolveDeviceViewCardConfig({
-              hass: this.hass,
-              config: this._params.config,
-              entity: entity.entity_id,
-              surface: 'devices_cards',
-            })}
-          ></dwains-dashboard-next-card-host>
-        </div>
-      `;
+      const replacement = findReplacementAssignment({
+        hass: this.hass,
+        config: this._params.config,
+        entity,
+        surface: 'devices_cards',
+      });
+      const specialDeviceCard = ['light', 'cover', 'climate', 'sensor'].includes(domain);
+
+      // This exactly mirrors the Devices view:
+      // special domains (and explicit replacements) use Lovelace/device cards;
+      // all other domains use the compact current room-style tile.
+      if (specialDeviceCard || (replacement && replacement.enabled !== false)) {
+        return html`
+          <div class="device-presentation-card ${domain}-card ${domain === 'sensor' ? 'sensor-card' : ''}">
+            <dwains-dashboard-next-card-host
+              eager
+              framed
+              style=${domain === 'cover'
+                ? `--primary-color: ${getDomainColor('cover')}; --state-cover-open-color: ${getDomainColor('cover')}; --state-cover-opening-color: ${getDomainColor('cover')}; --state-cover-active-color: ${getDomainColor('cover')};`
+                : ''}
+              .hass=${this.hass}
+              .config=${resolveDeviceViewCardConfig({
+                hass: this.hass,
+                config: this._params.config,
+                entity: entity.entity_id,
+                surface: 'devices_cards',
+              })}
+            ></dwains-dashboard-next-card-host>
+          </div>
+        `;
+      }
     }
 
     const state = this._getEffectiveEntityState(rawState);
-    const domain = entity.entity_id.split('.')[0] || 'unknown';
     if (domain === 'todo') {
       return html`
         <div class="domain-todo-list-card" data-entity=${entity.entity_id}>
@@ -2313,7 +2327,112 @@ export class DwainsDomainEntitiesDialog extends LitElement {
           </button>
         ` : nothing}
       </div>
-    `;
+  
+
+    /* Final Home-information device-view parity.
+       Standard domains use the same compact tiles as Devices; special domains
+       keep their actual Lovelace device card. */
+    .content.home-information-context.device-presentation-context .domain-entity-card {
+      min-height: 62px !important;
+      height: auto !important;
+      padding: 8px 10px !important;
+      display: grid !important;
+      grid-template-columns: 36px minmax(0, 1fr) auto !important;
+      align-items: center !important;
+      gap: 9px !important;
+      border-radius: 8px !important;
+      box-shadow: 0 3px 9px rgba(15, 23, 42, 0.035) !important;
+    }
+
+    .content.home-information-context.device-presentation-context .domain-entity-top {
+      display: contents !important;
+    }
+
+    .content.home-information-context.device-presentation-context .domain-entity-icon {
+      grid-column: 1 !important;
+      grid-row: 1 !important;
+      width: 36px !important;
+      height: 36px !important;
+      border-radius: 8px !important;
+    }
+
+    .content.home-information-context.device-presentation-context .domain-entity-icon ha-icon {
+      --mdc-icon-size: 20px !important;
+    }
+
+    .content.home-information-context.device-presentation-context .domain-entity-copy {
+      grid-column: 2 !important;
+      grid-row: 1 !important;
+      min-width: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      gap: 2px !important;
+    }
+
+    .content.home-information-context.device-presentation-context .domain-entity-top > :not(.domain-entity-icon) {
+      grid-column: 3 !important;
+      grid-row: 1 !important;
+      justify-self: end !important;
+      align-self: center !important;
+    }
+
+    .content.home-information-context.device-presentation-context .domain-entity-name {
+      margin: 0 !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      white-space: nowrap !important;
+      overflow-wrap: normal !important;
+      display: block !important;
+      font-size: 12px !important;
+      font-weight: 850 !important;
+      line-height: 1.15 !important;
+    }
+
+    .content.home-information-context.device-presentation-context .domain-entity-status {
+      margin: 0 !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      white-space: nowrap !important;
+      color: var(--secondary-text-color) !important;
+      font-size: 10px !important;
+      font-weight: 650 !important;
+      line-height: 1.1 !important;
+    }
+
+    .content.home-information-context.device-presentation-context .domain-entity-card.is-active .domain-entity-status {
+      color: var(--entity-color) !important;
+    }
+
+    .content.home-information-context.device-presentation-context .device-presentation-card {
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .content.home-information-context.device-presentation-context .device-presentation-card.climate-card > dwains-dashboard-next-card-host {
+      width: calc(100% / 0.7);
+      zoom: 0.7;
+      transform-origin: top left;
+    }
+
+    @media (max-width: 600px) {
+      .content.home-information-context.device-presentation-context .entities-grid {
+        grid-template-columns: 1fr !important;
+      }
+
+      .content.home-information-context.device-presentation-context .domain-entity-card {
+        min-height: 58px !important;
+        padding: 7px 9px !important;
+        grid-template-columns: 34px minmax(0, 1fr) auto !important;
+        gap: 8px !important;
+      }
+
+      .content.home-information-context.device-presentation-context .domain-entity-icon {
+        width: 34px !important;
+        height: 34px !important;
+      }
+    }
+  `;
   }
 
   private async _runBulkDomainAction(entityIds: string[], action: BulkDomainAction, label: string, requireConfirmation = true): Promise<void> {
