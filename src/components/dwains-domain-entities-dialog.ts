@@ -517,7 +517,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
         --ha-dialog-min-height: 0px;
         --ha-dialog-max-height: calc(100dvh - 54px);
         --vertical-align-dialog: flex-end;
-        --dialog-surface-margin-top: 54px;
+        --dialog-surface-margin-top: auto;
         --dialog-container-padding: 0;
         --ha-dialog-scrim-backdrop-filter: brightness(66%) blur(2px);
         --mdc-dialog-scrim-color: rgba(0, 0, 0, 0.34);
@@ -1091,6 +1091,67 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     }
     .area-master-track.is-on { background: var(--entity-color); }
     .area-master-track.is-on::after { transform:translateX(13px); }
+    /* Own header layout rather than HA header slots, which clip wrapped actions. */
+    .dd-domain-header {
+      box-sizing: border-box; width: 100%; padding: 12px 18px;
+      position: relative; background: var(--card-background-color);
+      box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--divider-color) 65%, transparent);
+    }
+    .dd-domain-header-line {
+      display: flex; align-items: center; gap: 10px; min-width: 0;
+    }
+    .dd-domain-header-line .dialog-heading-copy {
+      flex: 1 1 auto; display: flex; align-items: center; gap: 12px;
+      flex-wrap: nowrap; min-width: 0;
+    }
+    .dd-domain-header-line .dialog-title-text {
+      font-size: 20px !important; font-weight: 850 !important;
+      line-height: 1.2 !important; min-width: 0;
+    }
+    .dd-domain-header-close { flex: 0 0 auto; margin-left: auto; }
+    .dd-domain-header .sheet-handle { display: none; }
+    @media (max-width: 600px) {
+      :host {
+        --vertical-align-dialog: flex-end !important;
+        --dialog-surface-margin-top: auto !important;
+        --mdc-dialog-min-height: 0px !important;
+      }
+      ha-dialog {
+        --vertical-align-dialog: flex-end !important;
+        --dialog-surface-margin-top: auto !important;
+      }
+      .dd-domain-header {
+        padding: 29px 14px 13px;
+        touch-action: pan-x;
+      }
+      .dd-domain-header-line { align-items: center; gap: 10px; }
+      .dd-domain-header-line .dialog-heading-copy {
+        flex-direction: column; align-items: flex-start; justify-content: center;
+        gap: 5px; flex-wrap: nowrap;
+      }
+      .dd-domain-header .dialog-title-icon {
+        flex: 0 0 48px !important; width: 48px !important; height: 48px !important;
+      }
+      .dd-domain-header .dialog-title-icon ha-icon { --mdc-icon-size: 25px !important; }
+      .dd-domain-header .dialog-header-destination {
+        order: 0 !important; max-width: 100%; line-height: 1.2;
+        min-height: 30px !important;
+      }
+      .dd-domain-header .sheet-handle {
+        display: block; position: absolute; top: 0; left: 50%;
+        transform: translateX(-50%); width: 120px; height: 27px;
+        z-index: 10; background: transparent; border-radius: 0;
+        touch-action: none !important; user-select: none;
+        -webkit-user-select: none; cursor: grab;
+      }
+      .dd-domain-header .sheet-handle::after {
+        content: ''; position: absolute; left: 50%; top: 9px;
+        width: 40px; height: 5px; transform: translateX(-50%);
+        background: color-mix(in srgb, var(--secondary-text-color) 25%, transparent);
+        border-radius: 999px;
+      }
+    }
+
     /* Room-view alignment: shared layout language for room groups and entity rows. */
     .dialog-global-actions .domain-actions {
       justify-content: center;
@@ -1301,6 +1362,31 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       }
     }
   `;
+
+  private _onSheetPointerDown = (event: PointerEvent): void => {
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    event.preventDefault();
+    event.stopPropagation();
+    this._sheetDragStartY = event.clientY;
+    this._sheetDragOffset = 0;
+    (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+  };
+
+  private _onSheetPointerMove = (event: PointerEvent): void => {
+    if (this._sheetDragStartY === null) return;
+    event.preventDefault();
+    event.stopPropagation();
+    this._sheetDragOffset = Math.max(0, event.clientY - this._sheetDragStartY);
+    this.renderRoot.querySelector<HTMLElement>('ha-dialog')
+      ?.style.setProperty('--sheet-drag-offset', `${this._sheetDragOffset}px`);
+  };
+
+  private _onSheetPointerEnd = (event: PointerEvent): void => {
+    if (this._sheetDragStartY === null) return;
+    event.preventDefault();
+    event.stopPropagation();
+    this._onSheetTouchEnd();
+  };
 
   private _onDialogTouchStart = (event: TouchEvent): void => {
     // A slotted HA header lives in the dialog shadow tree: handle the composed
@@ -1639,33 +1725,32 @@ export class DwainsDomainEntitiesDialog extends LitElement {
         flexContent
         hideActions
       >
-        <ha-dialog-header slot="header">
-          <div class="sheet-handle" aria-hidden="true"></div>
-          <span slot="title" class="dialog-title-line" style=${`--dialog-accent: ${headerColor};`}>
-            <span class="dialog-title-icon" aria-hidden="true">
-              <ha-icon icon=${headerIcon}></ha-icon>
-            </span>
+        <div slot="header" class="dd-domain-header">
+          <div class="sheet-handle" role="button" tabindex="0"
+            aria-label=${this._t('common.close')}
+            @pointerdown=${this._onSheetPointerDown}
+            @pointermove=${this._onSheetPointerMove}
+            @pointerup=${this._onSheetPointerEnd}
+            @pointercancel=${this._onSheetPointerEnd}
+          ></div>
+          <div class="dd-domain-header-line" style=${`--dialog-accent: ${headerColor};`}>
+            <span class="dialog-title-icon" aria-hidden="true"><ha-icon icon=${headerIcon}></ha-icon></span>
             <span class="dialog-heading-copy">
               <span class="dialog-title-text">${domainTitle}</span>
               ${this._params?.onViewAll ? html`
-                <button
-                  class="dialog-header-destination"
-                  type="button"
-                  @click=${this._handleViewAll}
-                >
+                <button class="dialog-header-destination" type="button" @click=${this._handleViewAll}>
                   <span>${this._params.viewAllLabel || 'Open device view'}</span>
                   <ha-icon icon="mdi:chevron-right"></ha-icon>
                 </button>
               ` : nothing}
             </span>
-          </span>
-          <ha-icon-button
-            slot="actionItems"
-            .label=${this._t('common.close')}
-            .path=${mdiClose}
-            @click=${() => this.closeDialog()}
-          ></ha-icon-button>
-        </ha-dialog-header>
+            <ha-icon-button class="dd-domain-header-close"
+              .label=${this._t('common.close')}
+              .path=${mdiClose}
+              @click=${() => this.closeDialog()}
+            ></ha-icon-button>
+          </div>
+        </div>
 
         <div class="content ${this._params?.areaId ? 'room-context' : ''} ${this._params?.customEntities ? 'custom-entities-context' : ''}">
           ${this._loading
