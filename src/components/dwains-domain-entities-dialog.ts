@@ -1377,6 +1377,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
         entity,
         surface: 'devices_cards',
       });
+      // House Information renders the same Devices card host for supported domains.
       const sharedDeviceCard = ['person', 'light', 'cover', 'climate', 'sensor', 'switch', 'binary_sensor', 'fan', 'input_boolean', 'lock'].includes(domain) ||
         (replacement && replacement.enabled !== false);
 
