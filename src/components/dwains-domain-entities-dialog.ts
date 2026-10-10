@@ -2050,11 +2050,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     }
   }
 
-  private _handleMoreInfo(event: Event, entityId?: string): void {
-    event.stopPropagation();
-    if (entityId) this._showMoreInfo(entityId);
-  }
-
   private _showMoreInfo(entityId: string): void {
     const homeAssistant = document.querySelector('home-assistant');
     if (homeAssistant) {
