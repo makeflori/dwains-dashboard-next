@@ -228,7 +228,13 @@ function installMobileMoreInfoDialogSizing(): void {
     });
   };
 
-  window.addEventListener('hass-more-info', scheduleScan, true);
+  const rescanAfterOpen = () => {
+    scheduleScan();
+    window.setTimeout(scheduleScan, 80);
+    window.setTimeout(scheduleScan, 240);
+  };
+
+  window.addEventListener('hass-more-info', rescanAfterOpen, true);
   window.addEventListener('resize', scheduleScan);
   scheduleScan();
 }
