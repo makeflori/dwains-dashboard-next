@@ -234,93 +234,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       --mdc-icon-size: 18px;
     }
 
-    .domain-entity-card {
-      --entity-color: var(--primary-color);
-      position: relative;
-      box-sizing: border-box;
-      min-width: 0;
-      min-height: 132px;
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      overflow: hidden;
-      border: 0;
-      border-radius: 12px;
-      background: color-mix(in srgb, var(--card-background-color) 98%, #ffffff);
-      color: var(--primary-text-color);
-      font: inherit;
-      text-align: left;
-      cursor: pointer;
-      box-shadow:
-        0 12px 26px rgba(15, 23, 42, 0.06),
-        inset 0 0 0 1px rgba(15, 23, 42, 0.035);
-      transition:
-        transform 0.18s ease,
-        box-shadow 0.18s ease;
-    }
-
-    .domain-entity-card:active {
-      transform: scale(0.985);
-    }
-
-    .domain-entity-card.is-active {
-      box-shadow:
-        0 14px 30px rgba(15, 23, 42, 0.08),
-        inset 0 0 0 1px color-mix(in srgb, var(--entity-color) 18%, transparent);
-    }
-
-    .domain-entity-card.is-unavailable {
-      opacity: 0.62;
-    }
-
-    .domain-entity-top {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .domain-entity-icon {
-      width: 36px;
-      height: 36px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex: 0 0 auto;
-      border-radius: 11px;
-      color: var(--entity-color);
-      background: color-mix(in srgb, var(--entity-color) 13%, transparent);
-    }
-
-    .domain-entity-icon ha-icon {
-      --mdc-icon-size: 20px;
-    }
-
-    .domain-entity-action {
-      padding: 0;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex: 0 0 auto;
-      border: 0;
-      cursor: pointer;
-      transition:
-        background-color 0.18s ease,
-        color 0.18s ease,
-        transform 0.18s ease,
-        opacity 0.18s ease;
-    }
-
-    .domain-entity-action:active {
-      transform: scale(0.94);
-    }
-
-    .domain-entity-action:disabled {
-      opacity: 0.36;
-      cursor: not-allowed;
-    }
-
     .domain-entity-toggle {
       width: 38px;
       height: 22px;
@@ -341,14 +254,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       background: #ffffff;
       box-shadow: 0 2px 7px rgba(15, 23, 42, 0.2);
       transition: transform 0.18s ease;
-    }
-
-    .domain-entity-card.is-active .domain-entity-toggle {
-      background: var(--entity-color);
-    }
-
-    .domain-entity-card.is-active .domain-entity-toggle::before {
-      transform: translateX(16px);
     }
 
     .domain-entity-more,
@@ -372,71 +277,12 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       --mdc-icon-size: 17px;
     }
 
-    .domain-cover-actions {
-      min-height: 32px;
-      padding: 3px;
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-      flex: 0 0 auto;
-      border-radius: 999px;
-      background: color-mix(in srgb, var(--secondary-background-color) 74%, #ffffff);
-      box-shadow:
-        inset 0 0 0 1px rgba(15, 23, 42, 0.055),
-        0 6px 14px rgba(15, 23, 42, 0.08);
-    }
-
-    .domain-cover-action {
-      width: 26px;
-      height: 26px;
-      border-radius: 999px;
-      color: color-mix(in srgb, var(--primary-text-color) 58%, transparent);
-      background: transparent;
-    }
-
-    .domain-cover-action.active {
-      color: #ffffff;
-      background: var(--entity-color);
-      box-shadow: 0 6px 12px color-mix(in srgb, var(--entity-color) 22%, transparent);
-    }
-
-    .domain-cover-action ha-icon {
-      --mdc-icon-size: 16px;
-    }
-
-    .domain-entity-copy {
-      min-width: 0;
-    }
-
     .domain-entity-meta {
       margin-bottom: 3px;
       color: color-mix(in srgb, var(--secondary-text-color) 78%, transparent);
       font-size: 11px;
       font-weight: 800;
       line-height: 1.1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .domain-entity-name {
-      color: var(--primary-text-color);
-      font-size: 15px;
-      font-weight: 850;
-      line-height: 1.05;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-    }
-
-    .domain-entity-status {
-      margin-top: 5px;
-      color: color-mix(in srgb, var(--secondary-text-color) 84%, transparent);
-      font-size: 12px;
-      font-weight: 760;
-      line-height: 1.15;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -555,34 +401,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       padding: 10px 12px 12px;
     }
 
-    .domain-entity-card {
-      min-height: 108px;
-      padding: 11px;
-      border-radius: 10px;
-      background: var(--card-background-color);
-      box-shadow:
-        inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 6%, transparent),
-        0 6px 16px rgba(15, 23, 42, 0.04);
-    }
-
-    .domain-entity-icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 9px;
-    }
-
-    .domain-entity-icon ha-icon {
-      --mdc-icon-size: 18px;
-    }
-
-    .domain-entity-name {
-      font-size: 13px;
-    }
-
-    .domain-entity-status {
-      font-size: 11px;
-    }
-
     @media (max-width: 900px) and (min-width: 601px) {
       .entities-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -614,22 +432,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
       gap: 10px !important;
     }
-    .domain-entity-card { min-height: 112px !important; }
-    .domain-entity-name {
-      overflow: visible !important;
-      text-overflow: clip !important;
-      white-space: normal !important;
-      overflow-wrap: anywhere;
-      display: block !important;
-      -webkit-line-clamp: unset !important;
-      -webkit-box-orient: initial !important;
-      line-height: 1.12 !important;
-    }
-    .domain-entity-status {
-      overflow: visible !important;
-      text-overflow: clip !important;
-      white-space: normal !important;
-    }
 
     /* Final house-information dialog consistency pass. */
     :host {
@@ -653,16 +455,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       gap: 10px !important;
     }
 
-    .domain-entity-card {
-      min-width: 0 !important;
-      min-height: 116px !important;
-      padding: 11px 12px !important;
-    }
-
-    .domain-entity-copy {
-      min-width: 0 !important;
-    }
-
     .domain-entity-name,
     .domain-entity-meta,
     .domain-entity-status {
@@ -673,30 +465,13 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       overflow-wrap: anywhere !important;
     }
 
-    .domain-entity-name {
-      display: block !important;
-      -webkit-line-clamp: unset !important;
-      -webkit-box-orient: initial !important;
-      font-size: 14px !important;
-      line-height: 1.12 !important;
-    }
-
     .domain-entity-meta {
       font-size: 10px !important;
-    }
-
-    .domain-entity-status {
-      font-size: 11px !important;
     }
 
 
     .entities-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    }
-
-    .domain-entity-card {
-      min-height: 116px !important;
-      height: auto !important;
     }
 
     .domain-entity-name,
@@ -706,11 +481,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       text-overflow: clip !important;
       white-space: normal !important;
       overflow-wrap: anywhere !important;
-    }
-
-    .domain-entity-status {
-      color: var(--entity-color) !important;
-      font-weight: 800 !important;
     }
 
 
@@ -758,83 +528,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       gap: 10px !important;
     }
 
-    .content.room-context.custom-entities-context .domain-entity-card {
-      min-height: 70px !important;
-      height: auto !important;
-    }
-
-    .content.room-context.custom-entities-context .domain-entity-name,
-    .content.room-context.custom-entities-context .domain-entity-status {
-      overflow: visible !important;
-      text-overflow: clip !important;
-      white-space: normal !important;
-      overflow-wrap: anywhere !important;
-    }
-
-    .content.room-context .domain-entity-card {
-      min-height: 62px !important;
-      height: 62px !important;
-      padding: 7px 9px !important;
-      display: grid !important;
-      grid-template-columns: 36px minmax(0, 1fr) auto !important;
-      grid-template-rows: 1fr !important;
-      align-items: center !important;
-      gap: 8px !important;
-      overflow: visible !important;
-      border-radius: 9px !important;
-      background: var(--card-background-color) !important;
-      box-shadow:
-        inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 7%, transparent),
-        0 4px 10px rgba(15, 23, 42, 0.04) !important;
-    }
-
-    .content.room-context .domain-entity-top {
-      display: contents !important;
-    }
-
-    .content.room-context .domain-entity-icon {
-      grid-column: 1 !important;
-      grid-row: 1 !important;
-      width: 36px !important;
-      height: 36px !important;
-      border-radius: 8px !important;
-    }
-
-    .content.room-context .domain-entity-copy {
-      grid-column: 2 !important;
-      grid-row: 1 !important;
-      min-width: 0 !important;
-      display: flex !important;
-      flex-direction: column !important;
-      justify-content: center !important;
-      gap: 2px !important;
-    }
-
-    .content.room-context .domain-entity-top > :not(.domain-entity-icon) {
-      grid-column: 3 !important;
-      grid-row: 1 !important;
-      align-self: center !important;
-      justify-self: end !important;
-    }
-
-    .content.room-context .domain-entity-name {
-      overflow: hidden !important;
-      font-size: 12px !important;
-      font-weight: 850 !important;
-      line-height: 1.15 !important;
-      text-overflow: ellipsis !important;
-      white-space: nowrap !important;
-    }
-
-    .content.room-context .domain-entity-status {
-      overflow: hidden !important;
-      font-size: 10px !important;
-      font-weight: 650 !important;
-      line-height: 1.1 !important;
-      text-overflow: ellipsis !important;
-      white-space: nowrap !important;
-    }
-
     @media (max-width: 1000px) and (min-width: 601px) {
       .content.room-context .entities-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
@@ -876,22 +569,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       padding: 0 !important;
       grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
       gap: 10px !important;
-    }
-    .domain-entity-card {
-      display: grid !important;
-      grid-template-columns: 44px minmax(0,1fr) auto !important;
-      grid-template-rows: auto !important;
-      align-items: center !important;
-      gap: 10px !important;
-      min-height: 82px !important;
-      height: auto !important;
-      padding: 12px !important;
-    }
-    .domain-entity-top { display: contents !important; }
-    .domain-entity-icon { grid-column:1 !important; grid-row:1 !important; }
-    .domain-entity-copy { grid-column:2 !important; grid-row:1 !important; }
-    .domain-entity-top > :not(.domain-entity-icon) {
-      grid-column:3 !important; grid-row:1 !important; justify-self:end !important;
     }
     @media (min-width: 601px) and (max-width: 1000px) {
       .entities-grid { grid-template-columns: repeat(2,minmax(0,1fr)) !important; }
@@ -971,79 +648,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       min-height: 28px;
       padding: 3px 6px;
       font-size: 11px;
-    }
-
-    .content.home-information-context .domain-entity-card {
-      min-width: 0 !important;
-      min-height: 72px !important;
-      height: 72px !important;
-      padding: 9px 11px !important;
-      display: grid !important;
-      grid-template-columns: 44px minmax(0, 1fr) auto !important;
-      grid-template-rows: 1fr !important;
-      align-items: center !important;
-      gap: 9px !important;
-      border-radius: 11px !important;
-      overflow: hidden !important;
-      background: var(--card-background-color) !important;
-      box-shadow:
-        inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 7%, transparent),
-        0 4px 10px rgba(15, 23, 42, 0.04) !important;
-    }
-
-    .content.home-information-context .domain-entity-top {
-      display: contents !important;
-    }
-
-    .content.home-information-context .domain-entity-icon {
-      grid-column: 1 !important;
-      grid-row: 1 !important;
-      width: 44px !important;
-      height: 44px !important;
-      border-radius: 10px !important;
-    }
-
-    .content.home-information-context .domain-entity-icon ha-icon {
-      --mdc-icon-size: 21px;
-    }
-
-    .content.home-information-context .domain-entity-copy {
-      grid-column: 2 !important;
-      grid-row: 1 !important;
-      min-width: 0 !important;
-      display: flex !important;
-      flex-direction: column !important;
-      justify-content: center !important;
-      gap: 3px !important;
-    }
-
-    .content.home-information-context .domain-entity-top > :not(.domain-entity-icon) {
-      grid-column: 3 !important;
-      grid-row: 1 !important;
-      align-self: center !important;
-      justify-self: end !important;
-    }
-
-    .content.home-information-context .domain-entity-name {
-      display: block !important;
-      overflow: hidden !important;
-      text-overflow: ellipsis !important;
-      white-space: nowrap !important;
-      overflow-wrap: normal !important;
-      font-size: 14px !important;
-      font-weight: 850 !important;
-      line-height: 1.1 !important;
-    }
-
-    .content.home-information-context .domain-entity-status {
-      margin-top: 0 !important;
-      overflow: hidden !important;
-      text-overflow: ellipsis !important;
-      white-space: nowrap !important;
-      color: var(--entity-color) !important;
-      font-size: 11px !important;
-      font-weight: 850 !important;
-      line-height: 1.1 !important;
     }
 
     /* Persons and indoor/outdoor climate deliberately use the same Lovelace
@@ -1165,50 +769,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
         gap: 10px;
       }
 
-      .domain-entity-card,
-      .content.room-context .domain-entity-card {
-        display: grid !important;
-        grid-template-columns: 40px minmax(0, 1fr) auto !important;
-        grid-template-rows: auto !important;
-        align-items: center !important;
-        gap: 10px !important;
-        min-height: 68px !important;
-        height: auto !important;
-        padding: 10px 12px !important;
-      }
-
-      .domain-entity-top,
-      .content.room-context .domain-entity-top {
-        display: contents !important;
-      }
-
-      .domain-entity-icon,
-      .content.room-context .domain-entity-icon {
-        grid-column: 1 !important;
-        grid-row: 1 !important;
-      }
-
-      .domain-entity-copy,
-      .content.room-context .domain-entity-copy {
-        grid-column: 2 !important;
-        grid-row: 1 !important;
-        min-width: 0 !important;
-      }
-
-      .domain-entity-top > :not(.domain-entity-icon),
-      .content.room-context .domain-entity-top > :not(.domain-entity-icon) {
-        grid-column: 3 !important;
-        grid-row: 1 !important;
-        justify-self: end !important;
-      }
-
-      .domain-entity-name,
-      .content.room-context .domain-entity-name {
-        white-space: normal !important;
-        overflow-wrap: anywhere !important;
-        text-overflow: clip !important;
-      }
-
       .dialog-global-actions .domain-actions {
         justify-content: center;
       }
@@ -1217,27 +777,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       .content.home-information-context:not(.device-presentation-context) .entities-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
         gap: 8px !important;
-      }
-
-      .content.home-information-context:not(.device-presentation-context) .domain-entity-card {
-        min-height: 128px !important;
-        padding: 12px !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: space-between !important;
-        gap: 8px !important;
-        border-radius: 10px !important;
-      }
-
-      .content.home-information-context:not(.device-presentation-context) .domain-entity-top {
-        display: flex !important;
-        align-items: flex-start !important;
-        justify-content: space-between !important;
-        gap: 8px !important;
-      }
-
-      .content.home-information-context:not(.device-presentation-context) .domain-entity-copy {
-        display: block !important;
       }
 
       /* Device-presentation Home Information uses the exact shared Devices components. */
