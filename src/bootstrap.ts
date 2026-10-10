@@ -180,7 +180,61 @@ function installDefaultDashboardRedirect(): void {
   window.setTimeout(correct, 1600);
 }
 
+
+function installMobileMoreInfoDialogSizing(): void {
+  const styleId = 'dd-next-mobile-more-info-sizing';
+
+  const installInto = (dialog: Element): void => {
+    const root = (dialog as HTMLElement).shadowRoot;
+    if (!root || root.getElementById(styleId)) return;
+
+    const style = document.createElement('style');
+    style.id = styleId;
+    style.textContent = `
+      @media (max-width: 768px) {
+        :host {
+          --mdc-dialog-min-height: 0 !important;
+          --ha-dialog-min-height: 0 !important;
+          --mdc-dialog-max-height: 88dvh !important;
+          --ha-dialog-max-height: 88dvh !important;
+          --vertical-align-dialog: flex-end !important;
+          --dialog-surface-margin-top: auto !important;
+        }
+
+        ha-dialog {
+          height: auto !important;
+          max-height: 88dvh !important;
+        }
+      }
+    `;
+    root.appendChild(style);
+  };
+
+  const scan = (root: Document | ShadowRoot): void => {
+    root.querySelectorAll('ha-more-info-dialog').forEach(installInto);
+    root.querySelectorAll('*').forEach((element) => {
+      const shadowRoot = (element as HTMLElement).shadowRoot;
+      if (shadowRoot) scan(shadowRoot);
+    });
+  };
+
+  let scheduled = false;
+  const scheduleScan = () => {
+    if (scheduled || window.innerWidth > 768) return;
+    scheduled = true;
+    requestAnimationFrame(() => {
+      scheduled = false;
+      scan(document);
+    });
+  };
+
+  window.addEventListener('hass-more-info', scheduleScan, true);
+  window.addEventListener('resize', scheduleScan);
+  scheduleScan();
+}
+
 installDefaultDashboardRedirect();
+installMobileMoreInfoDialogSizing();
 
 // Register the dashboard strategy in Home Assistant's Add dashboard dialog.
 // This appears under Community dashboards and requires HA 2026.5+.
