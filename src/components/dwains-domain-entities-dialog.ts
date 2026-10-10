@@ -670,6 +670,17 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       gap: 8px !important;
     }
 
+    /* A single device in a half-width room needs the whole room width.
+       Two narrow card columns collapse native climate and cover controls. */
+    @media (min-width: 769px) {
+      .content.home-information-context.device-presentation-context .shared-room-group.half-room .entities-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+      }
+      .content.home-information-context.device-presentation-context .shared-room-group.full-room .entities-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+      }
+    }
+
     /* Same person tile as Geräte > Personen; the popup only changes the grid. */
     .content.home-information-context.device-presentation-context.domain-person .area-sections-grid {
       display: block !important;
