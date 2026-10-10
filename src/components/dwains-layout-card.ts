@@ -622,7 +622,7 @@ export class DwainsLayoutCard extends LitElement {
       contain-intrinsic-size: 1px 360px;
     }
 
-    .mobile-entities-section.layout-grid .mobile-entity-card{
+    .mobile-entities-section.layout-grid .mobile-entity-tile-host{
       content-visibility: auto;
       contain-intrinsic-size: 164px 150px;
     }
@@ -3603,7 +3603,7 @@ export class DwainsLayoutCard extends LitElement {
       align-items: stretch;
     }
 
-    .mobile-entities-section.layout-grid .mobile-entity-card{
+    .mobile-entities-section.layout-grid .mobile-entity-tile-host{
       width: 100%;
       min-width: 0;
       box-sizing: border-box;
@@ -3644,6 +3644,20 @@ export class DwainsLayoutCard extends LitElement {
       transition:
         transform 0.18s ease,
         box-shadow 0.18s ease;
+    }
+
+    .mobile-entity-tile-host{
+      box-sizing: border-box;
+      flex: 0 0 164px;
+      min-width: 0;
+      scroll-snap-align: start;
+    }
+
+    .mobile-entities-section.layout-grid .mobile-entity-tile-host{
+      width: 100%;
+      min-width: 0;
+      flex: none;
+      scroll-snap-align: none;
     }
 
     .mobile-entity-replacement-card{
@@ -3847,7 +3861,7 @@ export class DwainsLayoutCard extends LitElement {
       }
 
       @media (max-width: 430px) {
-        .mobile-entities-section.layout-grid .mobile-entity-card{
+        .mobile-entities-section.layout-grid .mobile-entity-tile-host{
           min-height: 138px;
           padding: 12px;
         }
@@ -4430,7 +4444,7 @@ export class DwainsLayoutCard extends LitElement {
 .home-favorites-section,
 .home-summaries-section,
 .mobile-domain-group,
-.mobile-entities-section.layout-grid .mobile-entity-card{
+.mobile-entities-section.layout-grid .mobile-entity-tile-host{
         content-visibility: visible;
         contain-intrinsic-size: auto;
       }
@@ -15849,7 +15863,7 @@ copy{
       }
 
       .mobile-entity-card,
-      .mobile-entities-section.layout-grid .mobile-entity-card {
+      .mobile-entities-section.layout-grid .mobile-entity-tile-host {
         flex-basis: 180px;
         min-height: 141px;
         padding: 15px;
