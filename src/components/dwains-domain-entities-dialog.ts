@@ -693,8 +693,8 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     }
 
     .content.home-information-context.device-presentation-context.domain-person dwains-dashboard-next-person-tile {
-      --dd-person-tile-location-height: 186px;
-      --dd-person-map-height: 124px;
+      --dd-person-tile-location-height: 248px;
+      --dd-person-map-height: 186px;
     }
 
 
