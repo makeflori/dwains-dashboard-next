@@ -888,19 +888,6 @@ export class DwainsDevicesCard extends LitElement {
     return true;
   }
 
-  private _entityCardConfig(entityId: string): any {
-    if (entityId.startsWith('todo.')) {
-      return { type: 'todo-list', entity: entityId };
-    }
-
-    return resolveDeviceViewCardConfig({
-      hass: this._hass,
-      config: this.config,
-      entity: entityId,
-      surface: 'devices_cards',
-    });
-  }
-
   // ---- Selectie -------------------------------------------------------------
 
   private _selectDomain(domain: string) {
@@ -1845,6 +1832,13 @@ export class DwainsDevicesCard extends LitElement {
         @dd-more-info=${(event: CustomEvent<{ entityId: string }>) => this._showMoreInfo(event.detail.entityId)}
       ></dd-next-device-entity-card>
     `;
+  }
+
+  private _roomStyleEntityActive(state: any, domain: string): boolean {
+    const value = String(state?.state || '').toLowerCase();
+    if (domain === 'lock') return value === 'unlocked';
+    if (domain === 'person') return value === 'home';
+    return ['on', 'open', 'opening', 'playing', 'active', 'home'].includes(value);
   }
 
   private _entitiesGridClass(typeKey: string, roomStyle = false): string {
