@@ -11,15 +11,68 @@ export class DwainsDashboardNextPersonTile extends LitElement {
   @property({ attribute: false }) public entityId = '';
   @property({ attribute: false }) public displayName = '';
 
+  private _renderLocationPreview(latitude: number, longitude: number, name: string) {
+    const zoom = 14;
+    const tileSize = 256;
+    const n = 2 ** zoom;
+    const latRad = latitude * Math.PI / 180;
+    const xFloat = ((longitude + 180) / 360) * n;
+    const yFloat = ((1 - Math.asinh(Math.tan(latRad)) / Math.PI) / 2) * n;
+    const centerX = Math.floor(xFloat);
+    const centerY = Math.floor(yFloat);
+    const fracX = xFloat - centerX;
+    const fracY = yFloat - centerY;
+    const pointX = tileSize + fracX * tileSize;
+    const pointY = tileSize + fracY * tileSize;
+    const left = `calc(50% - ${pointX}px)`;
+    const top = `calc(50% - ${pointY}px)`;
+
+    const tiles = [];
+    for (let dy = -1; dy <= 1; dy += 1) {
+      for (let dx = -1; dx <= 1; dx += 1) {
+        const x = (centerX + dx + n) % n;
+        const y = Math.min(n - 1, Math.max(0, centerY + dy));
+        tiles.push(html`
+          <img
+            class="person-map-tile"
+            src=${`https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            style=${`left:${(dx + 1) * tileSize}px;top:${(dy + 1) * tileSize}px;`}
+          >
+        `);
+      }
+    }
+
+    return html`
+      <div class="person-map" aria-label=${`${name} location`}>
+        <div class="person-map-canvas" style=${`left:${left};top:${top};`}>
+          ${tiles}
+        </div>
+        <span class="person-map-marker" aria-hidden="true">
+          <span class="person-map-marker-dot"></span>
+        </span>
+        <a
+          class="person-map-attribution"
+          href="https://www.openstreetmap.org/copyright"
+          target="_blank"
+          rel="noreferrer"
+          @click=${(event: Event) => event.stopPropagation()}
+        >© OpenStreetMap</a>
+      </div>
+    `;
+  }
+
   protected override render() {
     const state = this.hass?.states?.[this.entityId];
     if (!state) return nothing;
 
     const name = this.displayName || state.attributes?.friendly_name || this.entityId;
     const entityPicture = state.attributes?.entity_picture;
-    const hasLocation =
-      Number.isFinite(Number(state.attributes?.latitude)) &&
-      Number.isFinite(Number(state.attributes?.longitude));
+    const latitude = Number(state.attributes?.latitude);
+    const longitude = Number(state.attributes?.longitude);
+    const hasLocation = Number.isFinite(latitude) && Number.isFinite(longitude);
     const active = String(state.state || '').toLowerCase() === 'home';
     const unavailable = ['unavailable', 'unknown'].includes(String(state.state || '').toLowerCase());
     const icon = this.hass?.entities?.[this.entityId]?.icon ||
@@ -40,25 +93,7 @@ export class DwainsDashboardNextPersonTile extends LitElement {
           </div>
         </div>
 
-        ${hasLocation ? html`
-          <div class="person-map" aria-label=${`${name} location`}>
-            <dwains-dashboard-next-card-host
-              strip-card-surface
-              refresh-layout
-              .hass=${this.hass}
-              .config=${{
-                type: 'map',
-                entities: [this.entityId],
-                hours_to_show: 0,
-                default_zoom: 14,
-                auto_fit: true,
-                fit_zones: false,
-                show_zone_radius: false,
-                aspect_ratio: '3:1',
-              }}
-            ></dwains-dashboard-next-card-host>
-          </div>
-        ` : nothing}
+        ${hasLocation ? this._renderLocationPreview(latitude, longitude, name) : nothing}
       </article>
     `;
   }
@@ -93,7 +128,8 @@ export class DwainsDashboardNextPersonTile extends LitElement {
     }
 
     .person-tile.has-location {
-      height: var(--dd-person-tile-location-height, 248px);
+      height: auto;
+      min-height: var(--dd-person-tile-location-height, 248px);
       justify-content: flex-start;
     }
 
@@ -190,22 +226,72 @@ export class DwainsDashboardNextPersonTile extends LitElement {
     }
 
     .person-map {
+      position: relative;
       width: 100%;
       height: var(--dd-person-map-height, 186px);
       min-height: 0;
       margin-top: 10px;
       overflow: hidden;
       border-radius: 8px;
-      pointer-events: none;
+      background: var(--secondary-background-color);
       box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 6%, transparent);
+      isolation: isolate;
     }
 
-    .person-map dwains-dashboard-next-card-host {
+    .person-map-canvas {
+      position: absolute;
+      width: 768px;
+      height: 768px;
+      pointer-events: none;
+    }
+
+    .person-map-tile {
+      position: absolute;
+      width: 256px;
+      height: 256px;
       display: block;
-      width: 100%;
-      height: 100%;
-      --ha-card-border-width: 0;
-      --ha-card-border-radius: 8px;
+      max-width: none;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    .person-map-marker {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 28px;
+      height: 28px;
+      transform: translate(-50%, -50%);
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: color-mix(in srgb, var(--person-color) 18%, #ffffff);
+      border: 2px solid #ffffff;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.28);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .person-map-marker-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--person-color);
+    }
+
+    .person-map-attribution {
+      position: absolute;
+      right: 4px;
+      bottom: 3px;
+      z-index: 3;
+      padding: 1px 3px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.78);
+      color: #3b556e;
+      font-size: 8px;
+      line-height: 1.2;
+      text-decoration: none;
     }
   `;
 }

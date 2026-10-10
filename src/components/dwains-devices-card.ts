@@ -2320,8 +2320,13 @@ export class DwainsDevicesCard extends LitElement {
       }
 
       .domain-header {
-        align-items: flex-start;
-        flex-direction: column;
+        align-items: center;
+        flex-direction: row;
+      }
+
+      .domain-header-title {
+        justify-content: flex-start;
+        text-align: left;
       }
     }
 

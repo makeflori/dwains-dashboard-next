@@ -2664,6 +2664,87 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       }
     }
 
+
+    /* Device-view parity for cover room groups on all screen sizes. */
+    .content.home-information-context.device-presentation-context.domain-cover .area-section {
+      background: var(--card-background-color) !important;
+      border: 1px solid color-mix(in srgb, var(--primary-text-color) 7%, transparent) !important;
+      border-radius: 12px !important;
+      padding: 14px !important;
+      margin-bottom: 14px !important;
+      box-shadow: 0 5px 14px rgba(15, 23, 42, 0.035) !important;
+    }
+
+    .content.home-information-context.device-presentation-context.domain-cover .area-header {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 8px !important;
+      margin: 0 0 12px !important;
+      padding: 0 !important;
+      min-height: 30px !important;
+    }
+
+    .content.home-information-context.device-presentation-context.domain-cover .area-icon {
+      width: auto !important;
+      height: auto !important;
+      min-width: 0 !important;
+      border-radius: 0 !important;
+      background: transparent !important;
+      color: var(--secondary-text-color) !important;
+    }
+
+    .content.home-information-context.device-presentation-context.domain-cover .area-icon ha-icon {
+      --mdc-icon-size: 20px !important;
+      opacity: .8;
+    }
+
+    .content.home-information-context.device-presentation-context.domain-cover .area-name {
+      flex: 1 1 auto;
+      min-width: 0;
+      font-size: 16px !important;
+      font-weight: 500 !important;
+      text-align: left !important;
+    }
+
+    .content.home-information-context.device-presentation-context.domain-cover .device-room-master-actions {
+      --mobile-domain-accent: #0d98aa;
+      height: 30px;
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      overflow: hidden;
+      border: 1px solid color-mix(in srgb, var(--divider-color) 72%, transparent);
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--card-background-color) 92%, transparent);
+      color: color-mix(in srgb, var(--primary-text-color) 58%, transparent);
+    }
+
+    .content.home-information-context.device-presentation-context.domain-cover .device-room-master-action {
+      width: 34px;
+      height: 30px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      background: transparent;
+      color: inherit;
+    }
+
+    .content.home-information-context.device-presentation-context.domain-cover .device-room-master-action + .device-room-master-action {
+      border-left: 1px solid color-mix(in srgb, var(--divider-color) 72%, transparent);
+    }
+
+    .content.home-information-context.device-presentation-context.domain-cover .device-room-master-action ha-icon {
+      --mdc-icon-size: 17px;
+    }
+
+    .content.home-information-context.device-presentation-context.domain-cover .entities-grid {
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)) !important;
+      gap: 12px !important;
+    }
+
     /* Final mobile Home Information behavior:
        bottom anchored, safe-area aware and compact. */
     @media (max-width: 600px) {
@@ -2894,6 +2975,38 @@ export class DwainsDomainEntitiesDialog extends LitElement {
 
       .content.home-information-context.device-presentation-context .device-presentation-card.sensor-card {
         min-height: 0 !important;
+      }
+
+      .content.home-information-context.device-presentation-context.domain-sensor .device-presentation-card.sensor-card > dwains-dashboard-next-card-host {
+        zoom: .74;
+        width: calc(100% / .74) !important;
+      }
+
+      .content.home-information-context.device-presentation-context.domain-sensor .area-section {
+        padding: 7px !important;
+        margin-bottom: 7px !important;
+      }
+
+      .content.home-information-context.device-presentation-context.domain-sensor .area-header {
+        min-height: 32px !important;
+        padding: 0 2px 5px !important;
+      }
+
+      .content.home-information-context.device-presentation-context.domain-cover .area-section {
+        padding: 10px !important;
+        margin-bottom: 10px !important;
+      }
+
+      .content.home-information-context.device-presentation-context.domain-cover .area-header {
+        margin-bottom: 10px !important;
+      }
+
+      .content.home-information-context.device-presentation-context.domain-cover .entities-grid {
+        grid-template-columns: 1fr !important;
+      }
+
+      .content.home-information-context.device-presentation-context.domain-cover .area-name {
+        text-align: left !important;
       }
     }
 
