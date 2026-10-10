@@ -3065,6 +3065,25 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       }
     }
 
+
+    /* Personen popup: responsive desktop grid. A single person uses the full
+       dialog width; two or more cards split only when there is enough room. */
+    @media (min-width: 601px) {
+      .content.home-information-context.device-presentation-context.domain-person .entities-grid,
+      .content.home-information-context.device-presentation-context.domain-person .area-sections-grid .area-section.half-room .entities-grid {
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)) !important;
+        gap: 10px !important;
+        width: 100% !important;
+      }
+
+      .content.home-information-context.device-presentation-context.domain-person dwains-dashboard-next-person-tile {
+        --dd-person-tile-location-height: 250px;
+        --dd-person-map-height: 188px;
+        width: 100% !important;
+        min-width: 0 !important;
+      }
+    }
+
   `;
   }
 
