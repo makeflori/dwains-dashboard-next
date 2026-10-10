@@ -16570,6 +16570,190 @@ copy{
       }
     }
 
+    /* Notifications use the same dialog language as the other DD Next popups. */
+    .notifications-panel {
+      width: min(760px, calc(100vw - 32px)) !important;
+      max-height: min(82vh, 760px) !important;
+      border-radius: 14px !important;
+      border: 1px solid color-mix(in srgb, var(--divider-color) 72%, transparent) !important;
+      background: var(--card-background-color) !important;
+      box-shadow: 0 24px 64px rgba(8, 13, 24, 0.24) !important;
+      backdrop-filter: none !important;
+    }
+
+    .notifications-panel::before {
+      display: none !important;
+    }
+
+    .notifications-head {
+      min-height: 72px !important;
+      padding: 12px 18px !important;
+      box-sizing: border-box !important;
+      gap: 12px !important;
+      background: var(--card-background-color) !important;
+      border-bottom: 0 !important;
+      box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--divider-color) 65%, transparent) !important;
+    }
+
+    .notifications-heading {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .notifications-title-icon {
+      width: 44px;
+      height: 44px;
+      flex: 0 0 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 11px;
+      color: var(--primary-color);
+      background: color-mix(in srgb, var(--primary-color) 11%, var(--card-background-color));
+    }
+
+    .notifications-title-icon ha-icon {
+      --mdc-icon-size: 24px;
+    }
+
+    .notifications-title-row {
+      font-size: 20px !important;
+      font-weight: 850 !important;
+      line-height: 1.1 !important;
+    }
+
+    .notifications-title-row ha-icon {
+      display: none !important;
+    }
+
+    .notifications-subtitle {
+      margin-top: 3px !important;
+      font-size: 11px !important;
+      font-weight: 650 !important;
+    }
+
+    .notifications-actions {
+      gap: 7px !important;
+    }
+
+    .notifications-icon-button {
+      width: 38px !important;
+      height: 38px !important;
+      background: transparent !important;
+      color: var(--primary-text-color) !important;
+      transition: background-color .16s ease, color .16s ease, transform .16s ease;
+    }
+
+    .notifications-icon-button:hover {
+      background: color-mix(in srgb, var(--primary-text-color) 7%, transparent) !important;
+    }
+
+    .notifications-icon-button.destructive {
+      color: var(--error-color, #db4437) !important;
+    }
+
+    .notifications-icon-button.refresh {
+      color: var(--primary-color) !important;
+    }
+
+    .notifications-icon-button.close {
+      color: var(--primary-text-color) !important;
+    }
+
+    .notifications-icon-button ha-icon {
+      --mdc-icon-size: 20px !important;
+    }
+
+    .notifications-list {
+      padding: 12px !important;
+      background: var(--primary-background-color) !important;
+    }
+
+    .notification-row {
+      padding: 11px !important;
+      border-radius: 10px !important;
+      background: var(--card-background-color) !important;
+      border: 1px solid color-mix(in srgb, var(--primary-text-color) 7%, transparent) !important;
+      box-shadow: 0 5px 14px rgba(15, 23, 42, 0.035) !important;
+    }
+
+    .notification-dismiss {
+      width: 34px !important;
+      height: 34px !important;
+      color: var(--error-color, #db4437) !important;
+      background: transparent !important;
+    }
+
+    .notification-dismiss:hover {
+      background: color-mix(in srgb, var(--error-color, #db4437) 9%, transparent) !important;
+    }
+
+    .notification-dismiss ha-icon {
+      --mdc-icon-size: 18px !important;
+    }
+
+    @media (max-width: 768px) {
+      .notifications-panel {
+        left: 0 !important;
+        right: 0 !important;
+        top: auto !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        max-height: 88dvh !important;
+        border-width: 0 !important;
+        border-radius: 24px 24px 0 0 !important;
+        transform: translate3d(0, 100%, 0) !important;
+      }
+
+      .notifications-panel.open {
+        transform: translate3d(0, 0, 0) !important;
+      }
+
+      .notifications-head {
+        min-height: 74px !important;
+        padding: 14px 14px 12px !important;
+      }
+
+      .notifications-title-icon {
+        width: 48px !important;
+        height: 48px !important;
+        flex-basis: 48px !important;
+        border-radius: 12px !important;
+      }
+
+      .notifications-title-icon ha-icon {
+        --mdc-icon-size: 25px !important;
+      }
+
+      .notifications-title-row {
+        font-size: 20px !important;
+      }
+
+      .notifications-list {
+        max-height: calc(88dvh - 74px) !important;
+        padding: 12px 12px calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+        overflow-y: auto !important;
+        overscroll-behavior-y: contain !important;
+      }
+
+      .notifications-actions {
+        gap: 3px !important;
+      }
+
+      .notifications-icon-button {
+        width: 36px !important;
+        height: 36px !important;
+      }
+
+      .notification-row {
+        grid-template-columns: 38px minmax(0, 1fr) 34px !important;
+        gap: 9px !important;
+      }
+    }
+
 
 
 
@@ -17659,40 +17843,47 @@ copy{
         aria-hidden=${this._notificationsOpen ? 'false' : 'true'}
       >
         <div class="notifications-head">
-          <div class="notifications-title">
-            <div class="notifications-title-row">
+          <div class="notifications-heading">
+            <div class="notifications-title-icon">
               <ha-icon icon="mdi:bell-outline"></ha-icon>
-              <span>${this._t('home.notifications')}</span>
             </div>
-            <div class="notifications-subtitle">
-              ${hasNotifications
-                ? `${count} ${this._t(count === 1 ? 'home.notification' : 'home.notifications').toLocaleLowerCase()}`
-                : this._t('home.notifications_description')}
+            <div class="notifications-title">
+              <div class="notifications-title-row">
+                <span>${this._t('home.notifications')}</span>
+              </div>
+              <div class="notifications-subtitle">
+                ${hasNotifications
+                  ? `${count} ${this._t(count === 1 ? 'home.notification' : 'home.notifications').toLocaleLowerCase()}`
+                  : this._t('home.notifications_description')}
+              </div>
             </div>
           </div>
           <div class="notifications-actions">
             ${hasNotifications ? html`
               <button
-                class="notifications-icon-button"
+                class="notifications-icon-button destructive"
                 type="button"
                 title=${this._t('common.dismiss_all')}
+                aria-label=${this._t('common.dismiss_all')}
                 @click=${this._dismissAllPersistentNotifications}
               >
                 <ha-icon icon="mdi:delete-sweep-outline"></ha-icon>
               </button>
             ` : nothing}
             <button
-              class="notifications-icon-button"
+              class="notifications-icon-button refresh"
               type="button"
               title=${this._t('common.refresh')}
+              aria-label=${this._t('common.refresh')}
               @click=${() => this._loadPersistentNotifications(true)}
             >
               <ha-icon icon="mdi:refresh"></ha-icon>
             </button>
             <button
-              class="notifications-icon-button"
+              class="notifications-icon-button close"
               type="button"
               title=${this._t('common.close')}
+              aria-label=${this._t('common.close')}
               @click=${this._closeNotifications}
             >
               <ha-icon icon="mdi:close"></ha-icon>
@@ -17747,9 +17938,10 @@ copy{
           class="notification-dismiss"
           type="button"
           title=${this._t('common.dismiss')}
+          aria-label=${this._t('common.dismiss')}
           @click=${() => this._dismissPersistentNotification(notification.notification_id)}
         >
-          <ha-icon icon="mdi:close"></ha-icon>
+          <ha-icon icon="mdi:trash-can-outline"></ha-icon>
         </button>
       </article>
     `;
