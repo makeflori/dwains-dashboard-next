@@ -286,9 +286,9 @@ export const pageHeaderStyles = css`
       --tile-color: var(--primary-color);
       --tile-on: #ffffff;
       box-sizing: border-box;
-      /* Content-sized on desktop; reserve the longest possible state in the copy. */
-      flex: 0 0 auto;
-      width: max-content;
+      /* Share available desktop row width across each quick-control tile. */
+      flex: 1 1 0;
+      width: auto;
       min-width: 0;
       min-height: 52px;
       padding: 6px 12px 6px 6px;
