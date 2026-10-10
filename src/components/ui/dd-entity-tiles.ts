@@ -9,6 +9,50 @@ import { stripAreaNameFromEntityName } from '../../utils/entity-names';
 import '../utils/dd-card-host';
 import '../dwains-person-tile';
 
+/**
+ * Render the same compact device tile in Devices and Home Information.
+ * The caller owns navigation and service actions; the visual tree is shared.
+ */
+export function renderCompactDeviceTile(options: {
+  name: string;
+  status: string;
+  icon: string;
+  accent: string;
+  active: boolean;
+  unavailable: boolean;
+  toggle: boolean;
+  onOpen: () => void;
+  onToggle: () => void;
+  turnOnLabel: string;
+  turnOffLabel: string;
+}) {
+  return html`
+    <dd-next-compact-entity-tile
+      variant="compact"
+      .name=${options.name}
+      .status=${options.status}
+      .icon=${options.icon}
+      .accent=${options.accent}
+      .active=${options.active}
+      .unavailable=${options.unavailable}
+      @dd-open=${options.onOpen}
+    >
+      ${options.toggle ? html`
+        <dd-next-entity-actions
+          slot="actions"
+          mode="toggle"
+          .accent=${options.accent}
+          .active=${options.active}
+          .unavailable=${options.unavailable}
+          .turnOnLabel=${options.turnOnLabel}
+          .turnOffLabel=${options.turnOffLabel}
+          @dd-action=${options.onToggle}
+        ></dd-next-entity-actions>
+      ` : nothing}
+    </dd-next-compact-entity-tile>
+  `;
+}
+
 @customElement('dd-next-device-entity-card')
 export class DdNextDeviceEntityCard extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
