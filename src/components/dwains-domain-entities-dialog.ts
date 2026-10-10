@@ -495,40 +495,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     }
 
     /* Responsive design */
-    @media (max-width: 600px) {
-      :host {
-        --mdc-dialog-min-width: min(calc(100vw - 4px), 480px);
-        --mdc-dialog-max-width: min(calc(100vw - 4px), 480px);
-        --mdc-dialog-min-height: 0px;
-        --mdc-dialog-max-height: calc(100dvh - 54px);
-        ---min-height: 0px;
-        ---max-height: calc(100dvh - 54px);
-        --vertical-align-dialog: flex-end;
-        --dialog-surface-margin-top: auto;
-        --dialog-container-padding: 0;
-        ---scrim-backdrop-filter: brightness(66%) blur(2px);
-        --mdc-dialog-scrim-color: rgba(0, 0, 0, 0.34);
-      }
-
-      .content {
-        padding: 12px 12px calc(16px + env(safe-area-inset-bottom, 0px)) !important;
-      }
-
-      .area-section {
-        margin-bottom: 16px;
-        border-radius: 14px;
-      }
-
-      .entities-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
-        padding: 12px;
-      }
-
-      .domain-entity-card {
-        min-height: 126px;
-      }
-    }
     /* Shared Home-information dialog language, aligned with the power detail dialog. */
     :host {
       --mdc-dialog-max-width: 900px;
@@ -622,34 +588,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
         grid-template-columns: repeat(3, minmax(0, 1fr));
       }
     }
-
-    @media (max-width: 600px) {
-      .content {
-        padding: 12px 12px calc(84px + env(safe-area-inset-bottom, 0px)) !important;
-      }
-
-      .area-section {
-        border-radius: 14px;
-      }
-
-      .entities-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
-      }
-
-      .domain-entity-card {
-        min-height: 116px;
-      }
-    }
-
-    /* House-information dialogs share one compact two-column language. */
-    .dialog-title-line {
-      min-width: 0;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
     .dialog-header-destination {
       min-height: 30px;
       padding: 0 10px;
@@ -692,29 +630,10 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       text-overflow: clip !important;
       white-space: normal !important;
     }
-    @media (max-width: 600px) {
-      .dialog-title-line { gap: 7px; }
-      .dialog-header-destination {
-        min-height: 28px;
-        padding: 0 8px;
-        font-size: 10px;
-      }
-      .entities-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-      }
-    }
 
     /* Final house-information dialog consistency pass. */
     :host {
       --mdc-dialog-max-width: 760px;
-    }
-
-    .dialog-title-line {
-      min-width: 0 !important;
-      display: inline-flex !important;
-      align-items: center !important;
-      gap: 9px !important;
-      flex-wrap: nowrap !important;
     }
 
     .dialog-header-destination {
@@ -770,21 +689,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       font-size: 11px !important;
     }
 
-    @media (max-width: 600px) {
-      .dialog-title-line {
-        gap: 6px !important;
-      }
-
-      .dialog-header-destination {
-        min-height: 28px !important;
-        padding: 0 8px !important;
-        font-size: 10px !important;
-      }
-
-      .entities-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-      }
-    }
 
     .entities-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -809,19 +713,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       font-weight: 800 !important;
     }
 
-    @media (max-width: 600px) {
-      .dialog-title-line {
-        flex-wrap: wrap !important;
-      }
-
-      .dialog-header-destination {
-        order: 3;
-      }
-
-      .entities-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-      }
-    }
 
 
     /* Room-header status dialogs use the same compact card language as room views. */
@@ -950,17 +841,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       }
     }
 
-    @media (max-width: 600px) {
-      .content.room-context .entities-grid,
-      .content.room-context.custom-entities-context .entities-grid {
-        grid-template-columns: 1fr !important;
-      }
-
-      .content.room-context .domain-entity-card {
-        min-height: 58px !important;
-        height: 58px !important;
-      }
-    }
 
     .area-master-toggle {
       display: inline-flex; align-items: center; gap: 7px; flex: 0 0 auto;
@@ -979,13 +859,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     }
     .area-master-track.is-on { background: var(--entity-color); }
     .area-master-track.is-on::after { transform:translateX(13px); }
-    @media (max-width: 600px) {
-      :host {
-        --vertical-align-dialog: flex-end !important;
-        --dialog-surface-margin-top: auto !important;
-        --mdc-dialog-min-height: 0px !important;
-      }
-    }
 
     /* Room-view alignment: shared layout language for room groups and entity rows. */
     .dialog-global-actions .domain-actions {
@@ -1023,53 +896,10 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     @media (min-width: 601px) and (max-width: 1000px) {
       .entities-grid { grid-template-columns: repeat(2,minmax(0,1fr)) !important; }
     }
-    @media (max-width: 600px) {
-      :host {
-        --vertical-align-dialog: flex-end !important;
-        --dialog-surface-margin-top: auto !important;
-      }
-      .entities-grid { grid-template-columns: 1fr !important; }
-      .domain-entity-card { min-height: 68px !important; }
-      .dialog-header-destination {
-        min-height: 28px !important;
-        padding-block: 4px !important;
-        max-width: 100%;
-      }
-      .dialog-global-actions .domain-actions { justify-content: center; }
-      .content { padding-bottom: calc(12px + env(safe-area-inset-bottom,0px)) !important; }
-    }
 
     /* The modal grows with its actual content, not with the entire viewport. */
-    @media (max-width: 600px) {
-      :host {
-        --mdc-dialog-min-height: 0px !important;
-        ---min-height: 0px !important;
-        --mdc-dialog-max-height: calc(100dvh - 54px);
-        ---max-height: calc(100dvh - 54px);
-      }
-      .content {
-        padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px)) !important;
-        overscroll-behavior: contain;
-      }
-      .dialog-title-line { align-items: center !important; }
-      .dialog-header-destination { position: relative; white-space: nowrap; }
-    }
     .area-group-actions { padding: 8px 12px 0; }
     .area-group-actions .domain-actions { margin: 0; flex-wrap: wrap; }
-
-    /* Unified header: desktop link follows title, mobile link is a second line.
-       Icon spans the full two-line block on phones. */
-    .dialog-title-line {
-      display: flex !important;
-      align-items: center !important;
-      flex-wrap: nowrap !important;
-      min-width: 0;
-    }
-    @media (max-width: 600px) {
-      .dialog-title-line { flex-wrap: nowrap !important; }
-      .dialog-header-destination { order: initial !important; }
-      .content { overscroll-behavior-y: contain; }
-    }
 
     /* Shared room-style entity layout: desktop 2–3 columns, mobile one flat row per entity. */
     .entities-grid, .content.room-context .entities-grid {
@@ -1078,45 +908,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     @media (max-width: 1000px) and (min-width: 601px) {
       .entities-grid, .content.room-context .entities-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-      }
-    }
-    @media (max-width: 600px) {
-      .entities-grid, .content.room-context .entities-grid,
-      .content.room-context.custom-entities-context .entities-grid {
-        grid-template-columns: minmax(0, 1fr) !important;
-      }
-      .domain-entity-card, .content.room-context .domain-entity-card {
-        display: grid !important;
-        grid-template-columns: 40px minmax(0, 1fr) auto !important;
-        grid-template-rows: auto !important;
-        align-items: center !important;
-        gap: 10px !important;
-        min-height: 68px !important;
-        height: auto !important;
-        padding: 10px 12px !important;
-      }
-      .domain-entity-top, .content.room-context .domain-entity-top {
-        display: contents !important;
-      }
-      .domain-entity-icon, .content.room-context .domain-entity-icon {
-        grid-column: 1 !important;
-        grid-row: 1 !important;
-      }
-      .domain-entity-copy, .content.room-context .domain-entity-copy {
-        grid-column: 2 !important;
-        grid-row: 1 !important;
-        min-width: 0 !important;
-      }
-      .domain-entity-top > :not(.domain-entity-icon),
-      .content.room-context .domain-entity-top > :not(.domain-entity-icon) {
-        grid-column: 3 !important;
-        grid-row: 1 !important;
-        justify-self: end !important;
-      }
-      .domain-entity-name, .content.room-context .domain-entity-name {
-        white-space: normal !important;
-        overflow-wrap: anywhere !important;
-        text-overflow: clip !important;
       }
     }
 
@@ -1302,111 +1093,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       --dd-person-map-height: 124px;
     }
 
-    @media (max-width: 600px) {
-      :host {
-        --mdc-dialog-min-width: min(calc(100vw - 24px), 520px) !important;
-        --mdc-dialog-max-width: min(calc(100vw - 24px), 520px) !important;
-        --mdc-dialog-min-height: 0px !important;
-        ---min-height: 0px !important;
-        --mdc-dialog-max-height: calc(100dvh - 32px) !important;
-        ---max-height: calc(100dvh - 32px) !important;
-        --vertical-align-dialog: center !important;
-        --dialog-surface-margin-top: 0 !important;
-        --dialog-container-padding: 12px !important;
-      }
-
-      .content {
-        overscroll-behavior-y: contain;
-      }
-
-      .content.home-information-context {
-        padding: 10px !important;
-      }
-
-      .content.home-information-context .area-section {
-        margin-bottom: 10px !important;
-        padding: 0 !important;
-        border-radius: 12px !important;
-      }
-
-      .content.home-information-context .area-sections-grid {
-        grid-template-columns: 1fr !important;
-      }
-
-      .content.home-information-context .area-sections-grid .area-section,
-      .content.home-information-context .area-sections-grid .area-section.half-room {
-        grid-column: 1 !important;
-      }
-
-      .content.home-information-context .area-header {
-        min-height: 40px !important;
-        padding: 7px 9px 0 !important;
-      }
-
-      .content.home-information-context .entities-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-        gap: 8px !important;
-        padding: 8px 9px 9px !important;
-      }
-
-      /* Mobile room-view language: vertical cards, not the desktop row tile. */
-      .content.home-information-context:not(.device-presentation-context) .domain-entity-card {
-        min-height: 128px !important;
-        height: auto !important;
-        padding: 12px !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: space-between !important;
-        gap: 8px !important;
-        border-radius: 10px !important;
-      }
-
-      .content.home-information-context:not(.device-presentation-context) .domain-entity-top {
-        display: flex !important;
-        align-items: flex-start !important;
-        justify-content: space-between !important;
-        gap: 8px !important;
-      }
-
-      .content.home-information-context:not(.device-presentation-context) .domain-entity-icon {
-        width: 36px !important;
-        height: 36px !important;
-        border-radius: 11px !important;
-      }
-
-      .content.home-information-context:not(.device-presentation-context) .domain-entity-icon ha-icon {
-        --mdc-icon-size: 20px !important;
-      }
-
-      .content.home-information-context:not(.device-presentation-context) .domain-entity-copy {
-        display: block !important;
-        min-width: 0 !important;
-      }
-
-      .content.home-information-context:not(.device-presentation-context) .domain-entity-name {
-        margin-top: 3px !important;
-        font-size: 15px !important;
-        font-weight: 900 !important;
-        line-height: 1.08 !important;
-        white-space: normal !important;
-        overflow-wrap: anywhere !important;
-        display: -webkit-box !important;
-        -webkit-line-clamp: 2 !important;
-        -webkit-box-orient: vertical !important;
-      }
-
-      .content.home-information-context:not(.device-presentation-context) .domain-entity-status {
-        margin-top: 5px !important;
-        font-size: 11px !important;
-        font-weight: 750 !important;
-        color: color-mix(in srgb, var(--primary-text-color) 46%, transparent) !important;
-      }
-
-      .content.home-information-context.device-presentation-context .entities-grid {
-        grid-template-columns: 1fr !important;
-        gap: 10px !important;
-      }
-    }
 
     /* Shared device-presentation structure. These selectors own layout only;
        the visual card/group rules live inside the shared primitives. */
@@ -1455,7 +1141,106 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       padding: 0 !important;
     }
 
+  
+
+    /* One mobile contract for all domain/entity dialogs.
+       The shared popup shell owns viewport height, safe-area and scrolling. */
     @media (max-width: 600px) {
+      .content {
+        padding: 12px !important;
+      }
+
+      .dialog-header-destination {
+        min-height: 28px !important;
+        padding: 0 8px !important;
+        max-width: 100%;
+        font-size: 10px !important;
+        white-space: nowrap;
+      }
+
+      .entities-grid,
+      .content.room-context .entities-grid,
+      .content.room-context.custom-entities-context .entities-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+        gap: 10px;
+      }
+
+      .domain-entity-card,
+      .content.room-context .domain-entity-card {
+        display: grid !important;
+        grid-template-columns: 40px minmax(0, 1fr) auto !important;
+        grid-template-rows: auto !important;
+        align-items: center !important;
+        gap: 10px !important;
+        min-height: 68px !important;
+        height: auto !important;
+        padding: 10px 12px !important;
+      }
+
+      .domain-entity-top,
+      .content.room-context .domain-entity-top {
+        display: contents !important;
+      }
+
+      .domain-entity-icon,
+      .content.room-context .domain-entity-icon {
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+      }
+
+      .domain-entity-copy,
+      .content.room-context .domain-entity-copy {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+        min-width: 0 !important;
+      }
+
+      .domain-entity-top > :not(.domain-entity-icon),
+      .content.room-context .domain-entity-top > :not(.domain-entity-icon) {
+        grid-column: 3 !important;
+        grid-row: 1 !important;
+        justify-self: end !important;
+      }
+
+      .domain-entity-name,
+      .content.room-context .domain-entity-name {
+        white-space: normal !important;
+        overflow-wrap: anywhere !important;
+        text-overflow: clip !important;
+      }
+
+      .dialog-global-actions .domain-actions {
+        justify-content: center;
+      }
+
+      /* Generic Home Information tiles keep the compact two-column card view. */
+      .content.home-information-context:not(.device-presentation-context) .entities-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+      }
+
+      .content.home-information-context:not(.device-presentation-context) .domain-entity-card {
+        min-height: 128px !important;
+        padding: 12px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        gap: 8px !important;
+        border-radius: 10px !important;
+      }
+
+      .content.home-information-context:not(.device-presentation-context) .domain-entity-top {
+        display: flex !important;
+        align-items: flex-start !important;
+        justify-content: space-between !important;
+        gap: 8px !important;
+      }
+
+      .content.home-information-context:not(.device-presentation-context) .domain-entity-copy {
+        display: block !important;
+      }
+
+      /* Device-presentation Home Information uses the exact shared Devices components. */
       .content.home-information-context.device-presentation-context .area-sections-grid {
         grid-template-columns: 1fr;
         gap: 10px;
@@ -1470,6 +1255,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       .content.home-information-context.device-presentation-context.domain-cover .shared-room-group .entities-grid,
       .content.home-information-context.device-presentation-context.domain-sensor .shared-room-group .entities-grid {
         grid-template-columns: 1fr !important;
+        padding: 0 !important;
       }
 
       .content.home-information-context.device-presentation-context.domain-climate .shared-room-group .entities-grid {
@@ -1479,9 +1265,15 @@ export class DwainsDomainEntitiesDialog extends LitElement {
 
       .content.home-information-context.device-presentation-context.domain-person .entities-grid {
         grid-template-columns: 1fr !important;
+        padding: 0 !important;
+      }
+
+      .content.home-information-context.device-presentation-context.domain-person dwains-dashboard-next-person-tile {
+        --dd-person-tile-location-height: 160px;
+        --dd-person-map-height: 98px;
       }
     }
-  `;
+`;
 
   public async showDialog(params: DomainEntitiesDialogParams): Promise<void> {
     this._params = params;
