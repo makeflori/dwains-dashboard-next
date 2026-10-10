@@ -1439,6 +1439,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
           entity.entity_id;
         return html`
           <dd-next-device-entity-card
+            class="entity-card-wrapper ${domain}-entity-card"
             .hass=${this.hass}
             .config=${this._params.config}
             .entityId=${entity.entity_id}
