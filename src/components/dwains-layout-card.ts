@@ -21667,6 +21667,7 @@ copy{
         ${hasInlineSelect ? this._renderMobileEntitySelect(state, domain) : nothing}
       </dd-next-compact-entity-tile>
     `;
+  }
 
   private _renderTodoListCard(entity: EntityConfig) {
     return html`
