@@ -1,4 +1,3 @@
-import { mdiClose } from "@mdi/js";
 import { LitElement, html, css, PropertyValues, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
@@ -12,9 +11,11 @@ import { fireEvent } from './utils/fire-event';
 import { formatEntityStateWithUnit, formatValueWithUnit } from '../utils/unit-format';
 import { stripAreaNameFromEntityName } from '../utils/entity-names';
 import { sortAreas } from '../utils/area-entities';
-import { findReplacementAssignment, resolveDeviceViewCardConfig } from '../utils/blueprint-replacements';
+import { findReplacementAssignment } from '../utils/blueprint-replacements';
 import './utils/dd-card-host';
 import './dwains-person-tile';
+import './ui/dd-ui-primitives';
+import './ui/dd-entity-tiles';
 
 export interface DomainEntitiesDialogParams {
   domain: string;
@@ -1992,34 +1993,21 @@ export class DwainsDomainEntitiesDialog extends LitElement {
         : this._entityColor(domain, deviceClass);
 
     return html`
-      <ha-dialog
+      <dd-next-popup-shell
         open
-        @closed=${this.closeDialog}
-        @cancel=${() => this.closeDialog()}
-        .heading=${domainTitle}
-        .type=${''}
-        flexContent
-        hideActions
+        wide
+        .titleText=${domainTitle}
+        .icon=${headerIcon}
+        .accent=${headerColor}
+        .closeLabel=${this._t('common.close')}
+        @dd-close=${() => this.closeDialog()}
       >
-        <div slot="header" class="dd-domain-header">
-          <div class="dd-domain-header-line" style=${`--dialog-accent: ${headerColor};`}>
-            <span class="dialog-title-icon" aria-hidden="true"><ha-icon icon=${headerIcon}></ha-icon></span>
-            <span class="dialog-heading-copy">
-              <span class="dialog-title-text">${domainTitle}</span>
-              ${this._params?.onViewAll ? html`
-                <button class="dialog-header-destination" type="button" @click=${this._handleViewAll}>
-                  <span>${this._params.viewAllLabel || 'Open device view'}</span>
-                  <ha-icon icon="mdi:chevron-right"></ha-icon>
-                </button>
-              ` : nothing}
-            </span>
-            <ha-icon-button class="dd-domain-header-close"
-              .label=${this._t('common.close')}
-              .path=${mdiClose}
-              @click=${() => this.closeDialog()}
-            ></ha-icon-button>
-          </div>
-        </div>
+        ${this._params?.onViewAll ? html`
+          <button slot="header-extra" class="dialog-header-destination" type="button" @click=${this._handleViewAll}>
+            <span>${this._params.viewAllLabel || 'Open device view'}</span>
+            <ha-icon icon="mdi:chevron-right"></ha-icon>
+          </button>
+        ` : nothing}
 
         <div class="content ${this._params?.areaId ? 'room-context' : ''} ${this._params?.customEntities ? 'custom-entities-context' : ''} ${this._params?.homeInformation ? 'home-information-context' : ''} ${this._params?.homeInformationPresentation === 'devices' ? 'device-presentation-context' : ''} ${this._params?.domain ? `domain-${this._params.domain}` : ''}">
           ${this._loading
@@ -2027,7 +2015,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
             : this._renderContent()
           }
         </div>
-      </ha-dialog>
+      </dd-next-popup-shell>
     `;
   }
 
@@ -2175,79 +2163,111 @@ export class DwainsDomainEntitiesDialog extends LitElement {
   }
 
   private _renderAreaSection(_areaId: string, group: { areaName: string; entities: EntityConfig[] }) {
-    // Get area icon from config
     let areaIcon = '';
     if (this._params?.config?.areas) {
       const area = this._params.config.areas.find(a => a.area_id === _areaId);
-      if (area?.icon) {
-        areaIcon = area.icon;
-      }
+      if (area?.icon) areaIcon = area.icon;
     }
 
-    // The dialog title already identifies persons; do not repeat a persons group header.
-    // Preserve area context even when there is only one room: entity tiles omit room names.
-    // Persons are not area-grouped, and the dialog title already identifies that domain.
-    const showAreaHeader = this._params?.domain !== 'person';
     const kind = this._params?.domain || '';
-    const bulkToggle = ['light', 'switch', 'fan', 'input_boolean'].includes(kind);
-    const mirrorCoverDeviceView =
+    const devicePresentation =
       this._params?.homeInformationPresentation === 'devices' &&
-      this._params?.homeInformation === true &&
-      kind === 'cover';
+      this._params?.homeInformation === true;
+    const showAreaHeader = kind !== 'person';
     const activeCount = group.entities.filter(entity => {
       const state = this.hass.states[entity.entity_id];
       return state && this._isEntityActiveForUi(state, kind);
     }).length;
-    const allOn = activeCount === group.entities.length;
+    const allOn = activeCount === group.entities.length && group.entities.length > 0;
     const roomEntityIds = group.entities.map(entity => entity.entity_id);
-
     const compactRoom = group.entities.length <= 1;
 
+    if (devicePresentation && showAreaHeader) {
+      const domain = kind === 'cover' ? 'cover' : kind;
+      const toggleDomain = ['light', 'switch', 'fan', 'input_boolean'].includes(domain);
+      const segmentedItems = domain === 'cover'
+        ? [
+            { action: 'open_cover', label: this._t('action.open_all'), icon: 'mdi:arrow-up', active: activeCount > 0 },
+            { action: 'close_cover', label: this._t('action.close_all'), icon: 'mdi:arrow-down', active: activeCount === 0 },
+          ]
+        : domain === 'lock'
+          ? [
+              { action: 'lock', label: this._t('action.lock_all'), icon: 'mdi:lock-outline', active: activeCount === 0 },
+              { action: 'unlock', label: this._t('action.unlock_all'), icon: 'mdi:lock-open-variant-outline', active: activeCount > 0 },
+            ]
+          : [];
+
+      return html`
+        <dd-next-room-group
+          class="area-section ${compactRoom ? 'half-room' : 'full-room'}"
+          .name=${group.areaName}
+          icon="mdi:floor-plan"
+          .accent=${this._entityColor(domain)}
+          .compact=${compactRoom}
+        >
+          ${toggleDomain ? html`
+            <dd-next-room-actions
+              slot="actions"
+              mode="toggle"
+              .accent=${this._entityColor(domain)}
+              .activeCount=${activeCount}
+              .totalCount=${group.entities.length}
+              .toggleOnLabel=${this._t('action.turn_on_all')}
+              .toggleOffLabel=${this._t('action.turn_off_all')}
+              @dd-action=${(event: CustomEvent<{ action: string }>) => {
+                const action = event.detail.action as BulkDomainAction;
+                void this._runBulkDomainAction(
+                  roomEntityIds,
+                  action,
+                  action === 'turn_off' ? this._t('action.turn_off_all') : this._t('action.turn_on_all'),
+                  false
+                );
+              }}
+            ></dd-next-room-actions>
+          ` : segmentedItems.length ? html`
+            <dd-next-room-actions
+              slot="actions"
+              mode="segmented"
+              .accent=${this._entityColor(domain)}
+              .items=${segmentedItems}
+              @dd-action=${(event: CustomEvent<{ action: string }>) => {
+                const action = event.detail.action as BulkDomainAction;
+                const label = segmentedItems.find(item => item.action === action)?.label || action;
+                void this._runBulkDomainAction(roomEntityIds, action, label, false);
+              }}
+            ></dd-next-room-actions>
+          ` : nothing}
+          <div class="entities-grid">
+            ${repeat(
+              group.entities,
+              entity => entity.entity_id,
+              entity => this._renderEntityCard(entity)
+            )}
+          </div>
+        </dd-next-room-group>
+      `;
+    }
+
+    const bulkToggle = ['light', 'switch', 'fan', 'input_boolean'].includes(kind);
     return html`
       <div class="area-section ${compactRoom ? 'half-room' : 'full-room'}">
         ${showAreaHeader ? html`<div class="area-header">
-          ${mirrorCoverDeviceView ? html`
-            <div class="area-icon">
-              <ha-icon icon="mdi:floor-plan"></ha-icon>
-            </div>
-          ` : areaIcon ? html`
-            <div class="area-icon">
-              <ha-icon icon="${areaIcon}"></ha-icon>
-            </div>
+          ${areaIcon ? html`
+            <div class="area-icon"><ha-icon icon="${areaIcon}"></ha-icon></div>
           ` : nothing}
           <div class="area-name">${group.areaName}</div>
-          ${mirrorCoverDeviceView ? html`
-            <div class="device-room-master-actions domain-cover" role="group">
-              <button
-                class="device-room-master-action ${activeCount > 0 ? 'active' : ''}"
-                type="button"
-                title=${this._t('action.open_all')}
-                aria-label=${this._t('action.open_all')}
-                @click=${(event: Event) => {
-                  event.stopPropagation();
-                  void this._runBulkDomainAction(roomEntityIds, 'open_cover', this._t('action.open_all'), false);
-                }}
-              ><ha-icon icon="mdi:arrow-up"></ha-icon></button>
-              <button
-                class="device-room-master-action ${activeCount === 0 ? 'active' : ''}"
-                type="button"
-                title=${this._t('action.close_all')}
-                aria-label=${this._t('action.close_all')}
-                @click=${(event: Event) => {
-                  event.stopPropagation();
-                  void this._runBulkDomainAction(roomEntityIds, 'close_cover', this._t('action.close_all'), false);
-                }}
-              ><ha-icon icon="mdi:arrow-down"></ha-icon></button>
-            </div>
-          ` : bulkToggle ? html`
+          ${bulkToggle ? html`
             <button class="area-master-toggle" type="button"
               style=${`--entity-color: ${this._entityColor(kind)};`}
               title=${allOn ? this._t('action.turn_off_all') : this._t('action.turn_on_all')}
               @click=${(event: Event) => {
                 event.stopPropagation();
-                void this._runBulkDomainAction(roomEntityIds,
+                void this._runBulkDomainAction(
+                  roomEntityIds,
                   allOn ? 'turn_off' : 'turn_on',
-                  allOn ? this._t('action.turn_off_all') : this._t('action.turn_on_all'), false);
+                  allOn ? this._t('action.turn_off_all') : this._t('action.turn_on_all'),
+                  false
+                );
               }}>
               <span>${activeCount}/${group.entities.length}</span>
               <span class="area-master-track ${allOn ? 'is-on' : ''}"></span>
@@ -2273,8 +2293,34 @@ export class DwainsDomainEntitiesDialog extends LitElement {
 
     const domain = entity.entity_id.split('.')[0] || 'unknown';
 
-    if (this._params?.homeInformationPresentation === 'devices' && domain === 'person') {
-      const state = this._getEffectiveEntityState(rawState);
+    if (this._params?.homeInformationPresentation === 'devices') {
+      const replacement = findReplacementAssignment({
+        hass: this.hass,
+        config: this._params.config,
+        entity,
+        surface: 'devices_cards',
+      });
+      const sharedDeviceCard = ['person', 'light', 'cover', 'climate', 'sensor'].includes(domain) ||
+        (replacement && replacement.enabled !== false);
+
+      if (sharedDeviceCard) {
+        const rawName = rawState.attributes?.friendly_name ||
+          this.hass.entities?.[entity.entity_id]?.name ||
+          entity.entity_id;
+        return html`
+          <dd-next-device-entity-card
+            .hass=${this.hass}
+            .config=${this._params.config}
+            .entityId=${entity.entity_id}
+            .areaName=${this._entityAreaName(entity)}
+            .displayName=${rawName}
+            @dd-more-info=${(event: CustomEvent<{ entityId: string }>) => this._showMoreInfo(event.detail.entityId)}
+          ></dd-next-device-entity-card>
+        `;
+      }
+    }
+
+    const state = this._getEffectiveEntityState(rawState);
       const rawName = state.attributes?.friendly_name ||
         this.hass.entities?.[entity.entity_id]?.name ||
         entity.entity_id;
