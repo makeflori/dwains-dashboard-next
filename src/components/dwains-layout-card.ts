@@ -16279,6 +16279,125 @@ copy{
       }
     }
 
+    /* Final mobile house-power popup shell: same visual system as Home Information dialogs. */
+    @media (max-width: 768px) {
+      .house-power-dialog-overlay {
+        align-items: flex-end !important;
+        justify-content: center !important;
+        padding:
+          max(env(safe-area-inset-top, 0px), 56px)
+          env(safe-area-inset-right, 0px)
+          0
+          env(safe-area-inset-left, 0px) !important;
+      }
+
+      .house-power-dialog {
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: calc(100dvh - max(env(safe-area-inset-top, 0px), 56px)) !important;
+        margin: 0 !important;
+        padding: 0 0 calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+        border-radius: 24px 24px 0 0 !important;
+        overflow-y: auto !important;
+        background: var(--card-background-color) !important;
+      }
+
+      .house-power-dialog-head {
+        position: sticky;
+        top: 0;
+        z-index: 4;
+        min-height: 76px;
+        margin: 0 0 12px !important;
+        padding: 12px 14px !important;
+        box-sizing: border-box;
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) auto !important;
+        align-items: center !important;
+        gap: 10px !important;
+        background: var(--card-background-color);
+        box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--divider-color) 70%, transparent);
+      }
+
+      .house-power-dialog-title-wrap {
+        min-width: 0;
+        display: grid !important;
+        grid-template-columns: 48px minmax(0, 1fr) !important;
+        grid-template-rows: auto auto !important;
+        align-items: center !important;
+        column-gap: 10px !important;
+        row-gap: 4px !important;
+        flex-wrap: nowrap !important;
+      }
+
+      .house-power-dialog-icon {
+        grid-column: 1 !important;
+        grid-row: 1 / span 2 !important;
+        width: 48px !important;
+        height: 48px !important;
+        border-radius: 12px !important;
+      }
+
+      .house-power-dialog-icon ha-icon {
+        --mdc-icon-size: 25px !important;
+      }
+
+      .house-power-dialog-title {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 20px !important;
+        font-weight: 900 !important;
+        line-height: 1.05 !important;
+      }
+
+      .house-power-dialog-energy-link {
+        grid-column: 2 !important;
+        grid-row: 2 !important;
+        justify-self: start !important;
+        width: auto !important;
+        min-height: 30px !important;
+        margin: 0 !important;
+        padding: 0 10px !important;
+        font-size: 11px !important;
+      }
+
+      .house-power-dialog-energy-link span {
+        display: inline !important;
+      }
+
+      .house-power-dialog-close {
+        width: 40px !important;
+        height: 40px !important;
+        background: transparent !important;
+      }
+
+      .house-power-dialog-overview,
+      .house-power-dialog-areas {
+        margin-left: 12px !important;
+        margin-right: 12px !important;
+      }
+
+      .house-power-dialog-overview {
+        grid-template-columns: minmax(0, 1fr) !important;
+        gap: 10px !important;
+        margin-bottom: 10px !important;
+      }
+
+      .house-power-dialog-overview-card,
+      .house-power-dialog-area {
+        padding: 11px !important;
+        border-radius: 12px !important;
+      }
+
+      .house-power-statistics-card {
+        min-height: 112px !important;
+      }
+    }
+
+
 
 
 
