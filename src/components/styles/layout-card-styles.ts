@@ -7790,8 +7790,8 @@ which also swallowed pointer events for the new handle. */
 
 .area-view .mobile-entity-card,
 .area-view .mobile-entities-section.layout-grid .mobile-entity-card{
-        min-height: 72px !important;
-        padding: 12px !important;
+        min-height: 60px !important;
+        padding: 10px !important;
         border-radius: 10px !important;
         box-sizing: border-box !important;
       }
@@ -7823,8 +7823,11 @@ which also swallowed pointer events for the new handle. */
       }
 
 .area-view .mobile-entity-name{
-        font-size: 14.4px !important;
-        line-height: 1.15 !important;
+        font-size: 12px !important;
+        line-height: 1.1 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
       }
 
 .area-view .mobile-entity-state{
