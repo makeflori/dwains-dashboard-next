@@ -211,7 +211,7 @@ export class DdNextPopupShell extends LitElement {
         aria-modal="true"
         aria-label=${this.titleText}
         tabindex="0"
-        style=${`--dd-popup-accent: ${this.accent}; --dd-popup-bottom: ${this.navigationMenu ? 'calc(76px + env(safe-area-inset-bottom, 0px))' : '0px'}; --dd-popup-inset: ${this.navigationMenu ? '16px' : '0px'}; --dd-popup-radius: ${this.navigationMenu ? '24px' : '24px 24px 0 0'};`}
+        style=${`--dd-popup-accent: ${this.accent}; --dd-popup-bottom: ${this.navigationMenu ? 'calc(76px + env(safe-area-inset-bottom, 0px))' : '0px'}; --dd-popup-max-height: ${this.navigationMenu ? 'min(64dvh, 560px)' : '88dvh'}; --dd-popup-inset: ${this.navigationMenu ? '16px' : '0px'}; --dd-popup-radius: ${this.navigationMenu ? '24px' : '24px 24px 0 0'};`}
         @click=${{ handleEvent: this._panelClick, capture: true }}
         @keydown=${this._keydown}
         @touchstart=${{ handleEvent: this._touchStart, capture: true }}
@@ -452,7 +452,7 @@ export class DdNextPopupShell extends LitElement {
         bottom: var(--dd-popup-bottom);
         width: calc(100vw - 2 * var(--dd-popup-inset));
         max-width: calc(100vw - 2 * var(--dd-popup-inset));
-        max-height: min(88dvh, calc(100dvh - var(--dd-popup-bottom) - 16px));
+        max-height: min(var(--dd-popup-max-height), calc(100dvh - var(--dd-popup-bottom) - 16px));
         transform: translateY(var(--dd-popup-drag-y, 0px));
         border-width: 0;
         border-radius: var(--dd-popup-radius);
