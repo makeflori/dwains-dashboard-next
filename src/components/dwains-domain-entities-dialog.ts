@@ -896,7 +896,14 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       const entityReg = config.entities?.find(e => e.entity_id === entityId);
       const deviceReg = entityReg && entityReg.device_id ?
         config.devices?.find(d => d.device_id === entityReg.device_id) : null;
-      const entityAreaId = entityReg?.area_id || deviceReg?.area_id || this.hass?.entities?.[entityId]?.area_id;
+      const registryArea = this.hass?.entities?.[entityId]?.area_id;
+      const registryDeviceId = this.hass?.entities?.[entityId]?.device_id;
+      const registeredDeviceArea = registryDeviceId ? this.hass?.devices?.[registryDeviceId]?.area_id : undefined;
+      const configuredDeviceArea = registryDeviceId
+        ? config.devices?.find(device => device.device_id === registryDeviceId)?.area_id
+        : undefined;
+      const entityAreaId = registryArea || entityReg?.area_id || deviceReg?.area_id ||
+        configuredDeviceArea || registeredDeviceArea || entityState.attributes?.area_id;
 
       // Persons are grouped by presence/location and therefore do not need
       // an HA area assignment. Area-based domains still require one.
@@ -906,7 +913,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       if (areaId && entityAreaId !== areaId) return;
 
       // Check if area exists for area-based domains.
-      if (domain !== 'person' && (!entityAreaId || !areasMap.has(entityAreaId))) return;
+      if (domain !== 'person' && (!entityAreaId || !areasMap.has(entityAreaId) || (config.areas_display?.hidden || []).includes(entityAreaId))) return;
 
       // Check if entity is hidden
       const groupKey = entityDomain;
