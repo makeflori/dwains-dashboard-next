@@ -1374,7 +1374,7 @@ export class DwainsDevicesCard extends LitElement {
                           (e) => e.entity_id,
                           (entity) => roomStyle
                             ? this._renderRoomStyleEntityCard(entity, area)
-                            : this._renderEntityCard(entity)
+                            : this._renderEntityCard(entity, area)
                         )}
                       </div>
                     </dd-next-room-group>
@@ -1817,7 +1817,7 @@ export class DwainsDevicesCard extends LitElement {
     }
   }
 
-  private _renderEntityCard(entity: EntityConfig) {
+  private _renderEntityCard(entity: EntityConfig, area: AreaConfig) {
     if (!this._hass.states[entity.entity_id]) return nothing;
     return html`
       <dd-next-device-entity-card
@@ -1825,6 +1825,7 @@ export class DwainsDevicesCard extends LitElement {
         .hass=${this._hass}
         .config=${this.config}
         .entityId=${entity.entity_id}
+        .areaName=${area.name}
         @dd-more-info=${(event: CustomEvent<{ entityId: string }>) => this._showMoreInfo(event.detail.entityId)}
       ></dd-next-device-entity-card>
     `;

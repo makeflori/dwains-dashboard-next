@@ -1165,7 +1165,9 @@ export class DwainsDomainEntitiesDialog extends LitElement {
   private _handleViewAll = (): void => {
     const action = this._params?.onViewAll;
     this.closeDialog();
-    action?.();
+    // The HA dialog host tears down its overlay asynchronously. Navigate once
+    // its close handlers have completed, otherwise the view can reset to Home.
+    if (action) window.setTimeout(action, 0);
   };
 
   private _renderCustomEntities() {
