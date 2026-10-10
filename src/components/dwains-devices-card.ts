@@ -1361,7 +1361,7 @@ export class DwainsDevicesCard extends LitElement {
                   const compactRoom = bucket.entities.length <= 2;
                   return html`
                     <dd-next-room-group
-                      class="domain-group ${compactRoom ? 'half-room' : 'full-room'}"
+                      class="device-room-group ${compactRoom ? 'half-room' : 'full-room'}"
                       .name=${area.name}
                       icon="mdi:floor-plan"
                       .accent=${this._typeColor(domain)}
@@ -3432,17 +3432,17 @@ export class DwainsDevicesCard extends LitElement {
       align-items: start;
     }
 
-    .device-room-groups .domain-group {
+    .device-room-groups .device-room-group {
       grid-column: 1 / -1;
       margin-bottom: 0;
       min-width: 0;
     }
 
-    .device-room-groups .domain-group.half-room {
+    .device-room-groups .device-room-group.half-room {
       grid-column: span 1;
     }
 
-    .device-room-groups .domain-group.half-room .entities-grid {
+    .device-room-groups .device-room-group.half-room .entities-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     }
 
@@ -4031,12 +4031,12 @@ export class DwainsDevicesCard extends LitElement {
         gap: 10px;
       }
 
-      .device-room-groups .domain-group,
-      .device-room-groups .domain-group.half-room {
+      .device-room-groups .device-room-group,
+      .device-room-groups .device-room-group.half-room {
         grid-column: 1;
       }
 
-      .device-room-groups .domain-group.half-room .entities-grid {
+      .device-room-groups .device-room-group.half-room .entities-grid {
         grid-template-columns: 1fr !important;
       }
 
@@ -4373,7 +4373,7 @@ export class DwainsDevicesCard extends LitElement {
       /* Thermostat cards occupy half the phone width, while preserving the
          native card's internal width through the same 70% scaling. */
       .entities-grid.climate-entities-grid,
-      .device-room-groups .domain-group.half-room .entities-grid.climate-entities-grid {
+      .device-room-groups .device-room-group.half-room .entities-grid.climate-entities-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
         gap: 8px !important;
       }
