@@ -1992,6 +1992,7 @@ export class DwainsDevicesCard extends LitElement {
       (typeKey === 'cover' || typeKey.startsWith('cover_')) ? 'cover-entities-grid' : '',
       typeKey === 'light' ? 'light-entities-grid' : '',
       typeKey === 'sensor' ? 'sensor-entities-grid' : '',
+      typeKey === 'climate' ? 'climate-entities-grid' : '',
       typeKey === 'binary_sensor.motion' ? 'motion-entities-grid' : '',
       typeKey === 'todo' ? 'todo-entities-grid' : '',
     ].filter(Boolean).join(' ');
@@ -4388,6 +4389,44 @@ export class DwainsDevicesCard extends LitElement {
 
       .device-header-actions {
         align-self: center;
+      }
+    }
+
+
+    @media (max-width: 768px) {
+      /* Match the Startseite top position and compact header height. */
+      .content-area {
+        padding-top: 10px !important;
+      }
+
+      .device-page-header,
+      .devices-overview-view .device-page-header {
+        min-height: 82px !important;
+        height: auto !important;
+        margin: -10px -10px 14px !important;
+        padding: 10px 14px 12px !important;
+        border-radius: 0 0 8px 8px !important;
+        align-items: center !important;
+      }
+
+      /* Thermostat cards occupy half the phone width, while preserving the
+         native card's internal width through the same 70% scaling. */
+      .entities-grid.climate-entities-grid,
+      .device-room-groups .domain-group.half-room .entities-grid.climate-entities-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+      }
+
+      .climate-entity-card {
+        width: 100% !important;
+        min-width: 0 !important;
+        overflow: visible !important;
+      }
+
+      .special-device-view .climate-entity-card > dwains-dashboard-next-card-host {
+        width: calc(100% / 0.7) !important;
+        transform: scale(0.7) !important;
+        transform-origin: top left !important;
       }
     }
 
