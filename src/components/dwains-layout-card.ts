@@ -23738,27 +23738,19 @@ copy{
 
     return html`
       <section class="settings-page-view">
-        <header class="settings-page-header">
-          <button
-            class="settings-page-back"
-            type="button"
-            title=${onSubpage ? this._t('common.back') : this._t('common.close')}
-            aria-label=${onSubpage ? this._t('common.back') : this._t('common.close')}
-            @click=${onSubpage ? this._settingsBackToOverview : this._closeSettingsPage}
-          >
-            <ha-icon icon=${onSubpage ? 'mdi:arrow-left' : 'mdi:close'}></ha-icon>
-          </button>
-          <div class="settings-page-title">
-            <h1>
-              ${this._settingsPageParentTitle
-                ? html`<span class="settings-breadcrumb-parent">${this._settingsPageParentTitle}</span>
-                    <ha-icon class="settings-breadcrumb-separator" icon="mdi:chevron-right"></ha-icon>
-                    <span>${title}</span>`
-                : title}
-            </h1>
-            <p>${description}</p>
-          </div>
-          <div class="settings-page-actions">
+        <dd-next-page-header
+          class="settings-shared-header"
+          .icon=${onSubpage ? 'mdi:cog-outline' : 'mdi:view-dashboard-edit-outline'}
+          .titleText=${title}
+          .parentTitle=${this._settingsPageParentTitle}
+          .subtitle=${description}
+          .accent=${getDomainColor('settings')}
+          .back=${true}
+          .backIcon=${onSubpage ? 'mdi:arrow-left' : 'mdi:close'}
+          .backLabel=${onSubpage ? this._t('common.back') : this._t('common.close')}
+          @dd-back=${onSubpage ? this._settingsBackToOverview : this._closeSettingsPage}
+        >
+          <span slot="actions" class="settings-page-actions">
             <button type="button" class="settings-secondary" @click=${this._settingsSecondaryAction}>
               ${secondaryLabel}
             </button>
@@ -23770,8 +23762,8 @@ copy{
             >
               ${this._settingsSavePending ? this._t('common.saving') : this._t('common.save')}
             </button>
-          </div>
-        </header>
+          </span>
+        </dd-next-page-header>
         ${this._settingsSaveError
           ? html`<div class="settings-save-error">${this._settingsSaveError}</div>`
           : nothing}
