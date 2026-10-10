@@ -3,7 +3,8 @@ import { customElement, property } from 'lit/decorators.js';
 
 import type { HomeAssistant } from '../../types/home-assistant';
 import type { DwainsDashboardConfig } from '../../types/strategy';
-import { getDomainColor } from '../../utils/icons';
+import { getDomainColor, getDomainIcon, getDeviceClassIcon } from '../../utils/icons';
+import { formatEntityStateWithUnit, formatValueWithUnit } from '../../utils/unit-format';
 import { resolveDeviceViewCardConfig } from '../../utils/blueprint-replacements';
 import { stripAreaNameFromEntityName } from '../../utils/entity-names';
 import '../utils/dd-card-host';
@@ -101,6 +102,73 @@ export class DdNextDeviceEntityCard extends LitElement {
           @click=${this._showMoreInfo}
           @keydown=${this._personKeydown}
         ></dwains-dashboard-next-person-tile>
+      `;
+    }
+
+    if (['light', 'cover', 'climate'].includes(domain)) {
+      const name = this.displayName || state.attributes?.friendly_name ||
+        this.hass.entities?.[this.entityId]?.name || this.entityId;
+      const displayName = this.config.settings?.hide_area_name_in_entity_names === true
+        ? stripAreaNameFromEntityName(name, this.areaName) : name;
+      const unavailable = ['unknown', 'unavailable'].includes(String(state.state).toLowerCase());
+      const active = ['on', 'open', 'opening', 'heat', 'cool'].includes(String(state.state).toLowerCase());
+      const features = Number(state.attributes?.supported_features || 0);
+      const supports = (flag: number) => features <= 0 ? flag !== 8 : (features & flag) !== 0;
+      const actionMode = domain === 'cover' ? 'cover' : domain === 'light' ? 'toggle' : 'none';
+      let status = formatEntityStateWithUnit(this.hass, state);
+      if (domain === 'light' && typeof state.attributes?.brightness === 'number' && state.state === 'on') {
+        status += ' · ' + formatValueWithUnit(Math.round(state.attributes.brightness / 255 * 100), '%');
+      }
+      if (domain === 'cover' && typeof state.attributes?.current_position === 'number') {
+        status += ' · ' + formatValueWithUnit(state.attributes.current_position, '%');
+      }
+      if (domain === 'climate') {
+        const unit = this.hass.config?.unit_system?.temperature || '°C';
+        const current = state.attributes?.current_temperature;
+        const target = state.attributes?.temperature;
+        if (current !== undefined) {
+          status = formatValueWithUnit(current, unit);
+          if (target !== undefined) status += ' · ' + formatValueWithUnit(target, unit);
+        }
+      }
+      const accent = getDomainColor(domain, state.attributes?.device_class);
+      const icon = this.hass.entities?.[this.entityId]?.icon || state.attributes?.icon ||
+        getDeviceClassIcon(domain, state.attributes?.device_class) || getDomainIcon(domain);
+      return html`
+        <dd-next-compact-entity-tile
+          variant="compact"
+          .name=${displayName}
+          .status=${status}
+          .icon=${icon}
+          .accent=${accent}
+          .active=${active}
+          .unavailable=${unavailable}
+          @dd-open=${this._showMoreInfo}
+        >
+          ${actionMode !== 'none' ? html`
+            <dd-next-entity-actions
+              slot="actions"
+              .mode=${actionMode}
+              .accent=${accent}
+              .active=${active}
+              .unavailable=${unavailable}
+              .state=${String(state.state)}
+              .canOpen=${supports(1)}
+              .canClose=${supports(2)}
+              .canStop=${supports(8)}
+              @dd-action=${(event: CustomEvent<{ action: string }>) => {
+                const action = event.detail.action;
+                if (domain === 'light') {
+                  void this.hass.callService('light', action, { entity_id: this.entityId });
+                } else if (domain === 'cover') {
+                  const service = action === 'open' ? 'open_cover' :
+                    action === 'stop' ? 'stop_cover' : 'close_cover';
+                  void this.hass.callService('cover', service, { entity_id: this.entityId });
+                }
+              }}
+            ></dd-next-entity-actions>
+          ` : nothing}
+        </dd-next-compact-entity-tile>
       `;
     }
 
