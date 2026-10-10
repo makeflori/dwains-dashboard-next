@@ -3,8 +3,9 @@ import { customElement, property } from 'lit/decorators.js';
 
 import type { HomeAssistant } from '../../types/home-assistant';
 import type { DwainsDashboardConfig } from '../../types/strategy';
-import { getDomainColor } from '../../utils/icons';
-import { resolveDeviceViewCardConfig } from '../../utils/blueprint-replacements';
+import { getDomainColor, getDomainIcon, getDeviceClassIcon } from '../../utils/icons';
+import { formatEntityStateWithUnit } from '../../utils/unit-format';
+import { findReplacementAssignment, resolveDeviceViewCardConfig } from '../../utils/blueprint-replacements';
 import { stripAreaNameFromEntityName } from '../../utils/entity-names';
 import '../utils/dd-card-host';
 import '../dwains-person-tile';
@@ -16,6 +17,7 @@ export class DdNextDeviceEntityCard extends LitElement {
   @property() public entityId = '';
   @property() public areaName = '';
   @property() public displayName = '';
+  @property({ type: Boolean }) public roomStyle = false;
 
   private _showMoreInfo = (): void => {
     this.dispatchEvent(new CustomEvent('dd-more-info', {
@@ -29,6 +31,14 @@ export class DdNextDeviceEntityCard extends LitElement {
     if (event.key !== 'Enter' && event.key !== ' ') return;
     event.preventDefault();
     this._showMoreInfo();
+  };
+
+  private _toggleRoomStyle = async (domain: string, active: boolean): Promise<void> => {
+    try {
+      await this.hass.callService(domain, active ? 'turn_off' : 'turn_on', { entity_id: this.entityId });
+    } catch (error) {
+      console.warn(`Failed to toggle ${this.entityId}`, error);
+    }
   };
 
   protected override render() {
@@ -56,6 +66,69 @@ export class DdNextDeviceEntityCard extends LitElement {
           @click=${this._showMoreInfo}
           @keydown=${this._personKeydown}
         ></dwains-dashboard-next-person-tile>
+      `;
+    }
+
+    const replacement = this.roomStyle ? findReplacementAssignment({
+      hass: this.hass,
+      config: this.config,
+      entity: { entity_id: this.entityId },
+      surface: 'devices_cards',
+    }) : undefined;
+    if (this.roomStyle && replacement && replacement.enabled !== false) {
+      return html`
+        <div class="card">
+          <dwains-dashboard-next-card-host
+            framed
+            .hass=${this.hass}
+            .config=${resolveDeviceViewCardConfig({
+              hass: this.hass,
+              config: this.config,
+              entity: this.entityId,
+              surface: 'devices_cards',
+            })}
+          ></dwains-dashboard-next-card-host>
+        </div>
+      `;
+    }
+
+    if (this.roomStyle && !['light', 'cover', 'climate', 'sensor'].includes(domain)) {
+      const rawName = this.displayName || state.attributes?.friendly_name ||
+        this.hass.entities?.[this.entityId]?.name || this.entityId;
+      const name = this.config?.settings?.hide_area_name_in_entity_names === true
+        ? stripAreaNameFromEntityName(rawName, this.areaName)
+        : rawName;
+      const deviceClass = state.attributes?.device_class;
+      const value = String(state.state || '').toLowerCase();
+      const active = domain === 'lock' ? value === 'unlocked' :
+        ['on', 'open', 'opening', 'playing', 'active', 'home'].includes(value);
+      const unavailable = ['unknown', 'unavailable'].includes(value) &&
+        !['scene', 'event'].includes(domain);
+      const accent = getDomainColor(domain, deviceClass);
+      const canToggle = ['switch', 'fan', 'input_boolean'].includes(domain);
+      return html`
+        <dd-next-compact-entity-tile
+          variant="compact"
+          .name=${name}
+          .status=${formatEntityStateWithUnit(this.hass, state)}
+          .icon=${this.hass.entities?.[this.entityId]?.icon || state.attributes?.icon ||
+            getDeviceClassIcon(domain, deviceClass) || getDomainIcon(domain)}
+          .accent=${accent}
+          .active=${active}
+          .unavailable=${unavailable}
+          @dd-open=${this._showMoreInfo}
+        >
+          ${canToggle ? html`
+            <dd-next-entity-actions
+              slot="actions"
+              mode="toggle"
+              .accent=${accent}
+              .active=${active}
+              .unavailable=${unavailable}
+              @dd-action=${() => void this._toggleRoomStyle(domain, active)}
+            ></dd-next-entity-actions>
+          ` : nothing}
+        </dd-next-compact-entity-tile>
       `;
     }
 
@@ -303,8 +376,9 @@ export class DdNextCompactEntityTile extends LitElement {
       margin-top: 3px;
       font-size: 15px;
       font-weight: 900;
-      white-space: normal;
-      overflow-wrap: anywhere;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .state {

@@ -11,7 +11,6 @@ import { fireEvent } from './utils/fire-event';
 import { formatEntityStateWithUnit, formatValueWithUnit } from '../utils/unit-format';
 import { stripAreaNameFromEntityName } from '../utils/entity-names';
 import { sortAreas } from '../utils/area-entities';
-import { findReplacementAssignment } from '../utils/blueprint-replacements';
 import './utils/dd-card-host';
 import './dwains-person-tile';
 import './ui/dd-ui-primitives';
@@ -698,6 +697,25 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     }
 
 
+    /* The dialog uses the Devices card renderer. Only the grid density differs. */
+    @media (min-width: 769px) {
+      .content.home-information-context.device-presentation-context .area-sections-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+      }
+      .content.home-information-context.device-presentation-context .shared-room-group.half-room {
+        grid-column: span 1;
+      }
+      .content.home-information-context.device-presentation-context .shared-room-group.full-room {
+        grid-column: span 3;
+      }
+      .content.home-information-context.device-presentation-context .shared-room-group .entities-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+      }
+      .content.home-information-context.device-presentation-context.domain-person .entities-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+      }
+    }
+
     /* Shared device-presentation structure. These selectors own layout only;
        the visual card/group rules live inside the shared primitives. */
     .content.home-information-context.device-presentation-context .area-sections-grid {
@@ -1371,17 +1389,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     const domain = entity.entity_id.split('.')[0] || 'unknown';
 
     if (this._params?.homeInformationPresentation === 'devices') {
-      const replacement = findReplacementAssignment({
-        hass: this.hass,
-        config: this._params.config,
-        entity,
-        surface: 'devices_cards',
-      });
-      // House Information renders the same Devices card host for supported domains.
-      const sharedDeviceCard = ['person', 'light', 'cover', 'climate', 'sensor', 'switch', 'binary_sensor', 'fan', 'input_boolean', 'lock'].includes(domain) ||
-        (replacement && replacement.enabled !== false);
-
-      if (sharedDeviceCard) {
+      {
         const rawName = rawState.attributes?.friendly_name ||
           this.hass.entities?.[entity.entity_id]?.name ||
           entity.entity_id;
@@ -1392,6 +1400,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
             .entityId=${entity.entity_id}
             .areaName=${this._entityAreaName(entity)}
             .displayName=${rawName}
+            .roomStyle=${!['light', 'cover', 'climate', 'sensor'].includes(domain)}
             @dd-more-info=${(event: CustomEvent<{ entityId: string }>) => this._showMoreInfo(event.detail.entityId)}
           ></dd-next-device-entity-card>
         `;
