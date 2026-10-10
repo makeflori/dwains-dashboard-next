@@ -798,13 +798,21 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       }
 
       .content.home-information-context.device-presentation-context.domain-climate .shared-room-group .entities-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        grid-template-columns: minmax(0, 1fr) !important;
         gap: 8px !important;
       }
 
       .content.home-information-context.device-presentation-context.domain-person .entities-grid {
         grid-template-columns: 1fr !important;
         padding: 0 !important;
+      }
+
+      .content.home-information-context.device-presentation-context.domain-person .area-section,
+      .content.home-information-context.device-presentation-context.domain-person .area-section.half-room,
+      .content.home-information-context.device-presentation-context.domain-person dwains-dashboard-next-person-tile {
+        width: 100% !important;
+        max-width: none !important;
+        min-width: 0;
       }
 
       .content.home-information-context.device-presentation-context.domain-person dwains-dashboard-next-person-tile {
@@ -1249,7 +1257,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     }).length;
     const allOn = activeCount === group.entities.length && group.entities.length > 0;
     const roomEntityIds = group.entities.map(entity => entity.entity_id);
-    const compactRoom = group.entities.length <= 1;
+    const compactRoom = group.entities.length <= 2;
 
     if (devicePresentation && showAreaHeader) {
       const domain = kind === 'cover' ? 'cover' : kind;
@@ -1369,7 +1377,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
         entity,
         surface: 'devices_cards',
       });
-      const sharedDeviceCard = ['person', 'light', 'cover', 'climate', 'sensor'].includes(domain) ||
+      const sharedDeviceCard = ['person', 'light', 'cover', 'climate', 'sensor', 'switch', 'binary_sensor', 'fan', 'input_boolean', 'lock'].includes(domain) ||
         (replacement && replacement.enabled !== false);
 
       if (sharedDeviceCard) {
