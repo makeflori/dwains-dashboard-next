@@ -264,10 +264,12 @@ export class DdNextPopupShell extends LitElement {
 export class DdNextPageHeader extends LitElement {
   @property() public titleText = '';
   @property() public subtitle = '';
+  @property() public parentTitle = '';
   @property() public icon = 'mdi:view-dashboard-outline';
   @property() public accent = 'var(--primary-color)';
   @property({ type: Boolean }) public back = false;
   @property() public backLabel = 'Back';
+  @property() public backIcon = 'mdi:arrow-left';
 
   private _back = (): void => {
     this.dispatchEvent(new CustomEvent('dd-back', { bubbles: true, composed: true }));
@@ -278,13 +280,19 @@ export class DdNextPageHeader extends LitElement {
       <header class="header" style=${`--dd-page-accent: ${this.accent};`}>
         ${this.back ? html`
           <button class="back" type="button" title=${this.backLabel} aria-label=${this.backLabel} @click=${this._back}>
-            <ha-icon icon="mdi:arrow-left"></ha-icon>
+            <ha-icon icon=${this.backIcon}></ha-icon>
           </button>
         ` : nothing}
         <div class="main">
           <span class="icon"><ha-icon icon=${this.icon}></ha-icon></span>
           <div class="copy">
-            <h1>${this.titleText}</h1>
+            <h1>
+              ${this.parentTitle ? html`
+                <span class="parent-title">${this.parentTitle}</span>
+                <ha-icon class="breadcrumb" icon="mdi:chevron-right"></ha-icon>
+              ` : nothing}
+              <span class="current-title">${this.titleText}</span>
+            </h1>
             ${this.subtitle ? html`<p>${this.subtitle}</p>` : nothing}
           </div>
         </div>
@@ -364,13 +372,36 @@ export class DdNextPageHeader extends LitElement {
 
     h1 {
       margin: 0;
+      min-width: 0;
       overflow: hidden;
+      display: flex;
+      align-items: center;
+      gap: 5px;
       color: var(--primary-text-color);
       font-size: clamp(22px, 2vw, 30px);
       font-weight: 900;
       line-height: 1.05;
-      text-overflow: ellipsis;
       white-space: nowrap;
+    }
+
+    .parent-title {
+      min-width: 0;
+      overflow: hidden;
+      color: var(--secondary-text-color);
+      font-weight: 700;
+      text-overflow: ellipsis;
+    }
+
+    .current-title {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .breadcrumb {
+      flex: 0 0 auto;
+      color: var(--secondary-text-color);
+      --mdc-icon-size: 18px;
     }
 
     p {
