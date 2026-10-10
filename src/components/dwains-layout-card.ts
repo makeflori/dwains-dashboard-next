@@ -1338,6 +1338,80 @@ export class DwainsLayoutCard extends LitElement {
       box-sizing: border-box;
     }
 
+    .settings-page-header{
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 16px;
+      margin: 0 0 16px;
+      padding: 16px 18px;
+      border: 1px solid color-mix(in srgb, var(--divider-color) 72%, transparent);
+      border-radius: 18px;
+      background:
+        linear-gradient(135deg,
+          color-mix(in srgb, var(--card-background-color) 96%, var(--primary-color)) 0%,
+          color-mix(in srgb, var(--card-background-color) 94%, var(--primary-color)) 100%);
+      box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
+    }
+
+    .settings-page-back,
+.settings-secondary,
+.settings-primary{
+      appearance: none;
+      border: 0;
+      font: inherit;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .settings-page-back{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--secondary-background-color) 74%, var(--card-background-color));
+      color: var(--primary-text-color);
+    }
+
+    .settings-page-back ha-icon{
+      --mdc-icon-size: 22px;
+    }
+
+    .settings-page-title{
+      min-width: 0;
+    }
+
+    .settings-page-title h1{
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      font-size: clamp(22px, 2vw, 30px);
+      line-height: 1.08;
+      font-weight: 850;
+      color: var(--primary-text-color);
+      letter-spacing: 0;
+    }
+    .settings-breadcrumb-parent{
+      color: var(--secondary-text-color);
+      font-weight: 700;
+    }
+    .settings-breadcrumb-separator{
+      flex: 0 0 auto;
+      color: var(--secondary-text-color);
+      --mdc-icon-size: 20px;
+    }
+
+    .settings-page-title p{
+      margin: 5px 0 0;
+      color: var(--secondary-text-color);
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
     .settings-page-actions,
 .settings-page-bottom-actions{
       display: flex;
@@ -22719,19 +22793,27 @@ copy{
 
     return html`
       <section class="settings-page-view">
-        <dd-next-page-header
-          class="settings-shared-header"
-          .icon=${onSubpage ? 'mdi:cog-outline' : 'mdi:view-dashboard-edit-outline'}
-          .titleText=${title}
-          .parentTitle=${this._settingsPageParentTitle}
-          .subtitle=${description}
-          .accent=${getDomainColor('settings')}
-          .back=${true}
-          .backIcon=${onSubpage ? 'mdi:arrow-left' : 'mdi:close'}
-          .backLabel=${onSubpage ? this._t('common.back') : this._t('common.close')}
-          @dd-back=${onSubpage ? this._settingsBackToOverview : this._closeSettingsPage}
-        >
-          <span slot="actions" class="settings-page-actions">
+        <header class="settings-page-header">
+          <button
+            class="settings-page-back"
+            type="button"
+            title=${onSubpage ? this._t('common.back') : this._t('common.close')}
+            aria-label=${onSubpage ? this._t('common.back') : this._t('common.close')}
+            @click=${onSubpage ? this._settingsBackToOverview : this._closeSettingsPage}
+          >
+            <ha-icon icon=${onSubpage ? 'mdi:arrow-left' : 'mdi:close'}></ha-icon>
+          </button>
+          <div class="settings-page-title">
+            <h1>
+              ${this._settingsPageParentTitle
+                ? html`<span class="settings-breadcrumb-parent">${this._settingsPageParentTitle}</span>
+                    <ha-icon class="settings-breadcrumb-separator" icon="mdi:chevron-right"></ha-icon>
+                    <span>${title}</span>`
+                : title}
+            </h1>
+            <p>${description}</p>
+          </div>
+          <div class="settings-page-actions">
             <button type="button" class="settings-secondary" @click=${this._settingsSecondaryAction}>
               ${secondaryLabel}
             </button>
@@ -22743,8 +22825,8 @@ copy{
             >
               ${this._settingsSavePending ? this._t('common.saving') : this._t('common.save')}
             </button>
-          </span>
-        </dd-next-page-header>
+          </div>
+        </header>
         ${this._settingsSaveError
           ? html`<div class="settings-save-error">${this._settingsSaveError}</div>`
           : nothing}
