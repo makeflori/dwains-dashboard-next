@@ -3617,35 +3617,6 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
-    .mobile-entity-card{
-      --entity-color: var(--primary-color);
-      position: relative;
-      box-sizing: border-box;
-      contain: layout style;
-      flex: 0 0 164px;
-      min-width: 0;
-      min-height: 128px;
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      overflow: hidden;
-      border: 0;
-      border-radius: 10px;
-      background: color-mix(in srgb, var(--card-background-color) 98%, #ffffff);
-      color: var(--primary-text-color);
-      font: inherit;
-      text-align: left;
-      cursor: pointer;
-      scroll-snap-align: start;
-      box-shadow:
-        0 12px 26px rgba(15, 23, 42, 0.06),
-        inset 0 0 0 1px rgba(15, 23, 42, 0.035);
-      transition:
-        transform 0.18s ease,
-        box-shadow 0.18s ease;
-    }
-
     .mobile-entity-tile-host{
       box-sizing: border-box;
       flex: 0 0 164px;
@@ -3699,166 +3670,12 @@ export class DwainsLayoutCard extends LitElement {
       scroll-snap-align: none;
     }
 
-    .mobile-entity-card:active{
-      transform: scale(0.985);
-      }
-
-      .mobile-entity-card.is-active{
-        box-shadow:
-          0 14px 30px rgba(15, 23, 42, 0.08),
-          inset 0 0 0 1px color-mix(in srgb, var(--entity-color) 18%, transparent);
-      }
-
-      .mobile-entity-card.is-unavailable{
-        opacity: 0.62;
-      }
-
     .mobile-entity-top{
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
       gap: 10px;
     }
-
-    .mobile-entity-icon{
-      width: 36px;
-      height: 36px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex: 0 0 auto;
-      border-radius: 11px;
-      color: var(--entity-color);
-      background: color-mix(in srgb, var(--entity-color) 13%, transparent);
-    }
-
-      .mobile-entity-icon ha-icon{
-        --mdc-icon-size: 20px;
-      }
-
-      .mobile-entity-action{
-        padding: 0;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        flex: 0 0 auto;
-        border: 0;
-        cursor: pointer;
-        transition:
-          background-color 0.18s ease,
-          color 0.18s ease,
-          transform 0.18s ease,
-          opacity 0.18s ease;
-      }
-
-      .mobile-entity-action:active{
-        transform: scale(0.94);
-      }
-
-      .mobile-entity-action:disabled{
-        opacity: 0.36;
-        cursor: not-allowed;
-      }
-
-      .mobile-entity-toggle{
-        width: 38px;
-        height: 22px;
-        justify-content: flex-start;
-        border-radius: 999px;
-        background: color-mix(in srgb, var(--secondary-background-color) 80%, #ffffff);
-        box-shadow:
-          inset 0 0 0 1px rgba(15, 23, 42, 0.07),
-          0 4px 10px rgba(15, 23, 42, 0.08);
-      }
-
-    .mobile-entity-toggle::before{
-      content: "";
-      width: 18px;
-      height: 18px;
-      margin-left: 2px;
-      border-radius: 999px;
-      background: #ffffff;
-      box-shadow: 0 2px 7px rgba(15, 23, 42, 0.2);
-      transition: transform 0.18s ease;
-      }
-
-      .mobile-entity-card.is-active .mobile-entity-toggle{
-        background: var(--entity-color);
-      }
-
-    .mobile-entity-card.is-active .mobile-entity-toggle::before{
-      transform: translateX(16px);
-    }
-
-      .mobile-entity-more,
-.mobile-scene-action,
-.mobile-lock-action{
-        width: 30px;
-        height: 30px;
-        border-radius: 999px;
-        color: color-mix(in srgb, var(--primary-text-color) 52%, transparent);
-        background: color-mix(in srgb, var(--secondary-background-color) 70%, #ffffff);
-        box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.05);
-      }
-
-      .mobile-lock-action.is-unlocked{
-        color: #ffffff;
-        background: var(--entity-color);
-        box-shadow: 0 8px 16px color-mix(in srgb, var(--entity-color) 24%, transparent);
-      }
-
-      .mobile-entity-more ha-icon,
-.mobile-scene-action ha-icon,
-.mobile-lock-action ha-icon{
-        --mdc-icon-size: 17px;
-      }
-
-      .mobile-cover-actions{
-        min-height: 32px;
-        padding: 3px;
-        display: inline-flex;
-        align-items: center;
-        gap: 3px;
-        flex: 0 0 auto;
-        border-radius: 999px;
-        background: color-mix(in srgb, var(--secondary-background-color) 74%, #ffffff);
-        box-shadow:
-          inset 0 0 0 1px rgba(15, 23, 42, 0.055),
-          0 6px 14px rgba(15, 23, 42, 0.08);
-      }
-
-      .mobile-cover-action{
-        width: 26px;
-        height: 26px;
-        border-radius: 999px;
-        color: color-mix(in srgb, var(--primary-text-color) 58%, transparent);
-        background: transparent;
-      }
-
-      .mobile-cover-action.active{
-        color: #ffffff;
-        background: var(--entity-color);
-        box-shadow: 0 6px 12px color-mix(in srgb, var(--entity-color) 22%, transparent);
-      }
-
-      .mobile-cover-action ha-icon{
-        --mdc-icon-size: 16px;
-      }
-
-      .mobile-entities-section.layout-grid .mobile-cover-actions{
-        min-height: 30px;
-        padding: 3px;
-        gap: 2px;
-      }
-
-      .mobile-entities-section.layout-grid .mobile-cover-action{
-        width: 24px;
-        height: 24px;
-      }
-
-      .mobile-entities-section.layout-grid .mobile-cover-action ha-icon{
-        --mdc-icon-size: 15px;
-      }
 
       @media (max-width: 430px) {
         .mobile-entities-section.layout-grid .mobile-entity-tile-host{
@@ -3869,48 +3686,6 @@ export class DwainsLayoutCard extends LitElement {
         .mobile-entities-section.layout-grid .mobile-entity-top{
           gap: 6px;
         }
-
-        .mobile-entities-section.layout-grid .mobile-entity-icon{
-          width: 34px;
-          height: 34px;
-        }
-
-        .mobile-entities-section.layout-grid .mobile-cover-actions{
-          min-height: 28px;
-          padding: 2px;
-          gap: 1px;
-        }
-
-        .mobile-entities-section.layout-grid .mobile-cover-action{
-          width: 23px;
-          height: 23px;
-        }
-
-        .mobile-entities-section.layout-grid .mobile-cover-action ha-icon{
-          --mdc-icon-size: 14px;
-        }
-      }
-
-    .mobile-entity-meta{
-      color: color-mix(in srgb, var(--primary-text-color) 42%, transparent);
-      font-size: 10px;
-      font-weight: 750;
-      line-height: 1.1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-      .mobile-entity-name{
-        margin-top: 3px;
-        color: var(--primary-text-color);
-        font-size: 15px;
-        font-weight: 900;
-      line-height: 1.08;
-      overflow: hidden;
-      display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
       }
 
       .mobile-entity-status{
@@ -3922,24 +3697,6 @@ export class DwainsLayoutCard extends LitElement {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-      }
-
-      .mobile-entity-content{
-        min-width: 0;
-      }
-
-      .mobile-entity-card.has-inline-select{
-        min-height: 170px;
-        justify-content: flex-start;
-        gap: 10px;
-      }
-
-      .mobile-entity-card.has-inline-select .mobile-entity-content{
-        margin-top: auto;
-      }
-
-      .mobile-entity-card.has-inline-select .mobile-entity-status{
-        display: none;
       }
 
       .mobile-entity-select{
@@ -10163,26 +9920,6 @@ which could overlap
       display: none;
     }
 
-    /* Keep status text and the toggle in one visual cluster. */
-    .mobile-entity-status-row{
-      margin-top: 5px;
-      min-width: 0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .mobile-entity-status-row .mobile-entity-status{
-      margin-top: 0;
-      min-width: 0;
-      flex: 1 1 auto;
-    }
-
-    .mobile-entity-status-row .mobile-entity-toggle{
-      flex: 0 0 auto;
-    }
-
     .mobile-domain-master{
       min-width: 76px;
     }
@@ -10204,24 +9941,6 @@ not a tinted whole card. */
 .mobile-entity-card.mobile-entity-binary_sensor.device-opening.is-active{
       background: color-mix(in srgb, var(--card-background-color) 96%, var(--primary-background-color));
       box-shadow: 0 10px 24px rgba(15, 23, 42, 0.07);
-    }
-
-    .mobile-entity-card.mobile-entity-binary_sensor.device-window .mobile-entity-status,
-.mobile-entity-card.mobile-entity-binary_sensor.device-door .mobile-entity-status,
-.mobile-entity-card.mobile-entity-binary_sensor.device-opening .mobile-entity-status{
-      width: fit-content;
-      max-width: 100%;
-      padding: 3px 8px;
-      border-radius: 999px;
-      color: var(--secondary-text-color);
-      background: color-mix(in srgb, var(--primary-text-color) 7%, var(--card-background-color));
-    }
-
-    .mobile-entity-card.mobile-entity-binary_sensor.device-window.is-active .mobile-entity-status,
-.mobile-entity-card.mobile-entity-binary_sensor.device-door.is-active .mobile-entity-status,
-.mobile-entity-card.mobile-entity-binary_sensor.device-opening.is-active .mobile-entity-status{
-      color: var(--entity-color);
-      background: color-mix(in srgb, var(--entity-color) 11%, var(--card-background-color));
     }
 
 
@@ -15867,69 +15586,6 @@ copy{
         flex-basis: 180px;
         min-height: 141px;
         padding: 15px;
-      }
-
-      .mobile-entity-icon,
-      .mobile-entities-section.layout-grid .mobile-entity-icon {
-        width: 40px;
-        height: 40px;
-      }
-
-      .mobile-entity-icon ha-icon {
-        --mdc-icon-size: 22px;
-      }
-
-      .mobile-entity-toggle {
-        width: 42px;
-        height: 24px;
-      }
-
-      .mobile-entity-toggle::before {
-        width: 20px;
-        height: 20px;
-      }
-
-      .mobile-entity-card.is-active .mobile-entity-toggle::before {
-        transform: translateX(18px);
-      }
-
-      .mobile-entity-more,
-      .mobile-scene-action,
-      .mobile-lock-action {
-        width: 33px;
-        height: 33px;
-      }
-
-      .mobile-entity-more ha-icon,
-      .mobile-scene-action ha-icon,
-      .mobile-lock-action ha-icon {
-        --mdc-icon-size: 19px;
-      }
-
-      .mobile-cover-actions,
-      .mobile-entities-section.layout-grid .mobile-cover-actions {
-        min-height: 35px;
-        padding: 3px;
-        gap: 3px;
-      }
-
-      .mobile-cover-action,
-      .mobile-entities-section.layout-grid .mobile-cover-action {
-        width: 29px;
-        height: 29px;
-      }
-
-      .mobile-cover-action ha-icon,
-      .mobile-entities-section.layout-grid .mobile-cover-action ha-icon {
-        --mdc-icon-size: 18px;
-      }
-
-      .mobile-entity-meta {
-        font-size: 11px;
-      }
-
-      .mobile-entity-name {
-        font-size: 17px;
       }
 
       .mobile-entity-status {
