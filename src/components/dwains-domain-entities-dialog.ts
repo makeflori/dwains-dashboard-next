@@ -1390,15 +1390,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     const domain = entity.entity_id.split('.')[0] || 'unknown';
 
     if (this._params?.homeInformationPresentation === 'devices') {
-      const replacement = findReplacementAssignment({
-        hass: this.hass,
-        config: this._params.config,
-        entity,
-        surface: 'devices_cards',
-      });
-      const sharedDeviceCard = true;
-
-      if (sharedDeviceCard) {
+      {
         const rawName = rawState.attributes?.friendly_name ||
           this.hass.entities?.[entity.entity_id]?.name ||
           entity.entity_id;
