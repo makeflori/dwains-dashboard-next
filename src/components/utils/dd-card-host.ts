@@ -101,7 +101,12 @@ export class DwainsCardHost extends HTMLElement {
     if (!this.hasAttribute('framed') && !this.hasAttribute('strip-card-surface')) return;
     // Lit cards create their shadow content asynchronously after mounting.
     await child.updateComplete;
-    if (request !== this._frameRequest || this._child !== child || !this.isConnected || !this.hasAttribute('framed')) return;
+    if (
+      request !== this._frameRequest ||
+      this._child !== child ||
+      !this.isConnected ||
+      (!this.hasAttribute('framed') && !this.hasAttribute('strip-card-surface'))
+    ) return;
     const root = child.shadowRoot as ShadowRoot | null;
     if (!root) return;
     const normalize = () => {
@@ -165,6 +170,7 @@ export class DwainsCardHost extends HTMLElement {
 
     requestAnimationFrame(() => requestAnimationFrame(refresh));
     window.setTimeout(refresh, 160);
+    window.setTimeout(refresh, 500);
   }
 
   private _renderWhenVisible() {
