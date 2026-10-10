@@ -3241,89 +3241,12 @@ export class DwainsDevicesCard extends LitElement {
       gap: 8px;
     }
 
-    .room-style-device-view .mobile-entity-card {
-      --entity-color: var(--primary-color);
-      width: 100% !important;
-      min-width: 0 !important;
-      min-height: 62px !important;
-      height: auto !important;
-      margin: 0 !important;
-      padding: 8px 10px !important;
-      box-sizing: border-box;
-      display: flex !important;
-      flex-direction: column;
-      justify-content: center;
-      overflow: hidden;
-      border: 1px solid color-mix(in srgb, var(--primary-text-color) 6%, transparent);
-      border-radius: 8px;
-      background: var(--card-background-color);
-      color: var(--primary-text-color);
-      font: inherit;
-      text-align: left;
-      box-shadow: 0 3px 9px rgba(15, 23, 42, 0.035);
-      cursor: pointer;
-      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
-    }
-
-    .room-style-device-view .mobile-entity-card:hover {
-      transform: translateY(-1px);
-      border-color: color-mix(in srgb, var(--primary-color) 14%, transparent);
-      box-shadow: 0 6px 14px rgba(15, 23, 42, 0.055);
-    }
-
-    .room-style-device-view .mobile-entity-card.is-unavailable {
-      opacity: .62;
-    }
-
-    .room-style-device-view .mobile-entity-main {
-      width: 100%;
-      min-width: 0;
-      display: grid;
-      grid-template-columns: 36px minmax(0, 1fr) auto;
-      align-items: center;
-      gap: 9px;
-    }
-
-    .room-style-device-view .mobile-entity-icon {
-      width: 36px;
-      height: 36px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex: 0 0 auto;
-      border-radius: 8px;
-      color: var(--entity-color);
-      background: color-mix(in srgb, var(--entity-color) 13%, transparent);
-    }
-
-    .room-style-device-view .mobile-entity-icon ha-icon {
-      --mdc-icon-size: 20px;
-    }
-
-    .room-style-device-view .mobile-entity-icon.has-entity-picture {
-      overflow: hidden;
-      padding: 0;
-      background: var(--secondary-background-color);
-    }
-
     .room-style-device-view .mobile-entity-avatar {
       width: 100%;
       height: 100%;
       display: block;
       object-fit: cover;
       border-radius: inherit;
-    }
-
-    /* Person cards keep the existing four-column layout and are only
-       enlarged vertically to roughly three times the normal 62px tile height. */
-    .room-style-device-view .mobile-entity-card.person-card.has-location-preview {
-      min-height: 186px !important;
-      align-items: stretch;
-      justify-content: flex-start;
-    }
-
-    .room-style-device-view .mobile-entity-card.person-card.has-location-preview .mobile-entity-main {
-      align-items: center;
     }
 
     /* The location map forms the lower card section and uses two thirds
@@ -3337,104 +3260,6 @@ export class DwainsDevicesCard extends LitElement {
       border-radius: 8px;
       pointer-events: none;
       box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 6%, transparent);
-    }
-
-    .room-style-device-view .person-location-preview dwains-dashboard-next-card-host {
-      display: block;
-      width: 100%;
-      height: 100%;
-      --ha-card-border-width: 0;
-      --ha-card-border-radius: 8px;
-    }
-
-    .room-style-device-view .mobile-entity-content {
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 2px;
-    }
-
-    .room-style-device-view .mobile-entity-name {
-      overflow: hidden;
-      color: var(--primary-text-color);
-      font-size: 12px;
-      font-weight: 850;
-      line-height: 1.15;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .room-style-device-view .mobile-entity-state {
-      overflow: hidden;
-      color: var(--secondary-text-color);
-      font-size: 10px;
-      font-weight: 650;
-      line-height: 1.1;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .room-style-device-view .mobile-entity-state.active {
-      color: var(--entity-color);
-    }
-
-    .room-style-device-view .mobile-entity-right {
-      min-width: 0;
-      display: inline-flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 5px;
-    }
-
-    .room-style-device-view .mobile-entity-action {
-      padding: 0;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex: 0 0 auto;
-      border: 0;
-      cursor: pointer;
-      transition: background-color .18s ease, color .18s ease, transform .18s ease, opacity .18s ease;
-    }
-
-    .room-style-device-view .mobile-entity-action:active {
-      transform: scale(.94);
-    }
-
-    .room-style-device-view .mobile-entity-action:disabled {
-      opacity: .36;
-      cursor: not-allowed;
-    }
-
-    .room-style-device-view .mobile-entity-toggle {
-      width: 38px;
-      height: 22px;
-      justify-content: flex-start;
-      border-radius: 999px;
-      background: color-mix(in srgb, var(--secondary-background-color) 80%, #ffffff);
-      box-shadow:
-        inset 0 0 0 1px rgba(15, 23, 42, 0.07),
-        0 4px 10px rgba(15, 23, 42, 0.08);
-    }
-
-    .room-style-device-view .mobile-entity-toggle::before {
-      content: "";
-      width: 18px;
-      height: 18px;
-      margin-left: 2px;
-      border-radius: 999px;
-      background: #ffffff;
-      box-shadow: 0 2px 7px rgba(15, 23, 42, 0.2);
-      transition: transform .18s ease;
-    }
-
-    .room-style-device-view .mobile-entity-card.is-active .mobile-entity-toggle {
-      background: var(--entity-color);
-    }
-
-    .room-style-device-view .mobile-entity-card.is-active .mobile-entity-toggle::before {
-      transform: translateX(16px);
     }
 
     .room-style-replacement-card {
@@ -3791,21 +3616,6 @@ export class DwainsDevicesCard extends LitElement {
             .room-style-device-view .room-style-entities-grid {
               grid-template-columns: 1fr;
               gap: 6px;
-            }
-      
-            .room-style-device-view .mobile-entity-card {
-              min-height: 58px !important;
-              padding: 7px 9px !important;
-            }
-      
-            .room-style-device-view .mobile-entity-main {
-              grid-template-columns: 34px minmax(0, 1fr) auto;
-              gap: 8px;
-            }
-      
-            .room-style-device-view .mobile-entity-icon {
-              width: 34px;
-              height: 34px;
             }
       
             .room-style-device-view .domain-group,
