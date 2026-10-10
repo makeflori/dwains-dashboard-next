@@ -44,6 +44,7 @@ import './dwains-dashboard-strategy-editor';
 import './utils/dd-card-host';
 import './utils/dd-tile-host';
 import './ui/dd-ui-primitives';
+import './ui/dd-entity-tiles';
 import { fireEvent } from './utils/fire-event';
 import { ddLocale, ddLocalize, ddLocalizePlural } from '../utils/localize';
 import {
@@ -21571,56 +21572,90 @@ copy{
       unavailable && !unknownIsNormal ? 'is-unavailable' : '',
     ].join(' ');
 
-    return html`
-      <article
-        class=${classes}
-        style=${`--entity-color: ${this._mobileEntityColor(domain, deviceClass)};`}
-        role="button"
-        tabindex="0"
-        aria-label=${name}
-        @click=${() => this._showMoreInfo(entity.entity_id)}
-        @keydown=${(event: KeyboardEvent) => this._handleMobileEntityKeydown(event, entity.entity_id)}
-      >
-        <div class="mobile-entity-main ${editControls ? 'editing-inline' : ''}">
-          ${editControls ? html`
-            <button
-              class="dd-generated-card-leading-drag-handle"
-              type="button"
-              title=${this._t('layout.drag_card')}
-              aria-label=${this._t('layout.drag_card')}
-              @click=${(event: Event) => event.stopPropagation()}
-            >
-              <ha-icon icon="mdi:drag"></ha-icon>
-            </button>
-          ` : nothing}
-          <div class="mobile-entity-icon"><ha-icon class=${hasInlineSelect ? 'mobile-entity-leading-select-icon' : ''} icon=${icon}></ha-icon></div>
-          <div class="mobile-entity-content">
-            <div class="mobile-entity-name" title=${name}>${name}</div>
-            ${statusText ? html`
-              <div class="mobile-entity-state ${active ? 'active' : ''}">${statusText}</div>
-            ` : nothing}
-          </div>
-          <div class="mobile-entity-right">
-            ${editControls ? html`
-              <button
-                class="dd-generated-card-visibility"
-                type="button"
-                title=${this._t(editControls.hidden ? 'common.show' : 'common.hide')}
-                aria-label=${this._t(editControls.hidden ? 'common.show' : 'common.hide')}
-                aria-pressed=${editControls.hidden ? 'true' : 'false'}
-                @click=${(event: Event) => this._toggleGeneratedCardVisibility(event, editControls.areaId, entity.entity_id)}
-              >
-                <ha-icon icon=${editControls.hidden ? 'mdi:eye' : 'mdi:eye-off-outline'}></ha-icon>
-              </button>
-            ` : (actionKind === 'more' ? nothing : this._renderMobileEntityActions(state, domain, active))}
-          </div>
-        </div>
+    const accent = this._mobileEntityColor(domain, deviceClass);
+    const actionMode = actionKind === 'toggle'
+      ? 'toggle'
+      : actionKind === 'cover'
+        ? 'cover'
+        : actionKind === 'lock'
+          ? 'lock'
+          : actionKind === 'scene'
+            ? 'scene'
+            : 'none';
 
+    return html`
+      <dd-next-compact-entity-tile
+        class="mobile-entity-tile-host ${classes}"
+        variant="card"
+        .name=${name}
+        .status=${statusText}
+        .icon=${icon}
+        .accent=${accent}
+        .active=${active}
+        .unavailable=${unavailable && !unknownIsNormal}
+        .editing=${Boolean(editControls)}
+        @dd-open=${() => this._showMoreInfo(entity.entity_id)}
+      >
+        ${editControls ? html`
+          <button
+            slot="leading"
+            class="dd-generated-card-leading-drag-handle"
+            type="button"
+            title=${this._t('layout.drag_card')}
+            aria-label=${this._t('layout.drag_card')}
+            @click=${(event: Event) => event.stopPropagation()}
+          >
+            <ha-icon icon="mdi:drag"></ha-icon>
+          </button>
+        ` : nothing}
+
+        ${editControls ? html`
+          <button
+            slot="actions"
+            class="dd-generated-card-visibility"
+            type="button"
+            title=${this._t(editControls.hidden ? 'common.show' : 'common.hide')}
+            aria-label=${this._t(editControls.hidden ? 'common.show' : 'common.hide')}
+            aria-pressed=${editControls.hidden ? 'true' : 'false'}
+            @click=${(event: Event) => this._toggleGeneratedCardVisibility(event, editControls.areaId, entity.entity_id)}
+          >
+            <ha-icon icon=${editControls.hidden ? 'mdi:eye' : 'mdi:eye-off-outline'}></ha-icon>
+          </button>
+        ` : actionMode !== 'none' ? html`
+          <dd-next-entity-actions
+            slot="actions"
+            .mode=${actionMode}
+            .accent=${accent}
+            .active=${active}
+            .unavailable=${unavailable}
+            .canOpen=${this._coverSupportsFeature(state, 1)}
+            .canClose=${this._coverSupportsFeature(state, 2)}
+            .canStop=${this._coverSupportsFeature(state, 8)}
+            .turnOnLabel=${this._t('action.turn_on')}
+            .turnOffLabel=${this._t('action.turn_off')}
+            .openLabel=${this._t('action.open')}
+            .stopLabel=${this._t('action.stop')}
+            .closeLabel=${this._t('action.close')}
+            .lockLabel=${this._t('action.lock')}
+            .unlockLabel=${this._t('action.unlock')}
+            .activateLabel=${this._t('action.activate')}
+            @dd-action=${(event: CustomEvent<{ action: string }>) => {
+              if (actionKind === 'toggle') {
+                void this._handleMobileEntityToggle(event, state, domain);
+              } else if (actionKind === 'cover') {
+                void this._handleMobileCoverAction(event, state, event.detail.action as 'open' | 'stop' | 'close');
+              } else if (actionKind === 'lock') {
+                void this._handleMobileLockAction(event, state);
+              } else if (actionKind === 'scene') {
+                void this._handleMobileSceneAction(event, state);
+              }
+            }}
+          ></dd-next-entity-actions>
+        ` : nothing}
 
         ${hasInlineSelect ? this._renderMobileEntitySelect(state, domain) : nothing}
-      </article>
+      </dd-next-compact-entity-tile>
     `;
-  }
 
   private _renderTodoListCard(entity: EntityConfig) {
     return html`
@@ -23643,3 +23678,5 @@ declare global {
   }
 }
 
+
+  }
