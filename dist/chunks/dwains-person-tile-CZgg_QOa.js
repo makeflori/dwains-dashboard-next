@@ -1,4 +1,4 @@
-import{_ as t,n as e,t as o}from"./state-Bpx-nWN3.js";import{r as i,a as r,i as s,A as a,b as n}from"./lit-element-CR7MDbd3.js";import{j as p,c as d}from"./entity-names-ekLgD6rU.js";import{a as l}from"./dwains-bottom-nav-Cba3EL6L.js";let c=class extends s{constructor(){super(...arguments),this.entityId="",this.displayName=""}render(){const t=this.hass?.states?.[this.entityId];if(!t)return a;const e=this.displayName||t.attributes?.friendly_name||this.entityId,o=t.attributes?.entity_picture,i=Number.isFinite(Number(t.attributes?.latitude))&&Number.isFinite(Number(t.attributes?.longitude)),r="home"===String(t.state||"").toLowerCase(),s=["unavailable","unknown"].includes(String(t.state||"").toLowerCase()),p=this.hass?.entities?.[this.entityId]?.icon||t.attributes?.icon||d("person");return n`
+import{_ as t,n as e,t as o}from"./state-Bpx-nWN3.js";import{r as i,a as r,i as s,A as a,b as n}from"./lit-element-CR7MDbd3.js";import{j as p,c as d}from"./entity-names-BYfZuzxR.js";import{a as l}from"./dwains-bottom-nav-BhVRXxOd.js";let c=class extends s{constructor(){super(...arguments),this.entityId="",this.displayName=""}render(){const t=this.hass?.states?.[this.entityId];if(!t)return a;const e=this.displayName||t.attributes?.friendly_name||this.entityId,o=t.attributes?.entity_picture,i=Number.isFinite(Number(t.attributes?.latitude))&&Number.isFinite(Number(t.attributes?.longitude)),r="home"===String(t.state||"").toLowerCase(),s=["unavailable","unknown"].includes(String(t.state||"").toLowerCase()),p=this.hass?.entities?.[this.entityId]?.icon||t.attributes?.icon||d("person");return n`
       <article class="person-tile ${i?"has-location":""} ${r?"is-active":"is-off"} ${s?"is-unavailable":""}">
         <div class="person-main">
           <span class="person-icon ${o?"has-picture":""}">
@@ -13,8 +13,10 @@ import{_ as t,n as e,t as o}from"./state-Bpx-nWN3.js";import{r as i,a as r,i as 
         ${i?n`
           <div class="person-map" aria-label=${`${e} location`}>
             <dwains-dashboard-next-card-host
+              strip-card-surface
+              refresh-layout
               .hass=${this.hass}
-              .config=${{type:"map",entities:[this.entityId],hours_to_show:0,default_zoom:14,auto_fit:!0,fit_zones:!1,show_zone_radius:!1,aspect_ratio:"2:1"}}
+              .config=${{type:"map",entities:[this.entityId],hours_to_show:0,default_zoom:14,auto_fit:!0,fit_zones:!1,show_zone_radius:!1,aspect_ratio:"3:1"}}
             ></dwains-dashboard-next-card-host>
           </div>
         `:a}
