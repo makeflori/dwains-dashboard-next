@@ -43,6 +43,7 @@ import { makeDialogManager } from './utils/make-dialog-manager';
 import './dwains-dashboard-strategy-editor';
 import './utils/dd-card-host';
 import './utils/dd-tile-host';
+import './ui/dd-ui-primitives';
 import { fireEvent } from './utils/fire-event';
 import { ddLocale, ddLocalize, ddLocalizePlural } from '../utils/localize';
 import {
@@ -17832,63 +17833,41 @@ copy{
 
     const count = this._persistentNotifications.length;
     const hasNotifications = count > 0;
+    const subtitle = hasNotifications
+      ? `${count} ${this._t(count === 1 ? 'home.notification' : 'home.notifications').toLocaleLowerCase()}`
+      : this._t('home.notifications_description');
 
     return html`
-      <div
-        class="notifications-overlay ${this._notificationsOpen ? 'open' : ''}"
-        @click=${this._closeNotifications}
-      ></div>
-      <section
-        class="notifications-panel ${this._notificationsOpen ? 'open' : ''}"
-        aria-hidden=${this._notificationsOpen ? 'false' : 'true'}
+      <dd-next-popup-shell
+        .open=${this._notificationsOpen}
+        .titleText=${this._t('home.notifications')}
+        .subtitle=${subtitle}
+        icon="mdi:bell-outline"
+        .accent=${getDomainColor('notification')}
+        .closeLabel=${this._t('common.close')}
+        @dd-close=${this._closeNotifications}
       >
-        <div class="notifications-head">
-          <div class="notifications-heading">
-            <div class="notifications-title-icon">
-              <ha-icon icon="mdi:bell-outline"></ha-icon>
-            </div>
-            <div class="notifications-title">
-              <div class="notifications-title-row">
-                <span>${this._t('home.notifications')}</span>
-              </div>
-              <div class="notifications-subtitle">
-                ${hasNotifications
-                  ? `${count} ${this._t(count === 1 ? 'home.notification' : 'home.notifications').toLocaleLowerCase()}`
-                  : this._t('home.notifications_description')}
-              </div>
-            </div>
-          </div>
-          <div class="notifications-actions">
-            ${hasNotifications ? html`
-              <button
-                class="notifications-icon-button destructive"
-                type="button"
-                title=${this._t('common.dismiss_all')}
-                aria-label=${this._t('common.dismiss_all')}
-                @click=${this._dismissAllPersistentNotifications}
-              >
-                <ha-icon icon="mdi:delete-sweep-outline"></ha-icon>
-              </button>
-            ` : nothing}
+        <div slot="actions" class="notifications-actions">
+          ${hasNotifications ? html`
             <button
-              class="notifications-icon-button refresh"
+              class="notifications-icon-button destructive"
               type="button"
-              title=${this._t('common.refresh')}
-              aria-label=${this._t('common.refresh')}
-              @click=${() => this._loadPersistentNotifications(true)}
+              title=${this._t('common.dismiss_all')}
+              aria-label=${this._t('common.dismiss_all')}
+              @click=${this._dismissAllPersistentNotifications}
             >
-              <ha-icon icon="mdi:refresh"></ha-icon>
+              <ha-icon icon="mdi:delete-sweep-outline"></ha-icon>
             </button>
-            <button
-              class="notifications-icon-button close"
-              type="button"
-              title=${this._t('common.close')}
-              aria-label=${this._t('common.close')}
-              @click=${this._closeNotifications}
-            >
-              <ha-icon icon="mdi:close"></ha-icon>
-            </button>
-          </div>
+          ` : nothing}
+          <button
+            class="notifications-icon-button refresh"
+            type="button"
+            title=${this._t('common.refresh')}
+            aria-label=${this._t('common.refresh')}
+            @click=${() => this._loadPersistentNotifications(true)}
+          >
+            <ha-icon icon="mdi:refresh"></ha-icon>
+          </button>
         </div>
 
         <div class="notifications-list">
@@ -17917,7 +17896,7 @@ copy{
                     </div>
                   `}
         </div>
-      </section>
+      </dd-next-popup-shell>
     `;
   }
 
@@ -19377,42 +19356,27 @@ copy{
     );
 
     return html`
-      <div class="house-power-dialog-overlay" @click=${this._closeHousePowerDialog}>
-        <section
-          class="house-power-dialog"
-          role="dialog"
-          aria-modal="true"
-          aria-label=${this._t('home.house_power_usage')}
-          tabindex="0"
-          @click=${(event: Event) => event.stopPropagation()}
-          @keydown=${this._handleHousePowerDialogKeydown}
+      <dd-next-popup-shell
+        open
+        wide
+        .titleText=${this._t('home.house_power_usage')}
+        icon="mdi:flash"
+        .accent=${getDomainColor('wattage')}
+        .closeLabel=${this._t('common.close')}
+        @dd-close=${this._closeHousePowerDialog}
+      >
+        <button
+          slot="header-extra"
+          class="house-power-dialog-energy-link"
+          type="button"
+          @click=${this._openEnergyFromPowerDialog}
         >
-          <div class="house-power-dialog-head">
-            <div class="house-power-dialog-title-wrap">
-              <span class="house-power-dialog-icon"><ha-icon icon="mdi:flash"></ha-icon></span>
-              <div class="house-power-dialog-title">${this._t('home.house_power_usage')}</div>
-              <button
-                class="house-power-dialog-energy-link"
-                type="button"
-                @click=${this._openEnergyFromPowerDialog}
-              >
-                <span>${this._houseInfoEnergyViewLabel()}</span>
-                <ha-icon icon="mdi:chevron-right"></ha-icon>
-              </button>
-            </div>
-            <button
-              class="house-power-dialog-close"
-              type="button"
-              title=${this._t('common.close')}
-              aria-label=${this._t('common.close')}
-              @click=${this._closeHousePowerDialog}
-            >
-              <ha-icon icon="mdi:close"></ha-icon>
-            </button>
-          </div>
+          <span>${this._houseInfoEnergyViewLabel()}</span>
+          <ha-icon icon="mdi:chevron-right"></ha-icon>
+        </button>
 
-          <div class="house-power-dialog-content">
-            <div class="house-power-dialog-overview">
+        <div class="house-power-dialog-content">
+          <div class="house-power-dialog-overview">
             <section class="house-power-dialog-overview-card">
               <div class="house-power-dialog-overview-head">
                 <span class="house-power-dialog-overview-icon"><ha-icon icon="mdi:home-lightning-bolt-outline"></ha-icon></span>
@@ -19489,9 +19453,8 @@ copy{
           ` : html`
             <div class="house-power-dialog-empty">${this._t('home.no_room_power_usage')}</div>
           `}
-          </div>
-        </section>
-      </div>
+        </div>
+      </dd-next-popup-shell>
     `;
   }
 
