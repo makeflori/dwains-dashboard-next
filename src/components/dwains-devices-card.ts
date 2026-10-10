@@ -1707,35 +1707,29 @@ export class DwainsDevicesCard extends LitElement {
     const domain = this._deviceGroupDomain(typeKey);
     if (!domain || !entities.length) return nothing;
 
+    const activeCount = entities.filter((entity) => {
+      const state = this._hass.states?.[entity.entity_id];
+      return state && this._roomStyleEntityActive(state, domain);
+    }).length;
+
     if (['light', 'switch', 'fan', 'input_boolean'].includes(domain)) {
-      const activeCount = entities.filter((entity) => {
-        const state = this._hass.states?.[entity.entity_id];
-        return state && this._roomStyleEntityActive(state, domain);
-      }).length;
-      const allOn = activeCount === entities.length && entities.length > 0;
       return html`
-        <button
-          class="device-room-master"
-          type="button"
-          style=${`--entity-color: ${getDomainColor(domain)};`}
-          title=${allOn ? this._t('action.turn_off_all') : this._t('action.turn_on_all')}
-          @click=${(event: Event) => {
-            event.stopPropagation();
-            void this._runDeviceBulkAction(entities, allOn ? 'turn_off' : 'turn_on');
-          }}
-        >
-          <span>${activeCount}/${entities.length}</span>
-          <span class="device-room-master-track ${allOn ? 'is-on' : ''}"></span>
-        </button>
+        <dd-next-room-actions
+          mode="toggle"
+          .accent=${getDomainColor(domain)}
+          .activeCount=${activeCount}
+          .totalCount=${entities.length}
+          .toggleOnLabel=${this._t('action.turn_on_all')}
+          .toggleOffLabel=${this._t('action.turn_off_all')}
+          @dd-action=${(event: CustomEvent<{ action: string }>) =>
+            void this._runDeviceBulkAction(entities, event.detail.action)}
+        ></dd-next-room-actions>
       `;
     }
 
     if (domain === 'cover' || domain === 'lock') {
-      const active = entities.some((entity) => {
-        const state = this._hass.states?.[entity.entity_id];
-        return state && this._roomStyleEntityActive(state, domain);
-      });
-      const actions = domain === 'cover'
+      const active = activeCount > 0;
+      const items = domain === 'cover'
         ? [
             { action: 'open_cover', label: this._t('action.open_all'), icon: 'mdi:arrow-up', active },
             { action: 'close_cover', label: this._t('action.close_all'), icon: 'mdi:arrow-down', active: !active },
@@ -1746,22 +1740,13 @@ export class DwainsDevicesCard extends LitElement {
           ];
 
       return html`
-        <div class="device-room-master-actions domain-${domain}" role="group">
-          ${actions.map((item) => html`
-            <button
-              class="device-room-master-action ${item.active ? 'active' : ''}"
-              type="button"
-              title=${item.label}
-              aria-label=${item.label}
-              @click=${(event: Event) => {
-                event.stopPropagation();
-                void this._runDeviceBulkAction(entities, item.action);
-              }}
-            >
-              <ha-icon icon=${item.icon}></ha-icon>
-            </button>
-          `)}
-        </div>
+        <dd-next-room-actions
+          mode="segmented"
+          .accent=${getDomainColor(domain)}
+          .items=${items}
+          @dd-action=${(event: CustomEvent<{ action: string }>) =>
+            void this._runDeviceBulkAction(entities, event.detail.action)}
+        ></dd-next-room-actions>
       `;
     }
 
