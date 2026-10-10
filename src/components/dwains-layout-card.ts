@@ -16397,6 +16397,76 @@ copy{
       }
     }
 
+    @media (max-width: 768px) {
+      /* Compact energy presentation: same visual density as the other Home Information popups. */
+      .house-power-dialog-overview-card {
+        padding: 10px !important;
+        border-radius: 12px !important;
+        background: var(--card-background-color) !important;
+        border: 1px solid color-mix(in srgb, var(--primary-text-color) 7%, transparent) !important;
+        box-shadow: 0 5px 14px rgba(15, 23, 42, 0.035) !important;
+      }
+
+      .house-power-dialog-overview-head {
+        grid-template-columns: 36px minmax(0, 1fr) auto !important;
+        gap: 9px !important;
+      }
+
+      .house-power-dialog-overview-icon {
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 9px !important;
+      }
+
+      .house-power-dialog-overview-head strong {
+        font-size: 13px !important;
+      }
+
+      .house-power-dialog-overview-head small {
+        margin-top: 2px !important;
+        font-size: 10px !important;
+      }
+
+      .house-power-dialog-overview-head b {
+        font-size: 18px !important;
+      }
+
+      .house-power-statistics-card {
+        min-height: 86px !important;
+        height: 86px !important;
+        margin-top: 8px !important;
+        overflow: hidden !important;
+      }
+
+      .house-power-dialog-area {
+        padding: 9px 10px !important;
+        border-radius: 12px !important;
+        background: var(--card-background-color) !important;
+        border: 1px solid color-mix(in srgb, var(--primary-text-color) 7%, transparent) !important;
+        box-shadow: 0 5px 14px rgba(15, 23, 42, 0.035) !important;
+      }
+
+      .house-power-dialog-area-head {
+        grid-template-columns: 32px minmax(0, 1fr) auto !important;
+        gap: 8px !important;
+      }
+
+      .house-power-dialog-area-icon {
+        width: 32px !important;
+        height: 32px !important;
+      }
+
+      .house-power-dialog-entities {
+        margin-left: 0 !important;
+        margin-top: 7px !important;
+      }
+
+      .house-power-dialog-entity.detailed {
+        min-height: 44px !important;
+        padding: 5px 7px !important;
+      }
+    }
+
 
 
 
