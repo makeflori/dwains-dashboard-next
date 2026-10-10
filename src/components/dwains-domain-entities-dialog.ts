@@ -2321,59 +2321,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     }
 
     const state = this._getEffectiveEntityState(rawState);
-      const rawName = state.attributes?.friendly_name ||
-        this.hass.entities?.[entity.entity_id]?.name ||
-        entity.entity_id;
-      const name = stripAreaNameFromEntityName(rawName, this._entityAreaName(entity));
-
-      return html`
-        <dwains-dashboard-next-person-tile
-          .hass=${this.hass}
-          .entityId=${entity.entity_id}
-          .displayName=${name}
-          role="button"
-          tabindex="0"
-          aria-label=${name}
-          @click=${() => this._showMoreInfo(entity.entity_id)}
-          @keydown=${(event: KeyboardEvent) => this._handleEntityKeydown(event, entity.entity_id)}
-        ></dwains-dashboard-next-person-tile>
-      `;
-    }
-
-    if (this._params?.homeInformationPresentation === 'devices') {
-      const replacement = findReplacementAssignment({
-        hass: this.hass,
-        config: this._params.config,
-        entity,
-        surface: 'devices_cards',
-      });
-      const specialDeviceCard = ['light', 'cover', 'climate', 'sensor'].includes(domain);
-
-      // This exactly mirrors the Devices view:
-      // special domains (and explicit replacements) use Lovelace/device cards;
-      // all other domains use the compact current room-style tile.
-      if (specialDeviceCard || (replacement && replacement.enabled !== false)) {
-        return html`
-          <div class="entity-card-wrapper ${domain}-entity-card device-presentation-card ${domain}-card ${domain === 'sensor' ? 'sensor-card' : ''}">
-            <dwains-dashboard-next-card-host
-              framed
-              style=${domain === 'cover'
-                ? `--primary-color: ${getDomainColor('cover')}; --state-cover-open-color: ${getDomainColor('cover')}; --state-cover-opening-color: ${getDomainColor('cover')}; --state-cover-active-color: ${getDomainColor('cover')};`
-                : ''}
-              .hass=${this.hass}
-              .config=${resolveDeviceViewCardConfig({
-                hass: this.hass,
-                config: this._params.config,
-                entity: entity.entity_id,
-                surface: 'devices_cards',
-              })}
-            ></dwains-dashboard-next-card-host>
-          </div>
-        `;
-      }
-    }
-
-    const state = this._getEffectiveEntityState(rawState);
     if (domain === 'todo') {
       return html`
         <div class="domain-todo-list-card" data-entity=${entity.entity_id}>
