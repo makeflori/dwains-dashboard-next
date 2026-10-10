@@ -115,6 +115,428 @@ export class DdNextDeviceEntityCard extends LitElement {
   `;
 }
 
+@customElement('dd-next-compact-entity-tile')
+export class DdNextCompactEntityTile extends LitElement {
+  @property() public name = '';
+  @property() public status = '';
+  @property() public icon = 'mdi:shape-outline';
+  @property() public picture = '';
+  @property() public accent = 'var(--primary-color)';
+  @property() public variant: 'compact' | 'card' = 'compact';
+  @property({ type: Boolean, reflect: true }) public active = false;
+  @property({ type: Boolean, reflect: true }) public unavailable = false;
+  @property({ type: Boolean, reflect: true }) public editing = false;
+
+  private _open = (): void => {
+    this.dispatchEvent(new CustomEvent('dd-open', { bubbles: true, composed: true }));
+  };
+
+  private _keydown = (event: KeyboardEvent): void => {
+    const target = event.target as HTMLElement | null;
+    if (target?.closest?.('button, select, input, textarea, a')) return;
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    this._open();
+  };
+
+  protected override render() {
+    return html`
+      <article
+        class="tile ${this.variant}"
+        style=${`--dd-entity-accent: ${this.accent};`}
+        role="button"
+        tabindex="0"
+        aria-label=${this.name}
+        @click=${this._open}
+        @keydown=${this._keydown}
+      >
+        <div class="main">
+          <slot name="leading"></slot>
+          <span class="icon ${this.picture ? 'has-picture' : ''}">
+            ${this.picture
+              ? html`<img src=${this.picture} alt=${this.name}>`
+              : html`<ha-icon icon=${this.icon}></ha-icon>`}
+          </span>
+          <div class="copy">
+            <div class="name" title=${this.name}>${this.name}</div>
+            ${this.status ? html`<div class="state">${this.status}</div>` : nothing}
+          </div>
+          <div class="actions"><slot name="actions"></slot></div>
+        </div>
+        <div class="footer"><slot></slot></div>
+      </article>
+    `;
+  }
+
+  static override styles = css`
+    :host {
+      display: block;
+      min-width: 0;
+      width: 100%;
+      --dd-entity-accent: var(--primary-color);
+    }
+
+    .tile {
+      width: 100%;
+      min-width: 0;
+      margin: 0;
+      box-sizing: border-box;
+      color: var(--primary-text-color);
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .tile.compact {
+      min-height: 62px;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow: hidden;
+      border: 1px solid color-mix(in srgb, var(--primary-text-color) 6%, transparent);
+      border-radius: 8px;
+      background: var(--card-background-color);
+      box-shadow: 0 3px 9px rgba(15, 23, 42, .035);
+    }
+
+    .tile.card {
+      min-height: 128px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      border: 0;
+      border-radius: 10px;
+      background: color-mix(in srgb, var(--card-background-color) 98%, #ffffff);
+      box-shadow:
+        0 12px 26px rgba(15, 23, 42, .06),
+        inset 0 0 0 1px rgba(15, 23, 42, .035);
+    }
+
+    :host([active]) .tile {
+      box-shadow:
+        0 8px 18px rgba(15, 23, 42, .06),
+        inset 0 0 0 1px color-mix(in srgb, var(--dd-entity-accent) 18%, transparent);
+    }
+
+    :host([unavailable]) .tile {
+      opacity: .62;
+    }
+
+    .tile:active {
+      transform: scale(.985);
+    }
+
+    .main {
+      width: 100%;
+      min-width: 0;
+      display: grid;
+      grid-template-columns: 36px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 9px;
+    }
+
+    :host([editing]) .main {
+      grid-template-columns: auto 36px minmax(0, 1fr) auto;
+    }
+
+    ::slotted([slot="leading"]) {
+      grid-column: 1;
+    }
+
+    .icon {
+      width: 36px;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      border-radius: 8px;
+      color: var(--dd-entity-accent);
+      background: color-mix(in srgb, var(--dd-entity-accent) 13%, transparent);
+    }
+
+    .card .icon {
+      border-radius: 11px;
+    }
+
+    .icon ha-icon {
+      --mdc-icon-size: 20px;
+    }
+
+    .icon.has-picture {
+      overflow: hidden;
+      padding: 0;
+      background: var(--secondary-background-color);
+    }
+
+    .icon img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    .copy {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 2px;
+    }
+
+    .name {
+      overflow: hidden;
+      color: var(--primary-text-color);
+      font-size: 12px;
+      font-weight: 850;
+      line-height: 1.15;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .card .name {
+      margin-top: 3px;
+      font-size: 15px;
+      font-weight: 900;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    .state {
+      overflow: hidden;
+      color: var(--secondary-text-color);
+      font-size: 10px;
+      font-weight: 650;
+      line-height: 1.1;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    :host([active]) .state {
+      color: var(--dd-entity-accent);
+    }
+
+    .actions {
+      min-width: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 5px;
+    }
+
+    .footer:empty {
+      display: none;
+    }
+
+    .footer {
+      min-width: 0;
+      margin-top: 8px;
+    }
+
+    @media (max-width: 768px) {
+      .tile.compact {
+        min-height: 58px;
+        padding: 7px 9px;
+      }
+
+      .tile.compact .main {
+        grid-template-columns: 34px minmax(0, 1fr) auto;
+        gap: 8px;
+      }
+
+      :host([editing]) .tile.compact .main {
+        grid-template-columns: auto 34px minmax(0, 1fr) auto;
+      }
+
+      .tile.compact .icon {
+        width: 34px;
+        height: 34px;
+      }
+    }
+  `;
+}
+
+@customElement('dd-next-entity-actions')
+export class DdNextEntityActions extends LitElement {
+  @property() public mode: 'none' | 'toggle' | 'cover' | 'lock' | 'scene' = 'none';
+  @property() public accent = 'var(--primary-color)';
+  @property({ type: Boolean }) public active = false;
+  @property({ type: Boolean }) public unavailable = false;
+  @property({ type: Boolean }) public canOpen = true;
+  @property({ type: Boolean }) public canStop = true;
+  @property({ type: Boolean }) public canClose = true;
+  @property() public turnOnLabel = 'Turn on';
+  @property() public turnOffLabel = 'Turn off';
+  @property() public openLabel = 'Open';
+  @property() public stopLabel = 'Stop';
+  @property() public closeLabel = 'Close';
+  @property() public lockLabel = 'Lock';
+  @property() public unlockLabel = 'Unlock';
+  @property() public activateLabel = 'Activate';
+
+  private _emit(event: Event, action: string): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.dispatchEvent(new CustomEvent('dd-action', {
+      detail: { action },
+      bubbles: true,
+      composed: true,
+    }));
+  }
+
+  protected override render() {
+    if (this.mode === 'none') return nothing;
+
+    if (this.mode === 'toggle') {
+      const label = this.active ? this.turnOffLabel : this.turnOnLabel;
+      return html`
+        <button
+          class="action toggle ${this.active ? 'active' : ''}"
+          type="button"
+          style=${`--dd-action-accent: ${this.accent};`}
+          title=${label}
+          aria-label=${label}
+          ?disabled=${this.unavailable}
+          @click=${(event: Event) => this._emit(event, this.active ? 'turn_off' : 'turn_on')}
+        ></button>
+      `;
+    }
+
+    if (this.mode === 'cover') {
+      return html`
+        <div class="cover" style=${`--dd-action-accent: ${this.accent};`}>
+          ${this.canOpen ? html`
+            <button class="action round" type="button" title=${this.openLabel} aria-label=${this.openLabel}
+              ?disabled=${this.unavailable} @click=${(event: Event) => this._emit(event, 'open')}>
+              <ha-icon icon="mdi:arrow-up"></ha-icon>
+            </button>` : nothing}
+          ${this.canStop ? html`
+            <button class="action round" type="button" title=${this.stopLabel} aria-label=${this.stopLabel}
+              ?disabled=${this.unavailable} @click=${(event: Event) => this._emit(event, 'stop')}>
+              <ha-icon icon="mdi:stop"></ha-icon>
+            </button>` : nothing}
+          ${this.canClose ? html`
+            <button class="action round" type="button" title=${this.closeLabel} aria-label=${this.closeLabel}
+              ?disabled=${this.unavailable} @click=${(event: Event) => this._emit(event, 'close')}>
+              <ha-icon icon="mdi:arrow-down"></ha-icon>
+            </button>` : nothing}
+        </div>
+      `;
+    }
+
+    if (this.mode === 'lock') {
+      const label = this.active ? this.lockLabel : this.unlockLabel;
+      return html`
+        <button class="action round" type="button" style=${`--dd-action-accent: ${this.accent};`}
+          title=${label} aria-label=${label} ?disabled=${this.unavailable}
+          @click=${(event: Event) => this._emit(event, this.active ? 'lock' : 'unlock')}>
+          <ha-icon icon=${this.active ? 'mdi:lock-open-variant-outline' : 'mdi:lock-outline'}></ha-icon>
+        </button>
+      `;
+    }
+
+    return html`
+      <button class="action round" type="button" style=${`--dd-action-accent: ${this.accent};`}
+        title=${this.activateLabel} aria-label=${this.activateLabel}
+        @click=${(event: Event) => this._emit(event, 'activate')}>
+        <ha-icon icon="mdi:play"></ha-icon>
+      </button>
+    `;
+  }
+
+  static override styles = css`
+    :host {
+      display: inline-flex;
+      align-items: center;
+      --dd-action-accent: var(--primary-color);
+    }
+
+    button {
+      font: inherit;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .action {
+      padding: 0;
+      border: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      cursor: pointer;
+      transition: background-color .18s ease, color .18s ease, transform .18s ease, opacity .18s ease;
+    }
+
+    .action:active {
+      transform: scale(.94);
+    }
+
+    .action:disabled {
+      opacity: .36;
+      cursor: not-allowed;
+    }
+
+    .toggle {
+      width: 38px;
+      height: 22px;
+      justify-content: flex-start;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--secondary-background-color) 80%, #ffffff);
+      box-shadow:
+        inset 0 0 0 1px rgba(15, 23, 42, .07),
+        0 4px 10px rgba(15, 23, 42, .08);
+    }
+
+    .toggle::before {
+      content: '';
+      width: 18px;
+      height: 18px;
+      margin-left: 2px;
+      border-radius: 999px;
+      background: #fff;
+      box-shadow: 0 2px 7px rgba(15, 23, 42, .2);
+      transition: transform .18s ease;
+    }
+
+    .toggle.active {
+      background: var(--dd-action-accent);
+    }
+
+    .toggle.active::before {
+      transform: translateX(16px);
+    }
+
+    .round {
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      color: color-mix(in srgb, var(--primary-text-color) 52%, transparent);
+      background: color-mix(in srgb, var(--secondary-background-color) 70%, #ffffff);
+      box-shadow: inset 0 0 0 1px rgba(15, 23, 42, .05);
+    }
+
+    .round:hover {
+      color: var(--dd-action-accent);
+      background: color-mix(in srgb, var(--dd-action-accent) 10%, var(--card-background-color));
+    }
+
+    .round ha-icon {
+      --mdc-icon-size: 17px;
+    }
+
+    .cover {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+  `;
+}
+
 export interface DdRoomActionItem {
   action: string;
   label: string;
@@ -388,6 +810,8 @@ export class DdNextRoomGroup extends LitElement {
 declare global {
   interface HTMLElementTagNameMap {
     'dd-next-device-entity-card': DdNextDeviceEntityCard;
+    'dd-next-compact-entity-tile': DdNextCompactEntityTile;
+    'dd-next-entity-actions': DdNextEntityActions;
     'dd-next-room-group': DdNextRoomGroup;
     'dd-next-room-actions': DdNextRoomActions;
   }
