@@ -1632,7 +1632,7 @@ export class DwainsLayoutCard extends LitElement {
       box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 18%, transparent);
     }
 
-    .welcome-action.welcome-notification-action{
+    .welcome-notification-action{
       width: 44px;
       padding: 0 4px;
       border: 0;
@@ -1646,7 +1646,7 @@ export class DwainsLayoutCard extends LitElement {
       box-shadow: none;
     }
 
-    .welcome-action.welcome-notification-action:hover{
+    .welcome-notification-action:hover{
       color: var(--primary-color);
       background: color-mix(in srgb, var(--primary-color) 7%, transparent);
       box-shadow: none;
@@ -1898,7 +1898,7 @@ export class DwainsLayoutCard extends LitElement {
         flex: 0 0 auto;
       }
 
-      .welcome-action{
+      .welcome-action:not(.welcome-notification-action){
         width: 42px;
         height: 42px;
         border-radius: 999px;
@@ -6182,7 +6182,7 @@ export class DwainsLayoutCard extends LitElement {
             0 0 0 3px rgba(255, 255, 255, 0.08);
         }
 
-        .welcome-action {
+        .welcome-action:not(.welcome-notification-action) {
           background:
             linear-gradient(180deg,
               color-mix(in srgb, var(--card-background-color) 84%, #ffffff 8%),
