@@ -4,6 +4,7 @@ import { customElement, property } from 'lit/decorators.js';
 import type { HomeAssistant } from '../types/home-assistant';
 import { getDomainColor, getDomainIcon } from '../utils/icons';
 import { formatEntityStateWithUnit } from '../utils/unit-format';
+import './utils/dd-card-host';
 
 @customElement('dwains-dashboard-next-person-tile')
 export class DwainsDashboardNextPersonTile extends LitElement {
@@ -11,55 +12,22 @@ export class DwainsDashboardNextPersonTile extends LitElement {
   @property({ attribute: false }) public entityId = '';
   @property({ attribute: false }) public displayName = '';
 
-  private _renderLocationPreview(latitude: number, longitude: number, name: string) {
-    const zoom = 14;
-    const tileSize = 256;
-    const n = 2 ** zoom;
-    const latRad = latitude * Math.PI / 180;
-    const xFloat = ((longitude + 180) / 360) * n;
-    const yFloat = ((1 - Math.asinh(Math.tan(latRad)) / Math.PI) / 2) * n;
-    const centerX = Math.floor(xFloat);
-    const centerY = Math.floor(yFloat);
-    const fracX = xFloat - centerX;
-    const fracY = yFloat - centerY;
-    const pointX = tileSize + fracX * tileSize;
-    const pointY = tileSize + fracY * tileSize;
-    const left = `calc(50% - ${pointX}px)`;
-    const top = `calc(50% - ${pointY}px)`;
-
-    const tiles = [];
-    for (let dy = -1; dy <= 1; dy += 1) {
-      for (let dx = -1; dx <= 1; dx += 1) {
-        const x = (centerX + dx + n) % n;
-        const y = Math.min(n - 1, Math.max(0, centerY + dy));
-        tiles.push(html`
-          <img
-            class="person-map-tile"
-            src=${`https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`}
-            alt=""
-            loading="lazy"
-            decoding="async"
-            style=${`left:${(dx + 1) * tileSize}px;top:${(dy + 1) * tileSize}px;`}
-          >
-        `);
-      }
-    }
-
+  private _renderLocationPreview(_latitude: number, _longitude: number, name: string) {
     return html`
       <div class="person-map" aria-label=${`${name} location`}>
-        <div class="person-map-canvas" style=${`left:${left};top:${top};`}>
-          ${tiles}
-        </div>
-        <span class="person-map-marker" aria-hidden="true">
-          <span class="person-map-marker-dot"></span>
-        </span>
-        <a
-          class="person-map-attribution"
-          href="https://www.openstreetmap.org/copyright"
-          target="_blank"
-          rel="noreferrer"
-          @click=${(event: Event) => event.stopPropagation()}
-        >© OpenStreetMap</a>
+        <dwains-dashboard-next-card-host
+          class="person-map-card"
+          eager
+          refresh-layout
+          strip-card-surface
+          .hass=${this.hass}
+          .config=${{
+            type: 'map',
+            entities: [this.entityId],
+            default_zoom: 14,
+            hours_to_show: 0,
+          }}
+        ></dwains-dashboard-next-card-host>
       </div>
     `;
   }
@@ -238,60 +206,17 @@ export class DwainsDashboardNextPersonTile extends LitElement {
       isolation: isolate;
     }
 
-    .person-map-canvas {
-      position: absolute;
-      width: 768px;
-      height: 768px;
-      pointer-events: none;
-    }
-
-    .person-map-tile {
-      position: absolute;
-      width: 256px;
-      height: 256px;
+    .person-map-card {
       display: block;
-      max-width: none;
-      user-select: none;
-      -webkit-user-drag: none;
-    }
-
-    .person-map-marker {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 28px;
-      height: 28px;
-      transform: translate(-50%, -50%);
-      border-radius: 999px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: color-mix(in srgb, var(--person-color) 18%, #ffffff);
-      border: 2px solid #ffffff;
-      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.28);
-      pointer-events: none;
-      z-index: 2;
-    }
-
-    .person-map-marker-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      background: var(--person-color);
-    }
-
-    .person-map-attribution {
-      position: absolute;
-      right: 4px;
-      bottom: 3px;
-      z-index: 3;
-      padding: 1px 3px;
-      border-radius: 3px;
-      background: rgba(255, 255, 255, 0.78);
-      color: #3b556e;
-      font-size: 8px;
-      line-height: 1.2;
-      text-decoration: none;
+      width: 100%;
+      height: 100%;
+      min-width: 0;
+      overflow: hidden;
+      border-radius: inherit;
+      --dd-replacement-padding: 0px;
+      --dd-replacement-border: 0;
+      --dd-replacement-radius: 0px;
+      --dd-replacement-min-height: 100%;
     }
   `;
 }
