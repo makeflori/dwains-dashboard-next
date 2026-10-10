@@ -5,7 +5,7 @@ import type { HomeAssistant } from '../../types/home-assistant';
 import type { DwainsDashboardConfig } from '../../types/strategy';
 import { getDomainColor, getDomainIcon, getDeviceClassIcon } from '../../utils/icons';
 import { formatEntityStateWithUnit } from '../../utils/unit-format';
-import { resolveDeviceViewCardConfig } from '../../utils/blueprint-replacements';
+import { findReplacementAssignment, resolveDeviceViewCardConfig } from '../../utils/blueprint-replacements';
 import { stripAreaNameFromEntityName } from '../../utils/entity-names';
 import '../utils/dd-card-host';
 import '../dwains-person-tile';
@@ -66,6 +66,29 @@ export class DdNextDeviceEntityCard extends LitElement {
           @click=${this._showMoreInfo}
           @keydown=${this._personKeydown}
         ></dwains-dashboard-next-person-tile>
+      `;
+    }
+
+    const replacement = this.roomStyle ? findReplacementAssignment({
+      hass: this.hass,
+      config: this.config,
+      entity: { entity_id: this.entityId },
+      surface: 'devices_cards',
+    }) : undefined;
+    if (this.roomStyle && replacement && replacement.enabled !== false) {
+      return html`
+        <div class="card">
+          <dwains-dashboard-next-card-host
+            framed
+            .hass=${this.hass}
+            .config=${resolveDeviceViewCardConfig({
+              hass: this.hass,
+              config: this.config,
+              entity: this.entityId,
+              surface: 'devices_cards',
+            })}
+          ></dwains-dashboard-next-card-host>
+        </div>
       `;
     }
 
