@@ -297,6 +297,7 @@ export class DdNextPageHeader extends LitElement {
     :host {
       display: block;
       min-width: 0;
+      margin-bottom: 14px;
     }
 
     .header {
@@ -387,6 +388,10 @@ export class DdNextPageHeader extends LitElement {
     }
 
     @media (max-width: 768px) {
+      :host {
+        margin: -10px -10px 14px;
+      }
+
       .header {
         min-height: 82px;
         padding: 12px 14px 14px;
