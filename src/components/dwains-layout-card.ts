@@ -4857,95 +4857,8 @@ export class DwainsLayoutCard extends LitElement {
       justify-content: flex-end;
     }
 
-    .notifications-overlay{
-      position: fixed;
-      inset: 0;
-      z-index: 1040;
-      opacity: 0;
-      pointer-events: none;
-      background: rgba(0, 0, 0, 0.42);
-      backdrop-filter: blur(2px);
-      transition: opacity 0.22s ease;
-    }
-
-    .notifications-overlay.open{
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .notifications-panel{
-      position: fixed;
-      left: 50%;
-      top: 50%;
-      z-index: 1041;
-      width: min(520px, calc(100vw - 48px));
-      max-height: min(78vh, 620px);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      border-radius: 8px;
-      border: 1px solid rgba(15, 23, 42, 0.08);
-      background: color-mix(in srgb, var(--card-background-color) 96%, transparent);
-      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
-      backdrop-filter: blur(22px);
-      transform: translate3d(-50%, -46%, 0) scale(0.96);
-      opacity: 0;
-      pointer-events: none;
-      transition:
-        transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
-        opacity 0.2s ease;
-    }
-
-    .notifications-panel.open{
-      transform: translate3d(-50%, -50%, 0) scale(1);
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .notifications-panel::before{
-      content: "";
-      width: 42px;
-      height: 4px;
-      margin: 10px auto 2px;
-      flex: 0 0 auto;
-      border-radius: 999px;
-      background: rgba(0, 0, 0, 0.14);
-    }
-
-    .notifications-head{
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      padding: 12px 14px 10px;
-      border-bottom: 1px solid rgba(15, 23, 42, 0.08);
-    }
-
     .notifications-title{
       min-width: 0;
-    }
-
-    .notifications-title-row{
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--primary-text-color);
-      font-size: 16px;
-      font-weight: 850;
-      line-height: 1.15;
-    }
-
-    .notifications-title-row ha-icon{
-      color: var(--primary-color);
-      --mdc-icon-size: 20px;
-    }
-
-    .notifications-subtitle{
-      margin-top: 3px;
-      color: var(--secondary-text-color);
-      font-size: 12px;
-      font-weight: 600;
-      line-height: 1.2;
     }
 
     .notifications-actions{
@@ -4978,7 +4891,6 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .notifications-list{
-      overflow-y: auto;
       padding: 10px;
     }
 
@@ -5073,17 +4985,6 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     @media (max-width: 1024px) {
-      .notifications-panel{
-        top: auto;
-        bottom: calc(18px + env(safe-area-inset-bottom, 0px));
-        width: min(460px, calc(100vw - 28px));
-        max-height: min(70vh, 620px);
-        transform: translate3d(-50%, calc(100% + 48px), 0);
-      }
-
-      .notifications-panel.open{
-        transform: translate3d(-50%, 0, 0);
-      }
     }
 
     .confirmation-button{
@@ -7420,7 +7321,6 @@ export class DwainsLayoutCard extends LitElement {
     @media (max-width: 768px) {
       :host{
         height: auto;
-        max-height: none;
         min-height: 100%;
         overflow: visible;
       }
@@ -12696,83 +12596,10 @@ no chip/background. */
       .home-favorites-section .favorites-header ha-icon{ color: #f59e0b; }
     }
 
-    /* House power detail dialog mirrors the local Climate-dialog workflow instead of navigating away. */
-    .house-power-dialog-overlay{
-      position: fixed;
-      inset: 0;
-      z-index: 1200;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      background: rgba(8, 13, 24, 0.48);
-      backdrop-filter: blur(5px);
-      -webkit-backdrop-filter: blur(5px);
-    }
-
-    .house-power-dialog{
-      position: relative;
-      width: min(760px, calc(100vw - 32px));
-      max-height: min(90vh, 760px);
-      padding: 16px;
-      overflow-y: auto;
-      overscroll-behavior-y: contain;
-      border: 1px solid color-mix(in srgb, var(--divider-color) 72%, transparent);
-      border-radius: 14px;
-      background: var(--card-background-color);
-      color: var(--primary-text-color);
-      box-shadow: 0 24px 64px rgba(8, 13, 24, 0.24);
-      outline: none;
-    }
-
     .house-power-dialog-handle{
       display: none;
     }
-
-    .house-power-dialog-head{
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      margin-bottom: 14px;
-    }
-
-    .house-power-dialog-title-wrap{
-      min-width: 0;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .house-power-dialog-icon{
-      width: 40px;
-      height: 40px;
-      flex: 0 0 auto;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 10px;
-      color: ${unsafeCSS(getDomainColor('energy'))};
-      background: color-mix(in srgb, ${unsafeCSS(getDomainColor('energy'))} 12%, var(--card-background-color));
-    }
-
-    .house-power-dialog-icon ha-icon{ --mdc-icon-size: 23px; }
-    .house-power-dialog-title{ font-size: 20px; font-weight: 900; line-height: 1.05; }
     .house-power-dialog-subtitle{ margin-top: 3px; color: var(--secondary-text-color); font-size: 12px; font-weight: 700; }
-
-    .house-power-dialog-close{
-      width: 38px;
-      height: 38px;
-      padding: 0;
-      border: 0;
-      border-radius: 999px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: color-mix(in srgb, var(--primary-text-color) 6%, transparent);
-      color: var(--primary-text-color);
-      cursor: pointer;
-    }
 
     .house-power-dialog-total{
       min-height: 72px;
@@ -12883,26 +12710,6 @@ no chip/background. */
     }
 
     @media (max-width: 768px) {
-      .house-power-dialog-overlay{
-        align-items: flex-end;
-        justify-content: center;
-        padding:
-          max(env(safe-area-inset-top, 0px), 12px)
-          env(safe-area-inset-right, 0px)
-          0
-          env(safe-area-inset-left, 0px);
-        overscroll-behavior: none;
-      }
-
-      .house-power-dialog{
-        width: 100%;
-        max-width: 100%;
-        max-height: calc(100dvh - max(env(safe-area-inset-top, 0px), 12px));
-        margin: 0;
-        padding: 14px 14px calc(16px + env(safe-area-inset-bottom, 0px));
-        border-radius: 24px 24px 0 0;
-        animation: none;
-      }
 
       .house-power-dialog-handle{
         display: none !important;
@@ -13500,14 +13307,6 @@ never pill-shaped for 1–2 digits. */
     }
     .room-favorites-title .mobile-domain-title-copy{
       gap: 5px !important;
-    }
-
-    .house-power-dialog-title-wrap{
-      display: flex !important;
-      align-items: center !important;
-      gap: 9px !important;
-      flex-wrap: wrap;
-      min-width: 0;
     }
     .house-power-dialog-energy-link{
       min-height: 30px !important;
@@ -16282,77 +16081,6 @@ copy{
 
     /* Final mobile house-power popup shell: same visual system as Home Information dialogs. */
     @media (max-width: 768px) {
-      .house-power-dialog-overlay {
-        align-items: flex-end !important;
-        justify-content: center !important;
-        padding:
-          max(env(safe-area-inset-top, 0px), 56px)
-          env(safe-area-inset-right, 0px)
-          0
-          env(safe-area-inset-left, 0px) !important;
-      }
-
-      .house-power-dialog {
-        width: 100% !important;
-        max-width: 100% !important;
-        max-height: calc(100dvh - max(env(safe-area-inset-top, 0px), 56px)) !important;
-        margin: 0 !important;
-        padding: 0 0 calc(16px + env(safe-area-inset-bottom, 0px)) !important;
-        border-radius: 24px 24px 0 0 !important;
-        overflow-y: auto !important;
-        background: var(--card-background-color) !important;
-      }
-
-      .house-power-dialog-head {
-        position: sticky;
-        top: 0;
-        z-index: 4;
-        min-height: 76px;
-        margin: 0 0 12px !important;
-        padding: 12px 14px !important;
-        box-sizing: border-box;
-        display: grid !important;
-        grid-template-columns: minmax(0, 1fr) auto !important;
-        align-items: center !important;
-        gap: 10px !important;
-        background: var(--card-background-color);
-        box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--divider-color) 70%, transparent);
-      }
-
-      .house-power-dialog-title-wrap {
-        min-width: 0;
-        display: grid !important;
-        grid-template-columns: 48px minmax(0, 1fr) !important;
-        grid-template-rows: auto auto !important;
-        align-items: center !important;
-        column-gap: 10px !important;
-        row-gap: 4px !important;
-        flex-wrap: nowrap !important;
-      }
-
-      .house-power-dialog-icon {
-        grid-column: 1 !important;
-        grid-row: 1 / span 2 !important;
-        width: 48px !important;
-        height: 48px !important;
-        border-radius: 12px !important;
-      }
-
-      .house-power-dialog-icon ha-icon {
-        --mdc-icon-size: 25px !important;
-      }
-
-      .house-power-dialog-title {
-        grid-column: 2 !important;
-        grid-row: 1 !important;
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        font-size: 20px !important;
-        font-weight: 900 !important;
-        line-height: 1.05 !important;
-      }
 
       .house-power-dialog-energy-link {
         grid-column: 2 !important;
@@ -16367,12 +16095,6 @@ copy{
 
       .house-power-dialog-energy-link span {
         display: inline !important;
-      }
-
-      .house-power-dialog-close {
-        width: 40px !important;
-        height: 40px !important;
-        background: transparent !important;
       }
 
       .house-power-dialog-overview,
@@ -16470,71 +16192,6 @@ copy{
 
 
     @media (max-width: 768px) {
-      /* Stromverbrauch uses the exact same mobile shell dimensions/header rhythm
-         as the Home Information dialogs. Only its inner energy content differs. */
-      .house-power-dialog-overlay {
-        align-items: flex-end !important;
-        justify-content: center !important;
-        padding: 0 !important;
-      }
-
-      .house-power-dialog {
-        width: 100vw !important;
-        max-width: 100vw !important;
-        height: auto !important;
-        max-height: 88dvh !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        overflow: hidden !important;
-        border: 0 !important;
-        border-radius: 24px 24px 0 0 !important;
-        background: var(--card-background-color) !important;
-      }
-
-      .house-power-dialog-head {
-        position: relative !important;
-        top: auto !important;
-        min-height: 74px !important;
-        margin: 0 !important;
-        padding: 14px 14px 12px !important;
-        box-sizing: border-box !important;
-        display: grid !important;
-        grid-template-columns: minmax(0, 1fr) auto !important;
-        align-items: center !important;
-        gap: 10px !important;
-        background: var(--card-background-color) !important;
-        box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--divider-color) 65%, transparent) !important;
-      }
-
-      .house-power-dialog-title-wrap {
-        min-width: 0 !important;
-        display: grid !important;
-        grid-template-columns: 48px minmax(0, 1fr) !important;
-        grid-template-rows: auto auto !important;
-        align-items: center !important;
-        column-gap: 10px !important;
-        row-gap: 5px !important;
-      }
-
-      .house-power-dialog-icon {
-        grid-column: 1 !important;
-        grid-row: 1 / span 2 !important;
-        width: 48px !important;
-        height: 48px !important;
-        border-radius: 12px !important;
-      }
-
-      .house-power-dialog-icon ha-icon {
-        --mdc-icon-size: 25px !important;
-      }
-
-      .house-power-dialog-title {
-        grid-column: 2 !important;
-        grid-row: 1 !important;
-        font-size: 20px !important;
-        font-weight: 900 !important;
-        line-height: 1.05 !important;
-      }
 
       .house-power-dialog-energy-link {
         grid-column: 2 !important;
@@ -16548,19 +16205,9 @@ copy{
         font-size: 11px !important;
       }
 
-      .house-power-dialog-close {
-        width: 40px !important;
-        height: 40px !important;
-        padding: 0 !important;
-        background: transparent !important;
-      }
-
       .house-power-dialog-content {
-        max-height: calc(88dvh - 74px) !important;
         padding: 12px 12px calc(16px + env(safe-area-inset-bottom, 0px)) !important;
         box-sizing: border-box !important;
-        overflow-y: auto !important;
-        overscroll-behavior-y: contain !important;
         background: var(--primary-background-color) !important;
       }
 
@@ -16569,70 +16216,6 @@ copy{
         margin-left: 0 !important;
         margin-right: 0 !important;
       }
-    }
-
-    /* Notifications use the same dialog language as the other DD Next popups. */
-    .notifications-panel {
-      width: min(760px, calc(100vw - 32px)) !important;
-      max-height: min(82vh, 760px) !important;
-      border-radius: 14px !important;
-      border: 1px solid color-mix(in srgb, var(--divider-color) 72%, transparent) !important;
-      background: var(--card-background-color) !important;
-      box-shadow: 0 24px 64px rgba(8, 13, 24, 0.24) !important;
-      backdrop-filter: none !important;
-    }
-
-    .notifications-panel::before {
-      display: none !important;
-    }
-
-    .notifications-head {
-      min-height: 72px !important;
-      padding: 12px 18px !important;
-      box-sizing: border-box !important;
-      gap: 12px !important;
-      background: var(--card-background-color) !important;
-      border-bottom: 0 !important;
-      box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--divider-color) 65%, transparent) !important;
-    }
-
-    .notifications-heading {
-      min-width: 0;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .notifications-title-icon {
-      width: 44px;
-      height: 44px;
-      flex: 0 0 44px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 11px;
-      color: var(--primary-color);
-      background: color-mix(in srgb, var(--primary-color) 11%, var(--card-background-color));
-    }
-
-    .notifications-title-icon ha-icon {
-      --mdc-icon-size: 24px;
-    }
-
-    .notifications-title-row {
-      font-size: 20px !important;
-      font-weight: 850 !important;
-      line-height: 1.1 !important;
-    }
-
-    .notifications-title-row ha-icon {
-      display: none !important;
-    }
-
-    .notifications-subtitle {
-      margin-top: 3px !important;
-      font-size: 11px !important;
-      font-weight: 650 !important;
     }
 
     .notifications-actions {
@@ -16696,48 +16279,9 @@ copy{
     }
 
     @media (max-width: 768px) {
-      .notifications-panel {
-        left: 0 !important;
-        right: 0 !important;
-        top: auto !important;
-        bottom: 0 !important;
-        width: 100vw !important;
-        max-width: 100vw !important;
-        max-height: 88dvh !important;
-        border-width: 0 !important;
-        border-radius: 24px 24px 0 0 !important;
-        transform: translate3d(0, 100%, 0) !important;
-      }
-
-      .notifications-panel.open {
-        transform: translate3d(0, 0, 0) !important;
-      }
-
-      .notifications-head {
-        min-height: 74px !important;
-        padding: 14px 14px 12px !important;
-      }
-
-      .notifications-title-icon {
-        width: 48px !important;
-        height: 48px !important;
-        flex-basis: 48px !important;
-        border-radius: 12px !important;
-      }
-
-      .notifications-title-icon ha-icon {
-        --mdc-icon-size: 25px !important;
-      }
-
-      .notifications-title-row {
-        font-size: 20px !important;
-      }
 
       .notifications-list {
-        max-height: calc(88dvh - 74px) !important;
         padding: 12px 12px calc(16px + env(safe-area-inset-bottom, 0px)) !important;
-        overflow-y: auto !important;
-        overscroll-behavior-y: contain !important;
       }
 
       .notifications-actions {
