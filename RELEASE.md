@@ -15,7 +15,6 @@ Dwains Dashboard Next follows semantic versioning.
 - Every public release uses a `vX.Y.Z` Git tag.
 - Keep `package.json`, `package-lock.json` and the built file in `dist/` in sync.
 - Keep release notes on the GitHub release page, not in the main README.
-- Release notes must use short English bullet points, matching the v1.11.74–v1.11.80 release style; do not collapse multiple changes into one prose paragraph.
 - HACS users receive published GitHub releases. Keep the upstream v1.11.0 distribution layout: `dist/dwains-dashboard-next.js` plus `dist/chunks/`.
 - For this fork, every dev change intended for HACS testing is published as a new release.
 - Preserve the upstream v1.11.0 code-splitting/lazy-loading architecture exactly: generated chunks live in `dist/chunks/` and `dwains-dashboard-next.js` imports them from `./chunks/`.

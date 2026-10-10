@@ -16468,6 +16468,108 @@ copy{
     }
 
 
+    @media (max-width: 768px) {
+      /* Stromverbrauch uses the exact same mobile shell dimensions/header rhythm
+         as the Home Information dialogs. Only its inner energy content differs. */
+      .house-power-dialog-overlay {
+        align-items: flex-end !important;
+        justify-content: center !important;
+        padding: 0 !important;
+      }
+
+      .house-power-dialog {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        height: auto !important;
+        max-height: 88dvh !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        border: 0 !important;
+        border-radius: 24px 24px 0 0 !important;
+        background: var(--card-background-color) !important;
+      }
+
+      .house-power-dialog-head {
+        position: relative !important;
+        top: auto !important;
+        min-height: 74px !important;
+        margin: 0 !important;
+        padding: 14px 14px 12px !important;
+        box-sizing: border-box !important;
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) auto !important;
+        align-items: center !important;
+        gap: 10px !important;
+        background: var(--card-background-color) !important;
+        box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--divider-color) 65%, transparent) !important;
+      }
+
+      .house-power-dialog-title-wrap {
+        min-width: 0 !important;
+        display: grid !important;
+        grid-template-columns: 48px minmax(0, 1fr) !important;
+        grid-template-rows: auto auto !important;
+        align-items: center !important;
+        column-gap: 10px !important;
+        row-gap: 5px !important;
+      }
+
+      .house-power-dialog-icon {
+        grid-column: 1 !important;
+        grid-row: 1 / span 2 !important;
+        width: 48px !important;
+        height: 48px !important;
+        border-radius: 12px !important;
+      }
+
+      .house-power-dialog-icon ha-icon {
+        --mdc-icon-size: 25px !important;
+      }
+
+      .house-power-dialog-title {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+        font-size: 20px !important;
+        font-weight: 900 !important;
+        line-height: 1.05 !important;
+      }
+
+      .house-power-dialog-energy-link {
+        grid-column: 2 !important;
+        grid-row: 2 !important;
+        justify-self: start !important;
+        width: auto !important;
+        min-height: 30px !important;
+        margin: 0 !important;
+        padding: 0 10px !important;
+        border-radius: 999px !important;
+        font-size: 11px !important;
+      }
+
+      .house-power-dialog-close {
+        width: 40px !important;
+        height: 40px !important;
+        padding: 0 !important;
+        background: transparent !important;
+      }
+
+      .house-power-dialog-content {
+        max-height: calc(88dvh - 74px) !important;
+        padding: 12px 12px calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+        box-sizing: border-box !important;
+        overflow-y: auto !important;
+        overscroll-behavior-y: contain !important;
+        background: var(--primary-background-color) !important;
+      }
+
+      .house-power-dialog-overview,
+      .house-power-dialog-areas {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+      }
+    }
+
 
 
 
@@ -19117,7 +19219,8 @@ copy{
             </button>
           </div>
 
-          <div class="house-power-dialog-overview">
+          <div class="house-power-dialog-content">
+            <div class="house-power-dialog-overview">
             <section class="house-power-dialog-overview-card">
               <div class="house-power-dialog-overview-head">
                 <span class="house-power-dialog-overview-icon"><ha-icon icon="mdi:home-lightning-bolt-outline"></ha-icon></span>
@@ -19194,6 +19297,7 @@ copy{
           ` : html`
             <div class="house-power-dialog-empty">${this._t('home.no_room_power_usage')}</div>
           `}
+          </div>
         </section>
       </div>
     `;

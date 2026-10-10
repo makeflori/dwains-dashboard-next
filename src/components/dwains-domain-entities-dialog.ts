@@ -15,7 +15,6 @@ import { sortAreas } from '../utils/area-entities';
 import { findReplacementAssignment, resolveDeviceViewCardConfig } from '../utils/blueprint-replacements';
 import './utils/dd-card-host';
 import './dwains-person-tile';
-import './dwains-mobile-climate-card';
 
 export interface DomainEntitiesDialogParams {
   domain: string;
@@ -2220,7 +2219,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
           ${mirrorCoverDeviceView ? html`
             <div class="device-room-master-actions domain-cover" role="group">
               <button
-                class="device-room-master-action"
+                class="device-room-master-action ${activeCount > 0 ? 'active' : ''}"
                 type="button"
                 title=${this._t('action.open_all')}
                 aria-label=${this._t('action.open_all')}
@@ -2230,7 +2229,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
                 }}
               ><ha-icon icon="mdi:arrow-up"></ha-icon></button>
               <button
-                class="device-room-master-action"
+                class="device-room-master-action ${activeCount === 0 ? 'active' : ''}"
                 type="button"
                 title=${this._t('action.close_all')}
                 aria-label=${this._t('action.close_all')}
@@ -2295,32 +2294,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       `;
     }
 
-    if (
-      this._params?.homeInformationPresentation === 'devices' &&
-      this._params?.homeInformation === true &&
-      domain === 'climate' &&
-      typeof window !== 'undefined' &&
-      window.matchMedia('(max-width: 600px)').matches
-    ) {
-      const state = this._getEffectiveEntityState(rawState);
-      const rawName = state.attributes?.friendly_name ||
-        this.hass.entities?.[entity.entity_id]?.name ||
-        entity.entity_id;
-      const name = stripAreaNameFromEntityName(rawName, this._entityAreaName(entity));
-
-      return html`
-        <dwains-dashboard-next-mobile-climate-card
-          .hass=${this.hass}
-          .entityId=${entity.entity_id}
-          .displayName=${name}
-          role="button"
-          tabindex="0"
-          @click=${() => this._showMoreInfo(entity.entity_id)}
-          @keydown=${(event: KeyboardEvent) => this._handleEntityKeydown(event, entity.entity_id)}
-        ></dwains-dashboard-next-mobile-climate-card>
-      `;
-    }
-
     if (this._params?.homeInformationPresentation === 'devices') {
       const replacement = findReplacementAssignment({
         hass: this.hass,
@@ -2335,7 +2308,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       // all other domains use the compact current room-style tile.
       if (specialDeviceCard || (replacement && replacement.enabled !== false)) {
         return html`
-          <div class="device-presentation-card ${domain}-card ${domain === 'sensor' ? 'sensor-card' : ''}">
+          <div class="entity-card-wrapper ${domain}-entity-card device-presentation-card ${domain}-card ${domain === 'sensor' ? 'sensor-card' : ''}">
             <dwains-dashboard-next-card-host
               framed
               style=${domain === 'cover'
@@ -2629,6 +2602,20 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     .content.home-information-context.device-presentation-context .device-presentation-card {
       min-width: 0;
       overflow: visible;
+    }
+
+    /* Use the same special-device wrapper geometry as Geräte. */
+    .content.home-information-context.device-presentation-context .entity-card-wrapper {
+      min-height: 60px;
+      position: relative;
+      min-width: 0;
+    }
+
+    .content.home-information-context.device-presentation-context .cover-entity-card > dwains-dashboard-next-card-host,
+    .content.home-information-context.device-presentation-context .light-entity-card > dwains-dashboard-next-card-host,
+    .content.home-information-context.device-presentation-context .sensor-entity-card > dwains-dashboard-next-card-host,
+    .content.home-information-context.device-presentation-context .climate-entity-card > dwains-dashboard-next-card-host {
+      display: block;
     }
 
     /* Thermostat rendering exactly mirrors Geräte > Klima: render at its
@@ -3007,6 +2994,74 @@ export class DwainsDomainEntitiesDialog extends LitElement {
 
       .content.home-information-context.device-presentation-context.domain-cover .area-name {
         text-align: left !important;
+      }
+    }
+
+
+    /* Final mobile dialog sizing: all DD Home Information sheets stay below
+       the iOS status area and scroll internally instead of becoming full-height. */
+    @media (max-width: 600px) {
+      :host {
+        --mdc-dialog-min-height: 0 !important;
+        --ha-dialog-min-height: 0 !important;
+        --mdc-dialog-max-height: 88dvh !important;
+        --ha-dialog-max-height: 88dvh !important;
+        --vertical-align-dialog: flex-end !important;
+        --dialog-surface-margin-top: auto !important;
+        --dialog-container-padding: 0 !important;
+      }
+
+      ha-dialog,
+      ha-dialog .mdc-dialog__surface {
+        height: auto !important;
+        max-height: 88dvh !important;
+      }
+
+      .content {
+        max-height: calc(88dvh - 86px) !important;
+        overflow-y: auto !important;
+      }
+
+      /* Thermostats: exactly the Devices renderer and half-screen cards. */
+      .content.home-information-context.device-presentation-context.domain-climate .entities-grid,
+      .content.home-information-context.device-presentation-context.domain-climate .area-section.half-room .entities-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+      }
+
+      .content.home-information-context.device-presentation-context.domain-climate .climate-entity-card {
+        width: 100% !important;
+        min-width: 0 !important;
+        overflow: visible !important;
+      }
+
+      .content.home-information-context.device-presentation-context.domain-climate .climate-entity-card > dwains-dashboard-next-card-host {
+        width: calc(100% / 0.7) !important;
+        min-width: 0 !important;
+        transform: scale(0.7) !important;
+        transform-origin: top left !important;
+      }
+
+      /* Beschattung: same global and room controls as Devices. */
+      .content.home-information-context.device-presentation-context.domain-cover .dialog-global-actions .domain-actions {
+        justify-content: flex-end !important;
+        gap: 8px !important;
+        margin: 0 0 12px !important;
+      }
+
+      .content.home-information-context.device-presentation-context.domain-cover .dialog-global-actions .domain-action-button {
+        min-height: 34px !important;
+        padding: 0 10px !important;
+        font-size: 11px !important;
+        box-shadow:
+          0 8px 18px rgba(15, 23, 42, 0.055),
+          inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 6%, transparent) !important;
+      }
+
+      .content.home-information-context.device-presentation-context.domain-cover .device-room-master-action:hover,
+      .content.home-information-context.device-presentation-context.domain-cover .device-room-master-action.active {
+        background: color-mix(in srgb, var(--mobile-domain-accent) 12%, var(--card-background-color)) !important;
+        color: var(--mobile-domain-accent) !important;
       }
     }
 
