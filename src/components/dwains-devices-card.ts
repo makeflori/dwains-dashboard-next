@@ -36,6 +36,8 @@ import { formatEntityStateWithUnit, formatValueWithUnit } from '../utils/unit-fo
 import { stripAreaNameFromEntityName } from '../utils/entity-names';
 import './utils/dd-card-host';
 import './dwains-person-tile';
+import './ui/dd-ui-primitives';
+import './ui/dd-entity-tiles';
 
 const NEW_DEVICES_KEY = '__new_devices__';
 const MAINTENANCE_KEY = '__maintenance__';
@@ -1290,35 +1292,19 @@ export class DwainsDevicesCard extends LitElement {
     actions?: unknown;
     className?: string;
   }) {
-    const classes = ['device-page-header'];
-    if (options.back) classes.push('has-back');
-    if (options.actions) classes.push('has-actions');
-    if (options.className) classes.push(options.className);
-
     return html`
-      <div class=${classes.join(' ')} style=${`--domain-color: ${options.color};`}>
-        ${options.back ? html`
-          <button
-            class="device-header-back"
-            type="button"
-            title=${this._t('navigation.overview')}
-            aria-label=${this._t('navigation.overview')}
-            @click=${() => this._selectDomain(DEVICES_OVERVIEW_KEY)}
-          >
-            <ha-icon icon="mdi:arrow-left"></ha-icon>
-          </button>
-        ` : nothing}
-        <div class="device-header-main">
-          <span class="device-header-icon">
-            <ha-icon icon=${options.icon}></ha-icon>
-          </span>
-          <div class="device-header-copy">
-            <h1 class="device-title">${options.title}</h1>
-            ${options.subtitle ? html`<div class="device-subtitle">${options.subtitle}</div>` : nothing}
-          </div>
-        </div>
-        ${options.actions ? html`<div class="device-header-actions">${options.actions}</div>` : nothing}
-      </div>
+      <dd-next-page-header
+        class=${options.className || ''}
+        .icon=${options.icon}
+        .titleText=${options.title}
+        .subtitle=${options.subtitle || ''}
+        .accent=${options.color}
+        .back=${Boolean(options.back)}
+        .backLabel=${this._t('navigation.overview')}
+        @dd-back=${() => this._selectDomain(DEVICES_OVERVIEW_KEY)}
+      >
+        ${options.actions ? html`<span slot="actions">${options.actions}</span>` : nothing}
+      </dd-next-page-header>
     `;
   }
 
@@ -1374,14 +1360,14 @@ export class DwainsDevicesCard extends LitElement {
                   const bucket = byArea.get(area.area_id)!;
                   const compactRoom = bucket.entities.length <= 2;
                   return html`
-                    <div class="domain-group ${compactRoom ? 'half-room' : 'full-room'}">
-                      <div class="domain-header">
-                        <div class="domain-header-title">
-                          <ha-icon icon="mdi:floor-plan"></ha-icon>
-                          <span>${area.name}</span>
-                        </div>
-                        ${this._renderDeviceRoomActions(domain, bucket.entities)}
-                      </div>
+                    <dd-next-room-group
+                      class="domain-group ${compactRoom ? 'half-room' : 'full-room'}"
+                      .name=${area.name}
+                      icon="mdi:floor-plan"
+                      .accent=${this._typeColor(domain)}
+                      .compact=${compactRoom}
+                    >
+                      <span slot="actions">${this._renderDeviceRoomActions(domain, bucket.entities)}</span>
                       <div class=${this._entitiesGridClass(domain, roomStyle)}>
                         ${repeat(
                           bucket.entities,
@@ -1391,7 +1377,7 @@ export class DwainsDevicesCard extends LitElement {
                             : this._renderEntityCard(entity)
                         )}
                       </div>
-                    </div>
+                    </dd-next-room-group>
                   `;
                 })}
               </div>
@@ -1847,19 +1833,15 @@ export class DwainsDevicesCard extends LitElement {
   }
 
   private _renderEntityCard(entity: EntityConfig) {
-    const state = this._hass.states[entity.entity_id];
-    if (!state) return nothing;
+    if (!this._hass.states[entity.entity_id]) return nothing;
     return html`
-      <div class="${this._entityWrapperClass(entity.entity_id)}">
-        <dwains-dashboard-next-card-host
-          framed
-          style=${entity.entity_id.startsWith('cover.')
-            ? `--primary-color: ${getDomainColor('cover')}; --state-cover-open-color: ${getDomainColor('cover')}; --state-cover-opening-color: ${getDomainColor('cover')}; --state-cover-active-color: ${getDomainColor('cover')};`
-            : ''}
-          .hass=${this._hass}
-          .config=${this._entityCardConfig(entity.entity_id)}
-        ></dwains-dashboard-next-card-host>
-      </div>
+      <dd-next-device-entity-card
+        class="${this._entityWrapperClass(entity.entity_id)}"
+        .hass=${this._hass}
+        .config=${this.config}
+        .entityId=${entity.entity_id}
+        @dd-more-info=${(event: CustomEvent<{ entityId: string }>) => this._showMoreInfo(event.detail.entityId)}
+      ></dd-next-device-entity-card>
     `;
   }
 
@@ -1900,20 +1882,14 @@ export class DwainsDevicesCard extends LitElement {
 
     if (domain === 'person') {
       return html`
-        <dwains-dashboard-next-person-tile
+        <dd-next-device-entity-card
           .hass=${this._hass}
+          .config=${this.config}
           .entityId=${entity.entity_id}
+          .areaName=${area.name}
           .displayName=${name}
-          role="button"
-          tabindex="0"
-          aria-label=${name}
-          @click=${() => this._showMoreInfo(entity.entity_id)}
-          @keydown=${(event: KeyboardEvent) => {
-            if (event.key !== 'Enter' && event.key !== ' ') return;
-            event.preventDefault();
-            this._showMoreInfo(entity.entity_id);
-          }}
-        ></dwains-dashboard-next-person-tile>
+          @dd-more-info=${(event: CustomEvent<{ entityId: string }>) => this._showMoreInfo(event.detail.entityId)}
+        ></dd-next-device-entity-card>
       `;
     }
 
