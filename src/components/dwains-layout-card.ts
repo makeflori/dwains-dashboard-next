@@ -18565,7 +18565,7 @@ copy{
     const personEntities = this._getVisiblePersonEntities();
     const homeCount = personEntities.filter(person => person.state === 'home').length;
     const subtitle = personEntities.length
-      ? `${homeCount}/${personEntities.length} ${this._t('person.home')}`
+      ? this._t('person.home').replace(/^./, first => first.toLocaleUpperCase(this.hass?.language || 'de'))
       : this._t('home.no_people');
 
     return html`
