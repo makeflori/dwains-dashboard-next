@@ -1459,6 +1459,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
             .accent=${accent}
             .active=${active}
             .unavailable=${unavailable}
+            .state=${String(state.state || '')}
             .canOpen=${this._coverSupportsFeature(state, 1)}
             .canClose=${this._coverSupportsFeature(state, 2)}
             .canStop=${this._coverSupportsFeature(state, 8)}
