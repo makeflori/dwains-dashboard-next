@@ -1743,6 +1743,80 @@ export class DwainsDomainEntitiesDialog extends LitElement {
         min-height: 150px;
       }
     }
+
+    /* Shared device-presentation structure. These selectors own layout only;
+       the visual card/group rules live inside the shared primitives. */
+    .content.home-information-context.device-presentation-context .area-sections-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      align-items: start;
+    }
+
+    .content.home-information-context.device-presentation-context .shared-room-group {
+      min-width: 0;
+      grid-column: 1 / -1;
+    }
+
+    .content.home-information-context.device-presentation-context .shared-room-group.half-room {
+      grid-column: span 1;
+    }
+
+    .content.home-information-context.device-presentation-context .shared-room-group .entities-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      padding: 0 !important;
+    }
+
+    .content.home-information-context.device-presentation-context.domain-cover .shared-room-group .entities-grid,
+    .content.home-information-context.device-presentation-context.domain-sensor .shared-room-group .entities-grid {
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    }
+
+    .content.home-information-context.device-presentation-context.domain-person .area-sections-grid {
+      display: block;
+    }
+
+    .content.home-information-context.device-presentation-context.domain-person .area-section {
+      margin: 0 !important;
+      padding: 0 !important;
+      background: transparent !important;
+      box-shadow: none !important;
+    }
+
+    .content.home-information-context.device-presentation-context.domain-person .entities-grid {
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)) !important;
+      gap: 10px !important;
+      padding: 0 !important;
+    }
+
+    @media (max-width: 600px) {
+      .content.home-information-context.device-presentation-context .area-sections-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .content.home-information-context.device-presentation-context .shared-room-group,
+      .content.home-information-context.device-presentation-context .shared-room-group.half-room {
+        grid-column: 1;
+      }
+
+      .content.home-information-context.device-presentation-context .shared-room-group .entities-grid,
+      .content.home-information-context.device-presentation-context.domain-cover .shared-room-group .entities-grid,
+      .content.home-information-context.device-presentation-context.domain-sensor .shared-room-group .entities-grid {
+        grid-template-columns: 1fr !important;
+      }
+
+      .content.home-information-context.device-presentation-context.domain-climate .shared-room-group .entities-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+      }
+
+      .content.home-information-context.device-presentation-context.domain-person .entities-grid {
+        grid-template-columns: 1fr !important;
+      }
+    }
   `;
 
   public async showDialog(params: DomainEntitiesDialogParams): Promise<void> {
@@ -2199,7 +2273,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
 
       return html`
         <dd-next-room-group
-          class="area-section ${compactRoom ? 'half-room' : 'full-room'}"
+          class="shared-room-group ${compactRoom ? 'half-room' : 'full-room'}"
           .name=${group.areaName}
           icon="mdi:floor-plan"
           .accent=${this._entityColor(domain)}
