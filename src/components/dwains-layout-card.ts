@@ -19339,12 +19339,6 @@ copy{
     this._openDeviceDomain('energy');
   };
 
-  private _handleHousePowerDialogKeydown = (event: KeyboardEvent): void => {
-    if (event.key !== 'Escape') return;
-    event.preventDefault();
-    this._closeHousePowerDialog();
-  };
-
   private _renderHousePowerDialog() {
     if (!this._housePowerDialogOpen) return nothing;
 
