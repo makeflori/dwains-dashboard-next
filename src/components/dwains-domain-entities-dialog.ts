@@ -11,7 +11,6 @@ import { fireEvent } from './utils/fire-event';
 import { formatEntityStateWithUnit, formatValueWithUnit } from '../utils/unit-format';
 import { stripAreaNameFromEntityName } from '../utils/entity-names';
 import { sortAreas } from '../utils/area-entities';
-import { findReplacementAssignment } from '../utils/blueprint-replacements';
 import './utils/dd-card-host';
 import './dwains-person-tile';
 import './ui/dd-ui-primitives';
