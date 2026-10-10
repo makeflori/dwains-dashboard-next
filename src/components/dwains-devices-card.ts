@@ -18,6 +18,7 @@ import {
 } from '../utils/area-entities';
 import { getDomainIcon, getDeviceClassIcon, getDomainColor } from '../utils/icons';
 import { getDomainName, getDeviceClassName } from '../utils/domain-names';
+import { findReplacementAssignment, resolveDeviceViewCardConfig } from '../utils/blueprint-replacements';
 import {
   NEW_DEVICE_WINDOW_HOURS,
   buildRecentDeviceSummaries,
@@ -31,7 +32,8 @@ import { ensureBottomNav } from './dwains-bottom-nav';
 import { fireEvent } from './utils/fire-event';
 import { buildHousePowerUsage, type PowerAreaSummary, type PowerEntitySummary } from '../utils/power-usage';
 import { isHassDarkTheme } from '../utils/theme';
-import { formatValueWithUnit } from '../utils/unit-format';
+import { formatEntityStateWithUnit, formatValueWithUnit } from '../utils/unit-format';
+import { stripAreaNameFromEntityName } from '../utils/entity-names';
 import './utils/dd-card-host';
 import './dwains-person-tile';
 import './ui/dd-ui-primitives';
@@ -885,6 +887,19 @@ export class DwainsDevicesCard extends LitElement {
       this._syncBottomNavDeviceContext();
     }
     return true;
+  }
+
+  private _entityCardConfig(entityId: string): any {
+    if (entityId.startsWith('todo.')) {
+      return { type: 'todo-list', entity: entityId };
+    }
+
+    return resolveDeviceViewCardConfig({
+      hass: this._hass,
+      config: this.config,
+      entity: entityId,
+      surface: 'devices_cards',
+    });
   }
 
   // ---- Selectie -------------------------------------------------------------
@@ -1820,16 +1835,82 @@ export class DwainsDevicesCard extends LitElement {
   }
 
   private _renderRoomStyleEntityCard(entity: EntityConfig, area: AreaConfig) {
-    if (!this._hass.states[entity.entity_id]) return nothing;
+    const state = this._hass.states[entity.entity_id];
+    if (!state) return nothing;
+
+    const replacement = findReplacementAssignment({
+      hass: this._hass,
+      config: this.config,
+      entity,
+      surface: 'devices_cards',
+    });
+    if (replacement && replacement.enabled !== false) {
+      return html`
+        <div class="entity-card-wrapper room-style-replacement-card">
+          <dwains-dashboard-next-card-host
+            framed
+            .hass=${this._hass}
+            .config=${this._entityCardConfig(entity.entity_id)}
+          ></dwains-dashboard-next-card-host>
+        </div>
+      `;
+    }
+
+    const domain = entity.entity_id.split('.')[0] || 'unknown';
+    const deviceClass = state.attributes?.device_class;
+    const rawName = state.attributes?.friendly_name ||
+      this._hass.entities?.[entity.entity_id]?.name ||
+      entity.entity_id;
+    const name = this.config?.settings?.hide_area_name_in_entity_names === true
+      ? stripAreaNameFromEntityName(rawName, area.name)
+      : rawName;
+
+    if (domain === 'person') {
+      return html`
+        <dd-next-device-entity-card
+          .hass=${this._hass}
+          .config=${this.config}
+          .entityId=${entity.entity_id}
+          .areaName=${area.name}
+          .displayName=${name}
+          @dd-more-info=${(event: CustomEvent<{ entityId: string }>) => this._showMoreInfo(event.detail.entityId)}
+        ></dd-next-device-entity-card>
+      `;
+    }
+
+    const icon = this._hass.entities?.[entity.entity_id]?.icon ||
+      state.attributes?.icon ||
+      getDeviceClassIcon(domain, deviceClass) ||
+      getDomainIcon(domain);
+    const active = this._roomStyleEntityActive(state, domain);
+    const unavailable = ['unavailable', 'unknown'].includes(String(state.state).toLowerCase()) &&
+      !['scene', 'event'].includes(domain);
+    const canToggle = ['switch', 'fan', 'input_boolean'].includes(domain);
+
     return html`
-      <dd-next-device-entity-card
-        .hass=${this._hass}
-        .config=${this.config}
-        .entityId=${entity.entity_id}
-        .areaName=${area.name}
-        .roomStyle=${true}
-        @dd-more-info=${(event: CustomEvent<{ entityId: string }>) => this._showMoreInfo(event.detail.entityId)}
-      ></dd-next-device-entity-card>
+      <dd-next-compact-entity-tile
+        variant="compact"
+        .name=${name}
+        .status=${formatEntityStateWithUnit(this._hass, state)}
+        .icon=${icon}
+        .accent=${getDomainColor(domain, deviceClass)}
+        .active=${active}
+        .unavailable=${unavailable}
+        @dd-open=${() => this._showMoreInfo(entity.entity_id)}
+      >
+        ${canToggle ? html`
+          <dd-next-entity-actions
+            slot="actions"
+            mode="toggle"
+            .accent=${getDomainColor(domain, deviceClass)}
+            .active=${active}
+            .unavailable=${unavailable}
+            .turnOnLabel=${this._t('action.turn_on')}
+            .turnOffLabel=${this._t('action.turn_off')}
+            @dd-action=${() => void this._toggleRoomStyleEntity(entity.entity_id, domain, active)}
+          ></dd-next-entity-actions>
+        ` : nothing}
+      </dd-next-compact-entity-tile>
     `;
   }
 
@@ -1837,7 +1918,17 @@ export class DwainsDevicesCard extends LitElement {
     const value = String(state?.state || '').toLowerCase();
     if (domain === 'lock') return value === 'unlocked';
     if (domain === 'person') return value === 'home';
+    if (domain === 'binary_sensor') return value === 'on';
     return ['on', 'open', 'opening', 'playing', 'active', 'home'].includes(value);
+  }
+
+  private async _toggleRoomStyleEntity(entityId: string, domain: string, active: boolean): Promise<void> {
+    const serviceDomain = domain === 'input_boolean' ? 'input_boolean' : domain;
+    try {
+      await this._hass.callService(serviceDomain, active ? 'turn_off' : 'turn_on', { entity_id: entityId });
+    } catch (error) {
+      console.warn(`Failed to toggle ${entityId} from Devices view`, error);
+    }
   }
 
   private _entitiesGridClass(typeKey: string, roomStyle = false): string {
