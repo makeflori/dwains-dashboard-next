@@ -37,7 +37,7 @@ import { stripAreaNameFromEntityName } from '../utils/entity-names';
 import './utils/dd-card-host';
 import './dwains-person-tile';
 import './ui/dd-ui-primitives';
-import './ui/dd-entity-tiles';
+import { renderCompactDeviceTile } from './ui/dd-entity-tiles';
 
 const NEW_DEVICES_KEY = '__new_devices__';
 const MAINTENANCE_KEY = '__maintenance__';
@@ -1887,31 +1887,19 @@ export class DwainsDevicesCard extends LitElement {
       !['scene', 'event'].includes(domain);
     const canToggle = ['switch', 'fan', 'input_boolean'].includes(domain);
 
-    return html`
-      <dd-next-compact-entity-tile
-        variant="compact"
-        .name=${name}
-        .status=${formatEntityStateWithUnit(this._hass, state)}
-        .icon=${icon}
-        .accent=${getDomainColor(domain, deviceClass)}
-        .active=${active}
-        .unavailable=${unavailable}
-        @dd-open=${() => this._showMoreInfo(entity.entity_id)}
-      >
-        ${canToggle ? html`
-          <dd-next-entity-actions
-            slot="actions"
-            mode="toggle"
-            .accent=${getDomainColor(domain, deviceClass)}
-            .active=${active}
-            .unavailable=${unavailable}
-            .turnOnLabel=${this._t('action.turn_on')}
-            .turnOffLabel=${this._t('action.turn_off')}
-            @dd-action=${() => void this._toggleRoomStyleEntity(entity.entity_id, domain, active)}
-          ></dd-next-entity-actions>
-        ` : nothing}
-      </dd-next-compact-entity-tile>
-    `;
+    return renderCompactDeviceTile({
+      name,
+      status: formatEntityStateWithUnit(this._hass, state),
+      icon,
+      accent: getDomainColor(domain, deviceClass),
+      active,
+      unavailable,
+      toggle: canToggle,
+      onOpen: () => this._showMoreInfo(entity.entity_id),
+      onToggle: () => void this._toggleRoomStyleEntity(entity.entity_id, domain, active),
+      turnOnLabel: this._t('action.turn_on'),
+      turnOffLabel: this._t('action.turn_off'),
+    });
   }
 
   private _roomStyleEntityActive(state: any, domain: string): boolean {

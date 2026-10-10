@@ -7790,15 +7790,17 @@ which also swallowed pointer events for the new handle. */
 
 .area-view .mobile-entity-card,
 .area-view .mobile-entities-section.layout-grid .mobile-entity-card{
-        min-height: 60px !important;
-        padding: 10px !important;
+        min-height: 62px !important;
+        height: auto !important;
+        padding: 8px 10px !important;
         border-radius: 10px !important;
         box-sizing: border-box !important;
+        justify-content: center !important;
       }
 
 .area-view .mobile-entity-main{
-        min-height: 46px !important;
-        grid-template-columns: 46px minmax(0, 1fr) auto !important;
+        min-height: 36px !important;
+        grid-template-columns: 36px minmax(0, 1fr) auto !important;
         gap: 11px !important;
       }
 
@@ -7808,9 +7810,9 @@ which also swallowed pointer events for the new handle. */
       }
 
 .area-view .mobile-entity-icon{
-        width: 46px !important;
-        height: 46px !important;
-        border-radius: 10px !important;
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 8px !important;
       }
 
 .area-view .mobile-entity-icon ha-icon{
@@ -7818,8 +7820,8 @@ which also swallowed pointer events for the new handle. */
       }
 
 .area-view .mobile-entity-content{
-        height: 46px !important;
-        gap: 3px !important;
+        height: 36px !important;
+        gap: 2px !important;
       }
 
 .area-view .mobile-entity-name{

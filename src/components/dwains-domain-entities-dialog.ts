@@ -15,7 +15,7 @@ import { findReplacementAssignment } from '../utils/blueprint-replacements';
 import './utils/dd-card-host';
 import './dwains-person-tile';
 import './ui/dd-ui-primitives';
-import './ui/dd-entity-tiles';
+import { renderCompactDeviceTile } from './ui/dd-entity-tiles';
 
 export interface DomainEntitiesDialogParams {
   domain: string;
@@ -670,6 +670,17 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       gap: 8px !important;
     }
 
+    /* A single device in a half-width room needs the whole room width.
+       Two narrow card columns collapse native climate and cover controls. */
+    @media (min-width: 769px) {
+      .content.home-information-context.device-presentation-context .shared-room-group.half-room .entities-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+      }
+      .content.home-information-context.device-presentation-context .shared-room-group.full-room .entities-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+      }
+    }
+
     /* Same person tile as Geräte > Personen; the popup only changes the grid. */
     .content.home-information-context.device-presentation-context.domain-person .area-sections-grid {
       display: block !important;
@@ -896,7 +907,14 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       const entityReg = config.entities?.find(e => e.entity_id === entityId);
       const deviceReg = entityReg && entityReg.device_id ?
         config.devices?.find(d => d.device_id === entityReg.device_id) : null;
-      const entityAreaId = entityReg?.area_id || deviceReg?.area_id || this.hass?.entities?.[entityId]?.area_id;
+      const registryArea = this.hass?.entities?.[entityId]?.area_id;
+      const registryDeviceId = this.hass?.entities?.[entityId]?.device_id;
+      const registeredDeviceArea = registryDeviceId ? this.hass?.devices?.[registryDeviceId]?.area_id : undefined;
+      const configuredDeviceArea = registryDeviceId
+        ? config.devices?.find(device => device.device_id === registryDeviceId)?.area_id
+        : undefined;
+      const entityAreaId = registryArea || entityReg?.area_id || deviceReg?.area_id ||
+        configuredDeviceArea || registeredDeviceArea || entityState.attributes?.area_id;
 
       // Persons are grouped by presence/location and therefore do not need
       // an HA area assignment. Area-based domains still require one.
@@ -906,7 +924,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       if (areaId && entityAreaId !== areaId) return;
 
       // Check if area exists for area-based domains.
-      if (domain !== 'person' && (!entityAreaId || !areasMap.has(entityAreaId))) return;
+      if (domain !== 'person' && (!entityAreaId || !areasMap.has(entityAreaId) || (config.areas_display?.hidden || []).includes(entityAreaId))) return;
 
       // Check if entity is hidden
       const groupKey = entityDomain;
@@ -1369,6 +1387,40 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     if (!rawState) return nothing;
 
     const domain = entity.entity_id.split('.')[0] || 'unknown';
+
+    if (this._params?.homeInformationPresentation === 'devices' &&
+        !['person', 'light', 'cover', 'climate', 'sensor'].includes(domain)) {
+      const state = this._getEffectiveEntityState(rawState);
+      const deviceClass = state.attributes?.device_class;
+      const rawName = state.attributes?.friendly_name ||
+        this.hass.entities?.[entity.entity_id]?.name || entity.entity_id;
+      const areaName = this._entityAreaName(entity);
+      const name = this._params.config?.settings?.hide_area_name_in_entity_names === true
+        ? stripAreaNameFromEntityName(rawName, areaName)
+        : rawName;
+      const active = this._isEntityActiveForUi(state, domain);
+      const unavailable = this._isUnavailable(state);
+      const canToggle = ['switch', 'fan', 'input_boolean'].includes(domain);
+      return renderCompactDeviceTile({
+        name,
+        status: formatEntityStateWithUnit(this.hass, state),
+        icon: this.hass.entities?.[entity.entity_id]?.icon || state.attributes?.icon ||
+          getDeviceClassIcon(domain, deviceClass) || getDomainIcon(domain),
+        accent: this._entityColor(domain, deviceClass),
+        active,
+        unavailable,
+        toggle: canToggle,
+        onOpen: () => this._showMoreInfo(entity.entity_id),
+        onToggle: () => void this._runBulkDomainAction(
+          [entity.entity_id],
+          active ? 'turn_off' : 'turn_on',
+          this._t(active ? 'action.turn_off' : 'action.turn_on'),
+          false
+        ),
+        turnOnLabel: this._t('action.turn_on'),
+        turnOffLabel: this._t('action.turn_off'),
+      });
+    }
 
     if (this._params?.homeInformationPresentation === 'devices') {
       const replacement = findReplacementAssignment({

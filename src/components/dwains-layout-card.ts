@@ -21252,7 +21252,7 @@ copy{
     return html`
       <dd-next-compact-entity-tile
         class="mobile-entity-tile-host ${classes}"
-        variant="card"
+        .variant=${hasInlineSelect ? "card" : "compact"}
         .name=${name}
         .status=${statusText}
         .icon=${icon}

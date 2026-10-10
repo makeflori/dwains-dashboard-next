@@ -332,7 +332,7 @@ export function getStatusDomains(hass: HomeAssistant, config: any): DomainCount[
           count: personData.on,
           name: personData.on === 0
             ? ddLocalize(hass, 'person.nobody_home')
-            : `${personData.on} ${ddLocalize(hass, 'person.home').toLowerCase()}`,
+            : ddLocalize(hass, 'person.home'),
           icon: config.icon
         });
       } else {
@@ -340,7 +340,7 @@ export function getStatusDomains(hass: HomeAssistant, config: any): DomainCount[
         result.push({
           domain: 'person',
           count: personData.on,
-          name: `${personData.on}/${personData.total} ${ddLocalize(hass, 'person.home').toLowerCase()}`,
+          name: ddLocalize(hass, 'person.home'),
           icon: config.icon
         });
       }
