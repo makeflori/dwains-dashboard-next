@@ -43,6 +43,8 @@ import { makeDialogManager } from './utils/make-dialog-manager';
 import './dwains-dashboard-strategy-editor';
 import './utils/dd-card-host';
 import './utils/dd-tile-host';
+import './ui/dd-ui-primitives';
+import './ui/dd-entity-tiles';
 import { fireEvent } from './utils/fire-event';
 import { ddLocale, ddLocalize, ddLocalizePlural } from '../utils/localize';
 import {
@@ -620,7 +622,7 @@ export class DwainsLayoutCard extends LitElement {
       contain-intrinsic-size: 1px 360px;
     }
 
-    .mobile-entities-section.layout-grid .mobile-entity-card{
+    .mobile-entities-section.layout-grid .mobile-entity-tile-host{
       content-visibility: auto;
       contain-intrinsic-size: 164px 150px;
     }
@@ -1334,80 +1336,6 @@ export class DwainsLayoutCard extends LitElement {
       margin: 0 auto;
       padding: 18px 0 104px;
       box-sizing: border-box;
-    }
-
-    .settings-page-header{
-      display: grid;
-      grid-template-columns: auto minmax(0, 1fr) auto;
-      align-items: center;
-      gap: 16px;
-      margin: 0 0 16px;
-      padding: 16px 18px;
-      border: 1px solid color-mix(in srgb, var(--divider-color) 72%, transparent);
-      border-radius: 18px;
-      background:
-        linear-gradient(135deg,
-          color-mix(in srgb, var(--card-background-color) 96%, var(--primary-color)) 0%,
-          color-mix(in srgb, var(--card-background-color) 94%, var(--primary-color)) 100%);
-      box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
-    }
-
-    .settings-page-back,
-.settings-secondary,
-.settings-primary{
-      appearance: none;
-      border: 0;
-      font: inherit;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .settings-page-back{
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 44px;
-      height: 44px;
-      border-radius: 999px;
-      background: color-mix(in srgb, var(--secondary-background-color) 74%, var(--card-background-color));
-      color: var(--primary-text-color);
-    }
-
-    .settings-page-back ha-icon{
-      --mdc-icon-size: 22px;
-    }
-
-    .settings-page-title{
-      min-width: 0;
-    }
-
-    .settings-page-title h1{
-      margin: 0;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      min-width: 0;
-      font-size: clamp(22px, 2vw, 30px);
-      line-height: 1.08;
-      font-weight: 850;
-      color: var(--primary-text-color);
-      letter-spacing: 0;
-    }
-    .settings-breadcrumb-parent{
-      color: var(--secondary-text-color);
-      font-weight: 700;
-    }
-    .settings-breadcrumb-separator{
-      flex: 0 0 auto;
-      color: var(--secondary-text-color);
-      --mdc-icon-size: 20px;
-    }
-
-    .settings-page-title p{
-      margin: 5px 0 0;
-      color: var(--secondary-text-color);
-      font-size: 14px;
-      line-height: 1.35;
     }
 
     .settings-page-actions,
@@ -3675,7 +3603,7 @@ export class DwainsLayoutCard extends LitElement {
       align-items: stretch;
     }
 
-    .mobile-entities-section.layout-grid .mobile-entity-card{
+    .mobile-entities-section.layout-grid .mobile-entity-tile-host{
       width: 100%;
       min-width: 0;
       box-sizing: border-box;
@@ -3689,33 +3617,18 @@ export class DwainsLayoutCard extends LitElement {
       }
     }
 
-    .mobile-entity-card{
-      --entity-color: var(--primary-color);
-      position: relative;
+    .mobile-entity-tile-host{
       box-sizing: border-box;
-      contain: layout style;
       flex: 0 0 164px;
       min-width: 0;
-      min-height: 128px;
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      overflow: hidden;
-      border: 0;
-      border-radius: 10px;
-      background: color-mix(in srgb, var(--card-background-color) 98%, #ffffff);
-      color: var(--primary-text-color);
-      font: inherit;
-      text-align: left;
-      cursor: pointer;
       scroll-snap-align: start;
-      box-shadow:
-        0 12px 26px rgba(15, 23, 42, 0.06),
-        inset 0 0 0 1px rgba(15, 23, 42, 0.035);
-      transition:
-        transform 0.18s ease,
-        box-shadow 0.18s ease;
+    }
+
+    .mobile-entities-section.layout-grid .mobile-entity-tile-host{
+      width: 100%;
+      min-width: 0;
+      flex: none;
+      scroll-snap-align: none;
     }
 
     .mobile-entity-replacement-card{
@@ -3757,20 +3670,6 @@ export class DwainsLayoutCard extends LitElement {
       scroll-snap-align: none;
     }
 
-    .mobile-entity-card:active{
-      transform: scale(0.985);
-      }
-
-      .mobile-entity-card.is-active{
-        box-shadow:
-          0 14px 30px rgba(15, 23, 42, 0.08),
-          inset 0 0 0 1px color-mix(in srgb, var(--entity-color) 18%, transparent);
-      }
-
-      .mobile-entity-card.is-unavailable{
-        opacity: 0.62;
-      }
-
     .mobile-entity-top{
       display: flex;
       align-items: flex-start;
@@ -3778,148 +3677,8 @@ export class DwainsLayoutCard extends LitElement {
       gap: 10px;
     }
 
-    .mobile-entity-icon{
-      width: 36px;
-      height: 36px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex: 0 0 auto;
-      border-radius: 11px;
-      color: var(--entity-color);
-      background: color-mix(in srgb, var(--entity-color) 13%, transparent);
-    }
-
-      .mobile-entity-icon ha-icon{
-        --mdc-icon-size: 20px;
-      }
-
-      .mobile-entity-action{
-        padding: 0;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        flex: 0 0 auto;
-        border: 0;
-        cursor: pointer;
-        transition:
-          background-color 0.18s ease,
-          color 0.18s ease,
-          transform 0.18s ease,
-          opacity 0.18s ease;
-      }
-
-      .mobile-entity-action:active{
-        transform: scale(0.94);
-      }
-
-      .mobile-entity-action:disabled{
-        opacity: 0.36;
-        cursor: not-allowed;
-      }
-
-      .mobile-entity-toggle{
-        width: 38px;
-        height: 22px;
-        justify-content: flex-start;
-        border-radius: 999px;
-        background: color-mix(in srgb, var(--secondary-background-color) 80%, #ffffff);
-        box-shadow:
-          inset 0 0 0 1px rgba(15, 23, 42, 0.07),
-          0 4px 10px rgba(15, 23, 42, 0.08);
-      }
-
-    .mobile-entity-toggle::before{
-      content: "";
-      width: 18px;
-      height: 18px;
-      margin-left: 2px;
-      border-radius: 999px;
-      background: #ffffff;
-      box-shadow: 0 2px 7px rgba(15, 23, 42, 0.2);
-      transition: transform 0.18s ease;
-      }
-
-      .mobile-entity-card.is-active .mobile-entity-toggle{
-        background: var(--entity-color);
-      }
-
-    .mobile-entity-card.is-active .mobile-entity-toggle::before{
-      transform: translateX(16px);
-    }
-
-      .mobile-entity-more,
-.mobile-scene-action,
-.mobile-lock-action{
-        width: 30px;
-        height: 30px;
-        border-radius: 999px;
-        color: color-mix(in srgb, var(--primary-text-color) 52%, transparent);
-        background: color-mix(in srgb, var(--secondary-background-color) 70%, #ffffff);
-        box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.05);
-      }
-
-      .mobile-lock-action.is-unlocked{
-        color: #ffffff;
-        background: var(--entity-color);
-        box-shadow: 0 8px 16px color-mix(in srgb, var(--entity-color) 24%, transparent);
-      }
-
-      .mobile-entity-more ha-icon,
-.mobile-scene-action ha-icon,
-.mobile-lock-action ha-icon{
-        --mdc-icon-size: 17px;
-      }
-
-      .mobile-cover-actions{
-        min-height: 32px;
-        padding: 3px;
-        display: inline-flex;
-        align-items: center;
-        gap: 3px;
-        flex: 0 0 auto;
-        border-radius: 999px;
-        background: color-mix(in srgb, var(--secondary-background-color) 74%, #ffffff);
-        box-shadow:
-          inset 0 0 0 1px rgba(15, 23, 42, 0.055),
-          0 6px 14px rgba(15, 23, 42, 0.08);
-      }
-
-      .mobile-cover-action{
-        width: 26px;
-        height: 26px;
-        border-radius: 999px;
-        color: color-mix(in srgb, var(--primary-text-color) 58%, transparent);
-        background: transparent;
-      }
-
-      .mobile-cover-action.active{
-        color: #ffffff;
-        background: var(--entity-color);
-        box-shadow: 0 6px 12px color-mix(in srgb, var(--entity-color) 22%, transparent);
-      }
-
-      .mobile-cover-action ha-icon{
-        --mdc-icon-size: 16px;
-      }
-
-      .mobile-entities-section.layout-grid .mobile-cover-actions{
-        min-height: 30px;
-        padding: 3px;
-        gap: 2px;
-      }
-
-      .mobile-entities-section.layout-grid .mobile-cover-action{
-        width: 24px;
-        height: 24px;
-      }
-
-      .mobile-entities-section.layout-grid .mobile-cover-action ha-icon{
-        --mdc-icon-size: 15px;
-      }
-
       @media (max-width: 430px) {
-        .mobile-entities-section.layout-grid .mobile-entity-card{
+        .mobile-entities-section.layout-grid .mobile-entity-tile-host{
           min-height: 138px;
           padding: 12px;
         }
@@ -3927,48 +3686,6 @@ export class DwainsLayoutCard extends LitElement {
         .mobile-entities-section.layout-grid .mobile-entity-top{
           gap: 6px;
         }
-
-        .mobile-entities-section.layout-grid .mobile-entity-icon{
-          width: 34px;
-          height: 34px;
-        }
-
-        .mobile-entities-section.layout-grid .mobile-cover-actions{
-          min-height: 28px;
-          padding: 2px;
-          gap: 1px;
-        }
-
-        .mobile-entities-section.layout-grid .mobile-cover-action{
-          width: 23px;
-          height: 23px;
-        }
-
-        .mobile-entities-section.layout-grid .mobile-cover-action ha-icon{
-          --mdc-icon-size: 14px;
-        }
-      }
-
-    .mobile-entity-meta{
-      color: color-mix(in srgb, var(--primary-text-color) 42%, transparent);
-      font-size: 10px;
-      font-weight: 750;
-      line-height: 1.1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-      .mobile-entity-name{
-        margin-top: 3px;
-        color: var(--primary-text-color);
-        font-size: 15px;
-        font-weight: 900;
-      line-height: 1.08;
-      overflow: hidden;
-      display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
       }
 
       .mobile-entity-status{
@@ -3980,24 +3697,6 @@ export class DwainsLayoutCard extends LitElement {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-      }
-
-      .mobile-entity-content{
-        min-width: 0;
-      }
-
-      .mobile-entity-card.has-inline-select{
-        min-height: 170px;
-        justify-content: flex-start;
-        gap: 10px;
-      }
-
-      .mobile-entity-card.has-inline-select .mobile-entity-content{
-        margin-top: auto;
-      }
-
-      .mobile-entity-card.has-inline-select .mobile-entity-status{
-        display: none;
       }
 
       .mobile-entity-select{
@@ -4502,7 +4201,7 @@ export class DwainsLayoutCard extends LitElement {
 .home-favorites-section,
 .home-summaries-section,
 .mobile-domain-group,
-.mobile-entities-section.layout-grid .mobile-entity-card{
+.mobile-entities-section.layout-grid .mobile-entity-tile-host{
         content-visibility: visible;
         contain-intrinsic-size: auto;
       }
@@ -4856,95 +4555,8 @@ export class DwainsLayoutCard extends LitElement {
       justify-content: flex-end;
     }
 
-    .notifications-overlay{
-      position: fixed;
-      inset: 0;
-      z-index: 1040;
-      opacity: 0;
-      pointer-events: none;
-      background: rgba(0, 0, 0, 0.42);
-      backdrop-filter: blur(2px);
-      transition: opacity 0.22s ease;
-    }
-
-    .notifications-overlay.open{
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .notifications-panel{
-      position: fixed;
-      left: 50%;
-      top: 50%;
-      z-index: 1041;
-      width: min(520px, calc(100vw - 48px));
-      max-height: min(78vh, 620px);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      border-radius: 8px;
-      border: 1px solid rgba(15, 23, 42, 0.08);
-      background: color-mix(in srgb, var(--card-background-color) 96%, transparent);
-      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
-      backdrop-filter: blur(22px);
-      transform: translate3d(-50%, -46%, 0) scale(0.96);
-      opacity: 0;
-      pointer-events: none;
-      transition:
-        transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
-        opacity 0.2s ease;
-    }
-
-    .notifications-panel.open{
-      transform: translate3d(-50%, -50%, 0) scale(1);
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .notifications-panel::before{
-      content: "";
-      width: 42px;
-      height: 4px;
-      margin: 10px auto 2px;
-      flex: 0 0 auto;
-      border-radius: 999px;
-      background: rgba(0, 0, 0, 0.14);
-    }
-
-    .notifications-head{
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      padding: 12px 14px 10px;
-      border-bottom: 1px solid rgba(15, 23, 42, 0.08);
-    }
-
     .notifications-title{
       min-width: 0;
-    }
-
-    .notifications-title-row{
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--primary-text-color);
-      font-size: 16px;
-      font-weight: 850;
-      line-height: 1.15;
-    }
-
-    .notifications-title-row ha-icon{
-      color: var(--primary-color);
-      --mdc-icon-size: 20px;
-    }
-
-    .notifications-subtitle{
-      margin-top: 3px;
-      color: var(--secondary-text-color);
-      font-size: 12px;
-      font-weight: 600;
-      line-height: 1.2;
     }
 
     .notifications-actions{
@@ -4977,7 +4589,6 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     .notifications-list{
-      overflow-y: auto;
       padding: 10px;
     }
 
@@ -5072,17 +4683,6 @@ export class DwainsLayoutCard extends LitElement {
     }
 
     @media (max-width: 1024px) {
-      .notifications-panel{
-        top: auto;
-        bottom: calc(18px + env(safe-area-inset-bottom, 0px));
-        width: min(460px, calc(100vw - 28px));
-        max-height: min(70vh, 620px);
-        transform: translate3d(-50%, calc(100% + 48px), 0);
-      }
-
-      .notifications-panel.open{
-        transform: translate3d(-50%, 0, 0);
-      }
     }
 
     .confirmation-button{
@@ -7419,7 +7019,6 @@ export class DwainsLayoutCard extends LitElement {
     @media (max-width: 768px) {
       :host{
         height: auto;
-        max-height: none;
         min-height: 100%;
         overflow: visible;
       }
@@ -7472,30 +7071,6 @@ export class DwainsLayoutCard extends LitElement {
         width: 100%;
         margin: 0;
         padding: 8px 10px calc(152px + env(safe-area-inset-bottom, 0px));
-      }
-
-      .settings-page-header{
-        grid-template-columns: auto minmax(0, 1fr);
-        gap: 12px;
-        margin: 0 0 12px;
-        padding: 12px 14px;
-        border-radius: 18px;
-        border-top: 1px solid color-mix(in srgb, var(--divider-color) 72%, transparent);
-        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.07);
-      }
-
-      .settings-page-back{
-        width: 42px;
-        height: 42px;
-      }
-
-      .settings-page-title h1{
-        font-size: 21px;
-      }
-
-      .settings-page-title p{
-        margin-top: 3px;
-        font-size: 13px;
       }
 
       .settings-page-actions{
@@ -10010,53 +9585,9 @@ which could overlap
       padding-top: 18px;
     }
 
-    .settings-page-header,
-.settings-page-editor{
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    .settings-page-header{
-      min-height: 76px;
-      padding: 12px 16px;
-      gap: 14px;
-    }
-
-    .settings-page-title{
-      min-height: 44px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    .settings-page-title h1{
-      font-size: clamp(22px, 1.65vw, 26px);
-      line-height: 1.05;
-    }
-
-    .settings-page-title p{
-      margin: 3px 0 0;
-      min-height: 16px;
-      font-size: 12px;
-      line-height: 1.3;
-    }
-
-    .settings-page-actions,
-.settings-page-back{
-      align-self: center;
-    }
-
     @media (max-width: 768px) {
       .settings-page-view{
         width: 100%;
-      }
-
-      .settings-page-header{
-        min-height: 68px;
-      }
-
-      .settings-page-title{
-        min-height: 42px;
       }
     }
 
@@ -10389,26 +9920,6 @@ which could overlap
       display: none;
     }
 
-    /* Keep status text and the toggle in one visual cluster. */
-    .mobile-entity-status-row{
-      margin-top: 5px;
-      min-width: 0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .mobile-entity-status-row .mobile-entity-status{
-      margin-top: 0;
-      min-width: 0;
-      flex: 1 1 auto;
-    }
-
-    .mobile-entity-status-row .mobile-entity-toggle{
-      flex: 0 0 auto;
-    }
-
     .mobile-domain-master{
       min-width: 76px;
     }
@@ -10430,24 +9941,6 @@ not a tinted whole card. */
 .mobile-entity-card.mobile-entity-binary_sensor.device-opening.is-active{
       background: color-mix(in srgb, var(--card-background-color) 96%, var(--primary-background-color));
       box-shadow: 0 10px 24px rgba(15, 23, 42, 0.07);
-    }
-
-    .mobile-entity-card.mobile-entity-binary_sensor.device-window .mobile-entity-status,
-.mobile-entity-card.mobile-entity-binary_sensor.device-door .mobile-entity-status,
-.mobile-entity-card.mobile-entity-binary_sensor.device-opening .mobile-entity-status{
-      width: fit-content;
-      max-width: 100%;
-      padding: 3px 8px;
-      border-radius: 999px;
-      color: var(--secondary-text-color);
-      background: color-mix(in srgb, var(--primary-text-color) 7%, var(--card-background-color));
-    }
-
-    .mobile-entity-card.mobile-entity-binary_sensor.device-window.is-active .mobile-entity-status,
-.mobile-entity-card.mobile-entity-binary_sensor.device-door.is-active .mobile-entity-status,
-.mobile-entity-card.mobile-entity-binary_sensor.device-opening.is-active .mobile-entity-status{
-      color: var(--entity-color);
-      background: color-mix(in srgb, var(--entity-color) 11%, var(--card-background-color));
     }
 
 
@@ -12695,83 +12188,10 @@ no chip/background. */
       .home-favorites-section .favorites-header ha-icon{ color: #f59e0b; }
     }
 
-    /* House power detail dialog mirrors the local Climate-dialog workflow instead of navigating away. */
-    .house-power-dialog-overlay{
-      position: fixed;
-      inset: 0;
-      z-index: 1200;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      background: rgba(8, 13, 24, 0.48);
-      backdrop-filter: blur(5px);
-      -webkit-backdrop-filter: blur(5px);
-    }
-
-    .house-power-dialog{
-      position: relative;
-      width: min(760px, calc(100vw - 32px));
-      max-height: min(90vh, 760px);
-      padding: 16px;
-      overflow-y: auto;
-      overscroll-behavior-y: contain;
-      border: 1px solid color-mix(in srgb, var(--divider-color) 72%, transparent);
-      border-radius: 14px;
-      background: var(--card-background-color);
-      color: var(--primary-text-color);
-      box-shadow: 0 24px 64px rgba(8, 13, 24, 0.24);
-      outline: none;
-    }
-
     .house-power-dialog-handle{
       display: none;
     }
-
-    .house-power-dialog-head{
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      margin-bottom: 14px;
-    }
-
-    .house-power-dialog-title-wrap{
-      min-width: 0;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .house-power-dialog-icon{
-      width: 40px;
-      height: 40px;
-      flex: 0 0 auto;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 10px;
-      color: ${unsafeCSS(getDomainColor('energy'))};
-      background: color-mix(in srgb, ${unsafeCSS(getDomainColor('energy'))} 12%, var(--card-background-color));
-    }
-
-    .house-power-dialog-icon ha-icon{ --mdc-icon-size: 23px; }
-    .house-power-dialog-title{ font-size: 20px; font-weight: 900; line-height: 1.05; }
     .house-power-dialog-subtitle{ margin-top: 3px; color: var(--secondary-text-color); font-size: 12px; font-weight: 700; }
-
-    .house-power-dialog-close{
-      width: 38px;
-      height: 38px;
-      padding: 0;
-      border: 0;
-      border-radius: 999px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: color-mix(in srgb, var(--primary-text-color) 6%, transparent);
-      color: var(--primary-text-color);
-      cursor: pointer;
-    }
 
     .house-power-dialog-total{
       min-height: 72px;
@@ -12882,26 +12302,6 @@ no chip/background. */
     }
 
     @media (max-width: 768px) {
-      .house-power-dialog-overlay{
-        align-items: flex-end;
-        justify-content: center;
-        padding:
-          max(env(safe-area-inset-top, 0px), 12px)
-          env(safe-area-inset-right, 0px)
-          0
-          env(safe-area-inset-left, 0px);
-        overscroll-behavior: none;
-      }
-
-      .house-power-dialog{
-        width: 100%;
-        max-width: 100%;
-        max-height: calc(100dvh - max(env(safe-area-inset-top, 0px), 12px));
-        margin: 0;
-        padding: 14px 14px calc(16px + env(safe-area-inset-bottom, 0px));
-        border-radius: 24px 24px 0 0;
-        animation: none;
-      }
 
       .house-power-dialog-handle{
         display: none !important;
@@ -13499,14 +12899,6 @@ never pill-shaped for 1–2 digits. */
     }
     .room-favorites-title .mobile-domain-title-copy{
       gap: 5px !important;
-    }
-
-    .house-power-dialog-title-wrap{
-      display: flex !important;
-      align-items: center !important;
-      gap: 9px !important;
-      flex-wrap: wrap;
-      min-width: 0;
     }
     .house-power-dialog-energy-link{
       min-height: 30px !important;
@@ -16190,73 +15582,10 @@ copy{
       }
 
       .mobile-entity-card,
-      .mobile-entities-section.layout-grid .mobile-entity-card {
+      .mobile-entities-section.layout-grid .mobile-entity-tile-host {
         flex-basis: 180px;
         min-height: 141px;
         padding: 15px;
-      }
-
-      .mobile-entity-icon,
-      .mobile-entities-section.layout-grid .mobile-entity-icon {
-        width: 40px;
-        height: 40px;
-      }
-
-      .mobile-entity-icon ha-icon {
-        --mdc-icon-size: 22px;
-      }
-
-      .mobile-entity-toggle {
-        width: 42px;
-        height: 24px;
-      }
-
-      .mobile-entity-toggle::before {
-        width: 20px;
-        height: 20px;
-      }
-
-      .mobile-entity-card.is-active .mobile-entity-toggle::before {
-        transform: translateX(18px);
-      }
-
-      .mobile-entity-more,
-      .mobile-scene-action,
-      .mobile-lock-action {
-        width: 33px;
-        height: 33px;
-      }
-
-      .mobile-entity-more ha-icon,
-      .mobile-scene-action ha-icon,
-      .mobile-lock-action ha-icon {
-        --mdc-icon-size: 19px;
-      }
-
-      .mobile-cover-actions,
-      .mobile-entities-section.layout-grid .mobile-cover-actions {
-        min-height: 35px;
-        padding: 3px;
-        gap: 3px;
-      }
-
-      .mobile-cover-action,
-      .mobile-entities-section.layout-grid .mobile-cover-action {
-        width: 29px;
-        height: 29px;
-      }
-
-      .mobile-cover-action ha-icon,
-      .mobile-entities-section.layout-grid .mobile-cover-action ha-icon {
-        --mdc-icon-size: 18px;
-      }
-
-      .mobile-entity-meta {
-        font-size: 11px;
-      }
-
-      .mobile-entity-name {
-        font-size: 17px;
       }
 
       .mobile-entity-status {
@@ -16281,77 +15610,6 @@ copy{
 
     /* Final mobile house-power popup shell: same visual system as Home Information dialogs. */
     @media (max-width: 768px) {
-      .house-power-dialog-overlay {
-        align-items: flex-end !important;
-        justify-content: center !important;
-        padding:
-          max(env(safe-area-inset-top, 0px), 56px)
-          env(safe-area-inset-right, 0px)
-          0
-          env(safe-area-inset-left, 0px) !important;
-      }
-
-      .house-power-dialog {
-        width: 100% !important;
-        max-width: 100% !important;
-        max-height: calc(100dvh - max(env(safe-area-inset-top, 0px), 56px)) !important;
-        margin: 0 !important;
-        padding: 0 0 calc(16px + env(safe-area-inset-bottom, 0px)) !important;
-        border-radius: 24px 24px 0 0 !important;
-        overflow-y: auto !important;
-        background: var(--card-background-color) !important;
-      }
-
-      .house-power-dialog-head {
-        position: sticky;
-        top: 0;
-        z-index: 4;
-        min-height: 76px;
-        margin: 0 0 12px !important;
-        padding: 12px 14px !important;
-        box-sizing: border-box;
-        display: grid !important;
-        grid-template-columns: minmax(0, 1fr) auto !important;
-        align-items: center !important;
-        gap: 10px !important;
-        background: var(--card-background-color);
-        box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--divider-color) 70%, transparent);
-      }
-
-      .house-power-dialog-title-wrap {
-        min-width: 0;
-        display: grid !important;
-        grid-template-columns: 48px minmax(0, 1fr) !important;
-        grid-template-rows: auto auto !important;
-        align-items: center !important;
-        column-gap: 10px !important;
-        row-gap: 4px !important;
-        flex-wrap: nowrap !important;
-      }
-
-      .house-power-dialog-icon {
-        grid-column: 1 !important;
-        grid-row: 1 / span 2 !important;
-        width: 48px !important;
-        height: 48px !important;
-        border-radius: 12px !important;
-      }
-
-      .house-power-dialog-icon ha-icon {
-        --mdc-icon-size: 25px !important;
-      }
-
-      .house-power-dialog-title {
-        grid-column: 2 !important;
-        grid-row: 1 !important;
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        font-size: 20px !important;
-        font-weight: 900 !important;
-        line-height: 1.05 !important;
-      }
 
       .house-power-dialog-energy-link {
         grid-column: 2 !important;
@@ -16366,12 +15624,6 @@ copy{
 
       .house-power-dialog-energy-link span {
         display: inline !important;
-      }
-
-      .house-power-dialog-close {
-        width: 40px !important;
-        height: 40px !important;
-        background: transparent !important;
       }
 
       .house-power-dialog-overview,
@@ -16469,71 +15721,6 @@ copy{
 
 
     @media (max-width: 768px) {
-      /* Stromverbrauch uses the exact same mobile shell dimensions/header rhythm
-         as the Home Information dialogs. Only its inner energy content differs. */
-      .house-power-dialog-overlay {
-        align-items: flex-end !important;
-        justify-content: center !important;
-        padding: 0 !important;
-      }
-
-      .house-power-dialog {
-        width: 100vw !important;
-        max-width: 100vw !important;
-        height: auto !important;
-        max-height: 88dvh !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        overflow: hidden !important;
-        border: 0 !important;
-        border-radius: 24px 24px 0 0 !important;
-        background: var(--card-background-color) !important;
-      }
-
-      .house-power-dialog-head {
-        position: relative !important;
-        top: auto !important;
-        min-height: 74px !important;
-        margin: 0 !important;
-        padding: 14px 14px 12px !important;
-        box-sizing: border-box !important;
-        display: grid !important;
-        grid-template-columns: minmax(0, 1fr) auto !important;
-        align-items: center !important;
-        gap: 10px !important;
-        background: var(--card-background-color) !important;
-        box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--divider-color) 65%, transparent) !important;
-      }
-
-      .house-power-dialog-title-wrap {
-        min-width: 0 !important;
-        display: grid !important;
-        grid-template-columns: 48px minmax(0, 1fr) !important;
-        grid-template-rows: auto auto !important;
-        align-items: center !important;
-        column-gap: 10px !important;
-        row-gap: 5px !important;
-      }
-
-      .house-power-dialog-icon {
-        grid-column: 1 !important;
-        grid-row: 1 / span 2 !important;
-        width: 48px !important;
-        height: 48px !important;
-        border-radius: 12px !important;
-      }
-
-      .house-power-dialog-icon ha-icon {
-        --mdc-icon-size: 25px !important;
-      }
-
-      .house-power-dialog-title {
-        grid-column: 2 !important;
-        grid-row: 1 !important;
-        font-size: 20px !important;
-        font-weight: 900 !important;
-        line-height: 1.05 !important;
-      }
 
       .house-power-dialog-energy-link {
         grid-column: 2 !important;
@@ -16547,19 +15734,9 @@ copy{
         font-size: 11px !important;
       }
 
-      .house-power-dialog-close {
-        width: 40px !important;
-        height: 40px !important;
-        padding: 0 !important;
-        background: transparent !important;
-      }
-
       .house-power-dialog-content {
-        max-height: calc(88dvh - 74px) !important;
         padding: 12px 12px calc(16px + env(safe-area-inset-bottom, 0px)) !important;
         box-sizing: border-box !important;
-        overflow-y: auto !important;
-        overscroll-behavior-y: contain !important;
         background: var(--primary-background-color) !important;
       }
 
@@ -16568,70 +15745,6 @@ copy{
         margin-left: 0 !important;
         margin-right: 0 !important;
       }
-    }
-
-    /* Notifications use the same dialog language as the other DD Next popups. */
-    .notifications-panel {
-      width: min(760px, calc(100vw - 32px)) !important;
-      max-height: min(82vh, 760px) !important;
-      border-radius: 14px !important;
-      border: 1px solid color-mix(in srgb, var(--divider-color) 72%, transparent) !important;
-      background: var(--card-background-color) !important;
-      box-shadow: 0 24px 64px rgba(8, 13, 24, 0.24) !important;
-      backdrop-filter: none !important;
-    }
-
-    .notifications-panel::before {
-      display: none !important;
-    }
-
-    .notifications-head {
-      min-height: 72px !important;
-      padding: 12px 18px !important;
-      box-sizing: border-box !important;
-      gap: 12px !important;
-      background: var(--card-background-color) !important;
-      border-bottom: 0 !important;
-      box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--divider-color) 65%, transparent) !important;
-    }
-
-    .notifications-heading {
-      min-width: 0;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .notifications-title-icon {
-      width: 44px;
-      height: 44px;
-      flex: 0 0 44px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 11px;
-      color: var(--primary-color);
-      background: color-mix(in srgb, var(--primary-color) 11%, var(--card-background-color));
-    }
-
-    .notifications-title-icon ha-icon {
-      --mdc-icon-size: 24px;
-    }
-
-    .notifications-title-row {
-      font-size: 20px !important;
-      font-weight: 850 !important;
-      line-height: 1.1 !important;
-    }
-
-    .notifications-title-row ha-icon {
-      display: none !important;
-    }
-
-    .notifications-subtitle {
-      margin-top: 3px !important;
-      font-size: 11px !important;
-      font-weight: 650 !important;
     }
 
     .notifications-actions {
@@ -16695,48 +15808,9 @@ copy{
     }
 
     @media (max-width: 768px) {
-      .notifications-panel {
-        left: 0 !important;
-        right: 0 !important;
-        top: auto !important;
-        bottom: 0 !important;
-        width: 100vw !important;
-        max-width: 100vw !important;
-        max-height: 88dvh !important;
-        border-width: 0 !important;
-        border-radius: 24px 24px 0 0 !important;
-        transform: translate3d(0, 100%, 0) !important;
-      }
-
-      .notifications-panel.open {
-        transform: translate3d(0, 0, 0) !important;
-      }
-
-      .notifications-head {
-        min-height: 74px !important;
-        padding: 14px 14px 12px !important;
-      }
-
-      .notifications-title-icon {
-        width: 48px !important;
-        height: 48px !important;
-        flex-basis: 48px !important;
-        border-radius: 12px !important;
-      }
-
-      .notifications-title-icon ha-icon {
-        --mdc-icon-size: 25px !important;
-      }
-
-      .notifications-title-row {
-        font-size: 20px !important;
-      }
 
       .notifications-list {
-        max-height: calc(88dvh - 74px) !important;
         padding: 12px 12px calc(16px + env(safe-area-inset-bottom, 0px)) !important;
-        overflow-y: auto !important;
-        overscroll-behavior-y: contain !important;
       }
 
       .notifications-actions {
@@ -17832,63 +16906,41 @@ copy{
 
     const count = this._persistentNotifications.length;
     const hasNotifications = count > 0;
+    const subtitle = hasNotifications
+      ? `${count} ${this._t(count === 1 ? 'home.notification' : 'home.notifications').toLocaleLowerCase()}`
+      : this._t('home.notifications_description');
 
     return html`
-      <div
-        class="notifications-overlay ${this._notificationsOpen ? 'open' : ''}"
-        @click=${this._closeNotifications}
-      ></div>
-      <section
-        class="notifications-panel ${this._notificationsOpen ? 'open' : ''}"
-        aria-hidden=${this._notificationsOpen ? 'false' : 'true'}
+      <dd-next-popup-shell
+        .open=${this._notificationsOpen}
+        .titleText=${this._t('home.notifications')}
+        .subtitle=${subtitle}
+        icon="mdi:bell-outline"
+        .accent=${getDomainColor('notification')}
+        .closeLabel=${this._t('common.close')}
+        @dd-close=${this._closeNotifications}
       >
-        <div class="notifications-head">
-          <div class="notifications-heading">
-            <div class="notifications-title-icon">
-              <ha-icon icon="mdi:bell-outline"></ha-icon>
-            </div>
-            <div class="notifications-title">
-              <div class="notifications-title-row">
-                <span>${this._t('home.notifications')}</span>
-              </div>
-              <div class="notifications-subtitle">
-                ${hasNotifications
-                  ? `${count} ${this._t(count === 1 ? 'home.notification' : 'home.notifications').toLocaleLowerCase()}`
-                  : this._t('home.notifications_description')}
-              </div>
-            </div>
-          </div>
-          <div class="notifications-actions">
-            ${hasNotifications ? html`
-              <button
-                class="notifications-icon-button destructive"
-                type="button"
-                title=${this._t('common.dismiss_all')}
-                aria-label=${this._t('common.dismiss_all')}
-                @click=${this._dismissAllPersistentNotifications}
-              >
-                <ha-icon icon="mdi:delete-sweep-outline"></ha-icon>
-              </button>
-            ` : nothing}
+        <div slot="actions" class="notifications-actions">
+          ${hasNotifications ? html`
             <button
-              class="notifications-icon-button refresh"
+              class="notifications-icon-button destructive"
               type="button"
-              title=${this._t('common.refresh')}
-              aria-label=${this._t('common.refresh')}
-              @click=${() => this._loadPersistentNotifications(true)}
+              title=${this._t('common.dismiss_all')}
+              aria-label=${this._t('common.dismiss_all')}
+              @click=${this._dismissAllPersistentNotifications}
             >
-              <ha-icon icon="mdi:refresh"></ha-icon>
+              <ha-icon icon="mdi:delete-sweep-outline"></ha-icon>
             </button>
-            <button
-              class="notifications-icon-button close"
-              type="button"
-              title=${this._t('common.close')}
-              aria-label=${this._t('common.close')}
-              @click=${this._closeNotifications}
-            >
-              <ha-icon icon="mdi:close"></ha-icon>
-            </button>
-          </div>
+          ` : nothing}
+          <button
+            class="notifications-icon-button refresh"
+            type="button"
+            title=${this._t('common.refresh')}
+            aria-label=${this._t('common.refresh')}
+            @click=${() => this._loadPersistentNotifications(true)}
+          >
+            <ha-icon icon="mdi:refresh"></ha-icon>
+          </button>
         </div>
 
         <div class="notifications-list">
@@ -17917,7 +16969,7 @@ copy{
                     </div>
                   `}
         </div>
-      </section>
+      </dd-next-popup-shell>
     `;
   }
 
@@ -19360,12 +18412,6 @@ copy{
     this._openDeviceDomain('energy');
   };
 
-  private _handleHousePowerDialogKeydown = (event: KeyboardEvent): void => {
-    if (event.key !== 'Escape') return;
-    event.preventDefault();
-    this._closeHousePowerDialog();
-  };
-
   private _renderHousePowerDialog() {
     if (!this._housePowerDialogOpen) return nothing;
 
@@ -19377,42 +18423,27 @@ copy{
     );
 
     return html`
-      <div class="house-power-dialog-overlay" @click=${this._closeHousePowerDialog}>
-        <section
-          class="house-power-dialog"
-          role="dialog"
-          aria-modal="true"
-          aria-label=${this._t('home.house_power_usage')}
-          tabindex="0"
-          @click=${(event: Event) => event.stopPropagation()}
-          @keydown=${this._handleHousePowerDialogKeydown}
+      <dd-next-popup-shell
+        open
+        wide
+        .titleText=${this._t('home.house_power_usage')}
+        icon="mdi:flash"
+        .accent=${getDomainColor('wattage')}
+        .closeLabel=${this._t('common.close')}
+        @dd-close=${this._closeHousePowerDialog}
+      >
+        <button
+          slot="header-extra"
+          class="house-power-dialog-energy-link"
+          type="button"
+          @click=${this._openEnergyFromPowerDialog}
         >
-          <div class="house-power-dialog-head">
-            <div class="house-power-dialog-title-wrap">
-              <span class="house-power-dialog-icon"><ha-icon icon="mdi:flash"></ha-icon></span>
-              <div class="house-power-dialog-title">${this._t('home.house_power_usage')}</div>
-              <button
-                class="house-power-dialog-energy-link"
-                type="button"
-                @click=${this._openEnergyFromPowerDialog}
-              >
-                <span>${this._houseInfoEnergyViewLabel()}</span>
-                <ha-icon icon="mdi:chevron-right"></ha-icon>
-              </button>
-            </div>
-            <button
-              class="house-power-dialog-close"
-              type="button"
-              title=${this._t('common.close')}
-              aria-label=${this._t('common.close')}
-              @click=${this._closeHousePowerDialog}
-            >
-              <ha-icon icon="mdi:close"></ha-icon>
-            </button>
-          </div>
+          <span>${this._houseInfoEnergyViewLabel()}</span>
+          <ha-icon icon="mdi:chevron-right"></ha-icon>
+        </button>
 
-          <div class="house-power-dialog-content">
-            <div class="house-power-dialog-overview">
+        <div class="house-power-dialog-content">
+          <div class="house-power-dialog-overview">
             <section class="house-power-dialog-overview-card">
               <div class="house-power-dialog-overview-head">
                 <span class="house-power-dialog-overview-icon"><ha-icon icon="mdi:home-lightning-bolt-outline"></ha-icon></span>
@@ -19489,9 +18520,8 @@ copy{
           ` : html`
             <div class="house-power-dialog-empty">${this._t('home.no_room_power_usage')}</div>
           `}
-          </div>
-        </section>
-      </div>
+        </div>
+      </dd-next-popup-shell>
     `;
   }
 
@@ -22203,63 +21233,96 @@ copy{
     const statusText = this._mobileEntityStatusText(state, domain);
 
     const classes = [
-      'mobile-entity-card',
       `mobile-entity-${domain}`,
       deviceClass ? `device-${deviceClass}` : '',
       `action-${actionKind}`,
-      active ? 'is-active' : 'is-off',
       hasInlineSelect ? 'has-inline-select' : '',
-      unavailable && !unknownIsNormal ? 'is-unavailable' : '',
-    ].join(' ');
+    ].filter(Boolean).join(' ');
+
+    const accent = this._mobileEntityColor(domain, deviceClass);
+    const actionMode = actionKind === 'toggle'
+      ? 'toggle'
+      : actionKind === 'cover'
+        ? 'cover'
+        : actionKind === 'lock'
+          ? 'lock'
+          : actionKind === 'scene'
+            ? 'scene'
+            : 'none';
 
     return html`
-      <article
-        class=${classes}
-        style=${`--entity-color: ${this._mobileEntityColor(domain, deviceClass)};`}
-        role="button"
-        tabindex="0"
-        aria-label=${name}
-        @click=${() => this._showMoreInfo(entity.entity_id)}
-        @keydown=${(event: KeyboardEvent) => this._handleMobileEntityKeydown(event, entity.entity_id)}
+      <dd-next-compact-entity-tile
+        class="mobile-entity-tile-host ${classes}"
+        variant="card"
+        .name=${name}
+        .status=${statusText}
+        .icon=${icon}
+        .accent=${accent}
+        .active=${active}
+        .unavailable=${unavailable && !unknownIsNormal}
+        .editing=${Boolean(editControls)}
+        @dd-open=${() => this._showMoreInfo(entity.entity_id)}
       >
-        <div class="mobile-entity-main ${editControls ? 'editing-inline' : ''}">
-          ${editControls ? html`
-            <button
-              class="dd-generated-card-leading-drag-handle"
-              type="button"
-              title=${this._t('layout.drag_card')}
-              aria-label=${this._t('layout.drag_card')}
-              @click=${(event: Event) => event.stopPropagation()}
-            >
-              <ha-icon icon="mdi:drag"></ha-icon>
-            </button>
-          ` : nothing}
-          <div class="mobile-entity-icon"><ha-icon class=${hasInlineSelect ? 'mobile-entity-leading-select-icon' : ''} icon=${icon}></ha-icon></div>
-          <div class="mobile-entity-content">
-            <div class="mobile-entity-name" title=${name}>${name}</div>
-            ${statusText ? html`
-              <div class="mobile-entity-state ${active ? 'active' : ''}">${statusText}</div>
-            ` : nothing}
-          </div>
-          <div class="mobile-entity-right">
-            ${editControls ? html`
-              <button
-                class="dd-generated-card-visibility"
-                type="button"
-                title=${this._t(editControls.hidden ? 'common.show' : 'common.hide')}
-                aria-label=${this._t(editControls.hidden ? 'common.show' : 'common.hide')}
-                aria-pressed=${editControls.hidden ? 'true' : 'false'}
-                @click=${(event: Event) => this._toggleGeneratedCardVisibility(event, editControls.areaId, entity.entity_id)}
-              >
-                <ha-icon icon=${editControls.hidden ? 'mdi:eye' : 'mdi:eye-off-outline'}></ha-icon>
-              </button>
-            ` : (actionKind === 'more' ? nothing : this._renderMobileEntityActions(state, domain, active))}
-          </div>
-        </div>
+        ${editControls ? html`
+          <button
+            slot="leading"
+            class="dd-generated-card-leading-drag-handle"
+            type="button"
+            title=${this._t('layout.drag_card')}
+            aria-label=${this._t('layout.drag_card')}
+            @click=${(event: Event) => event.stopPropagation()}
+          >
+            <ha-icon icon="mdi:drag"></ha-icon>
+          </button>
+        ` : nothing}
 
+        ${editControls ? html`
+          <button
+            slot="actions"
+            class="dd-generated-card-visibility"
+            type="button"
+            title=${this._t(editControls.hidden ? 'common.show' : 'common.hide')}
+            aria-label=${this._t(editControls.hidden ? 'common.show' : 'common.hide')}
+            aria-pressed=${editControls.hidden ? 'true' : 'false'}
+            @click=${(event: Event) => this._toggleGeneratedCardVisibility(event, editControls.areaId, entity.entity_id)}
+          >
+            <ha-icon icon=${editControls.hidden ? 'mdi:eye' : 'mdi:eye-off-outline'}></ha-icon>
+          </button>
+        ` : actionMode !== 'none' ? html`
+          <dd-next-entity-actions
+            slot="actions"
+            .mode=${actionMode}
+            .accent=${accent}
+            .active=${active}
+            .unavailable=${unavailable}
+            .state=${String(state.state || '')}
+            .canOpen=${this._coverSupportsFeature(state, 1)}
+            .canClose=${this._coverSupportsFeature(state, 2)}
+            .canStop=${this._coverSupportsFeature(state, 8)}
+            .turnOnLabel=${this._t('action.turn_on')}
+            .turnOffLabel=${this._t('action.turn_off')}
+            .openLabel=${this._t('action.open')}
+            .stopLabel=${this._t('action.stop')}
+            .closeLabel=${this._t('action.close')}
+            .lockLabel=${this._t('action.lock')}
+            .unlockLabel=${this._t('action.unlock')}
+            .activateLabel=${this._t('action.activate')}
+            @dd-action=${(event: CustomEvent<{ action: string }>) => {
+              if (actionKind === 'toggle') {
+                void this._handleMobileEntityToggle(event, state, domain);
+              } else if (actionKind === 'cover') {
+                void this._handleMobileCoverAction(event, state, event.detail.action as 'open' | 'stop' | 'close');
+              } else if (actionKind === 'lock') {
+                void this._handleMobileLockAction(event, state);
+              } else if (actionKind === 'scene') {
+                void this._handleMobileSceneAction(event, state);
+              }
+            }}
+          ></dd-next-entity-actions>
+        ` : nothing}
 
         ${hasInlineSelect ? this._renderMobileEntitySelect(state, domain) : nothing}
-      </article>
+      </dd-next-compact-entity-tile>
     `;
   }
 
@@ -22273,14 +21336,6 @@ copy{
         ></dwains-dashboard-next-card-host>
       </div>
     `;
-  }
-
-  private _handleMobileEntityKeydown(event: KeyboardEvent, entityId: string): void {
-    const target = event.target as HTMLElement | null;
-    if (target?.closest?.('button, select, input, textarea, a')) return;
-    if (event.key !== 'Enter' && event.key !== ' ') return;
-    event.preventDefault();
-    this._showMoreInfo(entityId);
   }
 
   private _mobileEntityHasInlineSelect(domain: string, state: any): boolean {
@@ -22323,122 +21378,6 @@ copy{
     }
 
     return options;
-  }
-
-  private _renderMobileEntityActions(state: any, domain: string, active: boolean) {
-    const actionKind = this._mobileEntityActionKind(domain);
-    const unavailable = ['unavailable', 'unknown'].includes(String(state?.state || '').toLowerCase());
-
-    if (actionKind === 'toggle') {
-      return html`
-        <button
-          class="mobile-entity-action mobile-entity-toggle"
-          type="button"
-          title=${active ? this._t('action.turn_off') : this._t('action.turn_on')}
-          aria-label=${active ? this._t('action.turn_off') : this._t('action.turn_on')}
-          ?disabled=${unavailable}
-          @click=${(event: Event) => this._handleMobileEntityToggle(event, state, domain)}
-        ></button>
-      `;
-    }
-
-    if (actionKind === 'cover') {
-      return this._renderMobileCoverActions(state);
-    }
-
-    if (actionKind === 'lock') {
-      const unlocked = this._isEntityActiveForUi(state, domain);
-      return html`
-        <button
-          class="mobile-entity-action mobile-lock-action ${unlocked ? 'is-unlocked' : ''}"
-          type="button"
-          title=${unlocked ? this._t('action.lock') : this._t('action.unlock')}
-          aria-label=${unlocked ? this._t('action.lock') : this._t('action.unlock')}
-          ?disabled=${unavailable}
-          @click=${(event: Event) => this._handleMobileLockAction(event, state)}
-        >
-          <ha-icon icon=${unlocked ? 'mdi:lock-open-variant-outline' : 'mdi:lock-outline'}></ha-icon>
-        </button>
-      `;
-    }
-
-    if (actionKind === 'scene') {
-      return html`
-        <button
-          class="mobile-entity-action mobile-scene-action"
-          type="button"
-          title=${this._t('action.activate')}
-          aria-label=${this._t('action.activate')}
-          @click=${(event: Event) => this._handleMobileSceneAction(event, state)}
-        >
-          <ha-icon icon="mdi:play"></ha-icon>
-        </button>
-      `;
-    }
-
-    return html`
-      <button
-        class="mobile-entity-action mobile-entity-more"
-        type="button"
-        title=${this._t('action.more_info')}
-        aria-label=${this._t('action.more_info')}
-        @click=${(event: Event) => {
-          event.stopPropagation();
-          this._showMoreInfo(state?.entity_id);
-        }}
-      >
-        <ha-icon icon="mdi:chevron-right"></ha-icon>
-      </button>
-    `;
-  }
-
-  private _renderMobileCoverActions(state: any) {
-    const value = String(state?.state || '').toLowerCase();
-    const unavailable = ['unavailable', 'unknown'].includes(value);
-    const canOpen = this._coverSupportsFeature(state, 1);
-    const canClose = this._coverSupportsFeature(state, 2);
-    const canStop = this._coverSupportsFeature(state, 8);
-
-    return html`
-      <div class="mobile-cover-actions" @click=${(event: Event) => event.stopPropagation()}>
-        ${canOpen ? html`
-          <button
-            class="mobile-entity-action mobile-cover-action ${value === 'opening' ? 'active' : ''}"
-            type="button"
-            title=${this._t('action.open')}
-            aria-label=${this._t('action.open')}
-            ?disabled=${unavailable}
-            @click=${(event: Event) => this._handleMobileCoverAction(event, state, 'open')}
-          >
-            <ha-icon icon="mdi:arrow-up"></ha-icon>
-          </button>
-        ` : nothing}
-        ${canStop ? html`
-          <button
-            class="mobile-entity-action mobile-cover-action ${value === 'opening' || value === 'closing' ? 'active' : ''}"
-            type="button"
-            title=${this._t('action.stop')}
-            aria-label=${this._t('action.stop')}
-            ?disabled=${unavailable}
-            @click=${(event: Event) => this._handleMobileCoverAction(event, state, 'stop')}
-          >
-            <ha-icon icon="mdi:stop"></ha-icon>
-          </button>
-        ` : nothing}
-        ${canClose ? html`
-          <button
-            class="mobile-entity-action mobile-cover-action ${value === 'closing' ? 'active' : ''}"
-            type="button"
-            title=${this._t('action.close')}
-            aria-label=${this._t('action.close')}
-            ?disabled=${unavailable}
-            @click=${(event: Event) => this._handleMobileCoverAction(event, state, 'close')}
-          >
-            <ha-icon icon="mdi:arrow-down"></ha-icon>
-          </button>
-        ` : nothing}
-      </div>
-    `;
   }
 
   private async _handleMobileEntityToggle(event: Event, state: any, domain: string): Promise<void> {
@@ -23781,27 +22720,19 @@ copy{
 
     return html`
       <section class="settings-page-view">
-        <header class="settings-page-header">
-          <button
-            class="settings-page-back"
-            type="button"
-            title=${onSubpage ? this._t('common.back') : this._t('common.close')}
-            aria-label=${onSubpage ? this._t('common.back') : this._t('common.close')}
-            @click=${onSubpage ? this._settingsBackToOverview : this._closeSettingsPage}
-          >
-            <ha-icon icon=${onSubpage ? 'mdi:arrow-left' : 'mdi:close'}></ha-icon>
-          </button>
-          <div class="settings-page-title">
-            <h1>
-              ${this._settingsPageParentTitle
-                ? html`<span class="settings-breadcrumb-parent">${this._settingsPageParentTitle}</span>
-                    <ha-icon class="settings-breadcrumb-separator" icon="mdi:chevron-right"></ha-icon>
-                    <span>${title}</span>`
-                : title}
-            </h1>
-            <p>${description}</p>
-          </div>
-          <div class="settings-page-actions">
+        <dd-next-page-header
+          class="settings-shared-header"
+          .icon=${onSubpage ? 'mdi:cog-outline' : 'mdi:view-dashboard-edit-outline'}
+          .titleText=${title}
+          .parentTitle=${this._settingsPageParentTitle}
+          .subtitle=${description}
+          .accent=${getDomainColor('settings')}
+          .back=${true}
+          .backIcon=${onSubpage ? 'mdi:arrow-left' : 'mdi:close'}
+          .backLabel=${onSubpage ? this._t('common.back') : this._t('common.close')}
+          @dd-back=${onSubpage ? this._settingsBackToOverview : this._closeSettingsPage}
+        >
+          <span slot="actions" class="settings-page-actions">
             <button type="button" class="settings-secondary" @click=${this._settingsSecondaryAction}>
               ${secondaryLabel}
             </button>
@@ -23813,8 +22744,8 @@ copy{
             >
               ${this._settingsSavePending ? this._t('common.saving') : this._t('common.save')}
             </button>
-          </div>
-        </header>
+          </span>
+        </dd-next-page-header>
         ${this._settingsSaveError
           ? html`<div class="settings-save-error">${this._settingsSaveError}</div>`
           : nothing}
@@ -24291,4 +23222,3 @@ declare global {
     'dwains-dashboard-next-layout-card': DwainsLayoutCard;
   }
 }
-

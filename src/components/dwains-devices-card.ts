@@ -36,6 +36,8 @@ import { formatEntityStateWithUnit, formatValueWithUnit } from '../utils/unit-fo
 import { stripAreaNameFromEntityName } from '../utils/entity-names';
 import './utils/dd-card-host';
 import './dwains-person-tile';
+import './ui/dd-ui-primitives';
+import './ui/dd-entity-tiles';
 
 const NEW_DEVICES_KEY = '__new_devices__';
 const MAINTENANCE_KEY = '__maintenance__';
@@ -1290,35 +1292,19 @@ export class DwainsDevicesCard extends LitElement {
     actions?: unknown;
     className?: string;
   }) {
-    const classes = ['device-page-header'];
-    if (options.back) classes.push('has-back');
-    if (options.actions) classes.push('has-actions');
-    if (options.className) classes.push(options.className);
-
     return html`
-      <div class=${classes.join(' ')} style=${`--domain-color: ${options.color};`}>
-        ${options.back ? html`
-          <button
-            class="device-header-back"
-            type="button"
-            title=${this._t('navigation.overview')}
-            aria-label=${this._t('navigation.overview')}
-            @click=${() => this._selectDomain(DEVICES_OVERVIEW_KEY)}
-          >
-            <ha-icon icon="mdi:arrow-left"></ha-icon>
-          </button>
-        ` : nothing}
-        <div class="device-header-main">
-          <span class="device-header-icon">
-            <ha-icon icon=${options.icon}></ha-icon>
-          </span>
-          <div class="device-header-copy">
-            <h1 class="device-title">${options.title}</h1>
-            ${options.subtitle ? html`<div class="device-subtitle">${options.subtitle}</div>` : nothing}
-          </div>
-        </div>
-        ${options.actions ? html`<div class="device-header-actions">${options.actions}</div>` : nothing}
-      </div>
+      <dd-next-page-header
+        class=${options.className || ''}
+        .icon=${options.icon}
+        .titleText=${options.title}
+        .subtitle=${options.subtitle || ''}
+        .accent=${options.color}
+        .back=${Boolean(options.back)}
+        .backLabel=${this._t('navigation.overview')}
+        @dd-back=${() => this._selectDomain(DEVICES_OVERVIEW_KEY)}
+      >
+        ${options.actions ? html`<span slot="actions">${options.actions}</span>` : nothing}
+      </dd-next-page-header>
     `;
   }
 
@@ -1374,14 +1360,14 @@ export class DwainsDevicesCard extends LitElement {
                   const bucket = byArea.get(area.area_id)!;
                   const compactRoom = bucket.entities.length <= 2;
                   return html`
-                    <div class="domain-group ${compactRoom ? 'half-room' : 'full-room'}">
-                      <div class="domain-header">
-                        <div class="domain-header-title">
-                          <ha-icon icon="mdi:floor-plan"></ha-icon>
-                          <span>${area.name}</span>
-                        </div>
-                        ${this._renderDeviceRoomActions(domain, bucket.entities)}
-                      </div>
+                    <dd-next-room-group
+                      class="device-room-group ${compactRoom ? 'half-room' : 'full-room'}"
+                      .name=${area.name}
+                      icon="mdi:floor-plan"
+                      .accent=${this._typeColor(domain)}
+                      .compact=${compactRoom}
+                    >
+                      <span slot="actions">${this._renderDeviceRoomActions(domain, bucket.entities)}</span>
                       <div class=${this._entitiesGridClass(domain, roomStyle)}>
                         ${repeat(
                           bucket.entities,
@@ -1391,7 +1377,7 @@ export class DwainsDevicesCard extends LitElement {
                             : this._renderEntityCard(entity)
                         )}
                       </div>
-                    </div>
+                    </dd-next-room-group>
                   `;
                 })}
               </div>
@@ -1721,35 +1707,29 @@ export class DwainsDevicesCard extends LitElement {
     const domain = this._deviceGroupDomain(typeKey);
     if (!domain || !entities.length) return nothing;
 
+    const activeCount = entities.filter((entity) => {
+      const state = this._hass.states?.[entity.entity_id];
+      return state && this._roomStyleEntityActive(state, domain);
+    }).length;
+
     if (['light', 'switch', 'fan', 'input_boolean'].includes(domain)) {
-      const activeCount = entities.filter((entity) => {
-        const state = this._hass.states?.[entity.entity_id];
-        return state && this._roomStyleEntityActive(state, domain);
-      }).length;
-      const allOn = activeCount === entities.length && entities.length > 0;
       return html`
-        <button
-          class="device-room-master"
-          type="button"
-          style=${`--entity-color: ${getDomainColor(domain)};`}
-          title=${allOn ? this._t('action.turn_off_all') : this._t('action.turn_on_all')}
-          @click=${(event: Event) => {
-            event.stopPropagation();
-            void this._runDeviceBulkAction(entities, allOn ? 'turn_off' : 'turn_on');
-          }}
-        >
-          <span>${activeCount}/${entities.length}</span>
-          <span class="device-room-master-track ${allOn ? 'is-on' : ''}"></span>
-        </button>
+        <dd-next-room-actions
+          mode="toggle"
+          .accent=${getDomainColor(domain)}
+          .activeCount=${activeCount}
+          .totalCount=${entities.length}
+          .toggleOnLabel=${this._t('action.turn_on_all')}
+          .toggleOffLabel=${this._t('action.turn_off_all')}
+          @dd-action=${(event: CustomEvent<{ action: string }>) =>
+            void this._runDeviceBulkAction(entities, event.detail.action)}
+        ></dd-next-room-actions>
       `;
     }
 
     if (domain === 'cover' || domain === 'lock') {
-      const active = entities.some((entity) => {
-        const state = this._hass.states?.[entity.entity_id];
-        return state && this._roomStyleEntityActive(state, domain);
-      });
-      const actions = domain === 'cover'
+      const active = activeCount > 0;
+      const items = domain === 'cover'
         ? [
             { action: 'open_cover', label: this._t('action.open_all'), icon: 'mdi:arrow-up', active },
             { action: 'close_cover', label: this._t('action.close_all'), icon: 'mdi:arrow-down', active: !active },
@@ -1760,22 +1740,13 @@ export class DwainsDevicesCard extends LitElement {
           ];
 
       return html`
-        <div class="device-room-master-actions domain-${domain}" role="group">
-          ${actions.map((item) => html`
-            <button
-              class="device-room-master-action ${item.active ? 'active' : ''}"
-              type="button"
-              title=${item.label}
-              aria-label=${item.label}
-              @click=${(event: Event) => {
-                event.stopPropagation();
-                void this._runDeviceBulkAction(entities, item.action);
-              }}
-            >
-              <ha-icon icon=${item.icon}></ha-icon>
-            </button>
-          `)}
-        </div>
+        <dd-next-room-actions
+          mode="segmented"
+          .accent=${getDomainColor(domain)}
+          .items=${items}
+          @dd-action=${(event: CustomEvent<{ action: string }>) =>
+            void this._runDeviceBulkAction(entities, event.detail.action)}
+        ></dd-next-room-actions>
       `;
     }
 
@@ -1847,19 +1818,15 @@ export class DwainsDevicesCard extends LitElement {
   }
 
   private _renderEntityCard(entity: EntityConfig) {
-    const state = this._hass.states[entity.entity_id];
-    if (!state) return nothing;
+    if (!this._hass.states[entity.entity_id]) return nothing;
     return html`
-      <div class="${this._entityWrapperClass(entity.entity_id)}">
-        <dwains-dashboard-next-card-host
-          framed
-          style=${entity.entity_id.startsWith('cover.')
-            ? `--primary-color: ${getDomainColor('cover')}; --state-cover-open-color: ${getDomainColor('cover')}; --state-cover-opening-color: ${getDomainColor('cover')}; --state-cover-active-color: ${getDomainColor('cover')};`
-            : ''}
-          .hass=${this._hass}
-          .config=${this._entityCardConfig(entity.entity_id)}
-        ></dwains-dashboard-next-card-host>
-      </div>
+      <dd-next-device-entity-card
+        class="${this._entityWrapperClass(entity.entity_id)}"
+        .hass=${this._hass}
+        .config=${this.config}
+        .entityId=${entity.entity_id}
+        @dd-more-info=${(event: CustomEvent<{ entityId: string }>) => this._showMoreInfo(event.detail.entityId)}
+      ></dd-next-device-entity-card>
     `;
   }
 
@@ -1900,20 +1867,14 @@ export class DwainsDevicesCard extends LitElement {
 
     if (domain === 'person') {
       return html`
-        <dwains-dashboard-next-person-tile
+        <dd-next-device-entity-card
           .hass=${this._hass}
+          .config=${this.config}
           .entityId=${entity.entity_id}
+          .areaName=${area.name}
           .displayName=${name}
-          role="button"
-          tabindex="0"
-          aria-label=${name}
-          @click=${() => this._showMoreInfo(entity.entity_id)}
-          @keydown=${(event: KeyboardEvent) => {
-            if (event.key !== 'Enter' && event.key !== ' ') return;
-            event.preventDefault();
-            this._showMoreInfo(entity.entity_id);
-          }}
-        ></dwains-dashboard-next-person-tile>
+          @dd-more-info=${(event: CustomEvent<{ entityId: string }>) => this._showMoreInfo(event.detail.entityId)}
+        ></dd-next-device-entity-card>
       `;
     }
 
@@ -1927,44 +1888,29 @@ export class DwainsDevicesCard extends LitElement {
     const canToggle = ['switch', 'fan', 'input_boolean'].includes(domain);
 
     return html`
-      <article
-        class="mobile-entity-card ${active ? 'is-active' : 'is-off'} ${unavailable ? 'is-unavailable' : ''}"
-        style=${`--entity-color: ${getDomainColor(domain, deviceClass)};`}
-        role="button"
-        tabindex="0"
-        aria-label=${name}
-        @click=${() => this._showMoreInfo(entity.entity_id)}
-        @keydown=${(event: KeyboardEvent) => {
-          if (event.key !== 'Enter' && event.key !== ' ') return;
-          event.preventDefault();
-          this._showMoreInfo(entity.entity_id);
-        }}
+      <dd-next-compact-entity-tile
+        variant="compact"
+        .name=${name}
+        .status=${formatEntityStateWithUnit(this._hass, state)}
+        .icon=${icon}
+        .accent=${getDomainColor(domain, deviceClass)}
+        .active=${active}
+        .unavailable=${unavailable}
+        @dd-open=${() => this._showMoreInfo(entity.entity_id)}
       >
-        <div class="mobile-entity-main">
-          <span class="mobile-entity-icon">
-            <ha-icon icon=${icon}></ha-icon>
-          </span>
-          <div class="mobile-entity-content">
-            <div class="mobile-entity-name" title=${name}>${name}</div>
-            <div class="mobile-entity-state ${active ? 'active' : ''}">${formatEntityStateWithUnit(this._hass, state)}</div>
-          </div>
-          <div class="mobile-entity-right">
-            ${canToggle ? html`
-              <button
-                class="mobile-entity-action mobile-entity-toggle"
-                type="button"
-                aria-label=${active ? this._t('action.turn_off') : this._t('action.turn_on')}
-                ?disabled=${unavailable}
-                @click=${(event: Event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  void this._toggleRoomStyleEntity(entity.entity_id, domain, active);
-                }}
-              ></button>
-            ` : nothing}
-          </div>
-        </div>
-      </article>
+        ${canToggle ? html`
+          <dd-next-entity-actions
+            slot="actions"
+            mode="toggle"
+            .accent=${getDomainColor(domain, deviceClass)}
+            .active=${active}
+            .unavailable=${unavailable}
+            .turnOnLabel=${this._t('action.turn_on')}
+            .turnOffLabel=${this._t('action.turn_off')}
+            @dd-action=${() => void this._toggleRoomStyleEntity(entity.entity_id, domain, active)}
+          ></dd-next-entity-actions>
+        ` : nothing}
+      </dd-next-compact-entity-tile>
     `;
   }
 
@@ -2315,141 +2261,10 @@ export class DwainsDevicesCard extends LitElement {
       overflow-y: auto;
       padding: 16px;
     }
-    @media (max-width: 768px) {
-      .content-area {
-        padding-bottom: calc(104px + env(safe-area-inset-bottom, 0px));
-      }
-
-      .domain-header {
-        align-items: center;
-        flex-direction: row;
-      }
-
-      .domain-header-title {
-        justify-content: flex-start;
-        text-align: left;
-      }
-    }
 
     .device-view {
       max-width: 1600px;
       margin: 0 auto;
-    }
-
-    .device-page-header {
-      --domain-color: var(--primary-color);
-      min-height: 134px;
-      margin: 0 0 20px;
-      padding: 22px 24px;
-      display: grid;
-      grid-template-columns: auto minmax(0, 1fr) auto;
-      align-items: center;
-      gap: 16px;
-      border: 1px solid color-mix(in srgb, var(--domain-color) 18%, var(--divider-color));
-      border-radius: 8px;
-      background:
-        radial-gradient(circle at 16% 20%, color-mix(in srgb, var(--domain-color) 10%, transparent), transparent 34%),
-        linear-gradient(135deg,
-          color-mix(in srgb, var(--card-background-color) 96%, var(--domain-color) 4%),
-          color-mix(in srgb, var(--card-background-color) 99%, transparent));
-      box-shadow: 0 20px 44px rgba(15, 23, 42, 0.06);
-      overflow: hidden;
-    }
-
-    .device-page-header:not(.has-back) {
-      grid-template-columns: minmax(0, 1fr) auto;
-    }
-
-    .device-header-back {
-      width: 46px;
-      height: 46px;
-      padding: 0;
-      border: 0;
-      border-radius: 999px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: #182044;
-      color: #ffffff;
-      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .device-header-back ha-icon {
-      --mdc-icon-size: 23px;
-    }
-
-    .device-header-main {
-      min-width: 0;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .device-header-icon {
-      width: 52px;
-      height: 52px;
-      border-radius: 8px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex: 0 0 auto;
-      background: color-mix(in srgb, var(--domain-color) 12%, var(--card-background-color));
-      color: var(--domain-color);
-      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--domain-color) 14%, transparent);
-    }
-
-    .device-header-icon ha-icon {
-      --mdc-icon-size: 28px;
-    }
-
-    .device-header-copy {
-      min-width: 0;
-    }
-
-    .device-title {
-      margin: 0;
-      color: var(--primary-text-color);
-      font-size: clamp(24px, 3vw, 38px);
-      font-weight: 850;
-      line-height: 1.02;
-      letter-spacing: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .device-subtitle {
-      margin-top: 6px;
-      color: var(--secondary-text-color);
-      font-size: 13px;
-      font-weight: 700;
-      line-height: 1.2;
-    }
-
-    .device-header-actions {
-      justify-self: end;
-      display: inline-flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 8px;
-      min-width: 0;
-    }
-
-    .device-header-count {
-      min-width: 34px;
-      height: 34px;
-      padding: 0 12px;
-      border-radius: 999px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: color-mix(in srgb, var(--domain-color) 13%, var(--card-background-color));
-      color: var(--domain-color);
-      font-size: 14px;
-      font-weight: 850;
-      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--domain-color) 16%, transparent);
     }
 
     .overview-subtitle {
@@ -3357,108 +3172,6 @@ export class DwainsDevicesCard extends LitElement {
       box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 7%, transparent);
     }
 
-    .device-room-master-actions {
-      --mobile-domain-accent: var(--primary-color);
-      height: 30px;
-      margin-left: auto;
-      display: inline-flex;
-      align-items: center;
-      overflow: hidden;
-      border: 1px solid color-mix(in srgb, var(--divider-color) 72%, transparent);
-      border-radius: 999px;
-      background: color-mix(in srgb, var(--card-background-color) 92%, transparent);
-      color: color-mix(in srgb, var(--primary-text-color) 58%, transparent);
-    }
-
-    .device-room-master-actions.domain-cover {
-      --mobile-domain-accent: #0d98aa;
-    }
-
-    .device-room-master-actions.domain-lock {
-      --mobile-domain-accent: #7657c8;
-    }
-
-    .device-room-master-action {
-      width: 34px;
-      height: 30px;
-      padding: 0;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border: 0;
-      background: transparent;
-      color: inherit;
-      cursor: pointer;
-      transition:
-        background-color 0.18s ease,
-        color 0.18s ease,
-        transform 0.18s ease;
-    }
-
-    .device-room-master-action + .device-room-master-action {
-      border-left: 1px solid color-mix(in srgb, var(--divider-color) 72%, transparent);
-    }
-
-    .device-room-master-action:hover,
-    .device-room-master-action.active {
-      background: color-mix(in srgb, var(--mobile-domain-accent) 12%, var(--card-background-color));
-      color: var(--mobile-domain-accent);
-    }
-
-    .device-room-master-action:active {
-      transform: scale(0.88);
-    }
-
-    .device-room-master-action ha-icon {
-      --mdc-icon-size: 17px;
-    }
-
-    .device-room-master {
-      margin-left: auto;
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      min-height: 30px;
-      padding: 4px 7px;
-      border: 1px solid var(--divider-color);
-      border-radius: 999px;
-      background: var(--card-background-color);
-      color: var(--secondary-text-color);
-      font: inherit;
-      font-size: 12px;
-      font-weight: 750;
-      cursor: pointer;
-    }
-
-    .device-room-master-track {
-      width: 31px;
-      height: 18px;
-      position: relative;
-      display: inline-block;
-      border-radius: 999px;
-      background: color-mix(in srgb, var(--primary-text-color) 20%, transparent);
-    }
-
-    .device-room-master-track::after {
-      content: '';
-      position: absolute;
-      top: 2px;
-      left: 2px;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: #fff;
-      transition: transform .18s;
-    }
-
-    .device-room-master-track.is-on {
-      background: var(--entity-color);
-    }
-
-    .device-room-master-track.is-on::after {
-      transform: translateX(13px);
-    }
-
     .person-device-grid {
       margin: 0;
       align-items: start;
@@ -3471,17 +3184,17 @@ export class DwainsDevicesCard extends LitElement {
       align-items: start;
     }
 
-    .device-room-groups .domain-group {
+    .device-room-groups .device-room-group {
       grid-column: 1 / -1;
       margin-bottom: 0;
       min-width: 0;
     }
 
-    .device-room-groups .domain-group.half-room {
+    .device-room-groups .device-room-group.half-room {
       grid-column: span 1;
     }
 
-    .device-room-groups .domain-group.half-room .entities-grid {
+    .device-room-groups .device-room-group.half-room .entities-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     }
 
@@ -3522,92 +3235,10 @@ export class DwainsDevicesCard extends LitElement {
       min-width: 0;
     }
 
-    .special-device-view .entity-card-wrapper > dwains-dashboard-next-card-host {
-      --dd-replacement-border: 1px solid color-mix(in srgb, var(--primary-text-color) 8%, transparent);
-      --dd-replacement-radius: 10px;
-    }
-
-    /* Thermostat cards need their normal internal width to render all controls.
-       Scale the finished card down by 30% instead of squeezing its internals. */
-    .special-device-view .climate-entity-card {
-      overflow: visible;
-    }
-
-    .special-device-view .climate-entity-card > dwains-dashboard-next-card-host {
-      width: calc(100% / 0.7);
-      transform: scale(0.7);
-      transform-origin: top left;
-    }
-
     .room-style-entities-grid {
       grid-template-columns: repeat(4, minmax(0, 1fr));
       align-items: stretch;
       gap: 8px;
-    }
-
-    .room-style-device-view .mobile-entity-card {
-      --entity-color: var(--primary-color);
-      width: 100% !important;
-      min-width: 0 !important;
-      min-height: 62px !important;
-      height: auto !important;
-      margin: 0 !important;
-      padding: 8px 10px !important;
-      box-sizing: border-box;
-      display: flex !important;
-      flex-direction: column;
-      justify-content: center;
-      overflow: hidden;
-      border: 1px solid color-mix(in srgb, var(--primary-text-color) 6%, transparent);
-      border-radius: 8px;
-      background: var(--card-background-color);
-      color: var(--primary-text-color);
-      font: inherit;
-      text-align: left;
-      box-shadow: 0 3px 9px rgba(15, 23, 42, 0.035);
-      cursor: pointer;
-      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
-    }
-
-    .room-style-device-view .mobile-entity-card:hover {
-      transform: translateY(-1px);
-      border-color: color-mix(in srgb, var(--primary-color) 14%, transparent);
-      box-shadow: 0 6px 14px rgba(15, 23, 42, 0.055);
-    }
-
-    .room-style-device-view .mobile-entity-card.is-unavailable {
-      opacity: .62;
-    }
-
-    .room-style-device-view .mobile-entity-main {
-      width: 100%;
-      min-width: 0;
-      display: grid;
-      grid-template-columns: 36px minmax(0, 1fr) auto;
-      align-items: center;
-      gap: 9px;
-    }
-
-    .room-style-device-view .mobile-entity-icon {
-      width: 36px;
-      height: 36px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex: 0 0 auto;
-      border-radius: 8px;
-      color: var(--entity-color);
-      background: color-mix(in srgb, var(--entity-color) 13%, transparent);
-    }
-
-    .room-style-device-view .mobile-entity-icon ha-icon {
-      --mdc-icon-size: 20px;
-    }
-
-    .room-style-device-view .mobile-entity-icon.has-entity-picture {
-      overflow: hidden;
-      padding: 0;
-      background: var(--secondary-background-color);
     }
 
     .room-style-device-view .mobile-entity-avatar {
@@ -3616,18 +3247,6 @@ export class DwainsDevicesCard extends LitElement {
       display: block;
       object-fit: cover;
       border-radius: inherit;
-    }
-
-    /* Person cards keep the existing four-column layout and are only
-       enlarged vertically to roughly three times the normal 62px tile height. */
-    .room-style-device-view .mobile-entity-card.person-card.has-location-preview {
-      min-height: 186px !important;
-      align-items: stretch;
-      justify-content: flex-start;
-    }
-
-    .room-style-device-view .mobile-entity-card.person-card.has-location-preview .mobile-entity-main {
-      align-items: center;
     }
 
     /* The location map forms the lower card section and uses two thirds
@@ -3641,104 +3260,6 @@ export class DwainsDevicesCard extends LitElement {
       border-radius: 8px;
       pointer-events: none;
       box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 6%, transparent);
-    }
-
-    .room-style-device-view .person-location-preview dwains-dashboard-next-card-host {
-      display: block;
-      width: 100%;
-      height: 100%;
-      --ha-card-border-width: 0;
-      --ha-card-border-radius: 8px;
-    }
-
-    .room-style-device-view .mobile-entity-content {
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 2px;
-    }
-
-    .room-style-device-view .mobile-entity-name {
-      overflow: hidden;
-      color: var(--primary-text-color);
-      font-size: 12px;
-      font-weight: 850;
-      line-height: 1.15;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .room-style-device-view .mobile-entity-state {
-      overflow: hidden;
-      color: var(--secondary-text-color);
-      font-size: 10px;
-      font-weight: 650;
-      line-height: 1.1;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .room-style-device-view .mobile-entity-state.active {
-      color: var(--entity-color);
-    }
-
-    .room-style-device-view .mobile-entity-right {
-      min-width: 0;
-      display: inline-flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 5px;
-    }
-
-    .room-style-device-view .mobile-entity-action {
-      padding: 0;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex: 0 0 auto;
-      border: 0;
-      cursor: pointer;
-      transition: background-color .18s ease, color .18s ease, transform .18s ease, opacity .18s ease;
-    }
-
-    .room-style-device-view .mobile-entity-action:active {
-      transform: scale(.94);
-    }
-
-    .room-style-device-view .mobile-entity-action:disabled {
-      opacity: .36;
-      cursor: not-allowed;
-    }
-
-    .room-style-device-view .mobile-entity-toggle {
-      width: 38px;
-      height: 22px;
-      justify-content: flex-start;
-      border-radius: 999px;
-      background: color-mix(in srgb, var(--secondary-background-color) 80%, #ffffff);
-      box-shadow:
-        inset 0 0 0 1px rgba(15, 23, 42, 0.07),
-        0 4px 10px rgba(15, 23, 42, 0.08);
-    }
-
-    .room-style-device-view .mobile-entity-toggle::before {
-      content: "";
-      width: 18px;
-      height: 18px;
-      margin-left: 2px;
-      border-radius: 999px;
-      background: #ffffff;
-      box-shadow: 0 2px 7px rgba(15, 23, 42, 0.2);
-      transition: transform .18s ease;
-    }
-
-    .room-style-device-view .mobile-entity-card.is-active .mobile-entity-toggle {
-      background: var(--entity-color);
-    }
-
-    .room-style-device-view .mobile-entity-card.is-active .mobile-entity-toggle::before {
-      transform: translateX(16px);
     }
 
     .room-style-replacement-card {
@@ -3769,508 +3290,6 @@ export class DwainsDevicesCard extends LitElement {
     }
 
     /* Mobile */
-    @media (max-width: 768px) {
-      .layout-container > .sidebar,
-      .sidebar {
-        position: fixed !important;
-        left: 16px !important;
-        right: 16px !important;
-        top: auto !important;
-        bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
-        width: auto !important;
-        height: auto !important;
-        max-height: min(64vh, 560px);
-        padding: 10px;
-        overflow-y: auto;
-        border-radius: 12px;
-        border: 1px solid rgba(0, 0, 0, 0.08);
-        background: rgba(255, 255, 255, 0.94);
-        box-shadow: 0 22px 48px rgba(0, 0, 0, 0.24);
-        backdrop-filter: blur(20px);
-        transform: translate3d(0, calc(100% + 140px), 0) !important;
-        transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
-        z-index: 141;
-      }
-
-      .layout-container > .sidebar.open,
-      .sidebar.open {
-        transform: translate3d(0, 0, 0) !important;
-      }
-
-      .sidebar::before {
-        display: none;
-      }
-
-      .mobile-nav-overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(8, 13, 24, 0.18);
-        backdrop-filter: blur(3px);
-        z-index: 140;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.3s ease;
-      }
-
-      .mobile-nav-overlay.open {
-        opacity: 1;
-        pointer-events: auto;
-      }
-
-      .mobile-device-picker-head {
-        min-height: 34px;
-        margin: 0 2px 8px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-      }
-
-      .mobile-device-picker-title {
-        min-width: 0;
-        color: var(--primary-text-color);
-        font-size: 18px;
-        font-weight: 850;
-        line-height: 1.1;
-      }
-
-      .mobile-device-picker-close {
-        width: 34px;
-        height: 34px;
-        padding: 0;
-        border: 1px solid color-mix(in srgb, var(--primary-text-color) 10%, transparent);
-        border-radius: 999px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        flex: 0 0 auto;
-        background: color-mix(in srgb, var(--card-background-color) 92%, transparent);
-        color: var(--primary-text-color);
-        cursor: pointer;
-      }
-
-      .mobile-device-picker-close ha-icon {
-        --mdc-icon-size: 21px;
-      }
-
-      .sidebar .area-list {
-        display: grid;
-        gap: 6px;
-        padding: 0;
-      }
-
-      .sidebar .area-button {
-        display: grid;
-        grid-template-columns: 48px minmax(0, 1fr) auto;
-        align-items: center;
-        gap: 12px;
-        min-height: 70px;
-        height: auto;
-        margin-bottom: 0;
-        padding: 10px 12px;
-        border-radius: 8px;
-        border: 1px solid rgba(15, 23, 42, 0.06);
-        background: rgba(255, 255, 255, 0.92);
-        color: var(--primary-text-color);
-        box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
-        transform: none;
-      }
-
-      .sidebar .area-button:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.09);
-      }
-
-      .sidebar .area-button.selected {
-        background: rgba(255, 255, 255, 0.98);
-        border-color: color-mix(in srgb, var(--domain-color) 34%, transparent);
-        color: var(--primary-text-color);
-        box-shadow:
-          0 14px 28px rgba(15, 23, 42, 0.1),
-          inset 3px 0 0 var(--domain-color);
-        transform: none;
-      }
-
-      .sidebar .area-icon {
-        width: 46px;
-        height: 46px;
-        border-radius: 8px;
-        background: color-mix(in srgb, var(--domain-color) 10%, transparent);
-        color: var(--domain-color);
-      }
-
-      .sidebar .area-icon ha-icon {
-        --mdc-icon-size: 25px;
-      }
-
-      .sidebar .area-button.selected .area-icon {
-        background: color-mix(in srgb, var(--domain-color) 14%, transparent);
-        color: var(--domain-color);
-      }
-
-      .sidebar .area-name {
-        margin: 0;
-        font-size: 15px;
-        font-weight: 800;
-        line-height: 1.1;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-
-      .sidebar .device-menu-subtitle,
-      .sidebar .device-menu-chevron {
-        display: block;
-      }
-
-      .sidebar .device-menu-subtitle {
-        font-weight: 650;
-      }
-
-      .sidebar .area-button.selected .device-menu-subtitle,
-      .sidebar .area-button.selected .device-menu-chevron {
-        color: var(--secondary-text-color);
-        opacity: 1;
-      }
-
-      .sidebar .device-menu-chevron {
-        color: rgba(15, 23, 42, 0.52);
-        transition: transform 0.18s ease, color 0.18s ease;
-      }
-
-      .sidebar .area-button.selected .device-menu-chevron {
-        color: var(--domain-color);
-        transform: translateX(2px);
-      }
-
-      .sidebar .domain-count {
-        display: none;
-      }
-
-      :host([data-theme-dark]) {
-        .layout-container > .sidebar,
-        .sidebar {
-          border-color: rgba(255, 255, 255, 0.1);
-          background:
-            linear-gradient(180deg, rgba(37, 40, 48, 0.96), rgba(18, 20, 25, 0.94)),
-            color-mix(in srgb, var(--card-background-color) 92%, #000000);
-          box-shadow:
-            0 24px 58px rgba(0, 0, 0, 0.58),
-            inset 0 1px 0 rgba(255, 255, 255, 0.06);
-          color: var(--primary-text-color);
-        }
-
-        .sidebar::before {
-          background: rgba(255, 255, 255, 0.18);
-        }
-
-        .sidebar-title {
-          color: color-mix(in srgb, var(--primary-text-color) 60%, transparent);
-        }
-
-        .sidebar .area-button {
-          border-color: rgba(255, 255, 255, 0.06);
-          background:
-            linear-gradient(180deg,
-              color-mix(in srgb, var(--card-background-color) 86%, #ffffff 4%),
-              color-mix(in srgb, var(--card-background-color) 96%, #000000 4%));
-          color: var(--primary-text-color);
-          box-shadow:
-            0 10px 22px rgba(0, 0, 0, 0.24),
-            inset 0 1px 0 rgba(255, 255, 255, 0.035);
-        }
-
-        .sidebar .area-button:hover {
-          box-shadow:
-            0 12px 26px rgba(0, 0, 0, 0.32),
-            inset 0 1px 0 rgba(255, 255, 255, 0.05);
-        }
-
-        .sidebar .area-button.selected {
-          border-color: color-mix(in srgb, var(--domain-color) 42%, transparent);
-          background:
-            linear-gradient(180deg,
-              color-mix(in srgb, var(--card-background-color) 90%, var(--domain-color) 12%),
-              color-mix(in srgb, var(--card-background-color) 96%, #000000 5%));
-          color: var(--primary-text-color);
-          box-shadow:
-            0 14px 30px rgba(0, 0, 0, 0.36),
-            inset 3px 0 0 var(--domain-color),
-            inset 0 1px 0 rgba(255, 255, 255, 0.06);
-        }
-
-        .sidebar .area-button.new-devices {
-          background: color-mix(in srgb, var(--primary-color) 16%, var(--card-background-color));
-          border-color: color-mix(in srgb, var(--primary-color) 24%, transparent);
-        }
-
-        .sidebar .area-icon {
-          background: color-mix(in srgb, var(--domain-color) 20%, transparent);
-          color: var(--domain-color);
-        }
-
-        .sidebar .area-button.selected .area-icon,
-        .sidebar .area-button.new-devices.selected .area-icon {
-          background: color-mix(in srgb, var(--domain-color) 24%, transparent);
-          color: var(--domain-color);
-        }
-
-        .sidebar .device-menu-subtitle,
-        .sidebar .device-menu-chevron,
-        .sidebar .area-button.selected .device-menu-subtitle,
-        .sidebar .area-button.selected .device-menu-chevron {
-          color: color-mix(in srgb, var(--primary-text-color) 62%, transparent);
-        }
-
-        .sidebar .area-button.selected .device-menu-chevron {
-          color: var(--domain-color);
-        }
-
-        .mobile-nav-overlay {
-          background: rgba(0, 0, 0, 0.58);
-          backdrop-filter: blur(4px);
-        }
-      }
-
-      .special-device-view .entities-grid,
-      .special-device-view .entities-grid.cover-entities-grid,
-      .special-device-view .entities-grid.light-entities-grid,
-      .special-device-view .entities-grid.sensor-entities-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .room-style-device-view .room-style-entities-grid {
-        grid-template-columns: 1fr;
-        gap: 6px;
-      }
-
-      .room-style-device-view .mobile-entity-card {
-        min-height: 58px !important;
-        padding: 7px 9px !important;
-      }
-
-      .room-style-device-view .mobile-entity-main {
-        grid-template-columns: 34px minmax(0, 1fr) auto;
-        gap: 8px;
-      }
-
-      .room-style-device-view .mobile-entity-icon {
-        width: 34px;
-        height: 34px;
-      }
-
-      .room-style-device-view .domain-group,
-      .maintenance-area-group {
-        padding: 10px;
-        margin-bottom: 10px;
-      }
-
-      .device-room-groups {
-        grid-template-columns: 1fr;
-        gap: 10px;
-      }
-
-      .device-room-groups .domain-group,
-      .device-room-groups .domain-group.half-room {
-        grid-column: 1;
-      }
-
-      .device-room-groups .domain-group.half-room .entities-grid {
-        grid-template-columns: 1fr !important;
-      }
-
-      .device-global-actions {
-        margin-top: 0;
-        justify-content: flex-end;
-      }
-
-      .device-bulk-action.with-label {
-        min-height: 34px;
-        padding: 0 10px;
-        font-size: 11px;
-      }
-
-      .device-room-master {
-        min-height: 28px;
-        font-size: 11px;
-      }
-
-      .devices-overview-view {
-        padding: 2px 0;
-      }
-
-      .devices-overview-view .device-page-header {
-        min-height: 82px;
-        margin-bottom: 14px;
-        padding: 10px 16px;
-        align-items: center;
-      }
-
-      .device-page-header {
-        min-height: 132px;
-        margin: 0 -10px 18px;
-        padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 18px;
-        grid-template-columns: auto minmax(0, 1fr);
-        align-items: start;
-        gap: 12px;
-        border-width: 0 0 1px;
-        border-radius: 0 0 8px 8px;
-        background:
-          linear-gradient(180deg,
-            color-mix(in srgb, var(--card-background-color) 98%, transparent) 0%,
-            color-mix(in srgb, var(--card-background-color) 90%, var(--domain-color) 4%) 100%);
-        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
-      }
-
-      .device-page-header.has-actions {
-        grid-template-columns: auto minmax(0, 1fr) auto;
-      }
-
-      .device-page-header:not(.has-back) {
-        grid-template-columns: minmax(0, 1fr) auto;
-      }
-
-      .device-page-header:not(.has-back) .device-header-main {
-        grid-column: 1;
-      }
-
-      .device-header-back {
-        width: 40px;
-        height: 40px;
-        margin-top: 1px;
-      }
-
-      .device-header-back ha-icon {
-        --mdc-icon-size: 21px;
-      }
-
-      .device-header-main {
-        align-items: center;
-        gap: 10px;
-      }
-
-      .device-page-header.has-back .device-header-main {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 7px;
-      }
-
-      .device-page-header.has-back .device-header-icon {
-        display: none;
-      }
-
-      .device-header-icon {
-        width: 44px;
-        height: 44px;
-      }
-
-      .device-header-icon ha-icon {
-        --mdc-icon-size: 24px;
-      }
-
-      .device-title {
-        font-size: 26px;
-      }
-
-      .device-subtitle {
-        margin-top: 3px;
-        font-size: 12px;
-      }
-
-      .device-header-actions {
-        align-self: start;
-      }
-
-      .device-page-header.has-actions .device-header-actions {
-        grid-column: 1 / -1;
-        width: 100%;
-        justify-content: flex-start;
-      }
-
-      .devices-overview-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 12px;
-      }
-
-      .devices-overview-card {
-        min-height: 128px;
-        padding: 14px;
-        border-radius: 8px;
-      }
-
-      .overview-card-icon {
-        width: 42px;
-        height: 42px;
-      }
-
-      .overview-card-copy strong {
-        font-size: 16px;
-        overflow-wrap: anywhere;
-      }
-
-      .overview-card-copy small {
-        white-space: normal;
-        line-height: 1.2;
-      }
-
-      .recent-header,
-      .recent-device {
-        align-items: stretch;
-        grid-template-columns: 1fr;
-      }
-
-      .recent-header {
-        flex-direction: column;
-      }
-
-      .maintenance-summary {
-        width: auto;
-      }
-
-      .maintenance-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .maintenance-card {
-        min-height: 62px;
-      }
-
-      .energy-header-total {
-        justify-items: start;
-      }
-
-      .energy-overview-grid,
-      .energy-areas-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .energy-overview-head,
-      .energy-area-head {
-        grid-template-columns: 40px minmax(0, 1fr);
-      }
-
-      .energy-overview-head strong,
-      .energy-area-total {
-        grid-column: 1 / -1;
-        justify-self: stretch;
-        justify-items: start;
-        margin-top: 4px;
-      }
-
-      .energy-area-card,
-      .energy-overview-card {
-        border-radius: 10px;
-      }
-
-      .energy-entity-row {
-        grid-template-columns: 36px minmax(0, 1fr);
-      }
-
-      .energy-entity-value {
-        grid-column: 2;
-        justify-self: start;
-      }
-    }
     /* Compact device headers and stable desktop grids */
     @media (max-width: 1180px) and (min-width: 769px) {
       .room-style-device-view .room-style-entities-grid {
@@ -4281,60 +3300,6 @@ export class DwainsDevicesCard extends LitElement {
     @media (min-width: 769px) {
       .content-area {
         scrollbar-gutter: stable;
-      }
-
-      .device-page-header,
-      .devices-overview-view .device-page-header {
-        min-height: 86px;
-        margin-bottom: 14px;
-        padding: 12px 16px;
-        gap: 12px;
-        border-radius: 8px;
-        background:
-          linear-gradient(135deg,
-            color-mix(in srgb, var(--card-background-color) 97%, var(--domain-color) 3%),
-            var(--card-background-color));
-        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
-      }
-
-      .device-header-back {
-        width: 40px;
-        height: 40px;
-        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
-      }
-
-      .device-header-back ha-icon {
-        --mdc-icon-size: 21px;
-      }
-
-      .device-header-main {
-        gap: 11px;
-      }
-
-      .device-header-icon {
-        width: 44px;
-        height: 44px;
-      }
-
-      .device-header-icon ha-icon {
-        --mdc-icon-size: 24px;
-      }
-
-      .device-title {
-        font-size: clamp(22px, 2vw, 30px);
-        line-height: 1.05;
-      }
-
-      .device-subtitle {
-        margin-top: 3px;
-        font-size: 12px;
-      }
-
-      .device-header-count {
-        height: 30px;
-        min-width: 30px;
-        padding: 0 10px;
-        font-size: 12px;
       }
 
       .special-device-view .entities-grid,
@@ -4358,79 +3323,440 @@ export class DwainsDevicesCard extends LitElement {
       }
     }
 
+
+
+
+  
+
+    /* Single mobile contract for the Devices view. */
     @media (max-width: 768px) {
-      .device-page-header,
-      .devices-overview-view .device-page-header {
-        min-height: 88px;
-        margin: 0 -10px 14px;
-        padding: 12px 16px 14px;
-        align-items: center;
-      }
-
-      .device-page-header.has-back .device-header-main {
-        align-items: center;
-        flex-direction: row;
-        gap: 9px;
-      }
-
-      .device-page-header.has-back .device-header-icon {
-        display: inline-flex;
-        width: 38px;
-        height: 38px;
-      }
-
-      .device-page-header.has-back .device-header-icon ha-icon {
-        --mdc-icon-size: 21px;
-      }
-
-      .device-title {
-        font-size: 22px;
-      }
-
-      .device-header-actions {
-        align-self: center;
-      }
-    }
-
-
-    @media (max-width: 768px) {
-      /* Match the Startseite top position and compact header height. */
       .content-area {
-        padding-top: 10px !important;
-      }
+              padding-bottom: calc(104px + env(safe-area-inset-bottom, 0px));
+            }
+      
+            .domain-header {
+              align-items: center;
+              flex-direction: row;
+            }
+      
+            .domain-header-title {
+              justify-content: flex-start;
+              text-align: left;
+            }
 
-      .device-page-header,
-      .devices-overview-view .device-page-header {
-        min-height: 82px !important;
-        height: auto !important;
-        margin: -10px -10px 14px !important;
-        padding: 10px 14px 12px !important;
-        border-radius: 0 0 8px 8px !important;
-        align-items: center !important;
-      }
+      .layout-container > .sidebar,
+            .sidebar {
+              position: fixed !important;
+              left: 16px !important;
+              right: 16px !important;
+              top: auto !important;
+              bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
+              width: auto !important;
+              height: auto !important;
+              max-height: min(64vh, 560px);
+              padding: 10px;
+              overflow-y: auto;
+              border-radius: 12px;
+              border: 1px solid rgba(0, 0, 0, 0.08);
+              background: rgba(255, 255, 255, 0.94);
+              box-shadow: 0 22px 48px rgba(0, 0, 0, 0.24);
+              backdrop-filter: blur(20px);
+              transform: translate3d(0, calc(100% + 140px), 0) !important;
+              transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+              z-index: 141;
+            }
+      
+            .layout-container > .sidebar.open,
+            .sidebar.open {
+              transform: translate3d(0, 0, 0) !important;
+            }
+      
+            .sidebar::before {
+              display: none;
+            }
+      
+            .mobile-nav-overlay {
+              position: fixed;
+              inset: 0;
+              background: rgba(8, 13, 24, 0.18);
+              backdrop-filter: blur(3px);
+              z-index: 140;
+              opacity: 0;
+              pointer-events: none;
+              transition: opacity 0.3s ease;
+            }
+      
+            .mobile-nav-overlay.open {
+              opacity: 1;
+              pointer-events: auto;
+            }
+      
+            .mobile-device-picker-head {
+              min-height: 34px;
+              margin: 0 2px 8px;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              gap: 12px;
+            }
+      
+            .mobile-device-picker-title {
+              min-width: 0;
+              color: var(--primary-text-color);
+              font-size: 18px;
+              font-weight: 850;
+              line-height: 1.1;
+            }
+      
+            .mobile-device-picker-close {
+              width: 34px;
+              height: 34px;
+              padding: 0;
+              border: 1px solid color-mix(in srgb, var(--primary-text-color) 10%, transparent);
+              border-radius: 999px;
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              flex: 0 0 auto;
+              background: color-mix(in srgb, var(--card-background-color) 92%, transparent);
+              color: var(--primary-text-color);
+              cursor: pointer;
+            }
+      
+            .mobile-device-picker-close ha-icon {
+              --mdc-icon-size: 21px;
+            }
+      
+            .sidebar .area-list {
+              display: grid;
+              gap: 6px;
+              padding: 0;
+            }
+      
+            .sidebar .area-button {
+              display: grid;
+              grid-template-columns: 48px minmax(0, 1fr) auto;
+              align-items: center;
+              gap: 12px;
+              min-height: 70px;
+              height: auto;
+              margin-bottom: 0;
+              padding: 10px 12px;
+              border-radius: 8px;
+              border: 1px solid rgba(15, 23, 42, 0.06);
+              background: rgba(255, 255, 255, 0.92);
+              color: var(--primary-text-color);
+              box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
+              transform: none;
+            }
+      
+            .sidebar .area-button:hover {
+              transform: translateY(-1px);
+              box-shadow: 0 12px 24px rgba(15, 23, 42, 0.09);
+            }
+      
+            .sidebar .area-button.selected {
+              background: rgba(255, 255, 255, 0.98);
+              border-color: color-mix(in srgb, var(--domain-color) 34%, transparent);
+              color: var(--primary-text-color);
+              box-shadow:
+                0 14px 28px rgba(15, 23, 42, 0.1),
+                inset 3px 0 0 var(--domain-color);
+              transform: none;
+            }
+      
+            .sidebar .area-icon {
+              width: 46px;
+              height: 46px;
+              border-radius: 8px;
+              background: color-mix(in srgb, var(--domain-color) 10%, transparent);
+              color: var(--domain-color);
+            }
+      
+            .sidebar .area-icon ha-icon {
+              --mdc-icon-size: 25px;
+            }
+      
+            .sidebar .area-button.selected .area-icon {
+              background: color-mix(in srgb, var(--domain-color) 14%, transparent);
+              color: var(--domain-color);
+            }
+      
+            .sidebar .area-name {
+              margin: 0;
+              font-size: 15px;
+              font-weight: 800;
+              line-height: 1.1;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+            }
+      
+            .sidebar .device-menu-subtitle,
+            .sidebar .device-menu-chevron {
+              display: block;
+            }
+      
+            .sidebar .device-menu-subtitle {
+              font-weight: 650;
+            }
+      
+            .sidebar .area-button.selected .device-menu-subtitle,
+            .sidebar .area-button.selected .device-menu-chevron {
+              color: var(--secondary-text-color);
+              opacity: 1;
+            }
+      
+            .sidebar .device-menu-chevron {
+              color: rgba(15, 23, 42, 0.52);
+              transition: transform 0.18s ease, color 0.18s ease;
+            }
+      
+            .sidebar .area-button.selected .device-menu-chevron {
+              color: var(--domain-color);
+              transform: translateX(2px);
+            }
+      
+            .sidebar .domain-count {
+              display: none;
+            }
+      
+            :host([data-theme-dark]) {
+              .layout-container > .sidebar,
+              .sidebar {
+                border-color: rgba(255, 255, 255, 0.1);
+                background:
+                  linear-gradient(180deg, rgba(37, 40, 48, 0.96), rgba(18, 20, 25, 0.94)),
+                  color-mix(in srgb, var(--card-background-color) 92%, #000000);
+                box-shadow:
+                  0 24px 58px rgba(0, 0, 0, 0.58),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.06);
+                color: var(--primary-text-color);
+              }
+      
+              .sidebar::before {
+                background: rgba(255, 255, 255, 0.18);
+              }
+      
+              .sidebar-title {
+                color: color-mix(in srgb, var(--primary-text-color) 60%, transparent);
+              }
+      
+              .sidebar .area-button {
+                border-color: rgba(255, 255, 255, 0.06);
+                background:
+                  linear-gradient(180deg,
+                    color-mix(in srgb, var(--card-background-color) 86%, #ffffff 4%),
+                    color-mix(in srgb, var(--card-background-color) 96%, #000000 4%));
+                color: var(--primary-text-color);
+                box-shadow:
+                  0 10px 22px rgba(0, 0, 0, 0.24),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.035);
+              }
+      
+              .sidebar .area-button:hover {
+                box-shadow:
+                  0 12px 26px rgba(0, 0, 0, 0.32),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.05);
+              }
+      
+              .sidebar .area-button.selected {
+                border-color: color-mix(in srgb, var(--domain-color) 42%, transparent);
+                background:
+                  linear-gradient(180deg,
+                    color-mix(in srgb, var(--card-background-color) 90%, var(--domain-color) 12%),
+                    color-mix(in srgb, var(--card-background-color) 96%, #000000 5%));
+                color: var(--primary-text-color);
+                box-shadow:
+                  0 14px 30px rgba(0, 0, 0, 0.36),
+                  inset 3px 0 0 var(--domain-color),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.06);
+              }
+      
+              .sidebar .area-button.new-devices {
+                background: color-mix(in srgb, var(--primary-color) 16%, var(--card-background-color));
+                border-color: color-mix(in srgb, var(--primary-color) 24%, transparent);
+              }
+      
+              .sidebar .area-icon {
+                background: color-mix(in srgb, var(--domain-color) 20%, transparent);
+                color: var(--domain-color);
+              }
+      
+              .sidebar .area-button.selected .area-icon,
+              .sidebar .area-button.new-devices.selected .area-icon {
+                background: color-mix(in srgb, var(--domain-color) 24%, transparent);
+                color: var(--domain-color);
+              }
+      
+              .sidebar .device-menu-subtitle,
+              .sidebar .device-menu-chevron,
+              .sidebar .area-button.selected .device-menu-subtitle,
+              .sidebar .area-button.selected .device-menu-chevron {
+                color: color-mix(in srgb, var(--primary-text-color) 62%, transparent);
+              }
+      
+              .sidebar .area-button.selected .device-menu-chevron {
+                color: var(--domain-color);
+              }
+      
+              .mobile-nav-overlay {
+                background: rgba(0, 0, 0, 0.58);
+                backdrop-filter: blur(4px);
+              }
+            }
+      
+            .special-device-view .entities-grid,
+            .special-device-view .entities-grid.cover-entities-grid,
+            .special-device-view .entities-grid.light-entities-grid,
+            .special-device-view .entities-grid.sensor-entities-grid {
+              grid-template-columns: 1fr;
+            }
+      
+            .room-style-device-view .room-style-entities-grid {
+              grid-template-columns: 1fr;
+              gap: 6px;
+            }
+      
+            .room-style-device-view .domain-group,
+            .maintenance-area-group {
+              padding: 10px;
+              margin-bottom: 10px;
+            }
+      
+            .device-room-groups {
+              grid-template-columns: 1fr;
+              gap: 10px;
+            }
+      
+            .device-room-groups .device-room-group,
+            .device-room-groups .device-room-group.half-room {
+              grid-column: 1;
+            }
+      
+            .device-room-groups .device-room-group.half-room .entities-grid {
+              grid-template-columns: 1fr !important;
+            }
+      
+            .device-global-actions {
+              margin-top: 0;
+              justify-content: flex-end;
+            }
+      
+            .device-bulk-action.with-label {
+              min-height: 34px;
+              padding: 0 10px;
+              font-size: 11px;
+            }
+      
+            .devices-overview-view {
+              padding: 2px 0;
+            }
+      
+            .devices-overview-grid {
+              grid-template-columns: repeat(2, minmax(0, 1fr));
+              gap: 12px;
+            }
+      
+            .devices-overview-card {
+              min-height: 128px;
+              padding: 14px;
+              border-radius: 8px;
+            }
+      
+            .overview-card-icon {
+              width: 42px;
+              height: 42px;
+            }
+      
+            .overview-card-copy strong {
+              font-size: 16px;
+              overflow-wrap: anywhere;
+            }
+      
+            .overview-card-copy small {
+              white-space: normal;
+              line-height: 1.2;
+            }
+      
+            .recent-header,
+            .recent-device {
+              align-items: stretch;
+              grid-template-columns: 1fr;
+            }
+      
+            .recent-header {
+              flex-direction: column;
+            }
+      
+            .maintenance-summary {
+              width: auto;
+            }
+      
+            .maintenance-grid {
+              grid-template-columns: 1fr;
+            }
+      
+            .maintenance-card {
+              min-height: 62px;
+            }
+      
+            .energy-header-total {
+              justify-items: start;
+            }
+      
+            .energy-overview-grid,
+            .energy-areas-grid {
+              grid-template-columns: 1fr;
+            }
+      
+            .energy-overview-head,
+            .energy-area-head {
+              grid-template-columns: 40px minmax(0, 1fr);
+            }
+      
+            .energy-overview-head strong,
+            .energy-area-total {
+              grid-column: 1 / -1;
+              justify-self: stretch;
+              justify-items: start;
+              margin-top: 4px;
+            }
+      
+            .energy-area-card,
+            .energy-overview-card {
+              border-radius: 10px;
+            }
+      
+            .energy-entity-row {
+              grid-template-columns: 36px minmax(0, 1fr);
+            }
+      
+            .energy-entity-value {
+              grid-column: 2;
+              justify-self: start;
+            }
 
-      /* Thermostat cards occupy half the phone width, while preserving the
-         native card's internal width through the same 70% scaling. */
-      .entities-grid.climate-entities-grid,
-      .device-room-groups .domain-group.half-room .entities-grid.climate-entities-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-        gap: 8px !important;
-      }
-
-      .climate-entity-card {
-        width: 100% !important;
-        min-width: 0 !important;
-        overflow: visible !important;
-      }
-
-      .special-device-view .climate-entity-card > dwains-dashboard-next-card-host {
-        width: calc(100% / 0.7) !important;
-        transform: scale(0.7) !important;
-        transform-origin: top left !important;
-      }
+      /* Match the Startseite top position and compact header height. */
+            .content-area {
+              padding-top: 10px !important;
+            }
+      
+            /* Thermostat cards occupy half the phone width, while preserving the
+               native card's internal width through the same 70% scaling. */
+            .entities-grid.climate-entities-grid,
+            .device-room-groups .device-room-group.half-room .entities-grid.climate-entities-grid {
+              grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+              gap: 8px !important;
+            }
+      
+            .climate-entity-card {
+              width: 100% !important;
+              min-width: 0 !important;
+              overflow: visible !important;
+            }
     }
-
-  `;
+`;
 }
 
 declare global {
