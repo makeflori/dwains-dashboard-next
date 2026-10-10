@@ -1869,168 +1869,79 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       getDeviceClassIcon(domain, deviceClass) ||
       getDomainIcon(domain);
     const entityPicture = domain === 'person' ? state.attributes?.entity_picture : undefined;
-    const personHasLocation = domain === 'person' &&
-      Number.isFinite(Number(state.attributes?.latitude)) &&
-      Number.isFinite(Number(state.attributes?.longitude));
     const rawName = state.attributes?.friendly_name || this.hass.entities?.[entity.entity_id]?.name || entity.entity_id;
     const areaName = this._entityAreaName(entity);
     const name = stripAreaNameFromEntityName(rawName, areaName);
     const active = this._isEntityActiveForUi(state, domain);
     const unavailable = this._isUnavailable(state);
-    const classes = [
-      'domain-entity-card',
-      `domain-entity-${domain}`,
-      domain === 'person' ? 'person-card' : '',
-      personHasLocation ? 'has-location-preview' : '',
-      active ? 'is-active' : 'is-off',
-      unavailable ? 'is-unavailable' : '',
-    ].join(' ');
+    const accent = this._entityColor(domain, deviceClass);
 
-    return html`
-      <article
-        class=${classes}
-        style=${`--entity-color: ${this._entityColor(domain, deviceClass)};`}
-        role="button"
-        tabindex="0"
-        aria-label=${name}
-        @click=${() => this._showMoreInfo(entity.entity_id)}
-        @keydown=${(event: KeyboardEvent) => this._handleEntityKeydown(event, entity.entity_id)}
-      >
-        <div class="domain-entity-top">
-          <div class="domain-entity-icon ${entityPicture ? 'has-entity-picture' : ''}">
-            ${entityPicture
-              ? html`<img class="domain-entity-avatar" src=${entityPicture} alt=${name}>`
-              : html`<ha-icon icon=${icon}></ha-icon>`}
-          </div>
-          ${this._renderEntityActions(state, domain, active)}
-        </div>
-        <div class="domain-entity-copy">
-          <div class="domain-entity-name">${name}</div>
-          <div class="domain-entity-status">${this._entityStatusText(state, domain)}</div>
-        </div>
-        ${personHasLocation ? html`
-          <div class="person-location-preview" aria-label=${`${name} location`}>
-            <dwains-dashboard-next-card-host
-              eager
-              .hass=${this.hass}
-              .config=${{
-                type: 'map',
-                entities: [entity.entity_id],
-                hours_to_show: 0,
-                default_zoom: 14,
-                auto_fit: true,
-                fit_zones: false,
-                show_zone_radius: false,
-                aspect_ratio: '4:1',
-              }}
-            ></dwains-dashboard-next-card-host>
-          </div>
-        ` : nothing}
-      </article>
-    `;
-  }
+    if (domain === 'person') {
+      return html`
+        <dwains-dashboard-next-person-tile
+          .hass=${this.hass}
+          .entityId=${entity.entity_id}
+          .displayName=${name}
+          role="button"
+          tabindex="0"
+          aria-label=${name}
+          @click=${() => this._showMoreInfo(entity.entity_id)}
+          @keydown=${(event: KeyboardEvent) => this._handleEntityKeydown(event, entity.entity_id)}
+        ></dwains-dashboard-next-person-tile>
+      `;
+    }
 
-  private _renderEntityActions(state: any, domain: string, active: boolean) {
-    const entityId = state?.entity_id;
     const actionKind = this._entityActionKind(domain);
-    const unavailable = this._isUnavailable(state);
-
-    if (actionKind === 'toggle') {
-      return html`
-        <button
-          class="domain-entity-action domain-entity-toggle"
-          type="button"
-          title=${active ? this._t('action.turn_off') : this._t('action.turn_on')}
-          aria-label=${active ? this._t('action.turn_off') : this._t('action.turn_on')}
-          ?disabled=${unavailable}
-          @click=${(event: Event) => this._handleEntityToggle(event, state, domain)}
-        ></button>
-      `;
-    }
-
-    if (actionKind === 'cover') {
-      return this._renderCoverActions(state);
-    }
-
-    if (actionKind === 'lock') {
-      const unlocked = this._isEntityActiveForUi(state, domain);
-      return html`
-        <button
-          class="domain-entity-action domain-lock-action ${unlocked ? 'is-unlocked' : ''}"
-          type="button"
-          title=${unlocked ? this._t('action.lock') : this._t('action.unlock')}
-          aria-label=${unlocked ? this._t('action.lock') : this._t('action.unlock')}
-          ?disabled=${unavailable}
-          @click=${(event: Event) => this._handleLockAction(event, state)}
-        >
-          <ha-icon icon=${unlocked ? 'mdi:lock-open-variant-outline' : 'mdi:lock-outline'}></ha-icon>
-        </button>
-      `;
-    }
-
-    // Home-information tiles are themselves clickable. The room view also
-    // omits a redundant chevron for passive sensor/info entities.
-    if (this._params?.homeInformation) return nothing;
+    const actionMode = actionKind === 'toggle'
+      ? 'toggle'
+      : actionKind === 'cover'
+        ? 'cover'
+        : actionKind === 'lock'
+          ? 'lock'
+          : 'none';
+    const variant = this._params?.homeInformation ? 'card' : 'compact';
 
     return html`
-      <button
-        class="domain-entity-action domain-entity-more"
-        type="button"
-        title=${this._t('action.more_info')}
-        aria-label=${this._t('action.more_info')}
-        @click=${(event: Event) => this._handleMoreInfo(event, entityId)}
+      <dd-next-compact-entity-tile
+        .variant=${variant}
+        .name=${name}
+        .status=${this._entityStatusText(state, domain)}
+        .icon=${icon}
+        .picture=${entityPicture || ''}
+        .accent=${accent}
+        .active=${active}
+        .unavailable=${unavailable}
+        @dd-open=${() => this._showMoreInfo(entity.entity_id)}
       >
-        <ha-icon icon="mdi:chevron-right"></ha-icon>
-      </button>
-    `;
-  }
-
-  private _renderCoverActions(state: any) {
-    const value = String(state?.state || '').toLowerCase();
-    const unavailable = this._isUnavailable(state);
-    const canOpen = this._coverSupportsFeature(state, 1);
-    const canClose = this._coverSupportsFeature(state, 2);
-    const canStop = this._coverSupportsFeature(state, 8);
-
-    return html`
-      <div class="domain-cover-actions" @click=${(event: Event) => event.stopPropagation()}>
-        ${canOpen ? html`
-          <button
-            class="domain-entity-action domain-cover-action ${value === 'opening' ? 'active' : ''}"
-            type="button"
-            title=${this._t('action.open')}
-            aria-label=${this._t('action.open')}
-            ?disabled=${unavailable}
-            @click=${(event: Event) => this._handleCoverAction(event, state, 'open')}
-          >
-            <ha-icon icon="mdi:arrow-up"></ha-icon>
-          </button>
+        ${actionMode !== 'none' ? html`
+          <dd-next-entity-actions
+            slot="actions"
+            .mode=${actionMode}
+            .accent=${accent}
+            .active=${active}
+            .unavailable=${unavailable}
+            .canOpen=${this._coverSupportsFeature(state, 1)}
+            .canClose=${this._coverSupportsFeature(state, 2)}
+            .canStop=${this._coverSupportsFeature(state, 8)}
+            .turnOnLabel=${this._t('action.turn_on')}
+            .turnOffLabel=${this._t('action.turn_off')}
+            .openLabel=${this._t('action.open')}
+            .stopLabel=${this._t('action.stop')}
+            .closeLabel=${this._t('action.close')}
+            .lockLabel=${this._t('action.lock')}
+            .unlockLabel=${this._t('action.unlock')}
+            @dd-action=${(event: CustomEvent<{ action: string }>) => {
+              if (actionKind === 'toggle') {
+                void this._handleEntityToggle(event, state, domain);
+              } else if (actionKind === 'cover') {
+                void this._handleCoverAction(event, state, event.detail.action as 'open' | 'stop' | 'close');
+              } else if (actionKind === 'lock') {
+                void this._handleLockAction(event, state);
+              }
+            }}
+          ></dd-next-entity-actions>
         ` : nothing}
-        ${canStop ? html`
-          <button
-            class="domain-entity-action domain-cover-action ${value === 'opening' || value === 'closing' ? 'active' : ''}"
-            type="button"
-            title=${this._t('action.stop')}
-            aria-label=${this._t('action.stop')}
-            ?disabled=${unavailable}
-            @click=${(event: Event) => this._handleCoverAction(event, state, 'stop')}
-          >
-            <ha-icon icon="mdi:stop"></ha-icon>
-          </button>
-        ` : nothing}
-        ${canClose ? html`
-          <button
-            class="domain-entity-action domain-cover-action ${value === 'closing' ? 'active' : ''}"
-            type="button"
-            title=${this._t('action.close')}
-            aria-label=${this._t('action.close')}
-            ?disabled=${unavailable}
-            @click=${(event: Event) => this._handleCoverAction(event, state, 'close')}
-          >
-            <ha-icon icon="mdi:arrow-down"></ha-icon>
-          </button>
-        ` : nothing}
-      </div>
+      </dd-next-compact-entity-tile>
     `;
   }
 
