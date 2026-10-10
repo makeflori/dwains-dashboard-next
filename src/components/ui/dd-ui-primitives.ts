@@ -147,9 +147,10 @@ export class DdNextPopupShell extends LitElement {
     .copy {
       min-width: 0;
       display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 3px;
+      flex-direction: row;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
     }
 
     .title {
@@ -250,6 +251,12 @@ export class DdNextPopupShell extends LitElement {
 
       .title {
         font-size: 20px;
+      }
+
+      .copy {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 3px;
       }
 
       .body {
