@@ -21563,14 +21563,11 @@ copy{
     const statusText = this._mobileEntityStatusText(state, domain);
 
     const classes = [
-      'mobile-entity-card',
       `mobile-entity-${domain}`,
       deviceClass ? `device-${deviceClass}` : '',
       `action-${actionKind}`,
-      active ? 'is-active' : 'is-off',
       hasInlineSelect ? 'has-inline-select' : '',
-      unavailable && !unknownIsNormal ? 'is-unavailable' : '',
-    ].join(' ');
+    ].filter(Boolean).join(' ');
 
     const accent = this._mobileEntityColor(domain, deviceClass);
     const actionMode = actionKind === 'toggle'
