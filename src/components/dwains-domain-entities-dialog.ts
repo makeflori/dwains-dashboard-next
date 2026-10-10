@@ -1442,6 +1442,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
             .hass=${this.hass}
             .config=${this._params.config}
             .entityId=${entity.entity_id}
+            .popup=${true}
             .areaName=${this._entityAreaName(entity)}
             .displayName=${rawName}
             @dd-more-info=${(event: CustomEvent<{ entityId: string }>) => this._showMoreInfo(event.detail.entityId)}
