@@ -1888,44 +1888,29 @@ export class DwainsDevicesCard extends LitElement {
     const canToggle = ['switch', 'fan', 'input_boolean'].includes(domain);
 
     return html`
-      <article
-        class="mobile-entity-card ${active ? 'is-active' : 'is-off'} ${unavailable ? 'is-unavailable' : ''}"
-        style=${`--entity-color: ${getDomainColor(domain, deviceClass)};`}
-        role="button"
-        tabindex="0"
-        aria-label=${name}
-        @click=${() => this._showMoreInfo(entity.entity_id)}
-        @keydown=${(event: KeyboardEvent) => {
-          if (event.key !== 'Enter' && event.key !== ' ') return;
-          event.preventDefault();
-          this._showMoreInfo(entity.entity_id);
-        }}
+      <dd-next-compact-entity-tile
+        variant="compact"
+        .name=${name}
+        .status=${formatEntityStateWithUnit(this._hass, state)}
+        .icon=${icon}
+        .accent=${getDomainColor(domain, deviceClass)}
+        .active=${active}
+        .unavailable=${unavailable}
+        @dd-open=${() => this._showMoreInfo(entity.entity_id)}
       >
-        <div class="mobile-entity-main">
-          <span class="mobile-entity-icon">
-            <ha-icon icon=${icon}></ha-icon>
-          </span>
-          <div class="mobile-entity-content">
-            <div class="mobile-entity-name" title=${name}>${name}</div>
-            <div class="mobile-entity-state ${active ? 'active' : ''}">${formatEntityStateWithUnit(this._hass, state)}</div>
-          </div>
-          <div class="mobile-entity-right">
-            ${canToggle ? html`
-              <button
-                class="mobile-entity-action mobile-entity-toggle"
-                type="button"
-                aria-label=${active ? this._t('action.turn_off') : this._t('action.turn_on')}
-                ?disabled=${unavailable}
-                @click=${(event: Event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  void this._toggleRoomStyleEntity(entity.entity_id, domain, active);
-                }}
-              ></button>
-            ` : nothing}
-          </div>
-        </div>
-      </article>
+        ${canToggle ? html`
+          <dd-next-entity-actions
+            slot="actions"
+            mode="toggle"
+            .accent=${getDomainColor(domain, deviceClass)}
+            .active=${active}
+            .unavailable=${unavailable}
+            .turnOnLabel=${this._t('action.turn_on')}
+            .turnOffLabel=${this._t('action.turn_off')}
+            @dd-action=${() => void this._toggleRoomStyleEntity(entity.entity_id, domain, active)}
+          ></dd-next-entity-actions>
+        ` : nothing}
+      </dd-next-compact-entity-tile>
     `;
   }
 
