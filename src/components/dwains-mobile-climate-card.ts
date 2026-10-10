@@ -22,6 +22,7 @@ export class DwainsDashboardNextMobileClimateCard extends LitElement {
     const unit = this.hass?.config?.unit_system?.temperature || '°C';
     const mode = String(state.state || '');
     const action = String(attrs.hvac_action || '');
+    const targetTitle = this.hass.localize?.('ui.card.climate.target_temperature') || 'Target';
 
     const targetLabel = Number.isFinite(target)
       ? `${target} ${unit}`
@@ -42,7 +43,7 @@ export class DwainsDashboardNextMobileClimateCard extends LitElement {
           </div>
         </div>
         <div class="climate-target">
-          <span>Ziel</span>
+          <span>${targetTitle}</span>
           <strong>${targetLabel}</strong>
         </div>
       </article>
