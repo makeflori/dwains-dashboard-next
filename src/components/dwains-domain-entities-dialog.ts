@@ -15,7 +15,7 @@ import { findReplacementAssignment } from '../utils/blueprint-replacements';
 import './utils/dd-card-host';
 import './dwains-person-tile';
 import './ui/dd-ui-primitives';
-import './ui/dd-entity-tiles';
+import { renderCompactDeviceTile } from './ui/dd-entity-tiles';
 
 export interface DomainEntitiesDialogParams {
   domain: string;
@@ -1369,6 +1369,40 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     if (!rawState) return nothing;
 
     const domain = entity.entity_id.split('.')[0] || 'unknown';
+
+    if (this._params?.homeInformationPresentation === 'devices' &&
+        !['person', 'light', 'cover', 'climate', 'sensor'].includes(domain)) {
+      const state = this._getEffectiveEntityState(rawState);
+      const deviceClass = state.attributes?.device_class;
+      const rawName = state.attributes?.friendly_name ||
+        this.hass.entities?.[entity.entity_id]?.name || entity.entity_id;
+      const areaName = this._entityAreaName(entity);
+      const name = this._params.config?.settings?.hide_area_name_in_entity_names === true
+        ? stripAreaNameFromEntityName(rawName, areaName)
+        : rawName;
+      const active = this._isEntityActiveForUi(state, domain);
+      const unavailable = this._isUnavailable(state);
+      const canToggle = ['switch', 'fan', 'input_boolean'].includes(domain);
+      return renderCompactDeviceTile({
+        name,
+        status: formatEntityStateWithUnit(this.hass, state),
+        icon: this.hass.entities?.[entity.entity_id]?.icon || state.attributes?.icon ||
+          getDeviceClassIcon(domain, deviceClass) || getDomainIcon(domain),
+        accent: this._entityColor(domain, deviceClass),
+        active,
+        unavailable,
+        toggle: canToggle,
+        onOpen: () => this._showMoreInfo(entity.entity_id),
+        onToggle: () => void this._runBulkDomainAction(
+          [entity.entity_id],
+          active ? 'turn_off' : 'turn_on',
+          this._t(active ? 'action.turn_off' : 'action.turn_on'),
+          false
+        ),
+        turnOnLabel: this._t('action.turn_on'),
+        turnOffLabel: this._t('action.turn_off'),
+      });
+    }
 
     if (this._params?.homeInformationPresentation === 'devices') {
       const replacement = findReplacementAssignment({
