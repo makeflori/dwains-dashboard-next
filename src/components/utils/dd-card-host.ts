@@ -50,7 +50,7 @@ export class DwainsCardHost extends HTMLElement {
     this.style.maxWidth = '100%';
     this.style.minWidth = '0';
     this._applyFrame();
-    this.style.setProperty('content-visibility', 'auto');
+    this.style.setProperty('content-visibility', this.hasAttribute('eager') ? 'visible' : 'auto');
     this.style.setProperty('contain-intrinsic-size', '120px');
     this._renderWhenVisible();
   }

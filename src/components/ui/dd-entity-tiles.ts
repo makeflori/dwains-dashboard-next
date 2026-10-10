@@ -60,6 +60,7 @@ export class DdNextDeviceEntityCard extends LitElement {
   @property() public entityId = '';
   @property() public areaName = '';
   @property() public displayName = '';
+  @property({ type: Boolean }) public popup = false;
 
   private _showMoreInfo = (): void => {
     this.dispatchEvent(new CustomEvent('dd-more-info', {
@@ -111,6 +112,8 @@ export class DdNextDeviceEntityCard extends LitElement {
       <div class="card ${domain}-card">
         <dwains-dashboard-next-card-host
           framed
+          ?eager=${this.popup}
+          ?refresh-layout=${this.popup}
           style=${coverStyle}
           .hass=${this.hass}
           .config=${resolveDeviceViewCardConfig({
