@@ -115,6 +115,175 @@ export class DdNextDeviceEntityCard extends LitElement {
   `;
 }
 
+export interface DdRoomActionItem {
+  action: string;
+  label: string;
+  icon: string;
+  active?: boolean;
+}
+
+@customElement('dd-next-room-actions')
+export class DdNextRoomActions extends LitElement {
+  @property() public mode: 'toggle' | 'segmented' = 'segmented';
+  @property() public accent = 'var(--primary-color)';
+  @property({ type: Number }) public activeCount = 0;
+  @property({ type: Number }) public totalCount = 0;
+  @property() public toggleOnLabel = '';
+  @property() public toggleOffLabel = '';
+  @property({ attribute: false }) public items: DdRoomActionItem[] = [];
+
+  private _emit(action: string): void {
+    this.dispatchEvent(new CustomEvent('dd-action', {
+      detail: { action },
+      bubbles: true,
+      composed: true,
+    }));
+  }
+
+  protected override render() {
+    const allOn = this.totalCount > 0 && this.activeCount === this.totalCount;
+    if (this.mode === 'toggle') {
+      const action = allOn ? 'turn_off' : 'turn_on';
+      const label = allOn ? this.toggleOffLabel : this.toggleOnLabel;
+      return html`
+        <button
+          class="toggle"
+          type="button"
+          style=${`--dd-action-accent: ${this.accent};`}
+          title=${label}
+          aria-label=${label}
+          @click=${(event: Event) => {
+            event.stopPropagation();
+            this._emit(action);
+          }}
+        >
+          <span>${this.activeCount}/${this.totalCount}</span>
+          <span class="track ${allOn ? 'is-on' : ''}"></span>
+        </button>
+      `;
+    }
+
+    if (!this.items.length) return nothing;
+    return html`
+      <div class="segmented" style=${`--dd-action-accent: ${this.accent};`} role="group">
+        ${this.items.map(item => html`
+          <button
+            class="segment ${item.active ? 'active' : ''}"
+            type="button"
+            title=${item.label}
+            aria-label=${item.label}
+            @click=${(event: Event) => {
+              event.stopPropagation();
+              this._emit(item.action);
+            }}
+          ><ha-icon icon=${item.icon}></ha-icon></button>
+        `)}
+      </div>
+    `;
+  }
+
+  static override styles = css`
+    :host {
+      display: inline-flex;
+      align-items: center;
+      flex: 0 0 auto;
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .toggle {
+      min-height: 30px;
+      padding: 4px 7px;
+      border: 1px solid var(--divider-color);
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--secondary-text-color);
+      background: var(--card-background-color);
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .track {
+      width: 31px;
+      height: 18px;
+      position: relative;
+      display: inline-block;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--primary-text-color) 20%, transparent);
+    }
+
+    .track::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform .18s ease;
+    }
+
+    .track.is-on {
+      background: var(--dd-action-accent);
+    }
+
+    .track.is-on::after {
+      transform: translateX(13px);
+    }
+
+    .segmented {
+      height: 30px;
+      display: inline-flex;
+      align-items: center;
+      overflow: hidden;
+      border: 1px solid color-mix(in srgb, var(--divider-color) 72%, transparent);
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--card-background-color) 92%, transparent);
+      color: color-mix(in srgb, var(--primary-text-color) 58%, transparent);
+    }
+
+    .segment {
+      width: 34px;
+      height: 30px;
+      padding: 0;
+      border: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: inherit;
+      background: transparent;
+    }
+
+    .segment + .segment {
+      border-left: 1px solid color-mix(in srgb, var(--divider-color) 72%, transparent);
+    }
+
+    .segment:hover,
+    .segment.active {
+      color: var(--dd-action-accent);
+      background: color-mix(in srgb, var(--dd-action-accent) 12%, var(--card-background-color));
+    }
+
+    .segment ha-icon {
+      --mdc-icon-size: 17px;
+    }
+
+    @media (max-width: 768px) {
+      .toggle {
+        min-height: 28px;
+        font-size: 11px;
+      }
+    }
+  `;
+}
+
 @customElement('dd-next-room-group')
 export class DdNextRoomGroup extends LitElement {
   @property() public name = '';
@@ -220,5 +389,6 @@ declare global {
   interface HTMLElementTagNameMap {
     'dd-next-device-entity-card': DdNextDeviceEntityCard;
     'dd-next-room-group': DdNextRoomGroup;
+    'dd-next-room-actions': DdNextRoomActions;
   }
 }
