@@ -1337,80 +1337,6 @@ export class DwainsLayoutCard extends LitElement {
       box-sizing: border-box;
     }
 
-    .settings-page-header{
-      display: grid;
-      grid-template-columns: auto minmax(0, 1fr) auto;
-      align-items: center;
-      gap: 16px;
-      margin: 0 0 16px;
-      padding: 16px 18px;
-      border: 1px solid color-mix(in srgb, var(--divider-color) 72%, transparent);
-      border-radius: 18px;
-      background:
-        linear-gradient(135deg,
-          color-mix(in srgb, var(--card-background-color) 96%, var(--primary-color)) 0%,
-          color-mix(in srgb, var(--card-background-color) 94%, var(--primary-color)) 100%);
-      box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
-    }
-
-    .settings-page-back,
-.settings-secondary,
-.settings-primary{
-      appearance: none;
-      border: 0;
-      font: inherit;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .settings-page-back{
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 44px;
-      height: 44px;
-      border-radius: 999px;
-      background: color-mix(in srgb, var(--secondary-background-color) 74%, var(--card-background-color));
-      color: var(--primary-text-color);
-    }
-
-    .settings-page-back ha-icon{
-      --mdc-icon-size: 22px;
-    }
-
-    .settings-page-title{
-      min-width: 0;
-    }
-
-    .settings-page-title h1{
-      margin: 0;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      min-width: 0;
-      font-size: clamp(22px, 2vw, 30px);
-      line-height: 1.08;
-      font-weight: 850;
-      color: var(--primary-text-color);
-      letter-spacing: 0;
-    }
-    .settings-breadcrumb-parent{
-      color: var(--secondary-text-color);
-      font-weight: 700;
-    }
-    .settings-breadcrumb-separator{
-      flex: 0 0 auto;
-      color: var(--secondary-text-color);
-      --mdc-icon-size: 20px;
-    }
-
-    .settings-page-title p{
-      margin: 5px 0 0;
-      color: var(--secondary-text-color);
-      font-size: 14px;
-      line-height: 1.35;
-    }
-
     .settings-page-actions,
 .settings-page-bottom-actions{
       display: flex;
@@ -7375,30 +7301,6 @@ export class DwainsLayoutCard extends LitElement {
         padding: 8px 10px calc(152px + env(safe-area-inset-bottom, 0px));
       }
 
-      .settings-page-header{
-        grid-template-columns: auto minmax(0, 1fr);
-        gap: 12px;
-        margin: 0 0 12px;
-        padding: 12px 14px;
-        border-radius: 18px;
-        border-top: 1px solid color-mix(in srgb, var(--divider-color) 72%, transparent);
-        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.07);
-      }
-
-      .settings-page-back{
-        width: 42px;
-        height: 42px;
-      }
-
-      .settings-page-title h1{
-        font-size: 21px;
-      }
-
-      .settings-page-title p{
-        margin-top: 3px;
-        font-size: 13px;
-      }
-
       .settings-page-actions{
         display: none;
       }
@@ -9911,53 +9813,9 @@ which could overlap
       padding-top: 18px;
     }
 
-    .settings-page-header,
-.settings-page-editor{
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    .settings-page-header{
-      min-height: 76px;
-      padding: 12px 16px;
-      gap: 14px;
-    }
-
-    .settings-page-title{
-      min-height: 44px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    .settings-page-title h1{
-      font-size: clamp(22px, 1.65vw, 26px);
-      line-height: 1.05;
-    }
-
-    .settings-page-title p{
-      margin: 3px 0 0;
-      min-height: 16px;
-      font-size: 12px;
-      line-height: 1.3;
-    }
-
-    .settings-page-actions,
-.settings-page-back{
-      align-self: center;
-    }
-
     @media (max-width: 768px) {
       .settings-page-view{
         width: 100%;
-      }
-
-      .settings-page-header{
-        min-height: 68px;
-      }
-
-      .settings-page-title{
-        min-height: 42px;
       }
     }
 
