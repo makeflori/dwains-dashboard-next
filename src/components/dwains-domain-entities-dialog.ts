@@ -2604,6 +2604,20 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       overflow: visible;
     }
 
+    /* Use the same special-device wrapper geometry as Geräte. */
+    .content.home-information-context.device-presentation-context .entity-card-wrapper {
+      min-height: 60px;
+      position: relative;
+      min-width: 0;
+    }
+
+    .content.home-information-context.device-presentation-context .cover-entity-card > dwains-dashboard-next-card-host,
+    .content.home-information-context.device-presentation-context .light-entity-card > dwains-dashboard-next-card-host,
+    .content.home-information-context.device-presentation-context .sensor-entity-card > dwains-dashboard-next-card-host,
+    .content.home-information-context.device-presentation-context .climate-entity-card > dwains-dashboard-next-card-host {
+      display: block;
+    }
+
     /* Thermostat rendering exactly mirrors Geräte > Klima: render at its
        natural width and scale the finished card down by 30%. */
     .content.home-information-context.device-presentation-context .device-presentation-card.climate-card {
