@@ -18,7 +18,7 @@ import {
 } from '../utils/area-entities';
 import { getDomainIcon, getDeviceClassIcon, getDomainColor } from '../utils/icons';
 import { getDomainName, getDeviceClassName } from '../utils/domain-names';
-import { findReplacementAssignment, resolveDeviceViewCardConfig } from '../utils/blueprint-replacements';
+import { resolveDeviceViewCardConfig } from '../utils/blueprint-replacements';
 import {
   NEW_DEVICE_WINDOW_HOURS,
   buildRecentDeviceSummaries,
@@ -32,8 +32,7 @@ import { ensureBottomNav } from './dwains-bottom-nav';
 import { fireEvent } from './utils/fire-event';
 import { buildHousePowerUsage, type PowerAreaSummary, type PowerEntitySummary } from '../utils/power-usage';
 import { isHassDarkTheme } from '../utils/theme';
-import { formatEntityStateWithUnit, formatValueWithUnit } from '../utils/unit-format';
-import { stripAreaNameFromEntityName } from '../utils/entity-names';
+import { formatValueWithUnit } from '../utils/unit-format';
 import './utils/dd-card-host';
 import './dwains-person-tile';
 import './ui/dd-ui-primitives';
