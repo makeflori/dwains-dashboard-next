@@ -367,6 +367,7 @@ export class DdNextEntityActions extends LitElement {
   @property() public accent = 'var(--primary-color)';
   @property({ type: Boolean }) public active = false;
   @property({ type: Boolean }) public unavailable = false;
+  @property() public state = '';
   @property({ type: Boolean }) public canOpen = true;
   @property({ type: Boolean }) public canStop = true;
   @property({ type: Boolean }) public canClose = true;
@@ -408,20 +409,22 @@ export class DdNextEntityActions extends LitElement {
     }
 
     if (this.mode === 'cover') {
+      const coverState = String(this.state || '').toLowerCase();
+      const moving = coverState === 'opening' || coverState === 'closing';
       return html`
         <div class="cover" style=${`--dd-action-accent: ${this.accent};`}>
           ${this.canOpen ? html`
-            <button class="action round" type="button" title=${this.openLabel} aria-label=${this.openLabel}
+            <button class="action round ${coverState === 'opening' ? 'active' : ''}" type="button" title=${this.openLabel} aria-label=${this.openLabel}
               ?disabled=${this.unavailable} @click=${(event: Event) => this._emit(event, 'open')}>
               <ha-icon icon="mdi:arrow-up"></ha-icon>
             </button>` : nothing}
           ${this.canStop ? html`
-            <button class="action round" type="button" title=${this.stopLabel} aria-label=${this.stopLabel}
+            <button class="action round ${moving ? 'active' : ''}" type="button" title=${this.stopLabel} aria-label=${this.stopLabel}
               ?disabled=${this.unavailable} @click=${(event: Event) => this._emit(event, 'stop')}>
               <ha-icon icon="mdi:stop"></ha-icon>
             </button>` : nothing}
           ${this.canClose ? html`
-            <button class="action round" type="button" title=${this.closeLabel} aria-label=${this.closeLabel}
+            <button class="action round ${coverState === 'closing' ? 'active' : ''}" type="button" title=${this.closeLabel} aria-label=${this.closeLabel}
               ?disabled=${this.unavailable} @click=${(event: Event) => this._emit(event, 'close')}>
               <ha-icon icon="mdi:arrow-down"></ha-icon>
             </button>` : nothing}
@@ -520,7 +523,8 @@ export class DdNextEntityActions extends LitElement {
       box-shadow: inset 0 0 0 1px rgba(15, 23, 42, .05);
     }
 
-    .round:hover {
+    .round:hover,
+    .round.active {
       color: var(--dd-action-accent);
       background: color-mix(in srgb, var(--dd-action-accent) 10%, var(--card-background-color));
     }
