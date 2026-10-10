@@ -21680,14 +21680,6 @@ copy{
     `;
   }
 
-  private _handleMobileEntityKeydown(event: KeyboardEvent, entityId: string): void {
-    const target = event.target as HTMLElement | null;
-    if (target?.closest?.('button, select, input, textarea, a')) return;
-    if (event.key !== 'Enter' && event.key !== ' ') return;
-    event.preventDefault();
-    this._showMoreInfo(entityId);
-  }
-
   private _mobileEntityHasInlineSelect(domain: string, state: any): boolean {
     return ['select', 'input_select'].includes(domain) && Array.isArray(state?.attributes?.options);
   }
@@ -21728,122 +21720,6 @@ copy{
     }
 
     return options;
-  }
-
-  private _renderMobileEntityActions(state: any, domain: string, active: boolean) {
-    const actionKind = this._mobileEntityActionKind(domain);
-    const unavailable = ['unavailable', 'unknown'].includes(String(state?.state || '').toLowerCase());
-
-    if (actionKind === 'toggle') {
-      return html`
-        <button
-          class="mobile-entity-action mobile-entity-toggle"
-          type="button"
-          title=${active ? this._t('action.turn_off') : this._t('action.turn_on')}
-          aria-label=${active ? this._t('action.turn_off') : this._t('action.turn_on')}
-          ?disabled=${unavailable}
-          @click=${(event: Event) => this._handleMobileEntityToggle(event, state, domain)}
-        ></button>
-      `;
-    }
-
-    if (actionKind === 'cover') {
-      return this._renderMobileCoverActions(state);
-    }
-
-    if (actionKind === 'lock') {
-      const unlocked = this._isEntityActiveForUi(state, domain);
-      return html`
-        <button
-          class="mobile-entity-action mobile-lock-action ${unlocked ? 'is-unlocked' : ''}"
-          type="button"
-          title=${unlocked ? this._t('action.lock') : this._t('action.unlock')}
-          aria-label=${unlocked ? this._t('action.lock') : this._t('action.unlock')}
-          ?disabled=${unavailable}
-          @click=${(event: Event) => this._handleMobileLockAction(event, state)}
-        >
-          <ha-icon icon=${unlocked ? 'mdi:lock-open-variant-outline' : 'mdi:lock-outline'}></ha-icon>
-        </button>
-      `;
-    }
-
-    if (actionKind === 'scene') {
-      return html`
-        <button
-          class="mobile-entity-action mobile-scene-action"
-          type="button"
-          title=${this._t('action.activate')}
-          aria-label=${this._t('action.activate')}
-          @click=${(event: Event) => this._handleMobileSceneAction(event, state)}
-        >
-          <ha-icon icon="mdi:play"></ha-icon>
-        </button>
-      `;
-    }
-
-    return html`
-      <button
-        class="mobile-entity-action mobile-entity-more"
-        type="button"
-        title=${this._t('action.more_info')}
-        aria-label=${this._t('action.more_info')}
-        @click=${(event: Event) => {
-          event.stopPropagation();
-          this._showMoreInfo(state?.entity_id);
-        }}
-      >
-        <ha-icon icon="mdi:chevron-right"></ha-icon>
-      </button>
-    `;
-  }
-
-  private _renderMobileCoverActions(state: any) {
-    const value = String(state?.state || '').toLowerCase();
-    const unavailable = ['unavailable', 'unknown'].includes(value);
-    const canOpen = this._coverSupportsFeature(state, 1);
-    const canClose = this._coverSupportsFeature(state, 2);
-    const canStop = this._coverSupportsFeature(state, 8);
-
-    return html`
-      <div class="mobile-cover-actions" @click=${(event: Event) => event.stopPropagation()}>
-        ${canOpen ? html`
-          <button
-            class="mobile-entity-action mobile-cover-action ${value === 'opening' ? 'active' : ''}"
-            type="button"
-            title=${this._t('action.open')}
-            aria-label=${this._t('action.open')}
-            ?disabled=${unavailable}
-            @click=${(event: Event) => this._handleMobileCoverAction(event, state, 'open')}
-          >
-            <ha-icon icon="mdi:arrow-up"></ha-icon>
-          </button>
-        ` : nothing}
-        ${canStop ? html`
-          <button
-            class="mobile-entity-action mobile-cover-action ${value === 'opening' || value === 'closing' ? 'active' : ''}"
-            type="button"
-            title=${this._t('action.stop')}
-            aria-label=${this._t('action.stop')}
-            ?disabled=${unavailable}
-            @click=${(event: Event) => this._handleMobileCoverAction(event, state, 'stop')}
-          >
-            <ha-icon icon="mdi:stop"></ha-icon>
-          </button>
-        ` : nothing}
-        ${canClose ? html`
-          <button
-            class="mobile-entity-action mobile-cover-action ${value === 'closing' ? 'active' : ''}"
-            type="button"
-            title=${this._t('action.close')}
-            aria-label=${this._t('action.close')}
-            ?disabled=${unavailable}
-            @click=${(event: Event) => this._handleMobileCoverAction(event, state, 'close')}
-          >
-            <ha-icon icon="mdi:arrow-down"></ha-icon>
-          </button>
-        ` : nothing}
-      </div>
-    `;
   }
 
   private async _handleMobileEntityToggle(event: Event, state: any, domain: string): Promise<void> {
