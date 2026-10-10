@@ -2297,122 +2297,6 @@ export class DwainsDevicesCard extends LitElement {
       margin: 0 auto;
     }
 
-    .device-page-header {
-      --domain-color: var(--primary-color);
-      min-height: 134px;
-      margin: 0 0 20px;
-      padding: 22px 24px;
-      display: grid;
-      grid-template-columns: auto minmax(0, 1fr) auto;
-      align-items: center;
-      gap: 16px;
-      border: 1px solid color-mix(in srgb, var(--domain-color) 18%, var(--divider-color));
-      border-radius: 8px;
-      background:
-        radial-gradient(circle at 16% 20%, color-mix(in srgb, var(--domain-color) 10%, transparent), transparent 34%),
-        linear-gradient(135deg,
-          color-mix(in srgb, var(--card-background-color) 96%, var(--domain-color) 4%),
-          color-mix(in srgb, var(--card-background-color) 99%, transparent));
-      box-shadow: 0 20px 44px rgba(15, 23, 42, 0.06);
-      overflow: hidden;
-    }
-
-    .device-page-header:not(.has-back) {
-      grid-template-columns: minmax(0, 1fr) auto;
-    }
-
-    .device-header-back {
-      width: 46px;
-      height: 46px;
-      padding: 0;
-      border: 0;
-      border-radius: 999px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: #182044;
-      color: #ffffff;
-      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .device-header-back ha-icon {
-      --mdc-icon-size: 23px;
-    }
-
-    .device-header-main {
-      min-width: 0;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .device-header-icon {
-      width: 52px;
-      height: 52px;
-      border-radius: 8px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex: 0 0 auto;
-      background: color-mix(in srgb, var(--domain-color) 12%, var(--card-background-color));
-      color: var(--domain-color);
-      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--domain-color) 14%, transparent);
-    }
-
-    .device-header-icon ha-icon {
-      --mdc-icon-size: 28px;
-    }
-
-    .device-header-copy {
-      min-width: 0;
-    }
-
-    .device-title {
-      margin: 0;
-      color: var(--primary-text-color);
-      font-size: clamp(24px, 3vw, 38px);
-      font-weight: 850;
-      line-height: 1.02;
-      letter-spacing: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .device-subtitle {
-      margin-top: 6px;
-      color: var(--secondary-text-color);
-      font-size: 13px;
-      font-weight: 700;
-      line-height: 1.2;
-    }
-
-    .device-header-actions {
-      justify-self: end;
-      display: inline-flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 8px;
-      min-width: 0;
-    }
-
-    .device-header-count {
-      min-width: 34px;
-      height: 34px;
-      padding: 0 12px;
-      border-radius: 999px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: color-mix(in srgb, var(--domain-color) 13%, var(--card-background-color));
-      color: var(--domain-color);
-      font-size: 14px;
-      font-weight: 850;
-      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--domain-color) 16%, transparent);
-    }
-
     .overview-subtitle {
       margin-top: 3px;
       color: var(--secondary-text-color);
@@ -3318,108 +3202,6 @@ export class DwainsDevicesCard extends LitElement {
       box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 7%, transparent);
     }
 
-    .device-room-master-actions {
-      --mobile-domain-accent: var(--primary-color);
-      height: 30px;
-      margin-left: auto;
-      display: inline-flex;
-      align-items: center;
-      overflow: hidden;
-      border: 1px solid color-mix(in srgb, var(--divider-color) 72%, transparent);
-      border-radius: 999px;
-      background: color-mix(in srgb, var(--card-background-color) 92%, transparent);
-      color: color-mix(in srgb, var(--primary-text-color) 58%, transparent);
-    }
-
-    .device-room-master-actions.domain-cover {
-      --mobile-domain-accent: #0d98aa;
-    }
-
-    .device-room-master-actions.domain-lock {
-      --mobile-domain-accent: #7657c8;
-    }
-
-    .device-room-master-action {
-      width: 34px;
-      height: 30px;
-      padding: 0;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border: 0;
-      background: transparent;
-      color: inherit;
-      cursor: pointer;
-      transition:
-        background-color 0.18s ease,
-        color 0.18s ease,
-        transform 0.18s ease;
-    }
-
-    .device-room-master-action + .device-room-master-action {
-      border-left: 1px solid color-mix(in srgb, var(--divider-color) 72%, transparent);
-    }
-
-    .device-room-master-action:hover,
-    .device-room-master-action.active {
-      background: color-mix(in srgb, var(--mobile-domain-accent) 12%, var(--card-background-color));
-      color: var(--mobile-domain-accent);
-    }
-
-    .device-room-master-action:active {
-      transform: scale(0.88);
-    }
-
-    .device-room-master-action ha-icon {
-      --mdc-icon-size: 17px;
-    }
-
-    .device-room-master {
-      margin-left: auto;
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      min-height: 30px;
-      padding: 4px 7px;
-      border: 1px solid var(--divider-color);
-      border-radius: 999px;
-      background: var(--card-background-color);
-      color: var(--secondary-text-color);
-      font: inherit;
-      font-size: 12px;
-      font-weight: 750;
-      cursor: pointer;
-    }
-
-    .device-room-master-track {
-      width: 31px;
-      height: 18px;
-      position: relative;
-      display: inline-block;
-      border-radius: 999px;
-      background: color-mix(in srgb, var(--primary-text-color) 20%, transparent);
-    }
-
-    .device-room-master-track::after {
-      content: '';
-      position: absolute;
-      top: 2px;
-      left: 2px;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: #fff;
-      transition: transform .18s;
-    }
-
-    .device-room-master-track.is-on {
-      background: var(--entity-color);
-    }
-
-    .device-room-master-track.is-on::after {
-      transform: translateX(13px);
-    }
-
     .person-device-grid {
       margin: 0;
       align-items: start;
@@ -3481,23 +3263,6 @@ export class DwainsDevicesCard extends LitElement {
       min-height: 60px;
       position: relative;
       min-width: 0;
-    }
-
-    .special-device-view .entity-card-wrapper > dwains-dashboard-next-card-host {
-      --dd-replacement-border: 1px solid color-mix(in srgb, var(--primary-text-color) 8%, transparent);
-      --dd-replacement-radius: 10px;
-    }
-
-    /* Thermostat cards need their normal internal width to render all controls.
-       Scale the finished card down by 30% instead of squeezing its internals. */
-    .special-device-view .climate-entity-card {
-      overflow: visible;
-    }
-
-    .special-device-view .climate-entity-card > dwains-dashboard-next-card-host {
-      width: calc(100% / 0.7);
-      transform: scale(0.7);
-      transform-origin: top left;
     }
 
     .room-style-entities-grid {
@@ -4051,101 +3816,8 @@ export class DwainsDevicesCard extends LitElement {
         font-size: 11px;
       }
 
-      .device-room-master {
-        min-height: 28px;
-        font-size: 11px;
-      }
-
       .devices-overview-view {
         padding: 2px 0;
-      }
-
-      .devices-overview-view .device-page-header {
-        min-height: 82px;
-        margin-bottom: 14px;
-        padding: 10px 16px;
-        align-items: center;
-      }
-
-      .device-page-header {
-        min-height: 132px;
-        margin: 0 -10px 18px;
-        padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 18px;
-        grid-template-columns: auto minmax(0, 1fr);
-        align-items: start;
-        gap: 12px;
-        border-width: 0 0 1px;
-        border-radius: 0 0 8px 8px;
-        background:
-          linear-gradient(180deg,
-            color-mix(in srgb, var(--card-background-color) 98%, transparent) 0%,
-            color-mix(in srgb, var(--card-background-color) 90%, var(--domain-color) 4%) 100%);
-        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
-      }
-
-      .device-page-header.has-actions {
-        grid-template-columns: auto minmax(0, 1fr) auto;
-      }
-
-      .device-page-header:not(.has-back) {
-        grid-template-columns: minmax(0, 1fr) auto;
-      }
-
-      .device-page-header:not(.has-back) .device-header-main {
-        grid-column: 1;
-      }
-
-      .device-header-back {
-        width: 40px;
-        height: 40px;
-        margin-top: 1px;
-      }
-
-      .device-header-back ha-icon {
-        --mdc-icon-size: 21px;
-      }
-
-      .device-header-main {
-        align-items: center;
-        gap: 10px;
-      }
-
-      .device-page-header.has-back .device-header-main {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 7px;
-      }
-
-      .device-page-header.has-back .device-header-icon {
-        display: none;
-      }
-
-      .device-header-icon {
-        width: 44px;
-        height: 44px;
-      }
-
-      .device-header-icon ha-icon {
-        --mdc-icon-size: 24px;
-      }
-
-      .device-title {
-        font-size: 26px;
-      }
-
-      .device-subtitle {
-        margin-top: 3px;
-        font-size: 12px;
-      }
-
-      .device-header-actions {
-        align-self: start;
-      }
-
-      .device-page-header.has-actions .device-header-actions {
-        grid-column: 1 / -1;
-        width: 100%;
-        justify-content: flex-start;
       }
 
       .devices-overview-grid {
@@ -4244,60 +3916,6 @@ export class DwainsDevicesCard extends LitElement {
         scrollbar-gutter: stable;
       }
 
-      .device-page-header,
-      .devices-overview-view .device-page-header {
-        min-height: 86px;
-        margin-bottom: 14px;
-        padding: 12px 16px;
-        gap: 12px;
-        border-radius: 8px;
-        background:
-          linear-gradient(135deg,
-            color-mix(in srgb, var(--card-background-color) 97%, var(--domain-color) 3%),
-            var(--card-background-color));
-        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
-      }
-
-      .device-header-back {
-        width: 40px;
-        height: 40px;
-        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
-      }
-
-      .device-header-back ha-icon {
-        --mdc-icon-size: 21px;
-      }
-
-      .device-header-main {
-        gap: 11px;
-      }
-
-      .device-header-icon {
-        width: 44px;
-        height: 44px;
-      }
-
-      .device-header-icon ha-icon {
-        --mdc-icon-size: 24px;
-      }
-
-      .device-title {
-        font-size: clamp(22px, 2vw, 30px);
-        line-height: 1.05;
-      }
-
-      .device-subtitle {
-        margin-top: 3px;
-        font-size: 12px;
-      }
-
-      .device-header-count {
-        height: 30px;
-        min-width: 30px;
-        padding: 0 10px;
-        font-size: 12px;
-      }
-
       .special-device-view .entities-grid,
       .special-device-view .entities-grid.cover-entities-grid,
       .special-device-view .entities-grid.light-entities-grid,
@@ -4320,37 +3938,6 @@ export class DwainsDevicesCard extends LitElement {
     }
 
     @media (max-width: 768px) {
-      .device-page-header,
-      .devices-overview-view .device-page-header {
-        min-height: 88px;
-        margin: 0 -10px 14px;
-        padding: 12px 16px 14px;
-        align-items: center;
-      }
-
-      .device-page-header.has-back .device-header-main {
-        align-items: center;
-        flex-direction: row;
-        gap: 9px;
-      }
-
-      .device-page-header.has-back .device-header-icon {
-        display: inline-flex;
-        width: 38px;
-        height: 38px;
-      }
-
-      .device-page-header.has-back .device-header-icon ha-icon {
-        --mdc-icon-size: 21px;
-      }
-
-      .device-title {
-        font-size: 22px;
-      }
-
-      .device-header-actions {
-        align-self: center;
-      }
     }
 
 
@@ -4358,16 +3945,6 @@ export class DwainsDevicesCard extends LitElement {
       /* Match the Startseite top position and compact header height. */
       .content-area {
         padding-top: 10px !important;
-      }
-
-      .device-page-header,
-      .devices-overview-view .device-page-header {
-        min-height: 82px !important;
-        height: auto !important;
-        margin: -10px -10px 14px !important;
-        padding: 10px 14px 12px !important;
-        border-radius: 0 0 8px 8px !important;
-        align-items: center !important;
       }
 
       /* Thermostat cards occupy half the phone width, while preserving the
@@ -4382,12 +3959,6 @@ export class DwainsDevicesCard extends LitElement {
         width: 100% !important;
         min-width: 0 !important;
         overflow: visible !important;
-      }
-
-      .special-device-view .climate-entity-card > dwains-dashboard-next-card-host {
-        width: calc(100% / 0.7) !important;
-        transform: scale(0.7) !important;
-        transform-origin: top left !important;
       }
     }
 
