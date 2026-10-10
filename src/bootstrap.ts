@@ -182,14 +182,46 @@ function installDefaultDashboardRedirect(): void {
 
 
 function installMobileMoreInfoDialogSizing(): void {
-  const styleId = 'dd-next-mobile-more-info-sizing';
+  const hostStyleId = 'dd-next-mobile-more-info-host-sizing';
+  const dialogStyleId = 'dd-next-mobile-ha-dialog-sizing';
 
-  const installInto = (dialog: Element): void => {
-    const root = (dialog as HTMLElement).shadowRoot;
-    if (!root || root.getElementById(styleId)) return;
+  const installMoreInfoHost = (element: Element): void => {
+    const host = element as HTMLElement;
+    const root = host.shadowRoot;
+    if (!root || root.getElementById(hostStyleId)) return;
 
     const style = document.createElement('style');
-    style.id = styleId;
+    style.id = hostStyleId;
+    style.textContent = `
+      @media (max-width: 768px) {
+        :host {
+          --mdc-dialog-min-height: 0 !important;
+          --ha-dialog-min-height: 0 !important;
+          --mdc-dialog-max-height: 88dvh !important;
+          --ha-dialog-max-height: 88dvh !important;
+          --vertical-align-dialog: flex-end !important;
+          --dialog-surface-margin-top: auto !important;
+          --dialog-container-padding: 0 !important;
+        }
+      }
+    `;
+    root.appendChild(style);
+  };
+
+  const installHaDialog = (element: Element): void => {
+    const dialog = element as HTMLElement;
+    dialog.style.setProperty('--mdc-dialog-min-height', '0', 'important');
+    dialog.style.setProperty('--ha-dialog-min-height', '0', 'important');
+    dialog.style.setProperty('--mdc-dialog-max-height', '88dvh', 'important');
+    dialog.style.setProperty('--ha-dialog-max-height', '88dvh', 'important');
+    dialog.style.setProperty('--vertical-align-dialog', 'flex-end', 'important');
+    dialog.style.setProperty('--dialog-surface-margin-top', 'auto', 'important');
+
+    const root = dialog.shadowRoot;
+    if (!root || root.getElementById(dialogStyleId)) return;
+
+    const style = document.createElement('style');
+    style.id = dialogStyleId;
     style.textContent = `
       @media (max-width: 768px) {
         :host {
@@ -201,9 +233,25 @@ function installMobileMoreInfoDialogSizing(): void {
           --dialog-surface-margin-top: auto !important;
         }
 
-        ha-dialog {
+        .mdc-dialog__container {
+          align-items: flex-end !important;
+          padding-top: max(env(safe-area-inset-top, 0px), 12px) !important;
+          box-sizing: border-box !important;
+        }
+
+        .mdc-dialog__surface {
           height: auto !important;
+          min-height: 0 !important;
           max-height: 88dvh !important;
+          overflow: hidden !important;
+          border-radius: 24px 24px 0 0 !important;
+        }
+
+        .mdc-dialog__content,
+        .content {
+          min-height: 0 !important;
+          overflow-y: auto !important;
+          overscroll-behavior-y: contain !important;
         }
       }
     `;
@@ -211,7 +259,9 @@ function installMobileMoreInfoDialogSizing(): void {
   };
 
   const scan = (root: Document | ShadowRoot): void => {
-    root.querySelectorAll('ha-more-info-dialog').forEach(installInto);
+    root.querySelectorAll('ha-more-info-dialog').forEach(installMoreInfoHost);
+    root.querySelectorAll('ha-dialog').forEach(installHaDialog);
+
     root.querySelectorAll('*').forEach((element) => {
       const shadowRoot = (element as HTMLElement).shadowRoot;
       if (shadowRoot) scan(shadowRoot);
@@ -230,8 +280,7 @@ function installMobileMoreInfoDialogSizing(): void {
 
   const rescanAfterOpen = () => {
     scheduleScan();
-    window.setTimeout(scheduleScan, 80);
-    window.setTimeout(scheduleScan, 240);
+    [40, 120, 280, 600].forEach(delay => window.setTimeout(scheduleScan, delay));
   };
 
   window.addEventListener('hass-more-info', rescanAfterOpen, true);
