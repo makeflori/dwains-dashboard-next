@@ -82,27 +82,8 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       -webkit-tap-highlight-color: transparent;
     }
 
-    ha-dialog {
-      --mdc-dialog-heading-ink-color: var(--primary-text-color);
-      --mdc-dialog-content-ink-color: var(--primary-text-color);
-      --dialog-content-padding: 0;
-      --ha-dialog-scrim-backdrop-filter: brightness(72%) blur(2px);
-      --mdc-dialog-scrim-color: rgba(0, 0, 0, 0.28);
-    }
-
-    ha-dialog-header {
-      --mdc-typography-headline6-font-size: 20px;
-      --mdc-typography-headline6-font-weight: 500;
-    }
-
-    .sheet-handle {
-      display: none;
-    }
-
     .content {
       padding: 16px 18px 22px !important;
-      overflow: auto;
-      max-height: calc(90vh - 120px);
       background: var(--primary-background-color);
     }
 
@@ -520,50 +501,16 @@ export class DwainsDomainEntitiesDialog extends LitElement {
         --mdc-dialog-max-width: min(calc(100vw - 4px), 480px);
         --mdc-dialog-min-height: 0px;
         --mdc-dialog-max-height: calc(100dvh - 54px);
-        --ha-dialog-min-height: 0px;
-        --ha-dialog-max-height: calc(100dvh - 54px);
+        ---min-height: 0px;
+        ---max-height: calc(100dvh - 54px);
         --vertical-align-dialog: flex-end;
         --dialog-surface-margin-top: auto;
         --dialog-container-padding: 0;
-        --ha-dialog-scrim-backdrop-filter: brightness(66%) blur(2px);
+        ---scrim-backdrop-filter: brightness(66%) blur(2px);
         --mdc-dialog-scrim-color: rgba(0, 0, 0, 0.34);
       }
 
-      ha-dialog {
-        margin: 0 !important;
-        border-radius: 24px 24px 0 0 !important;
-        --mdc-dialog-container-elevation: 0 18px 50px rgba(15, 23, 42, 0.28);
-        --ha-dialog-border-radius: 24px 24px 0 0;
-        --ha-dialog-show-duration: 1ms;
-        --show-duration: 1ms;
-        --ha-dialog-hide-duration: 160ms;
-        --hide-duration: 160ms;
-      }
-
-      ha-dialog .mdc-dialog__surface {
-        border-radius: 24px 24px 0 0 !important;
-        overflow: hidden;
-      }
-
-      ha-dialog-header {
-        position: relative;
-        padding-top: 22px;
-      }
-
-      .sheet-handle {
-        display: block;
-        position: absolute;
-        top: 8px;
-        left: 50%;
-        width: 38px;
-        height: 4px;
-        border-radius: 999px;
-        transform: translateX(-50%);
-        background: color-mix(in srgb, var(--secondary-text-color) 24%, transparent);
-      }
-
       .content {
-        max-height: calc(100dvh - 148px);
         padding: 12px 12px calc(16px + env(safe-area-inset-bottom, 0px)) !important;
       }
 
@@ -585,24 +532,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     /* Shared Home-information dialog language, aligned with the power detail dialog. */
     :host {
       --mdc-dialog-max-width: 900px;
-    }
-
-    ha-dialog {
-      --ha-dialog-border-radius: 14px;
-      --mdc-dialog-container-elevation: 0 24px 64px rgba(8, 13, 24, 0.24);
-    }
-
-    ha-dialog-header {
-      min-height: 64px;
-      padding: 10px 14px;
-      background: var(--card-background-color);
-      box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--divider-color) 65%, transparent);
-    }
-
-    ha-dialog-header span[slot="title"] {
-      font-size: 20px;
-      font-weight: 900;
-      line-height: 1.05;
     }
 
     .content {
@@ -721,11 +650,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       gap: 10px;
       flex-wrap: wrap;
     }
-    .dialog-title-text {
-      font-size: 20px;
-      font-weight: 900;
-      line-height: 1.05;
-    }
     .dialog-header-destination {
       min-height: 30px;
       padding: 0 10px;
@@ -770,7 +694,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     }
     @media (max-width: 600px) {
       .dialog-title-line { gap: 7px; }
-      .dialog-title-text { font-size: 18px; }
       .dialog-header-destination {
         min-height: 28px;
         padding: 0 8px;
@@ -786,26 +709,12 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       --mdc-dialog-max-width: 760px;
     }
 
-    ha-dialog-header {
-      min-height: 62px !important;
-      padding: 10px 14px !important;
-      background: var(--card-background-color) !important;
-      box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--divider-color) 70%, transparent);
-    }
-
     .dialog-title-line {
       min-width: 0 !important;
       display: inline-flex !important;
       align-items: center !important;
       gap: 9px !important;
       flex-wrap: nowrap !important;
-    }
-
-    .dialog-title-text {
-      min-width: 0 !important;
-      font-size: 20px !important;
-      font-weight: 900 !important;
-      line-height: 1.05 !important;
     }
 
     .dialog-header-destination {
@@ -866,10 +775,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
         gap: 6px !important;
       }
 
-      .dialog-title-text {
-        font-size: 18px !important;
-      }
-
       .dialog-header-destination {
         min-height: 28px !important;
         padding: 0 8px !important;
@@ -879,24 +784,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       .entities-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
       }
-    }
-
-
-    /* Unified Home-information dialog header and readable two-column cards. */
-    .dialog-title-icon {
-      width: 34px;
-      height: 34px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex: 0 0 auto;
-      border-radius: 9px;
-      color: var(--dialog-accent);
-      background: color-mix(in srgb, var(--dialog-accent) 11%, transparent);
-    }
-
-    .dialog-title-icon ha-icon {
-      --mdc-icon-size: 19px;
     }
 
     .entities-grid {
@@ -925,11 +812,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     @media (max-width: 600px) {
       .dialog-title-line {
         flex-wrap: wrap !important;
-      }
-
-      .dialog-title-icon {
-        width: 30px;
-        height: 30px;
       }
 
       .dialog-header-destination {
@@ -1097,64 +979,11 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     }
     .area-master-track.is-on { background: var(--entity-color); }
     .area-master-track.is-on::after { transform:translateX(13px); }
-    /* Own header layout rather than HA header slots, which clip wrapped actions. */
-    .dd-domain-header {
-      box-sizing: border-box; width: 100%; padding: 12px 18px;
-      position: relative; background: var(--card-background-color);
-      box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--divider-color) 65%, transparent);
-    }
-    .dd-domain-header-line {
-      display: flex; align-items: center; gap: 10px; min-width: 0;
-    }
-    .dd-domain-header-line .dialog-heading-copy {
-      flex: 1 1 auto; display: flex; align-items: center; gap: 12px;
-      flex-wrap: nowrap; min-width: 0;
-    }
-    .dd-domain-header-line .dialog-title-text {
-      font-size: 20px !important; font-weight: 850 !important;
-      line-height: 1.2 !important; min-width: 0;
-    }
-    .dd-domain-header-close { flex: 0 0 auto; margin-left: auto; }
-    .dd-domain-header .sheet-handle { display: none; }
     @media (max-width: 600px) {
       :host {
         --vertical-align-dialog: flex-end !important;
         --dialog-surface-margin-top: auto !important;
         --mdc-dialog-min-height: 0px !important;
-      }
-      ha-dialog {
-        --vertical-align-dialog: flex-end !important;
-        --dialog-surface-margin-top: auto !important;
-      }
-      .dd-domain-header {
-        padding: 29px 14px 13px;
-        touch-action: pan-x;
-      }
-      .dd-domain-header-line { align-items: center; gap: 10px; }
-      .dd-domain-header-line .dialog-heading-copy {
-        flex-direction: column; align-items: flex-start; justify-content: center;
-        gap: 5px; flex-wrap: nowrap;
-      }
-      .dd-domain-header .dialog-title-icon {
-        flex: 0 0 48px !important; width: 48px !important; height: 48px !important;
-      }
-      .dd-domain-header .dialog-title-icon ha-icon { --mdc-icon-size: 25px !important; }
-      .dd-domain-header .dialog-header-destination {
-        order: 0 !important; max-width: 100%; line-height: 1.2;
-        min-height: 30px !important;
-      }
-      .dd-domain-header .sheet-handle {
-        display: block; position: absolute; top: 0; left: 50%;
-        transform: translateX(-50%); width: 120px; height: 27px;
-        z-index: 10; background: transparent; border-radius: 0;
-        touch-action: none !important; user-select: none;
-        -webkit-user-select: none; cursor: grab;
-      }
-      .dd-domain-header .sheet-handle::after {
-        content: ''; position: absolute; left: 50%; top: 9px;
-        width: 40px; height: 5px; transform: translateX(-50%);
-        background: color-mix(in srgb, var(--secondary-text-color) 25%, transparent);
-        border-radius: 999px;
       }
     }
 
@@ -1199,22 +1028,8 @@ export class DwainsDomainEntitiesDialog extends LitElement {
         --vertical-align-dialog: flex-end !important;
         --dialog-surface-margin-top: auto !important;
       }
-      ha-dialog { --vertical-align-dialog: flex-end; }
       .entities-grid { grid-template-columns: 1fr !important; }
       .domain-entity-card { min-height: 68px !important; }
-      ha-dialog-header {
-        min-height: 0 !important;
-        padding: 24px 14px 14px !important;
-        touch-action: none !important;
-      }
-      .dialog-title-icon {
-        width: 48px !important;
-        height: 48px !important;
-        flex-basis: 48px !important;
-        border-radius: 12px !important;
-      }
-      .dialog-title-icon ha-icon { --mdc-icon-size: 26px !important; }
-      .dialog-heading-copy { gap: 6px !important; }
       .dialog-header-destination {
         min-height: 28px !important;
         padding-block: 4px !important;
@@ -1228,29 +1043,16 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     @media (max-width: 600px) {
       :host {
         --mdc-dialog-min-height: 0px !important;
-        --ha-dialog-min-height: 0px !important;
+        ---min-height: 0px !important;
         --mdc-dialog-max-height: calc(100dvh - 54px);
-        --ha-dialog-max-height: calc(100dvh - 54px);
+        ---max-height: calc(100dvh - 54px);
       }
-      ha-dialog { height: auto !important; max-height: calc(100dvh - 54px); }
       .content {
-        max-height: calc(100dvh - 190px);
         padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px)) !important;
         overscroll-behavior: contain;
       }
-      ha-dialog-header {
-        min-height: 112px !important;
-        height: auto !important;
-        box-sizing: border-box !important;
-        touch-action: none !important;
-        overflow: visible !important;
-        padding-top: 30px !important;
-        padding-bottom: 18px !important;
-      }
       .dialog-title-line { align-items: center !important; }
-      .dialog-heading-copy { overflow: visible !important; }
       .dialog-header-destination { position: relative; white-space: nowrap; }
-      .sheet-handle { z-index: 10; }
     }
     .area-group-actions { padding: 8px 12px 0; }
     .area-group-actions .domain-actions { margin: 0; flex-wrap: wrap; }
@@ -1263,35 +1065,9 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       flex-wrap: nowrap !important;
       min-width: 0;
     }
-    .dialog-heading-copy {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      min-width: 0;
-      gap: 8px 12px;
-    }
-    .dialog-title-icon {
-      flex: 0 0 44px !important;
-      width: 44px !important;
-      height: 44px !important;
-    }
     @media (max-width: 600px) {
       .dialog-title-line { flex-wrap: nowrap !important; }
-      .dialog-heading-copy {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        justify-content: center;
-        gap: 7px;
-      }
-      .dialog-title-icon {
-        flex: 0 0 56px !important;
-        width: 56px !important;
-        height: 56px !important;
-      }
-      .dialog-title-icon ha-icon { --mdc-icon-size: 30px; }
       .dialog-header-destination { order: initial !important; }
-      .sheet-handle { touch-action: none !important; }
       .content { overscroll-behavior-y: contain; }
     }
 
@@ -1341,30 +1117,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
         white-space: normal !important;
         overflow-wrap: anywhere !important;
         text-overflow: clip !important;
-      }
-      .sheet-handle {
-        top: 0;
-        width: 92px;
-        height: 28px;
-        border-radius: 0;
-        background: transparent;
-        touch-action: none;
-        pointer-events: auto;
-        cursor: grab;
-      }
-      .sheet-handle::after {
-        content: '';
-        position: absolute;
-        top: 8px;
-        left: 50%;
-        width: 38px;
-        height: 4px;
-        border-radius: 999px;
-        transform: translateX(-50%);
-        background: color-mix(in srgb, var(--secondary-text-color) 24%, transparent);
-      }
-      ha-dialog {
-        transform: none !important;
       }
     }
 
@@ -1550,104 +1302,20 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       --dd-person-map-height: 124px;
     }
 
-    .content.home-information-context.device-presentation-context .device-presentation-card {
-      min-width: 0;
-      position: relative;
-    }
-
-    .content.home-information-context.device-presentation-context .device-presentation-card.sensor-card {
-      min-height: 150px;
-    }
-
-    .content.home-information-context.device-presentation-context .device-presentation-card dwains-dashboard-next-card-host {
-      display: block;
-      width: 100%;
-    }
-
     @media (max-width: 600px) {
       :host {
         --mdc-dialog-min-width: min(calc(100vw - 24px), 520px) !important;
         --mdc-dialog-max-width: min(calc(100vw - 24px), 520px) !important;
         --mdc-dialog-min-height: 0px !important;
-        --ha-dialog-min-height: 0px !important;
+        ---min-height: 0px !important;
         --mdc-dialog-max-height: calc(100dvh - 32px) !important;
-        --ha-dialog-max-height: calc(100dvh - 32px) !important;
+        ---max-height: calc(100dvh - 32px) !important;
         --vertical-align-dialog: center !important;
         --dialog-surface-margin-top: 0 !important;
         --dialog-container-padding: 12px !important;
       }
 
-      ha-dialog {
-        margin: auto !important;
-        height: auto !important;
-        max-height: calc(100dvh - 32px) !important;
-        border-radius: 16px !important;
-        --ha-dialog-border-radius: 16px;
-        --ha-dialog-show-duration: 180ms;
-        --show-duration: 180ms;
-      }
-
-      ha-dialog .mdc-dialog__surface {
-        border-radius: 16px !important;
-      }
-
-      .dd-domain-header {
-        padding: 11px 12px !important;
-        touch-action: auto !important;
-      }
-
-      .dd-domain-header .sheet-handle,
-      .sheet-handle {
-        display: none !important;
-      }
-
-      .dd-domain-header-line {
-        align-items: center !important;
-        gap: 9px !important;
-      }
-
-      .dd-domain-header-line .dialog-heading-copy,
-      .dialog-heading-copy {
-        height: 52px;
-        min-height: 52px;
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        justify-content: center !important;
-        gap: 4px !important;
-        flex-wrap: nowrap !important;
-      }
-
-      .dd-domain-header .dialog-title-icon,
-      .dialog-title-icon {
-        flex: 0 0 52px !important;
-        width: 52px !important;
-        height: 52px !important;
-        border-radius: 11px !important;
-      }
-
-      .dd-domain-header .dialog-title-icon ha-icon,
-      .dialog-title-icon ha-icon {
-        --mdc-icon-size: 27px !important;
-      }
-
-      .dd-domain-header-line .dialog-title-text,
-      .dialog-title-text {
-        font-size: 18px !important;
-        line-height: 20px !important;
-      }
-
-      .dd-domain-header .dialog-header-destination,
-      .dialog-header-destination {
-        min-height: 28px !important;
-        height: 28px !important;
-        padding: 0 9px !important;
-        font-size: 10px !important;
-        line-height: 1 !important;
-        white-space: nowrap !important;
-      }
-
       .content {
-        max-height: calc(100dvh - 132px) !important;
         overscroll-behavior-y: contain;
       }
 
@@ -1737,10 +1405,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       .content.home-information-context.device-presentation-context .entities-grid {
         grid-template-columns: 1fr !important;
         gap: 10px !important;
-      }
-
-      .content.home-information-context.device-presentation-context .device-presentation-card.sensor-card {
-        min-height: 150px;
       }
     }
 
