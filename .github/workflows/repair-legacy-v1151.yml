@@ -1,0 +1,36 @@
+name: Repair merged Dwains 1.15.1 migration
+on:
+  push:
+    branches: [migration/replay-on-v1.15.1]
+    paths: [.github/workflows/repair-legacy-v1151.yml, scripts/repair-legacy-migration.mjs]
+permissions:
+  contents: write
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: migration/replay-on-v1.15.1
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - name: Repair incompatibilities without touching official main
+        run: node scripts/repair-legacy-migration.mjs
+      - name: Test candidate
+        run: npm test
+      - name: Rebuild candidate
+        run: npm run build
+      - name: Publish passing migration branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A src tests scripts migration dist package.json package-lock.json
+          git commit -m "Repair archived Dwains customizations for upstream 1.15.1"
+          git push origin HEAD:refs/heads/migration/replay-on-v1.15.1
