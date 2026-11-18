@@ -32,6 +32,10 @@ jobs:
               git add -- "$path"
             done < /tmp/unmerged.txt
           fi
+          # GitHub Actions token cannot change workflow definitions; keep official workflows.
+          git restore --source=HEAD --staged --worktree -- .github/workflows
+          # Bundled assets must be rebuilt from migrated sources, not merged from two releases.
+          git restore --source=HEAD --staged --worktree -- dist
           git diff --cached --name-status | head -n 120 || true
           git commit -m "Integrate archived customizations over official v1.15.1"
           git push origin HEAD:refs/heads/migration/replay-on-v1.15.1
