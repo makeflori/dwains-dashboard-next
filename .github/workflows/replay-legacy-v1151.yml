@@ -1,0 +1,48 @@
+name: Replay legacy customizations on upstream v1.15.1
+on:
+  push:
+    branches: [migration/replay-on-v1.15.1]
+    paths: [.github/workflows/replay-legacy-v1151.yml]
+permissions:
+  contents: write
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: migration/replay-on-v1.15.1
+          fetch-depth: 0
+      - name: Merge archived branch into clean upstream
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main "refs/heads/archive/dev-before-v1.12.0-reset:refs/remotes/origin/archive/dev-before-v1.12.0-reset"
+          echo "Base $(git rev-parse HEAD)"
+          echo "Original $(git rev-parse origin/main)"
+          echo "Archived $(git rev-parse origin/archive/dev-before-v1.12.0-reset)"
+          if ! git merge --no-ff --no-commit -X ours origin/archive/dev-before-v1.12.0-reset; then
+            git diff --name-only --diff-filter=U > /tmp/unmerged.txt
+            cat /tmp/unmerged.txt
+            while IFS= read -r path; do
+              git checkout --ours -- "$path" || true
+              git add -- "$path"
+            done < /tmp/unmerged.txt
+          fi
+          git diff --cached --name-status | head -n 120 || true
+          git commit -m "Integrate archived customizations over official v1.15.1"
+          git push origin HEAD:refs/heads/migration/replay-on-v1.15.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - name: Type-check
+        run: npm run type-check
+      - name: Tests
+        run: npm test
+      - name: Build
+        run: npm run build
