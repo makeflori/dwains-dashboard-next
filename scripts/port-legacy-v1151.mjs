@@ -31,6 +31,50 @@ const testPath='tests/blueprint-repeat.test.ts';
 let test=fs.readFileSync(testPath,'utf8');
 test=test.replace('parsed.meta.name_de','parsed.meta.translations?.name?.de');
 fs.writeFileSync(testPath,test);
+// Keep the customized staged tablet settings until the new editor supports them.
+restore(archive,'src/components/dwains-wall-tablet-settings.ts');
+
+// Adapt the old concrete room group API to the 1.15.1 implementation without
+// changing the official area-entities module used by modern components.
+const oldArea=exec('git',['show',archive+':src/utils/area-entities.ts']);
+const groupStart=oldArea.indexOf('export const AREA_STRATEGY_GROUPS = [');
+const typeStart=oldArea.indexOf('export type AreaStrategyGroup =',groupStart);
+const typeEnd=oldArea.indexOf('\n',typeStart);
+if(groupStart<0||typeStart<0||typeEnd<0)throw new Error('Cannot locate archived concrete group model');
+const groupDeclarations=oldArea.slice(groupStart,typeEnd+1);
+const adapter=[
+ "import type { HomeAssistant } from '../types/home-assistant';",
+ "import { getAreaEntityGroupKey as newGroupKey, areaStrategyGroupForKey } from './area-entities';",
+ "export { resolveAreaSortMode, sortAreas } from './area-entities';",
+ groupDeclarations,
+ "export function getAreaEntityGroupKey(entityId: string, hass: HomeAssistant): AreaStrategyGroup | undefined {",
+ "  const group = newGroupKey(entityId, hass?.states?.[entityId], hass?.entities?.[entityId] as any);",
+ "  return (AREA_STRATEGY_GROUPS as readonly string[]).includes(group) ? group as AreaStrategyGroup : undefined;",
+ "}",
+ "export function getLegacyAreaGroupKey(group: AreaStrategyGroup): string {",
+ "  return areaStrategyGroupForKey(group);",
+ "}"
+].join('\n');
+fs.writeFileSync('src/utils/legacy-area-groups.ts',adapter+'\n');
+for(const f of carry) {
+ let content=fs.readFileSync(f,'utf8');
+ content=content.replaceAll('../utils/area-entities','../utils/legacy-area-groups');
+ if(f.endsWith('dwains-layout-card.ts')) {
+   content=content.replace("import { roomAreaStyles } from './styles/layout-card-styles';","import { roomAreaStyles } from './styles/legacy-room-area-styles';");
+   content=content.replace("import { makeDialogManager } from './utils/make-dialog-manager';\n",'');
+   content=content.replace("    makeDialogManager(this);\n",'');
+ }
+ fs.writeFileSync(f,content);
+}
+// The archived scoped room stylesheet remains separate from upstream styles.
+const oldStyles=exec('git',['show',archive+':src/components/styles/layout-card-styles.ts']);
+const stylesStart=oldStyles.indexOf('export const roomAreaStyles = css');
+const tick=String.fromCharCode(96);
+const stylesEnd=oldStyles.indexOf(tick+';',stylesStart);
+if(stylesStart<0||stylesEnd<0)throw new Error('Cannot locate archived scoped room styles');
+fs.writeFileSync('src/components/styles/legacy-room-area-styles.ts',
+  "import { css } from 'lit';\n"+oldStyles.slice(stylesStart,stylesEnd+2)+'\n');
+
 const errors=[];
 for(const args of [['--noEmit','--pretty','false'],['--noEmit','-p','tests','--pretty','false']]) {
  const res=cp.spawnSync('node_modules/.bin/tsc',args,{encoding:'utf8',maxBuffer:30*1024*1024});
