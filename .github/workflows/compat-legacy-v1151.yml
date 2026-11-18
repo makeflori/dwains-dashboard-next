@@ -1,0 +1,74 @@
+name: Evaluate merged source compatibility (v1.15.1)
+on:
+  push:
+    branches: [migration/replay-on-v1.15.1]
+    paths: [.github/workflows/compat-legacy-v1151.yml]
+permissions:
+  contents: write
+jobs:
+  combinations:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: migration/replay-on-v1.15.1
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - name: Test archival and upstream variants of conflicting components
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main "refs/heads/archive/dev-before-v1.12.0-reset:refs/remotes/origin/archive/dev-before-v1.12.0-reset"
+          files=(src/components/dwains-dashboard-strategy-editor.ts src/components/dwains-devices-card.ts src/components/dwains-layout-card.ts)
+          best_mask=-1
+          best_errors=999999
+          # Prefer variants that keep the most old customized components, if equally valid.
+          for mask in 7 6 5 3 4 2 1 0; do
+            for i in 0 1 2; do
+              if (( mask & (1 << i) )); then
+                git restore --source=origin/archive/dev-before-v1.12.0-reset --staged --worktree -- "${files[$i]}"
+              else
+                git restore --source=origin/main --staged --worktree -- "${files[$i]}"
+              fi
+            done
+            if npm run type-check > "/tmp/typecheck-$mask.log" 2>&1; then
+              count=0
+            else
+              count=$(grep -c 'error TS' "/tmp/typecheck-$mask.log" || true)
+              if (( count == 0 )); then count=9999; fi
+            fi
+            echo "Variant $mask: $count TypeScript errors (archive file bits: editor=1 devices=2 layout=4)"
+            if (( count < best_errors )); then
+              best_errors=$count
+              best_mask=$mask
+            fi
+            if (( count == 0 )); then break; fi
+          done
+          echo "Best variant: $best_mask ($best_errors errors)"
+          echo "### Variant diagnostics" >> "$GITHUB_STEP_SUMMARY"
+          echo "Best bitmask: $best_mask; errors: $best_errors" >> "$GITHUB_STEP_SUMMARY"
+          if (( best_errors > 0 )); then
+            echo "First errors for the best variant:"
+            head -n 35 "/tmp/typecheck-$best_mask.log"
+            exit 1
+          fi
+          # Restore best selection in case the loop exited via a future refactor.
+          for i in 0 1 2; do
+            if (( best_mask & (1 << i) )); then
+              git restore --source=origin/archive/dev-before-v1.12.0-reset --staged --worktree -- "${files[$i]}"
+            else
+              git restore --source=origin/main --staged --worktree -- "${files[$i]}"
+            fi
+          done
+          npm test
+          npm run build
+          git add -A dist
+          git commit -m "Resolve merged component compatibility with verified sources"
+          git push origin HEAD:refs/heads/migration/replay-on-v1.15.1
