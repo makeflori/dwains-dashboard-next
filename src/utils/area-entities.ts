@@ -4,108 +4,38 @@ import { getCollator } from './intl-cache';
 import { getEntityRegistry } from './entity-registry';
 import { stripAreaNameFromEntityName } from './entity-names';
 
-// Keep room settings on the same concrete entity-type model as the room view.
-// Motion remains its own group because the room view also separates motion binary sensors.
+// Group types as Home Assistant uses them
 export const AREA_STRATEGY_GROUPS = [
-  'light',
-  'switch',
-  'input_boolean',
-  'lock',
-  'cover_shading',
-  'cover_openings',
-  'cover_gates',
-  'safety',
+  'lights',
   'climate',
-  'fan',
-  'humidifier',
-  'water_heater',
-  'valve',
-  'media_player',
+  'covers',
+  'media_players',
+  'security',
   'motion',
-  'camera',
-  'vacuum',
-  'lawn_mower',
-  'todo',
-  'scene',
-  'script',
-  'automation',
-  'button',
-  'event',
-  'select',
-  'number',
-  'input_number',
-  'counter',
-  'timer',
-  'binary_sensor',
-  'sensor',
+  'actions',
+  'others',
 ] as const;
 
-export const AREA_STRATEGY_GROUP_ICONS: Record<AreaStrategyGroup, string> = {
-  light: 'mdi:lightbulb',
-  switch: 'mdi:power-plug',
-  cover_openings: 'mdi:door-open',
-  cover_shading: 'mdi:blinds-horizontal',
-  cover_gates: 'mdi:gate',
-  climate: 'mdi:thermostat',
-  todo: 'mdi:clipboard-list-outline',
-  scene: 'mdi:palette-outline',
-  event: 'mdi:gesture-tap',
+export const AREA_STRATEGY_GROUP_ICONS = {
+  lights: 'mdi:lamps',
+  climate: 'mdi:home-thermometer',
+  covers: 'mdi:blinds-horizontal',
+  media_players: 'mdi:multimedia',
+  security: 'mdi:security',
   motion: 'mdi:motion-sensor',
-  safety: 'mdi:shield-alert-outline',
-  binary_sensor: 'mdi:radiobox-marked',
-  sensor: 'mdi:eye-outline',
-  media_player: 'mdi:multimedia',
-  fan: 'mdi:fan',
-  lock: 'mdi:lock',
-  camera: 'mdi:camera',
-  vacuum: 'mdi:robot-vacuum',
-  button: 'mdi:gesture-tap-button',
-  input_boolean: 'mdi:toggle-switch-outline',
-  script: 'mdi:script-text-outline',
-  automation: 'mdi:robot',
-  humidifier: 'mdi:air-humidifier',
-  water_heater: 'mdi:water-boiler',
-  lawn_mower: 'mdi:robot-mower-outline',
-  valve: 'mdi:valve',
-  select: 'mdi:form-dropdown',
-  number: 'mdi:numeric',
-  input_number: 'mdi:numeric',
-  counter: 'mdi:counter',
-  timer: 'mdi:timer-outline',
+  actions: 'mdi:robot',
+  others: 'mdi:shape',
 };
 
-export const AREA_STRATEGY_GROUP_TITLES: Record<AreaStrategyGroup, string> = {
-  light: 'Lights',
-  switch: 'Switches',
-  cover_openings: 'Windows & doors',
-  cover_shading: 'Shading',
-  cover_gates: 'Gates',
+export const AREA_STRATEGY_GROUP_TITLES = {
+  lights: 'Lighting',
   climate: 'Climate',
-  todo: 'To-do lists',
-  scene: 'Scenes',
-  event: 'Events',
-  motion: 'Motion & presence',
-  safety: 'Safety & alarms',
-  binary_sensor: 'Binary sensors',
-  sensor: 'Sensors',
-  media_player: 'Media players',
-  fan: 'Fans',
-  lock: 'Locks',
-  camera: 'Cameras',
-  vacuum: 'Vacuums',
-  button: 'Buttons',
-  input_boolean: 'Toggles',
-  script: 'Scripts',
-  automation: 'Automations',
-  humidifier: 'Humidifiers',
-  water_heater: 'Water heaters',
-  lawn_mower: 'Lawn mowers',
-  valve: 'Valves',
-  select: 'Selectors',
-  number: 'Numbers',
-  input_number: 'Numbers',
-  counter: 'Counters',
-  timer: 'Timers',
+  covers: 'Covers',
+  media_players: 'Media',
+  security: 'Security',
+  motion: 'Motion',
+  actions: 'Actions',
+  others: 'Others',
 };
 
 export type AreaStrategyGroup = (typeof AREA_STRATEGY_GROUPS)[number];
@@ -308,121 +238,6 @@ interface AreaGroupsDisplayOptions {
   [group: string]: EntitiesDisplay | undefined;
 }
 
-function emptyGroups(): AreaEntitiesByGroup {
-  return Object.fromEntries(
-    AREA_STRATEGY_GROUPS.map((group) => [group, [] as string[]])
-  ) as AreaEntitiesByGroup;
-}
-
-export function getAreaEntityGroupKey(entityId: string, hass: HomeAssistant): AreaStrategyGroup | undefined {
-  const domain = entityId.split('.')[0] || '';
-  if (domain === 'cover') {
-    const deviceClass = String(hass.states[entityId]?.attributes?.device_class || '').toLowerCase();
-    const openingClasses = new Set(['door', 'window']);
-    const gateClasses = new Set(['garage', 'garage_door', 'gate']);
-    if (gateClasses.has(deviceClass)) return 'cover_gates';
-    return openingClasses.has(deviceClass) ? 'cover_openings' : 'cover_shading';
-  }
-  if (domain === 'input_select') return 'select';
-  if (domain === 'input_boolean') return 'input_boolean';
-  if (domain === 'alarm_control_panel') return 'safety';
-  if (domain === 'binary_sensor') {
-    const deviceClass = String(hass.states[entityId]?.attributes?.device_class || '').toLowerCase();
-    if (['garage', 'garage_door', 'gate'].includes(deviceClass)) return 'cover_gates';
-    if (['door', 'window', 'opening'].includes(deviceClass)) return 'cover_openings';
-    if (['motion', 'moving', 'occupancy', 'presence'].includes(deviceClass)) return 'motion';
-    if (['smoke', 'gas', 'carbon_monoxide', 'moisture', 'safety', 'tamper', 'problem', 'heat', 'cold'].includes(deviceClass)) return 'safety';
-    return 'binary_sensor';
-  }
-  return (AREA_STRATEGY_GROUPS as readonly string[]).includes(domain)
-    ? domain as AreaStrategyGroup
-    : undefined;
-}
-
-// Compatibility with the older broad settings groups. New writes use concrete
-// groups, while old hidden/order data keeps working until the user changes it.
-export function getLegacyAreaGroupKey(group: AreaStrategyGroup): string {
-  if (group === 'light') return 'lights';
-  if (['climate', 'humidifier', 'water_heater', 'fan'].includes(group)) return 'climate';
-  if (group === 'cover_openings' || group === 'cover_shading' || group === 'cover_gates') return 'covers';
-  if (group === 'media_player') return 'media_players';
-  if (['alarm_control_panel', 'lock', 'camera', 'binary_sensor', 'safety'].includes(group)) return 'security';
-  if (group === 'motion') return 'motion';
-  if (['script', 'scene', 'automation', 'todo', 'event'].includes(group)) return 'actions';
-  return 'others';
-}
-
-function optionsForGroup(
-  displayOptions: AreaGroupsDisplayOptions | undefined,
-  group: AreaStrategyGroup
-): EntitiesDisplay | undefined {
-  const direct = displayOptions?.[group];
-  if (group === 'select') {
-    const legacyInputSelect = displayOptions?.input_select;
-    if (direct && legacyInputSelect) {
-      return {
-        ...direct,
-        hidden: Array.from(new Set([...(direct.hidden || []), ...(legacyInputSelect.hidden || [])])),
-        order: [...(direct.order || []), ...(legacyInputSelect.order || []).filter(id => !(direct.order || []).includes(id))],
-      };
-    }
-    if (direct) return direct;
-    if (legacyInputSelect) return legacyInputSelect;
-  }
-  if (direct) return direct;
-  if (group === 'cover_gates') {
-    const formerCombinedShading = displayOptions?.cover_shading;
-    if (formerCombinedShading) return formerCombinedShading;
-  }
-  if (group === 'cover_openings' || group === 'cover_shading' || group === 'cover_gates') {
-    const formerCover = displayOptions?.cover;
-    if (formerCover) return formerCover;
-  }
-  return displayOptions?.[getLegacyAreaGroupKey(group)];
-}
-
-function groupEntities(
-  entityIds: string[],
-  hass: HomeAssistant,
-  displayOptions?: AreaGroupsDisplayOptions
-): AreaEntitiesByGroup {
-  const grouped = emptyGroups();
-
-  entityIds.forEach((entityId) => {
-    const state = hass.states[entityId];
-    if (!state) return;
-
-    const entityRegistry = hass.entities?.[entityId];
-    if (entityRegistry?.hidden_by ||
-        entityRegistry?.entity_category === 'config' ||
-        entityRegistry?.entity_category === 'diagnostic') {
-      return;
-    }
-
-    const group = getAreaEntityGroupKey(entityId, hass);
-    if (group) grouped[group].push(entityId);
-  });
-
-  AREA_STRATEGY_GROUPS.forEach((group) => {
-    const options = optionsForGroup(displayOptions, group);
-    if (options?.hidden) {
-      const hidden = new Set(options.hidden);
-      grouped[group] = grouped[group].filter((entityId) => !hidden.has(entityId));
-    }
-    if (options?.order?.length) {
-      grouped[group] = sortByOrder(grouped[group], options.order);
-    } else {
-      grouped[group].sort((a, b) => {
-        const nameA = hass.states[a]?.attributes?.friendly_name || a;
-        const nameB = hass.states[b]?.attributes?.friendly_name || b;
-        return nameA.localeCompare(nameB);
-      });
-    }
-  });
-
-  return grouped;
-}
-
 export function getAreaGroupedEntities(
   areaId: string,
   hass: HomeAssistant,
@@ -509,6 +324,7 @@ export function getAreaGroupedEntities(
   return grouped;
 }
 
+// Alternatieve versie voor Dwains Dashboard die met EntityConfig werkt
 export function getAreaGroupedEntitiesFromConfig(
   areaEntities: { entity_id: string }[],
   hass: HomeAssistant,
@@ -597,12 +413,21 @@ export function getAreaGroupedEntitiesFromConfig(
 
 function sortByOrder(items: string[], order: string[]): string[] {
   const orderMap = new Map(order.map((item, index) => [item, index]));
+
+  // Make a copy of the array before sorting
   return [...items].sort((a, b) => {
     const indexA = orderMap.get(a);
     const indexB = orderMap.get(b);
-    if (indexA !== undefined && indexB !== undefined) return indexA - indexB;
-    if (indexA !== undefined) return -1;
-    if (indexB !== undefined) return 1;
+
+    if (indexA !== undefined && indexB !== undefined) {
+      return indexA - indexB;
+    }
+    if (indexA !== undefined) {
+      return -1;
+    }
+    if (indexB !== undefined) {
+      return 1;
+    }
     return a.localeCompare(b);
   });
 }
@@ -642,37 +467,25 @@ export function areaEntityDeviceLabel(
   return label;
 }
 
-export function areaEntityDeviceLabel(
-  displayName: string,
-  deviceName: string | null | undefined,
-  areaName: string
-): string | undefined {
-  const device = String(deviceName ?? '').trim();
-  if (!device) return undefined;
-  const label = stripAreaFromEntityName(device, areaName);
-  const normalizedLabel = label.toLocaleLowerCase();
-  const normalizedDevice = device.toLocaleLowerCase();
-  const normalizedArea = String(areaName ?? '').trim().toLocaleLowerCase();
-  const normalizedName = String(displayName ?? '').trim().toLocaleLowerCase();
-  if (!normalizedName) return label;
-  if (normalizedLabel === normalizedArea || normalizedDevice === normalizedArea) return undefined;
-  if (normalizedName === normalizedLabel || normalizedName.startsWith(`${normalizedLabel} `)) return undefined;
-  if (normalizedName === normalizedDevice || normalizedName.startsWith(`${normalizedDevice} `)) return undefined;
-  return label;
-}
-
+/**
+ * Older configurations only stored an order after the user moved an area.
+ * Preserve that behavior while allowing new configurations to select a mode.
+ */
 export function resolveAreaSortMode(areasDisplay?: AreasDisplay): AreaSortMode {
   if (areasDisplay?.sort_mode) return areasDisplay.sort_mode;
   return areasDisplay?.order?.length ? 'custom' : 'alphabetical';
 }
 
+// Keep every area surface on the same ordering rules.
 export function sortAreas(
   areas: any[],
   areasDisplay?: AreasDisplay,
   locale?: string
 ): any[] {
+  // First make a copy of the array to avoid read-only issues
   let filteredAreas = [...areas];
 
+  // Filter hidden areas
   if (areasDisplay?.hidden) {
     const hiddenSet = new Set(areasDisplay.hidden);
     filteredAreas = filteredAreas.filter(area => !hiddenSet.has(area.area_id));
@@ -680,6 +493,7 @@ export function sortAreas(
 
   const sortMode = resolveAreaSortMode(areasDisplay);
 
+  // The registry list is already returned in Home Assistant's configured order.
   if (sortMode === 'home_assistant') {
     return filteredAreas;
   }
@@ -689,6 +503,7 @@ export function sortAreas(
       .map(areaId => filteredAreas.find(area => area.area_id === areaId))
       .filter(area => area !== undefined) as any[];
 
+    // Add areas that are not in the order
     const orderedIds = new Set(areasDisplay.order);
     const remainingAreas = filteredAreas.filter(area => !orderedIds.has(area.area_id));
 

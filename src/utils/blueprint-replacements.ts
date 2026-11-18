@@ -17,6 +17,7 @@ import {
 } from './blueprints';
 import { getEntityRegistry } from './entity-registry';
 import { ddLang } from './localize';
+import { getDomainColor } from './icons';
 
 interface ResolveReplacementParams {
   hass: HomeAssistant;

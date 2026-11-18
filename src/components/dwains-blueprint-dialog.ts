@@ -49,10 +49,6 @@ const GALLERY_URL =
 export class DwainsBlueprintDialog extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
-  private get _german(): boolean { return (this.hass?.locale?.language || this.hass?.language || 'en').toLowerCase().split('-')[0] === 'de'; }
-  private _label(def: any, key: string): string { return (this._german ? def.name_de : undefined) || def.name || key; }
-  private _desc(def: any): string { return (this._german ? def.description_de : undefined) || def.description || ''; }
-
   private _t = (key: string, vars?: Record<string, string | number>) =>
     ddLocalize(this.hass, key, vars);
 
@@ -97,7 +93,7 @@ export class DwainsBlueprintDialog extends LitElement {
       try {
         const parsed = parseBlueprintYaml(params.page.blueprint);
         this._parsed = parsed;
-        this._values = { ...defaultValues(parsed.meta), ...(params.page.inputs || {}), __language: this._german ? "de" : "en" };
+        this._values = { ...defaultValues(parsed.meta), ...(params.page.inputs || {}) };
         this._pageName = params.page.name;
         this._pageIcon = params.page.icon || "mdi:puzzle";
         this._yamlText = params.page.blueprint;
@@ -142,56 +138,6 @@ export class DwainsBlueprintDialog extends LitElement {
     }
   }
 
-  private _suggestInputValues(parsed: ParsedBlueprint): Record<string, any> {
-    const suggestions: Record<string, any> = {};
-    const states = this.hass?.states || {};
-    for (const [key, def] of Object.entries(parsed.meta.input || {})) {
-      if (def.type === 'entity-list') {
-        if (def.suggest === 'coin') { suggestions[key] = this._coinSuggestions().filter(row => row.entity && row.price_entity && row.amount_entity); continue; }
-        const matches = this._entitySuggestions(def);
-        const preferred = def.suggest === 'coin'
-          ? matches.filter(id => /^(?:sensor\\.)wallet_value_(?!total)/i.test(id))
-          : matches;
-        suggestions[key] = preferred.slice(0, 30).map(id => {
-          const suffix = id.replace(/^sensor\.wallet_value_/, '');
-          const price = 'sensor.cryptoinfo_' + suffix + '_eur';
-          const amount = 'sensor.wallet_volume_' + suffix;
-          return {
-            entity: id,
-            name: states[id]?.attributes?.friendly_name || (id.split('.')[1] || id).replace(/_/g, ' '),
-            icon: '',
-            ...(def.suggest === 'coin' ? {
-              price_entity: states[price] ? price : '',
-              amount_entity: states[amount] ? amount : '',
-            } : {}),
-          };
-        });
-        continue;
-      }
-      if (def.type !== 'entity-picker') continue;
-      if (key === 'adguard_protection' || key === 'adguard_filtering') {
-        const feature = key === 'adguard_protection' ? /protect|schutz|protection/i : /filter/i;
-        const switchIds = Object.keys(states).filter(id =>
-          id.startsWith('switch.') && feature.test(id + ' ' + (states[id]?.attributes?.friendly_name || '')) &&
-          /ad.?guard/i.test(id + ' ' + (states[id]?.attributes?.friendly_name || ''))
-        );
-        const conventional = 'switch.adguard_' + (key === 'adguard_protection' ? 'protection' : 'filtering');
-        if (states[conventional]) suggestions[key] = conventional;
-        else if (switchIds.length === 1) suggestions[key] = switchIds[0];
-        continue;
-      }
-      const candidate = def.suggest_entity;
-      if (candidate && states[candidate]) { suggestions[key] = candidate; continue; }
-      const domain = key.startsWith('switch_') ? 'switch' : key.startsWith('update_') ? 'update' : key.startsWith('binary_sensor_') ? 'binary_sensor' : 'sensor';
-      const suffix = key.replace(/^(sensor|switch|update|binary_sensor)_/, '');
-      const exact = domain + '.' + suffix;
-      if (states[exact]) { suggestions[key] = exact; continue; }
-      const matches = Object.keys(states).filter(id => id.startsWith(domain + '.') && ((id.split('.')[1] || '') === suffix || (id.split('.')[1] || '').endsWith('_' + suffix)));
-      if (matches.length === 1) suggestions[key] = matches[0];
-    }
-    return suggestions;
-  }
-
   private _applyParsed(parsed: ParsedBlueprint): void {
     this._parsed = parsed;
     this._values = { ...defaultValues(parsed.meta), ...this._suggestedValues(parsed) };
@@ -218,7 +164,7 @@ export class DwainsBlueprintDialog extends LitElement {
 
   // Behoud ingevulde waarden voor velden die in de nieuwe blueprint nog bestaan.
   private _mergeValues(newParsed: ParsedBlueprint): Record<string, any> {
-    const merged: Record<string, any> = { ...defaultValues(newParsed.meta), __language: this._german ? "de" : "en" };
+    const merged = defaultValues(newParsed.meta);
     const keys = Object.keys(newParsed.meta.input || {});
     for (const key of keys) {
       if (this._values[key] !== undefined && this._values[key] !== "") {
@@ -459,18 +405,6 @@ export class DwainsBlueprintDialog extends LitElement {
     const items = this._filteredGallery();
     const searchLabel = this._t("blueprint.gallery_search");
     return html`
-      <div class="gallery-search">
-        <ha-icon icon="mdi:magnify"></ha-icon>
-        <input
-          type="search"
-          aria-label=${searchLabel}
-          placeholder=${searchLabel}
-          .value=${this._gallerySearch}
-          @input=${(event: Event) => {
-            this._gallerySearch = (event.target as HTMLInputElement).value;
-          }}
-        />
-      </div>
       <p class="hint">${this._t("blueprint.gallery_hint")}</p>
       <label class="gallery-search">
         <ha-icon icon="mdi:magnify"></ha-icon>
@@ -573,7 +507,7 @@ export class DwainsBlueprintDialog extends LitElement {
     }
     let card: any;
     try {
-      card = resolveBlueprintCard(this._parsed.card, this._parsed.meta, cardValues);
+      card = resolveBlueprintCard(this._parsed.card, this._parsed.meta, this._values);
     } catch (e: any) {
       this._error = this._t("blueprint.fill_failed", {
         error: String(e?.message || e),
@@ -1175,11 +1109,6 @@ export class DwainsBlueprintDialog extends LitElement {
         color: var(--secondary-text-color);
         margin: 14px 0 8px;
       }
-      .entity-list-row { border: 1px solid var(--divider-color); border-radius: 10px; padding: 12px; margin-bottom: 10px; display: grid; gap: 9px; }
-      .entity-list-header { display: flex; align-items: center; gap: 12px; justify-content: space-between; }
-      .entity-name-input { flex: 1; min-width: 0; font-weight: 600; }
-      .entity-list-suggestions { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
-      .entity-list > ha-button { margin-top: 5px; }
       .field {
         margin-bottom: 14px;
       }

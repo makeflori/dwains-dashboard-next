@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseBlueprintYaml, resolveBlueprintCard, defaultValues } from '../src/utils/blueprints';
+import { parseBlueprintYaml, resolveBlueprintCard, defaultValues, localizeBlueprintConfig } from '../src/utils/blueprints';
 
 describe('localized repeatable page blueprints', () => {
   const yaml = `blueprint:
@@ -29,7 +29,7 @@ card:
 `;
   it('parses localized fields, icon and repeatable inputs', () => {
     const parsed = parseBlueprintYaml(yaml);
-    expect(parsed.meta.name_de).toBe('Abfuhrkalender');
+    expect(parsed.meta.translations?.name?.de).toBe('Abfuhrkalender');
     expect(parsed.meta.icon).toBe('mdi:trash-can-outline');
     expect(defaultValues(parsed.meta).items).toEqual([]);
   });
@@ -40,8 +40,8 @@ card:
       { name: 'Paper', entity: 'sensor.paper', icon: 'mdi:newspaper' }
     ]});
     expect(result.cards).toHaveLength(2);
-    expect(result.cards[0]).toMatchObject({ name: 'Bio', entity: 'sensor.bio', icon: 'mdi:trash-can-outline', label: 'Heute' });
-    expect(result.cards[1]).toMatchObject({ name: 'Paper', entity: 'sensor.paper', icon: 'mdi:newspaper' });
+    expect(localizeBlueprintConfig(result, 'de').cards[0]).toMatchObject({ name: 'Bio', entity: 'sensor.bio', icon: 'mdi:trash-can-outline', label: 'Heute' });
+    expect(localizeBlueprintConfig(result, 'de').cards[1]).toMatchObject({ name: 'Paper', entity: 'sensor.paper', icon: 'mdi:newspaper' });
   });
   it('falls back to English and ignores incomplete rows', () => {
     const p = parseBlueprintYaml(yaml);
@@ -50,6 +50,6 @@ card:
       { name: 'Paper', entity: 'sensor.paper' }
     ]});
     expect(result.cards).toHaveLength(1);
-    expect(result.cards[0].label).toBe('Today');
+    expect(localizeBlueprintConfig(result, 'fr').cards[0].label).toBe('Today');
   });
 });

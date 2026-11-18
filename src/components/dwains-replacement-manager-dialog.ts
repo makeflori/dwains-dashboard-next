@@ -183,24 +183,7 @@ export class DwainsReplacementManagerDialog extends LitElement {
           )}
         </div>
 
-        ${this._selected && inputKeys.length ? html`
-          <div class="input-grid">
-            ${inputKeys.map((key) => this._renderInputField(key))}
-          </div>
-        ` : nothing}
-
-        <div class="builder-footer">
-          <span class="hint">${this._t('replacement.views_description')}</span>
-          <ha-button
-            appearance="accent"
-            ?disabled=${this._loadingBlueprint || !this._canApply()}
-            @click=${this._applyAssignment}
-          >
-            <ha-icon icon="mdi:check"></ha-icon>
-            ${this._t('common.save')}
-          </ha-button>
-        </div>
-        ${this._loadingBlueprint ? html`<div class="loading footer-loading">${this._t('replacement.loading_blueprint')}</div>` : nothing}
+        ${this._selected ? this._renderSelectedBlueprint() : nothing}
       </section>
     `;
   }
@@ -296,13 +279,6 @@ export class DwainsReplacementManagerDialog extends LitElement {
       this._galleryError = String(e?.message || e);
     } finally {
       this._galleryLoading = false;
-      const options = this._domainOptions().filter((option) => option.value);
-      if (this._domain && !options.some((option) => option.value === this._domain)) {
-        this._domain = '';
-        this._selected = undefined;
-        this._parsed = undefined;
-        this._inputs = {};
-      }
     }
   }
 
@@ -380,14 +356,6 @@ export class DwainsReplacementManagerDialog extends LitElement {
   private _applyAssignment = (): void => {
     if (!this._selected || !this._parsed || !this._canApply()) return;
     const target = this._domain;
-    const alreadyAssigned = REPLACEMENT_SURFACES.some(
-      (surface) => Boolean(this._replacements[surface]?.by_domain?.[target])
-    );
-    if (alreadyAssigned && target !== this._params?.initialDomain) {
-      this._error = this._t('replacement.already_assigned', { domain: getDomainName(this.hass, target) });
-      return;
-    }
-
     const assignment: BlueprintReplacementAssignment = {
       id: this._slug(`${this._selected.name}-${target}`),
       name: this._selected.name,
@@ -553,15 +521,11 @@ export class DwainsReplacementManagerDialog extends LitElement {
     }
     .gallery {
       display: grid;
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 8px;
       max-height: 280px;
       overflow: auto;
       padding-right: 2px;
-      margin-top: 12px;
-    }
-    .builder-controls + .gallery {
-      margin-top: 12px;
     }
     .blueprint-choice {
       text-align: left;
@@ -583,19 +547,19 @@ export class DwainsReplacementManagerDialog extends LitElement {
     .choice-name {
       font-weight: 600;
     }
-    .choice-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
-      margin-top: 4px;
+    .selected-blueprint {
+      margin-top: 12px;
+      padding: 12px;
     }
-    .choice-tags span {
-      border-radius: 999px;
-      padding: 2px 8px;
-      background: var(--secondary-background-color);
-      color: var(--secondary-text-color);
-      font-size: 12px;
-      white-space: nowrap;
+    .selected-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .selected-header ha-icon {
+      --mdc-icon-size: 18px;
+      margin-right: 5px;
     }
     .input-grid {
       display: grid;
@@ -607,28 +571,6 @@ export class DwainsReplacementManagerDialog extends LitElement {
       display: flex;
       flex-direction: column;
       gap: 4px;
-    }
-    .builder-footer {
-      margin-top: 14px;
-      padding-top: 12px;
-      border-top: 1px solid var(--divider-color);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-    }
-    .builder-footer .hint {
-      margin: 0;
-    }
-    .builder-footer ha-button {
-      flex: 0 0 auto;
-    }
-    .builder-footer ha-icon {
-      --mdc-icon-size: 18px;
-      margin-right: 5px;
-    }
-    .footer-loading {
-      margin-top: 8px;
     }
     .error {
       padding: 10px 12px;

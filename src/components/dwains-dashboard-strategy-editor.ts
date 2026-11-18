@@ -11,15 +11,14 @@ import {
   mdiHeart,
   mdiHeartOutline,
   mdiHomeEditOutline,
-  mdiPencil,
+  mdiPackageVariantClosedCheck,
   mdiPuzzleEditOutline,
   mdiShieldAccount,
-  mdiStarOutline,
   mdiThermometerWater,
+  mdiTuneVariant,
   mdiViewDashboardEdit,
 } from "@mdi/js";
-import { css, html, LitElement, nothing, type PropertyValues } from "lit";
-import memoizeOne from "memoize-one";
+import { css, html, LitElement, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
 import type { HomeAssistant } from "../types/home-assistant";
@@ -28,24 +27,16 @@ import { openReplacementManager } from "./dwains-replacement-manager-dialog";
 import {
   AREA_STRATEGY_GROUPS,
   AREA_STRATEGY_GROUP_ICONS,
-  areaStrategyGroupForKey,
+  getAreaEntityGroupKey,
+  getLegacyAreaGroupKey,
   resolveAreaSortMode,
   sortAreas,
   type AreaStrategyGroup
-} from "../utils/area-entities";
-import { countReplacementRules, domainReplacementEntries, setDomainReplacement } from "../utils/blueprint-replacements";
-import { settingsEditorConfig } from "../utils/dashboard-config";
+} from "../utils/legacy-area-groups";
+import { countReplacementRules } from "../utils/blueprint-replacements";
 import { isHiddenAsUnavailable } from "../utils/entity-availability";
-import { areaEntityDisplayName, hidesAreaNameInEntityNames } from "../utils/entity-names";
-import {
-  getAreaHiddenEntityIdSet,
-  getDevicesPageHiddenEntityIdSet,
-  isConfigEntityInArea,
-  resolveStatusEntityAreaId,
-} from "../utils/entity-lookups";
-import { isAreaNowPlayingEnabled } from "../utils/now-playing";
-import { tileTapAction, type TileTapAction } from "../utils/tile-tap";
-import { withAreaShowEnergySensors, withHideEnergySensors } from "../utils/area-energy-sensors";
+import { resolveStatusEntityAreaId } from "../utils/entity-lookups";
+import { normalizeNowPlayingMode } from "../utils/now-playing";
 import { getDeviceClassName, getDomainName } from "../utils/domain-names";
 import { getDeviceClassIcon, getDomainColor, getDomainIcon } from "../utils/icons";
 import { ddLocale, ddLocalize, ddLocalizePlural } from "../utils/localize";
@@ -57,7 +48,6 @@ import {
   normalizeHiddenHomeInformationCards,
   normalizeHiddenHomeSections,
   normalizeHomeSectionsOrder,
-  resolveHiddenHomeSections,
 } from "../utils/home-sections";
 import {
   addHomeScene,
@@ -69,35 +59,19 @@ import {
   removeHomeScene,
   type HomeSceneCandidate,
 } from "../utils/home-scenes";
+import { getEntityRegistry } from "../utils/entity-registry";
+import { dashboardSegmentFromPath } from "../utils/wall-tablet";
+import {
+  commitPendingWallTabletPrefs,
+  discardPendingWallTabletPrefs,
+  readPendingWallTabletPrefs,
+} from "./dwains-wall-tablet-settings";
 import { DD_NEXT_VERSION } from "../version";
-import { moveItemTo, sameItems, sameOrder } from "../utils/list-order";
-import {
-  isAreaLayoutDefault,
-  isAreasDisplayDefault,
-  isDeviceVisibilityDefault,
-  resetAreaLayout,
-  resetAreasDisplay,
-  resetDeviceVisibility,
-} from "../utils/settings-reset";
-import {
-  countHidden,
-  groupHiddenIds,
-  groupVisibility,
-  hidesOnToggle,
-  idsVisibility,
-  withIdsHidden,
-  type GroupVisibility,
-} from "../utils/visibility";
 import {
   MASTER_ACTION_CONFIRMATION_DOMAINS,
   masterActionConfirmationEnabled,
 } from "../utils/master-action-confirmations";
 import { showCardEditorDialog } from "./utils/show-card-editor-dialog";
-import { fireEvent } from "./utils/fire-event";
-import { showConfirmDialog } from "./utils/confirm-dialog";
-import { getEntityRegistry, setFullEntityRegistry } from "../utils/entity-registry";
-import { dashboardSegmentFromPath, readWallTabletPrefs } from "../utils/wall-tablet";
-import "./dwains-wall-tablet-settings";
 
 // We'll create our own entity picker since ha-entity-picker is external
 type SettingsPageKey =
@@ -117,46 +91,37 @@ type SettingsPageKey =
 
 interface SettingsPageItem {
   page: Exclude<SettingsPageKey, "overview">;
-  group: "general" | "layout" | "advanced" | "device";
+  group: "general" | "content" | "behavior" | "support";
   icon: string;
   color: string;
   title: string;
   description: string;
-  /** Short facts, shown as chips that wrap. */
-  summary?: string[];
+  summary?: string;
 }
 
-/** An entity the Devices page can show. People have no area. */
-interface DeviceVisibilityEntry {
-  entityId: string;
-  typeKey: string;
-  areaId: string;
-  deviceId?: string;
-}
-
-/** A device in an area of a type, or the entities without a device (no `deviceId`). */
-interface DeviceVisibilityDeviceNode {
-  deviceId?: string;
+interface DeviceVisibilityDevice {
+  deviceId: string;
   name: string;
-  /** Hidden in all of Dwains Dashboard. */
-  hidden: boolean;
-  entityIds: string[];
-}
-
-interface DeviceVisibilityAreaNode {
   areaId: string;
   areaName: string;
+  entityCount: number;
   entityIds: string[];
-  devices: DeviceVisibilityDeviceNode[];
+  hidden: boolean;
 }
 
-interface DeviceVisibilityTypeNode {
+interface DeviceVisibilityAreaGroup {
+  areaId: string;
+  areaName: string;
+  devices: DeviceVisibilityDevice[];
+}
+
+interface DeviceVisibilityTypeGroup {
   key: string;
   label: string;
   icon: string;
   color: string;
-  entityIds: string[];
-  areas: DeviceVisibilityAreaNode[];
+  devices: DeviceVisibilityDevice[];
+  areas: DeviceVisibilityAreaGroup[];
 }
 
 interface HomeCameraSetting {
@@ -178,9 +143,10 @@ const SETTINGS_ICON_PATHS: Record<string, string> = {
   "mdi:heart": mdiHeart,
   "mdi:heart-outline": mdiHeartOutline,
   "mdi:home-edit-outline": mdiHomeEditOutline,
+  "mdi:package-variant-closed-check": mdiPackageVariantClosedCheck,
   "mdi:puzzle-edit-outline": mdiPuzzleEditOutline,
   "mdi:shield-account": mdiShieldAccount,
-  "mdi:star-outline": mdiStarOutline,
+  "mdi:tune-variant": mdiTuneVariant,
   "mdi:view-dashboard-edit": mdiViewDashboardEdit,
 };
 
@@ -266,18 +232,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _dragOverHomeCameraIndex?: number;
 
   @state()
-  private _draggedHomeScene?: string;
-
-  @state()
-  private _dragOverHomeSceneIndex?: number;
-
-  @state()
-  private _showHomeScenePicker = false;
-
-  @state()
-  private _homeSceneSearch = '';
-
-  @state()
   private _draggedEntityId?: string;
 
   @state()
@@ -303,25 +257,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
   @state()
   private _draggedAreaCustomCardId?: string;
-
-  /** Types opened in the Devices page visibility tree. */
-  @state()
-  private _expandedDeviceTypes: ReadonlySet<string> = new Set();
-
-  /** The group order of the room in the settings was changed, so it can be copied to every room. */
-  @state()
-  private _areaGroupOrderChanged = false;
-
-  /**
-   * Order shown while an item of an order list is dragged. The list follows
-   * the pointer and the order is saved on drop.
-   */
-  @state()
-  private _dragPreview?: { list: string; order: readonly string[] };
-
-  /** Entity groups folded in the room settings. */
-  @state()
-  private _collapsedAreaGroups: ReadonlySet<string> = new Set();
 
   @state()
   private _dragOverAreaCustomCardTarget?: { placement: string; index: number };
@@ -355,13 +290,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
   @state()
   private _homeSettingsDetail: 'overview' | 'house_information' | 'climate' | 'outdoor_climate' | 'cameras' | 'custom_cards' | 'scenes' = 'overview';
-
-  @state()
-  private _homeSettingsDetail: 'overview' | 'house_information' | 'climate' | 'outdoor_climate' | 'cameras' | 'custom_cards' | 'scenes' = 'overview';
-
-  /** Page that opened the Favorites page with a "Manage favorites" link, for its back button. */
-  @state()
-  private _favoritesReturnPage?: "home" | "areas";
 
   // Dashboard-eigenschappen (naam + sidebar-icoon)
   @state() private _dashboardId?: string;
@@ -407,9 +335,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         title: this._dashboardTitle || 'Dashboard',
         icon: this._dashboardIcon || undefined,
       });
+      console.log('✅ Dashboard-naam/icoon opgeslagen');
     } catch (e) {
       console.error('❌ Dashboard bijwerken mislukt:', e);
-      this._showToast(this._t('strategy.save_name_failed', { error: String(e) }));
+      alert(this._t('strategy.save_name_failed', { error: String(e) }));
     }
   }
 
@@ -429,8 +358,15 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   public async setConfig(config: any): Promise<void> {
     // Only store the user configuration, not live data
     this._config = {
-      ...settingsEditorConfig(config),
       type: config?.type || "custom:dwains-dashboard-next",
+      areas_display: config?.areas_display || {},
+      floors_display: config?.floors_display || {},
+      areas_options: config?.areas_options || {},
+      blueprint_replacements: config?.blueprint_replacements || {},
+      device_admission: config?.device_admission || {},
+      favorites: config?.favorites || [],
+      pages: config?.pages || [],
+      settings: config?.settings || {},
       // These will be populated from live data
       areas: [],
       devices: [],
@@ -454,6 +390,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     if (this.hass) {
       void this._fetchData();
     }
+  }
+
+  disconnectedCallback() {
+    this._restoreSettingsScrollbar();
+    super.disconnectedCallback();
   }
 
 
@@ -535,9 +476,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   ): void {
     if (!this.hass) return;
 
-    // Keep the full entity registry privately; hass is shared with Home Assistant.
-    setFullEntityRegistry(entities);
-
+    // Keep Home Assistant's own live registries intact. In particular,
+    // hass.entities is the frontend display registry and contains derived fields
+    // such as display_precision. Replacing it with config/entity_registry/list
+    // entries breaks hass.formatEntityState() until the frontend is reloaded.
     this._config = {
       ...(this._config || { type: "custom:dwains-dashboard-next" }),
       areas: areas.map(area => ({
@@ -574,7 +516,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
   private _renderLoadingShell() {
     return html`
-      <div class="editor-container settings-loading-shell" aria-busy="true">
+      <div class="editor-container dd-flat-settings dd-settings-overview settings-loading-shell" aria-busy="true">
         <section class="settings-nav-section">
           <h3>${this._t('settings.loading')}</h3>
           <div class="settings-nav-list">
@@ -606,14 +548,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _renderSettingsOverview() {
     const groups: Array<{ key: SettingsPageItem["group"]; title: string }> = [
       { key: "general", title: this._t('settings.general') },
-      { key: "layout", title: this._t('settings.dashboard_layout') },
-      { key: "advanced", title: this._t('settings.advanced') },
-      { key: "device", title: this._t('kiosk.group_title') },
+      { key: "content", title: this._t('settings.content_display') },
+      { key: "behavior", title: this._t('settings.behavior_access') },
+      { key: "support", title: this._t('settings.about_support') },
     ];
     const items = this._settingsOverviewItems();
 
     return html`
-      <div class="editor-container">
+      <div class="editor-container dd-flat-settings dd-settings-overview">
         ${groups.map((group) => {
           const groupItems = items.filter((item) => item.group === group.key);
           if (!groupItems.length) return nothing;
@@ -626,9 +568,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
             </section>
           `;
         })}
-        <p class="settings-version-footer">
-          ${this._t('settings.loaded_version')} <strong>v${DD_NEXT_VERSION}</strong>
-        </p>
+        <div class="dd-settings-version-footer">Dwains Dashboard Next · v${DD_NEXT_VERSION}</div>
       </div>
     `;
   }
@@ -667,7 +607,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         color: "#3b82f6",
         title: this._t('settings.dashboard'),
         description: this._t('settings.dashboard_description'),
-        summary: [this._dashboardTitle || this._t('settings.current_dashboard')],
+        summary: this._dashboardTitle || this._getDashboardPanelTitle() || undefined,
       },
       {
         page: "home",
@@ -676,64 +616,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         color: "#3b82f6",
         title: this._t('settings.home_page'),
         description: this._t('settings.home_page_description'),
-        summary: [
-          this._tp('settings.section_count', visibleHomeSections),
-          this._t('settings.house_cards', { visible: visibleHouseInfoCards, total: DEFAULT_HOME_INFORMATION_CARDS.length }),
-          this._tp('common.favorite', favoriteCount),
-        ],
-      },
-      {
-        page: "favorites",
-        group: "general",
-        icon: "mdi:star-outline",
-        color: "#f59e0b",
-        title: this._t('favorites.title'),
-        description: this._t('settings.favorites_page_description'),
-        summary: [
-          this._tp('common.favorite', favoriteCount),
-          this._t(this._config?.settings?.show_suggested_favorites === false
-            ? 'settings.favorite_suggestions_off'
-            : 'settings.favorite_suggestions_on'),
-        ],
-      },
-      {
-        page: "header",
-        group: "general",
-        icon: "mdi:card-account-details-star-outline",
-        color: "#22a06b",
-        title: this._t('settings.header_status'),
-        description: this._t('settings.header_status_description'),
-        summary: [
-          this._config?.settings?.show_notifications === false ? this._t('settings.notifications_hidden') : this._t('settings.notifications_shown'),
-          !this._config?.settings?.alarm_entity_id
-            ? this._t('settings.no_alarm_selected')
-            : this._config.settings.show_alarm === false
-              ? this._t('settings.alarm_hidden')
-              : this._t('settings.alarm_selected'),
-        ],
-      },
-      {
-        page: "controls",
-        group: "general",
-        icon: "mdi:gesture-tap-button",
-        color: "#d97706",
-        title: this._t('settings.controls_confirmations'),
-        description: this._t('settings.controls_confirmations_description'),
-        summary: [
-          this._t(tileTapAction(this._config?.settings) === 'toggle'
-            ? 'settings.tile_tap_summary_toggle'
-            : 'settings.tile_tap_summary_more_info'),
-          this._t('settings.controls_confirmations_summary', { count: protectedMasterActionCount }),
-        ],
-      },
-      {
-        page: "people",
-        group: "layout",
-        icon: "mdi:account-group-outline",
-        color: "#8b5cf6",
-        title: this._t('settings.people'),
-        description: this._t('settings.people_description'),
-        summary: [this._tp('common.person', personCount)],
+        summary: this._t('settings.visible_count', { visible: visibleHomeSections, total: totalHomeSections }),
       },
       {
         page: "areas",
@@ -742,11 +625,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         color: "#3b82f6",
         title: this._t('settings.areas'),
         description: this._t('settings.areas_description'),
-        summary: [
-          this._tp('common.area', areaCount),
-          this._t(`settings.area_order_${areaSortMode}`),
-          areasUnavailableMode,
-        ],
+        summary: this._tp('common.area', areaCount),
       },
       {
         page: "devices",
@@ -755,12 +634,25 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         color: "#3b82f6",
         title: this._t('settings.devices_page'),
         description: this._t('settings.devices_page_description'),
-        summary: [
-          this._t('settings.types_visible', { visible: deviceTypeCount - hiddenDeviceTypeCount, total: deviceTypeCount }),
-          this._t('settings.hidden_devices_count', { count: hiddenDeviceCount }),
-          this._tp('settings.hidden_entities_count', this._getDevicesPageHiddenEntityIds().size),
-          devicesUnavailableMode,
-        ],
+        summary: this._t('settings.types_visible', { visible: deviceTypeCount - hiddenDeviceTypeCount, total: deviceTypeCount }),
+      },
+      {
+        page: "header",
+        group: "content",
+        icon: "mdi:information-outline",
+        color: "#8b5cf6",
+        title: this._t('settings.header_status'),
+        description: this._t('settings.header_status_description'),
+        summary: this._tp('common.active', statusActiveCount),
+      },
+      {
+        page: "favorites",
+        group: "content",
+        icon: "mdi:star-outline",
+        color: "#8b5cf6",
+        title: this._t('favorites.title'),
+        description: this._t('settings.favorites_global_description'),
+        summary: this._tp('common.favorite', favoriteCount),
       },
       {
         page: "replacements",
@@ -769,7 +661,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         color: "#8b5cf6",
         title: this._t('settings.blueprint_replacements'),
         description: this._t('settings.blueprint_replacements_description'),
-        summary: [this._tp('common.active', replacementCount)],
+        summary: this._tp('common.active', replacementCount),
       },
       {
         page: "controls",
@@ -787,11 +679,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         color: "#0f9f8f",
         title: this._t('settings.user_permissions'),
         description: this._t('settings.user_permissions_description'),
-        summary: [
-          this._config?.settings?.restrict_non_admin_ha_sidebar || this._config?.settings?.restrict_non_admin_dashboard_settings
-            ? this._t('settings.restrictions_enabled')
-            : this._t('settings.default_access'),
-        ],
+        summary: this._config?.settings?.restrict_non_admin_ha_sidebar || this._config?.settings?.restrict_non_admin_dashboard_settings
+          ? this._t('settings.restrictions_enabled')
+          : this._t('settings.default_access'),
       },
       {
         page: "wall_tablet",
@@ -811,20 +701,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         color: "var(--primary-color)",
         title: this._t('settings.support'),
         description: this._t('settings.support_description'),
-        summary: [this._t('settings.optional')],
-      },
-      {
-        page: "wall_tablet",
-        group: "device",
-        icon: "mdi:tablet-dashboard",
-        color: "#64748b",
-        title: this._t('kiosk.title'),
-        description: this._t('kiosk.description'),
-        summary: [
-          readWallTabletPrefs(dashboardSegmentFromPath(window.location.pathname)).enabled
-            ? this._t('kiosk.summary_on')
-            : this._t('kiosk.summary_off'),
-        ],
       },
     ];
   }
@@ -834,7 +710,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       <button
         class="settings-nav-item"
         type="button"
-        data-settings-page=${item.page}
         style=${`--settings-item-color: ${item.color};`}
         @click=${() => this._openSettingsPage(item.page)}
       >
@@ -857,14 +732,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         <div class="settings-nav-copy">
           <div class="settings-nav-title">${item.title}</div>
           <div class="settings-nav-description">${item.description}</div>
-          ${item.summary?.length
-            ? html`
-                <div class="settings-nav-summary">
-                  ${item.summary.filter(Boolean).map((part) => html`<span>${part}</span>`)}
-                </div>
-              `
-            : nothing}
         </div>
+        ${item.summary ? html`<span class="settings-nav-summary">${item.summary}</span>` : nothing}
         ${this._renderSettingsIcon("mdi:chevron-right", "settings-nav-chevron")}
       </button>
     `;
@@ -883,46 +752,29 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     `;
   }
 
-  protected updated(changedProps: PropertyValues): void {
-    super.updated(changedProps);
-    if (changedProps.has("_settingsPage")) {
-      // The settings page host shows a different save bar for device settings.
-      this.dispatchEvent(new CustomEvent("dwains-dashboard-next-settings-page-changed", {
-        detail: { page: this._settingsPage },
-        bubbles: true,
-        composed: true,
-      }));
-      const previousPage = changedProps.get("_settingsPage");
-      if (previousPage) {
-        const target = this._settingsPage === "overview"
-          ? `[data-settings-page="${previousPage}"]`
-          : ".settings-detail-title";
-        this.renderRoot.querySelector<HTMLElement>(target)?.focus();
-      }
-    } else if (this._settingsPage === "home" && changedProps.has("_homeSettingsDetail")) {
-      const previous = changedProps.get("_homeSettingsDetail");
-      if (previous) {
-        const returning = this._homeSettingsDetail === "overview" ||
-          (this._homeSettingsDetail === "house_information" && (previous === "climate" || previous === "outdoor_climate"));
-        const target = returning ? `[data-home-settings-detail="${previous}"]` : ".settings-detail-title";
-        this.renderRoot.querySelector<HTMLElement>(target)?.focus();
-      }
-    }
-  }
-
   private _openSettingsPage(page: Exclude<SettingsPageKey, "overview">): void {
     this._settingsPage = page;
-    this._favoritesReturnPage = undefined;
-    rememberSettingsPage(page);
+    if (page === "devices") this._expandedDeviceTypes = new Set();
     this._closeInlinePickers();
     this._emitSettingsPageContext();
     this._resetSettingsScrollPosition();
   }
 
-  private _backToSettingsOverview = (): void => {
-    this._settingsPage = "overview";
-    this._favoritesReturnPage = undefined;
-    rememberSettingsPage("overview");
+  public _restoreSettingsNavigation(page: string, areaId?: string): void {
+    const validPages: SettingsPageKey[] = [
+      "overview", "dashboard", "home", "header", "controls", "devices",
+      "people", "areas", "favorites", "replacements", "permissions", "wall_tablet", "support"
+    ];
+    const nextPage = validPages.includes(page as SettingsPageKey)
+      ? page as SettingsPageKey
+      : "overview";
+
+    this._settingsPage = nextPage;
+    this._area = nextPage === "areas" && areaId && this.hass?.areas?.[areaId]
+      ? areaId
+      : undefined;
+    this._areaGroupOrderDirty = false;
+    if (this._area) this._collapsedAreaEntityGroups = new Set(AREA_STRATEGY_GROUPS);
     this._closeInlinePickers();
     this._emitSettingsPageContext();
   }
@@ -950,96 +802,146 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     this._resetSettingsScrollPosition();
   };
 
-  /** "Manage favorites" link: opens the Favorites page, whose back button returns here. */
-  private _openFavoritesFrom(page: "home" | "areas", event?: Event): void {
-    event?.stopPropagation();
-    this._openSettingsPage("favorites");
-    this._favoritesReturnPage = page;
-  }
-
-  private _renderManageFavoritesLink(page: "home" | "areas") {
-    return html`
-      <button class="link manage-favorites-link" type="button" @click=${(event: Event) => this._openFavoritesFrom(page, event)}>
-        ${this._t('settings.manage_favorites')}
-      </button>
-    `;
+  private _emitSettingsPageContext(): void {
+    const overview = this._settingsPage === "overview";
+    const areaName = this._area ? this.hass?.areas?.[this._area]?.name : undefined;
+    const pageTitle = overview
+      ? this._t('sidebar.dashboard_settings')
+      : areaName
+        ? areaName
+        : this._settingsPageTitle(this._settingsPage);
+    const pageDescription = overview
+      ? this._t('settings.subtitle')
+      : areaName
+        ? this._t('settings.area_detail_header_description')
+        : this._settingsPageDescription(this._settingsPage);
+    this.dispatchEvent(new CustomEvent("dd-settings-page-changed", {
+      detail: {
+        page: this._settingsPage,
+        areaId: this._area,
+        title: pageTitle,
+        parentTitle: areaName ? this._settingsPageTitle("areas") : undefined,
+        description: pageDescription,
+      },
+      bubbles: true,
+      composed: true,
+    }));
   }
 
   private _closeInlinePickers(): void {
     this._showEntityPicker = false;
     this._showWeatherPicker = false;
     this._showAlarmPicker = false;
-    this._showHomeScenePicker = false;
   }
 
-  private _homeSettingsDetailHeader(): { title: string; description: string; backLabel: string } | undefined {
-    if (this._homeSettingsDetail === 'overview') return undefined;
+  private _stabilizeSettingsScrollbar(): void {
+    const visited = new Set<Node>();
+    let node: Node | null = this;
 
-    if (this._homeSettingsDetail === 'climate') {
-      return {
-        title: this._t('home.indoor_climate'),
-        description: this._t('settings.home_climate_areas_description'),
-        backLabel: this._t('home_section.devices.label'),
-      };
+    while (node && !visited.has(node)) {
+      visited.add(node);
+
+      if (node instanceof HTMLElement && !this._scrollbarGutterTargets.has(node)) {
+        this._scrollbarGutterTargets.set(node, node.style.scrollbarGutter);
+        node.style.scrollbarGutter = "stable";
+      }
+
+      if (node.parentNode) {
+        node = node.parentNode;
+        continue;
+      }
+
+      const root = node.getRootNode();
+      node = root instanceof ShadowRoot ? root.host : null;
     }
 
-    if (this._homeSettingsDetail === 'outdoor_climate') {
-      return {
-        title: this._t('home.outdoor_climate'),
-        description: this._t('settings.home_outdoor_climate_areas_description'),
-        backLabel: this._t('home_section.devices.label'),
-      };
+    for (const target of [document.documentElement, document.body]) {
+      if (target && !this._scrollbarGutterTargets.has(target)) {
+        this._scrollbarGutterTargets.set(target, target.style.scrollbarGutter);
+        target.style.scrollbarGutter = "stable";
+      }
     }
-
-    const section: HomeSectionKey = this._homeSettingsDetail === 'house_information'
-      ? 'devices'
-      : this._homeSettingsDetail;
-    const meta = HOME_SECTION_META[section];
-    return {
-      title: this._t(meta.labelKey),
-      description: this._t(meta.descriptionKey),
-      backLabel: this._t('settings.home_page'),
-    };
   }
 
-  private _backFromHomeSettingsDetail = (): void => {
-    this._homeSettingsDetail = this._homeSettingsDetail === 'climate' || this._homeSettingsDetail === 'outdoor_climate'
-      ? 'house_information'
-      : 'overview';
-    this._closeInlinePickers();
-  };
+  private _restoreSettingsScrollbar(): void {
+    for (const [target, previousValue] of this._scrollbarGutterTargets) {
+      target.style.scrollbarGutter = previousValue;
+    }
+    this._scrollbarGutterTargets.clear();
+  }
+
+  private _resetSettingsScrollPosition(): void {
+    void this.updateComplete.then(() => {
+      window.requestAnimationFrame(() => {
+        const visited = new Set<Node>();
+        let node: Node | null = this;
+
+        while (node && !visited.has(node)) {
+          visited.add(node);
+
+          if (node instanceof HTMLElement) {
+            node.scrollTop = 0;
+          }
+
+          if (node.parentNode) {
+            node = node.parentNode;
+            continue;
+          }
+
+          const root = node.getRootNode();
+          node = root instanceof ShadowRoot ? root.host : null;
+        }
+
+        document.scrollingElement?.scrollTo({ top: 0, behavior: "auto" });
+        window.scrollTo({ top: 0, behavior: "auto" });
+      });
+    });
+  }
+
+  public _settingsPageDescription(page: SettingsPageKey): string {
+    switch (page) {
+      case "dashboard":
+        return this._t('settings.dashboard_page_description');
+      case "home":
+        return this._t('settings.home_layout_description');
+      case "header":
+        return this._t('settings.header_page_description');
+      case "controls":
+        return this._t('settings.controls_page_description');
+      case "devices":
+        return this._t('settings.devices_description');
+      case "people":
+        return this._t('settings.people_page_description');
+      case "areas":
+        return this._t('settings.areas_page_description');
+      case "favorites":
+        return this._t('settings.favorites_global_description');
+      case "replacements":
+        return this._t('settings.replace_description');
+      case "permissions":
+        return this._t('settings.permissions_description');
+      case "support":
+        return this._t('settings.support_page_description');
+      default:
+        return "";
+    }
+  }
 
   private _renderSettingsDetailPage(page: SettingsPageKey) {
     const item = this._settingsOverviewItems().find((candidate) => candidate.page === page);
     if (!item) return this._renderSettingsOverview();
 
-    const homeDetail = page === 'home' ? this._homeSettingsDetailHeader() : undefined;
-    const returnPage = page === 'favorites' ? this._favoritesReturnPage : undefined;
-    const returnItem = returnPage
-      ? this._settingsOverviewItems().find((candidate) => candidate.page === returnPage)
-      : undefined;
-    const title = homeDetail?.title || item.title;
-    const description = homeDetail?.description || item.description;
-    const backLabel = homeDetail?.backLabel || returnItem?.title || this._t('settings.all_settings');
-    const backAction = homeDetail
-      ? this._backFromHomeSettingsDetail
-      : returnPage
-        ? () => this._openSettingsPage(returnPage)
-        : this._backToSettingsOverview;
-
     return html`
-      <div class="editor-container">
-        <div class="settings-detail-toolbar">
-          <button class="settings-back-button" type="button" @click=${backAction}>
+      <div class="editor-container dd-flat-settings">
+        ${this.inlineBackNavigation ? html`<div class="dd-native-editor-subpage-back">
+          <button type="button" class="dd-native-back-button"
+            @click=${this._backToSettingsOverview}
+            title=${this._t('common.back')}
+            aria-label=${this._t('common.back')}>
             <ha-icon icon="mdi:arrow-left"></ha-icon>
-            <span>${backLabel}</span>
           </button>
-          <div class="settings-detail-title" role="heading" aria-level="2" aria-label=${title} tabindex="-1">
-            <span>${title}</span>
-            <small>${description}</small>
-          </div>
-        </div>
-        <div class="settings-detail-content">
+        </div>` : nothing}
+        <div class="settings-detail-content dd-flat-content">
           ${this._renderSettingsPageContent(page)}
         </div>
       </div>
@@ -1055,10 +957,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       case "header":
         return this._renderHeaderStatusSettingsPanel();
       case "controls":
-        return html`
-          ${this._renderTileTapSettingsPanel()}
-          ${this._renderMasterActionConfirmationSettingsPanel()}
-        `;
+        return this._renderMasterActionConfirmationSettingsPanel();
       case "devices":
         return this._renderEntityDisplaySettingsPanel();
       case "people":
@@ -1170,60 +1069,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     `;
   }
 
-  private _renderTileTapSettingsPanel() {
-    const current = tileTapAction(this._config?.settings);
-    const modes: Array<{ mode: TileTapAction; icon: string; title: string; description: string }> = [
-      {
-        mode: 'more-info',
-        icon: 'mdi:card-text-outline',
-        title: this._t('settings.tile_tap_more_info'),
-        description: this._t('settings.tile_tap_more_info_description'),
-      },
-      {
-        mode: 'toggle',
-        icon: 'mdi:gesture-tap-hold',
-        title: this._t('settings.tile_tap_toggle'),
-        description: this._t('settings.tile_tap_toggle_description'),
-      },
-    ];
-
-    return this._renderSettingsPanel(
-      "mdi:gesture-tap",
-      this._t('settings.tile_tap_title'),
-      this._t('settings.tile_tap_description'),
-      html`
-        <div class="tile-tap-section">
-          <div class="area-order-modes tile-tap-modes" role="radiogroup" aria-label=${this._t('settings.tile_tap_title')}>
-            ${modes.map(({ mode, icon, title, description }) => html`
-              <button
-                type="button"
-                class="area-order-mode ${current === mode ? 'selected' : ''}"
-                role="radio"
-                aria-checked=${current === mode ? 'true' : 'false'}
-                @click=${() => this._setTileTapAction(mode)}
-              >
-                <ha-icon .icon=${icon}></ha-icon>
-                <span>
-                  <strong>${title}</strong>
-                  <small>${description}</small>
-                </span>
-              </button>
-            `)}
-          </div>
-        </div>
-      `
-    );
-  }
-
-  private _setTileTapAction(mode: TileTapAction): void {
-    if (!this._config || tileTapAction(this._config.settings) === mode) return;
-    const settings = { ...this._config.settings };
-    // The default is left out of the stored config.
-    if (mode === 'toggle') settings.tile_tap_action = 'toggle';
-    else delete settings.tile_tap_action;
-    this._fireConfigChanged({ ...this._config, settings });
-  }
-
   private _renderMasterActionConfirmationSettingsPanel() {
     return html`
       <div class="master-confirmation-section dd-simple-settings-stack">
@@ -1328,81 +1173,55 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     return undefined;
   }
 
-  private _openHomeSectionDetail(section: HomeSectionKey): void {
-    const detail = this._homeSectionDetail(section);
-    if (!detail) return;
-    this._homeSettingsDetail = detail;
-    this._closeInlinePickers();
+  private _renderHomeLayoutSettingsPanel() {
+    this._homeSettingsDetail ||= "overview";
+    return html`
+      <section class="dd-home-layout-panel">
+        ${this._renderHomeSectionOrder()}
+      </section>
+    `;
   }
 
-  private _renderHomeLayoutSettingsPanel() {
-    if (this._homeSettingsDetail === 'climate') {
-      return this._renderSettingsPanel(
-        "mdi:home-thermometer-outline",
-        this._t('home.indoor_climate'),
-        this._t('settings.home_climate_areas_description'),
-        this._renderHomeClimateAreaSettings()
-      );
+  private _replacementEntries(): Array<{ target: string; assignment: any }> {
+    const replacements = this._config?.blueprint_replacements;
+    if (!replacements) return [];
+    const targets = new Set<string>();
+    for (const surface of ['area_cards', 'devices_cards'] as const) {
+      Object.keys(replacements[surface]?.by_domain || {}).forEach((target) => targets.add(target));
     }
+    return [...targets]
+      .sort((a, b) => getDomainName(this.hass, a).localeCompare(getDomainName(this.hass, b)))
+      .map((target) => ({
+        target,
+        assignment:
+          replacements.area_cards?.by_domain?.[target] ||
+          replacements.devices_cards?.by_domain?.[target],
+      }))
+      .filter((entry) => Boolean(entry.assignment));
+  }
 
-    if (this._homeSettingsDetail === 'outdoor_climate') {
-      return this._renderSettingsPanel(
-        "mdi:sun-thermometer-outline",
-        this._t('home.outdoor_climate'),
-        this._t('settings.home_outdoor_climate_areas_description'),
-        this._renderHomeOutdoorClimateAreaSettings()
-      );
+  private _setReplacementEnabled(target: string, enabled: boolean): void {
+    if (!this._config) return;
+    const replacements = structuredClone(this._config.blueprint_replacements || {});
+    for (const surface of ['area_cards', 'devices_cards'] as const) {
+      const assignment = replacements[surface]?.by_domain?.[target];
+      if (assignment) assignment.enabled = enabled;
     }
+    this._fireConfigChanged({ ...this._config, blueprint_replacements: replacements });
+  }
 
-    if (this._homeSettingsDetail === 'house_information') {
-      return this._renderSettingsPanel(
-        "mdi:home-edit-outline",
-        this._t('settings.house_information_cards'),
-        this._t('settings.house_information_cards_description'),
-        this._renderHomeInformationCardSettings()
-      );
+  private _removeReplacement(target: string): void {
+    if (!this._config) return;
+    const replacements = structuredClone(this._config.blueprint_replacements || {});
+    for (const surface of ['area_cards', 'devices_cards'] as const) {
+      if (replacements[surface]?.by_domain) delete replacements[surface]!.by_domain![target];
     }
-
-    if (this._homeSettingsDetail === 'cameras') {
-      const meta = HOME_SECTION_META.cameras;
-      return this._renderSettingsPanel(
-        meta.icon,
-        this._t(meta.labelKey),
-        this._t(meta.descriptionKey),
-        this._renderHomeCameraSettings()
-      );
-    }
-
-    if (this._homeSettingsDetail === 'custom_cards') {
-      const meta = HOME_SECTION_META.custom_cards;
-      return this._renderSettingsPanel(
-        meta.icon,
-        this._t(meta.labelKey),
-        this._t(meta.descriptionKey),
-        this._renderHomeCustomCardsSettings()
-      );
-    }
-
-    if (this._homeSettingsDetail === 'scenes') {
-      const meta = HOME_SECTION_META.scenes;
-      return this._renderSettingsPanel(
-        meta.icon,
-        this._t(meta.labelKey),
-        this._t(meta.descriptionKey),
-        this._renderHomeScenesSettings()
-      );
-    }
-
-    return this._renderSettingsPanel(
-      "mdi:home-edit-outline",
-      this._t('settings.home_layout'),
-      this._t('settings.home_layout_description'),
-      this._renderHomeSectionOrder()
-    );
+    this._fireConfigChanged({ ...this._config, blueprint_replacements: replacements });
   }
 
   private _renderReplacementsSettingsPanel() {
     const entries = this._replacementEntries();
+
     return this._renderSettingsPanel(
       "mdi:puzzle-edit-outline",
       this._t('settings.blueprint_replacements'),
@@ -1441,119 +1260,21 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                 `;
               })}
             </div>
-            <ha-button appearance="accent" @click=${() => this._openReplacementManager()}>
+          ` : html`<div class="dd-replacement-empty">${this._t('replacement.empty')}</div>`}
+
+          <div class="dd-replacement-footer">
+            <ha-button appearance="accent" @click=${this._openReplacementManager}>
               <ha-icon icon="mdi:plus"></ha-icon>
               ${this._t('replacement.assign')}
             </ha-button>
           </div>
-          ${entries.length ? html`
-            <div class="home-info-card-list replacement-list">
-              ${repeat(
-                entries,
-                (entry) => entry.domain,
-                ({ domain, assignment }) => {
-                  const enabled = assignment.enabled !== false;
-                  const domainName = getDomainName(this.hass, domain);
-                  return html`
-                    <div class="home-info-card-item ${enabled ? '' : 'disabled'}">
-                      <div class="home-section-icon"><ha-icon .icon=${getDomainIcon(domain)}></ha-icon></div>
-                      <div class="home-section-copy">
-                        <div class="home-section-title">${domainName}</div>
-                        <div class="home-section-description">
-                          ${assignment.name}${assignment.version ? ` (v${assignment.version})` : ''}
-                        </div>
-                      </div>
-                      <div class="home-section-actions">
-                        <ha-switch
-                          .checked=${enabled}
-                          aria-label=${this._t('replacement.enabled_label', { domain: domainName })}
-                          title=${this._t('replacement.enabled_label', { domain: domainName })}
-                          @change=${(event: Event) =>
-                            this._setReplacementEnabled(domain, (event.target as HTMLInputElement).checked)}
-                        ></ha-switch>
-                        <ha-icon-button
-                          .label=${this._t('common.edit')}
-                          .path=${mdiPencil}
-                          @click=${() => this._openReplacementManager(domain)}
-                        ></ha-icon-button>
-                        <ha-icon-button
-                          .label=${this._t('common.delete')}
-                          .path=${mdiDelete}
-                          @click=${() => this._removeReplacement(domain)}
-                        ></ha-icon-button>
-                      </div>
-                    </div>
-                  `;
-                }
-              )}
-            </div>
-          ` : html`<div class="home-camera-settings-empty">${this._t('replacement.empty')}</div>`}
         </div>
       `
     );
   }
 
-  private _replacementEntries() {
-    return domainReplacementEntries(this._config?.blueprint_replacements).sort((a, b) =>
-      getDomainName(this.hass, a.domain).localeCompare(getDomainName(this.hass, b.domain))
-    );
-  }
-
-  private _setReplacementEnabled(domain: string, enabled: boolean): void {
-    if (!this._config) return;
-    const current = domainReplacementEntries(this._config.blueprint_replacements)
-      .find((entry) => entry.domain === domain)?.assignment;
-    if (!current) return;
-    this._fireConfigChanged({
-      ...this._config,
-      blueprint_replacements: setDomainReplacement(this._config.blueprint_replacements, domain, { ...current, enabled }),
-    });
-  }
-
-  private async _removeReplacement(domain: string): Promise<void> {
-    const domainName = getDomainName(this.hass, domain);
-    const confirmed = await showConfirmDialog(this, {
-      hass: this.hass,
-      title: this._t('replacement.remove_confirm', { domain: domainName }),
-      message: this._t('replacement.remove_message', { domain: domainName }),
-      confirmLabel: this._t('common.delete'),
-      destructive: true,
-    });
-    if (!confirmed || !this._config) return;
-    this._fireConfigChanged({
-      ...this._config,
-      blueprint_replacements: setDomainReplacement(this._config.blueprint_replacements, domain, undefined),
-    });
-  }
-
   private _renderFavoritesSettingsPanel() {
-    return this._renderSettingsPanel(
-      "mdi:star",
-      this._t('favorites.title'),
-      this._t('settings.favorites_page_description'),
-      html`
-        <div class="favorites-section">
-          <div class="favorite-suggestions-toggle">
-            <ha-formfield .label=${this._t('settings.show_suggested_favorites')}>
-              <ha-switch
-                .checked=${this._config?.settings?.show_suggested_favorites !== false}
-                @change=${this._toggleSuggestedFavorites}
-              ></ha-switch>
-            </ha-formfield>
-            <p class="toggle-description">
-              ${this._t('settings.suggested_favorites_description')}
-            </p>
-          </div>
-          <div class="entity-picker">
-            <div class="entity-picker-header">
-              <h4>${this._t('settings.selected_entities')}</h4>
-              <ha-button appearance="outlined" size="s" @click=${this._addFavoriteEntity}>
-                <svg slot="start" viewBox="0 0 24 24" width="20" height="20">
-                  <path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
-                </svg>
-                ${this._t('settings.add_entity')}
-              </ha-button>
-            </div>
+    const suggestedEnabled = this._config?.settings?.show_suggested_favorites !== false;
 
     return this._renderSettingsPanel(
       "mdi:star-outline",
@@ -1620,51 +1341,40 @@ export class DwainsDashboardStrategyEditor extends LitElement {
             this._toggleNotificationsDisplay
           )}
 
-          ${this._config?.settings?.show_weather !== false ? html`
-            <div class="weather-picker">
-              <div class="weather-picker-header">
-                <h4>${this._t('settings.selected_weather')}</h4>
-                <ha-button appearance="outlined" size="s" @click=${this._addWeatherEntity}>
-                  <svg slot="start" viewBox="0 0 24 24" width="20" height="20">
-                    <path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
-                  </svg>
-                  ${this._t('settings.select_weather')}
-                </ha-button>
-              </div>
-
-              ${this._renderSelectedWeatherEntity()}
-
-              ${this._showWeatherPicker ? this._renderWeatherPicker() : ''}
+          <div class="dd-header-feature">
+            <div class="dd-header-feature-row">
+              <span class="dd-setting-row-icon"><ha-icon icon="mdi:weather-cloudy"></ha-icon></span>
+              <span class="dd-setting-row-copy">
+                <strong>${this._t('domain.weather')}</strong>
+                <small>${weatherName}</small>
+              </span>
+              <span class="dd-header-feature-actions">
+                <button class="dd-inline-text-button" type="button" @click=${this._addWeatherEntity}>
+                  ${this._t('common.select')}
+                </button>
+                <ha-switch .checked=${weatherEnabled} @change=${this._toggleWeatherDisplay}></ha-switch>
+              </span>
             </div>
             ${this._showWeatherPicker ? this._renderWeatherPicker() : nothing}
           </div>
 
-  private _renderAlarmSettingsPanel() {
-    return this._renderSettingsPanel(
-      "mdi:shield-home-outline",
-      this._t('domain.alarm_control_panel'),
-      this._t('settings.alarm_description'),
-      html`
-        <div class="alarm-section">
-          <div class="alarm-toggle">
-            <ha-formfield .label=${this._t('settings.show_alarm')}>
-              <ha-switch
-                .checked=${Boolean(this._config?.settings?.alarm_entity_id) && this._config?.settings?.show_alarm !== false}
-                .disabled=${!this._config?.settings?.alarm_entity_id}
-                @change=${this._toggleAlarmDisplay}
-              ></ha-switch>
-            </ha-formfield>
-            <p class="toggle-description">${this._t('settings.show_alarm_description')}</p>
-          </div>
-          <div class="alarm-picker">
-            <div class="alarm-picker-header">
-              <h4>${this._t('settings.selected_alarm')}</h4>
-              <ha-button appearance="outlined" size="s" @click=${this._addAlarmEntity}>
-                <svg slot="start" viewBox="0 0 24 24" width="20" height="20">
-                  <path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
-                </svg>
-                ${this._t('settings.select_alarm')}
-              </ha-button>
+          <div class="dd-header-feature">
+            <div class="dd-header-feature-row">
+              <span class="dd-setting-row-icon"><ha-icon icon="mdi:shield-home-outline"></ha-icon></span>
+              <span class="dd-setting-row-copy">
+                <strong>${this._t('domain.alarm_control_panel')}</strong>
+                <small>${alarmName}</small>
+              </span>
+              <span class="dd-header-feature-actions">
+                <button class="dd-inline-text-button" type="button" @click=${this._addAlarmEntity}>
+                  ${this._t('common.select')}
+                </button>
+                <ha-switch
+                  .checked=${alarmEnabled}
+                  .disabled=${!alarmId}
+                  @change=${this._toggleAlarmDisplay}
+                ></ha-switch>
+              </span>
             </div>
             ${this._showAlarmPicker ? this._renderAlarmPicker() : nothing}
           </div>
@@ -1709,16 +1419,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
               this._toggleRecentDevicesPanel
             )}
           </div>
-          <div class="hide-unavailable-toggle">
-            <ha-formfield .label=${this._t('settings.show_new_devices')}>
-              <ha-switch
-                .checked=${this._config?.settings?.show_recent_devices_panel !== false}
-                @change=${this._toggleRecentDevicesPanel}
-              ></ha-switch>
-            </ha-formfield>
-            <p class="toggle-description">${this._t('settings.show_new_devices_description')}</p>
-          </div>
-          ${this._renderDeviceVisibilityTree()}
+          ${this._renderDeviceVisibilitySettings()}
         </div>
       `
     );
@@ -1812,54 +1513,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
               this._toggleAreaThermostat
             )}
           </div>
-          <div class="hide-unavailable-toggle">
-            <ha-formfield .label=${this._t('settings.hide_area_name')}>
-              <ha-switch
-                .checked=${hidesAreaNameInEntityNames(this._config?.settings)}
-                @change=${this._toggleHideAreaName}
-              ></ha-switch>
-            </ha-formfield>
-            <p class="toggle-description">${this._t('settings.hide_area_name_description')}</p>
-          </div>
-          <div class="hide-unavailable-toggle">
-            <ha-formfield .label=${this._t('settings.hide_energy_sensors')}>
-              <ha-switch
-                .checked=${this._config?.settings?.hide_energy_sensors_on_area_pages === true}
-                @change=${this._toggleHideEnergySensors}
-              ></ha-switch>
-            </ha-formfield>
-            <p class="toggle-description">${this._t('settings.hide_energy_sensors_description')}</p>
-          </div>
-          <div class="hide-unavailable-toggle">
-            <ha-formfield .label=${this._t('thermostat.setting_label')}>
-              <ha-switch
-                .checked=${this._config?.settings?.show_area_thermostat !== false}
-                @change=${this._toggleAreaThermostat}
-              ></ha-switch>
-            </ha-formfield>
-            <p class="toggle-description">${this._t('thermostat.setting_description')}</p>
-          </div>
-          <div class="hide-unavailable-toggle">
-            <ha-formfield .label=${this._t('settings.show_area_favorites')}>
-              <ha-switch
-                .checked=${this._config?.settings?.show_area_favorites !== false}
-                @change=${this._toggleAreaFavorites}
-              ></ha-switch>
-            </ha-formfield>
-            <p class="toggle-description">
-              ${this._t('settings.show_area_favorites_description')}
-              ${this._renderManageFavoritesLink('areas')}
-            </p>
-          </div>
-          <div class="hide-unavailable-toggle">
-            <ha-formfield .label=${this._t('settings.show_area_now_playing')}>
-              <ha-switch
-                .checked=${isAreaNowPlayingEnabled(this._config?.settings)}
-                @change=${this._toggleAreaNowPlaying}
-              ></ha-switch>
-            </ha-formfield>
-            <p class="toggle-description">${this._t('settings.show_area_now_playing_description')}</p>
-          </div>
           ${this._renderAreasConfiguration()}
         </div>
       `
@@ -1904,14 +1557,18 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     const areas = Object.values(this.hass.areas || {});
     const hiddenAreas = new Set(this._config.areas_display?.hidden || []);
     const sortMode = resolveAreaSortMode(this._config.areas_display);
-    const storedAreas = sortAreas(
+    const baseSortedAreas = sortAreas(
       areas,
       { ...this._config.areas_display, hidden: [] },
       ddLocale(this.hass)
     );
-    const areaById = new Map(storedAreas.map((area) => [area.area_id, area]));
-    const sortedAreas = this._previewOrder('areas', storedAreas.map((area) => area.area_id))
-      .map((areaId) => areaById.get(areaId)!);
+    const previewIndex = new Map((this._areaPreviewOrder || []).map((id, index) => [id, index]));
+    const sortedAreas = sortMode === 'custom' && this._areaPreviewOrder
+      ? [...baseSortedAreas].sort((a, b) =>
+          (previewIndex.get(a.area_id) ?? Number.MAX_SAFE_INTEGER) -
+          (previewIndex.get(b.area_id) ?? Number.MAX_SAFE_INTEGER)
+        )
+      : baseSortedAreas;
     const sortModes: Array<{ mode: AreaSortMode; icon: string }> = [
       { mode: 'home_assistant', icon: 'mdi:home-assistant' },
       { mode: 'alphabetical', icon: 'mdi:sort-alphabetical-ascending' },
@@ -1969,15 +1626,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                       <ha-svg-icon .path=${mdiDrag}></ha-svg-icon>
                     </div>
                   ` : nothing}
-                  <button
-                    type="button"
-                    class="area-name clickable"
-                    aria-label=${`${this._t('common.edit')}: ${area.name}`}
-                    @click=${() => this._editArea(area.area_id)}
-                  >
-                    <span class="area-name-text">${area.name}</span>
-                    <ha-icon icon="mdi:chevron-right" class="chevron" aria-hidden="true"></ha-icon>
-                  </button>
+                  <ha-icon .icon=${area.icon || 'mdi:floor-plan'} class="area-icon"></ha-icon>
+                  <span class="area-name clickable" @click=${() => this._editArea(area.area_id)}>
+                    ${area.name}
+                    <ha-icon icon="mdi:chevron-right" class="chevron"></ha-icon>
+                  </span>
                   <div class="area-actions">
                     <button
                       class="dd-visibility-button ${isHidden ? 'hidden' : ''}"
@@ -1997,17 +1650,16 @@ export class DwainsDashboardStrategyEditor extends LitElement {
             `;
           }
         )}
-      </div>
-      <div class="settings-reset-row">
+        </div>
         <button
-          class="home-layout-reset"
+          class="home-layout-reset area-list-reset"
           type="button"
-          ?disabled=${isAreasDisplayDefault(this._config.areas_display)}
+          ?disabled=${hiddenAreas.size === 0 && sortMode === 'alphabetical'}
           @click=${this._resetAreasConfiguration}
         >
-          ${this._t('settings.reset_area_list')}
+          ${this._t('settings.reset_layout')}
         </button>
-      </div>
+      </section>
     `;
   }
 
@@ -2199,8 +1851,43 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       return nothing;
     }
 
-    // Config entities of this area plus states that only the registry places here.
-    const areaEntities = this._areaEditorEntities(this._area);
+    // Get all entities for this area (from entity registry and via states)
+    const areaEntities: { entity_id: string }[] = [];
+    const seenEntities = new Set<string>();
+
+    // Get entities from registry first
+    if (this._config.entities) {
+      // Get all devices in this area
+      const areaDevices = new Set<string>();
+      if (this._config.devices) {
+        this._config.devices.forEach(device => {
+          if (device.area_id === this._area) {
+            areaDevices.add(device.device_id);
+          }
+        });
+      }
+
+      // Get entities via registry (direct or via device)
+      this._config.entities.forEach(entity => {
+        if (entity.area_id === this._area ||
+            (entity.device_id && areaDevices.has(entity.device_id))) {
+          areaEntities.push({ entity_id: entity.entity_id });
+          seenEntities.add(entity.entity_id);
+        }
+      });
+    }
+
+    // Also check states for entities that might not be in registry
+    if (this.hass?.states) {
+      Object.values(this.hass.states).forEach(state => {
+        if (!seenEntities.has(state.entity_id)) {
+          const entityRegistry = this.hass?.entities?.[state.entity_id];
+          if (entityRegistry?.area_id === this._area) {
+            areaEntities.push({ entity_id: state.entity_id });
+          }
+        }
+      });
+    }
 
     // Get grouped entities WITHOUT filtering hidden ones
     const groups = this._getAreaGroupedEntitiesWithoutFiltering(
@@ -2216,9 +1903,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     const allAreaEntityIds = AREA_STRATEGY_GROUPS.flatMap((group) => groups[group] || []);
     const ungroupedOrder = areaOptions.entity_order || [];
     const sortedUngroupedEntities = this._sortEntityIds(allAreaEntityIds, ungroupedOrder);
-    const displayedUngroupedEntities = this._previewOrder(this._entityDragList(UNGROUPED_ENTITY_DRAG_GROUP), sortedUngroupedEntities);
     const customCards = this._getAreaEditorCustomCards();
-    const storedGroupedSections = this._sortAreaStrategyGroups(
+    const baseGroupedSections = this._sortAreaStrategyGroups(
       AREA_STRATEGY_GROUPS.filter((group) =>
         (groups[group] || []).length > 0 || customCards.some((entry) =>
           entry.placement === `after:${group}` ||
@@ -2226,20 +1912,24 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         )
       )
     );
-    const groupedSections = this._previewOrder(`area-groups:${this._area}`, storedGroupedSections);
+    const groupedSections = this._draggedEntitySection && this._areaGroupPreviewOrder
+      ? this._areaGroupPreviewOrder.filter((group) => baseGroupedSections.includes(group))
+      : baseGroupedSections;
+    const areaEntityLayoutIsDefault =
+      areaOptions.entity_layout === undefined &&
+      !(areaOptions.group_order?.length) &&
+      !(areaOptions.entity_order?.length) &&
+      !Object.values(areaOptions.groups_options || {}).some((options) =>
+        Boolean(options?.hidden?.length || options?.order?.length)
+      ) &&
+      !customCards.some((entry) => entry.placement.startsWith('ungrouped:'));
 
     return html`
       <div class="editor-container area-detail-editor">
         <div class="area-help">
           <ha-svg-icon .path=${mdiThermometerWater} class="area-help-icon"></ha-svg-icon>
           <div class="area-help-text">
-            <p>
-              ${this._t('settings.area_sensor_help_before')}
-              <button class="link" @click=${this._editAreaRegistry}>${this._t('settings.edit_room')}</button>${this._t('settings.area_sensor_help_after')}
-            </p>
-            <p>
-              ${this._t('settings.area_power_help')}
-            </p>
+            <p>${this._t('settings.area_climate_power_help')}</p>
           </div>
         </div>
 
@@ -2253,18 +1943,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           </section>
         ` : nothing}
 
-
-        ${this._config.settings?.hide_energy_sensors_on_area_pages === true ? html`
-          <section class="area-entity-layout-settings area-energy-sensors-settings">
-            <ha-formfield .label=${this._t('settings.area_show_energy_sensors')}>
-              <ha-switch
-                .checked=${areaOptions.show_energy_sensors === true}
-                @change=${this._toggleAreaShowEnergySensors}
-              ></ha-switch>
-            </ha-formfield>
-            <span class="area-energy-sensors-description">${this._t('settings.area_show_energy_sensors_description')}</span>
-          </section>
-        ` : nothing}
 
         <section class="area-entity-layout-settings">
           <div class="area-entity-layout-heading">
@@ -2301,10 +1979,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
               <strong>${this._t('settings.area_entity_order')}</strong>
             </div>
             <div class="sortable-container dragging-enabled ${this._draggedEntityGroup === UNGROUPED_ENTITY_DRAG_GROUP ? 'dragging' : ''}">
-              ${this._getAreaEditorFreeCardsForSlot(customCards, 0, displayedUngroupedEntities, entityGroupById)
+              ${this._getAreaEditorFreeCardsForSlot(customCards, 0, sortedUngroupedEntities, entityGroupById)
                 .map((entry) => this._renderAreaCustomCardEditorRow(entry))}
               ${repeat(
-                displayedUngroupedEntities,
+                sortedUngroupedEntities,
                 (entityId) => entityId,
                 (entityId, index) => {
                   const state = this.hass!.states[entityId];
@@ -2329,7 +2007,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                         <div class="handle"><ha-svg-icon .path=${mdiDrag}></ha-svg-icon></div>
                         <ha-state-icon .stateObj=${state} class="entity-icon"></ha-state-icon>
                         <span class="entity-name">
-                          ${this._areaEditorEntityName(entityId, area.name)}
+                          ${this._areaEntityDisplayName(entityId)}
                           <small>${this._getGroupTitle(entityGroup)}</small>
                         </span>
                         <button
@@ -2346,15 +2024,15 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                         </button>
                       </div>
                     </div>
-                    ${this._getAreaEditorFreeCardsForSlot(customCards, index + 1, displayedUngroupedEntities, entityGroupById)
+                    ${this._getAreaEditorFreeCardsForSlot(customCards, index + 1, sortedUngroupedEntities, entityGroupById)
                       .map((entry) => this._renderAreaCustomCardEditorRow(entry))}
                   `;
                 }
               )}
               ${this._renderAreaCustomCardDropZone(`ungrouped:${sortedUngroupedEntities.length}`)}
             </div>
-          </ha-expansion-panel>
-        ` : repeat(groupedSections, (group) => group, (group, groupIndex) => {
+          </section>
+        ` : groupedSections.map((group) => {
           // Get ALL entities for this group (don't filter hidden ones)
           const allGroupEntities = groups[group] || [];
           const concreteGroupOptions = this._config!.areas_options?.[this._area!]?.groups_options?.[group];
@@ -2366,67 +2044,69 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           const hiddenEntities = new Set(groupOptions?.hidden || []);
           const entityOrder = groupOptions?.order || [];
 
-          // Stored order, or the order of a drag in progress.
-          const sortedEntities = this._previewOrder(
-            this._entityDragList(group),
-            this._sortEntityIds(allGroupEntities, entityOrder)
-          );
-          const groupHiddenCount = countHidden(allGroupEntities, hiddenEntities);
-          const groupVisibilityState = groupVisibility(allGroupEntities.length, groupHiddenCount);
+          // Sort entities according to order
+          const sortedEntities = [...allGroupEntities].sort((a, b) => {
+            const aIndex = entityOrder.indexOf(a);
+            const bIndex = entityOrder.indexOf(b);
+            if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+            if (aIndex !== -1) return -1;
+            if (bIndex !== -1) return 1;
+            // Sort by friendly name
+            const nameA = this.hass!.states[a]?.attributes?.friendly_name || a;
+            const nameB = this.hass!.states[b]?.attributes?.friendly_name || b;
+            return nameA.localeCompare(nameB);
+          });          const groupHiddenCount = allGroupEntities.filter((entityId) => hiddenEntities.has(entityId)).length;
+          const groupVisible = groupHiddenCount < allGroupEntities.length;
+          const groupPartial = groupHiddenCount > 0 && groupHiddenCount < allGroupEntities.length;
+          const groupOpen = !this._collapsedAreaEntityGroups.has(group);
 
           return html`
             <div
-              class="area-entity-section ${groupVisibilityState === 'hidden' ? 'is-hidden' : ''} ${this._draggedEntitySection === group ? 'dragging' : ''} ${this._dragOverEntitySection === group ? 'drag-over' : ''}"
+              class="area-entity-section ${groupOpen ? 'open' : ''} ${this._draggedEntitySection === group ? 'dragging' : ''} ${this._dragOverEntitySection === group ? 'drag-over' : ''}"
               @dragover=${(event: DragEvent) => this._handleEntitySectionDragOver(event, group)}
-              @drop=${(event: DragEvent) => this._handleEntitySectionDrop(event, group, storedGroupedSections)}
+              @drop=${(event: DragEvent) => this._handleEntitySectionDrop(event, group, groupedSections)}
             >
-              <ha-expansion-panel
-                outlined
-                .expanded=${!this._collapsedAreaGroups.has(group)}
-                @expanded-changed=${(event: CustomEvent<{ expanded: boolean }>) => this._handleAreaGroupExpandedChanged(event, group)}
+              <div
+                class="area-entity-section-card"
+                @click=${() => this._toggleAreaEntityGroup(group)}
               >
-                <div slot="header" class="area-entity-section-header">
-                  <ha-icon icon=${AREA_STRATEGY_GROUP_ICONS[group]}></ha-icon>
-                  <span class="area-entity-section-title">
-                    ${this._getGroupTitle(group)}
-                    ${groupVisibilityState !== 'visible' ? html`
-                      <small>${this._t('settings.visible_count', {
-                        visible: allGroupEntities.length - groupHiddenCount,
-                        total: allGroupEntities.length,
-                      })}</small>
-                    ` : nothing}
-                  </span>
-                  <span class="area-entity-section-actions">
-                    ${allGroupEntities.length ? this._renderVisibilityButton(
-                      groupVisibilityState,
-                      hidesOnToggle(groupVisibilityState) ? this._t('settings.hide_group') : this._t('settings.show_group'),
-                      () => this._setAreaEntityGroupHidden(group, allGroupEntities, hidesOnToggle(groupVisibilityState))
-                    ) : nothing}
-                    <ha-icon-button
-                      .label=${this._t('settings.move_up')}
-                      .path=${mdiArrowUp}
-                      .disabled=${groupIndex === 0}
-                      @click=${(event: Event) => this._moveEntitySection(event, storedGroupedSections, groupIndex, -1)}
-                    ></ha-icon-button>
-                    <ha-icon-button
-                      .label=${this._t('settings.move_down')}
-                      .path=${mdiArrowDown}
-                      .disabled=${groupIndex === groupedSections.length - 1}
-                      @click=${(event: Event) => this._moveEntitySection(event, storedGroupedSections, groupIndex, 1)}
-                    ></ha-icon-button>
-                    <button
-                      class="area-entity-section-handle"
-                      type="button"
-                      draggable="true"
-                      title=${this._t('layout.drag_group')}
-                      aria-label=${this._t('layout.drag_group')}
-                      @click=${(event: Event) => event.stopPropagation()}
-                      @dragstart=${(event: DragEvent) => this._handleEntitySectionDragStart(event, group, storedGroupedSections)}
-                      @dragend=${this._handleEntitySectionDragEnd}
-                    >
-                      <ha-svg-icon .path=${mdiDrag}></ha-svg-icon>
-                    </button>
-                  </span>
+                <div
+                  class="area-entity-section-header"
+                  draggable="true"
+                  @dragstart=${(event: DragEvent) => this._handleEntitySectionDragStart(event, group, groupedSections)}
+                  @dragend=${this._handleEntitySectionDragEnd}
+                >
+                  <div
+                    class="area-entity-section-handle"
+                    title=${this._t('layout.drag_group')}
+                    aria-label=${this._t('layout.drag_group')}
+                    @click=${(event: Event) => event.stopPropagation()}
+                  >
+                    <ha-svg-icon .path=${mdiDrag}></ha-svg-icon>
+                  </div>
+                  <ha-icon
+                    class="area-entity-section-icon"
+                    icon=${AREA_STRATEGY_GROUP_ICONS[group]}
+                    style=${`--area-group-color: ${this._getAreaStrategyGroupColor(group)};`}
+                  ></ha-icon>
+                  <span class="area-entity-section-title">${this._getGroupTitle(group)}</span>
+                  ${this._renderVisibilityButton(
+                    groupVisible,
+                    groupPartial,
+                    groupVisible ? this._t('settings.hide_section') : this._t('settings.show_section'),
+                    () => this._setAreaEntityGroupHidden(group, allGroupEntities, groupVisible)
+                  )}
+                  <button
+                    class="dd-integrated-chevron area-entity-section-chevron"
+                    type="button"
+                    aria-expanded=${groupOpen ? 'true' : 'false'}
+                    @click=${(event: Event) => {
+                      event.stopPropagation();
+                      this._toggleAreaEntityGroup(group);
+                    }}
+                  >
+                    <ha-icon icon=${groupOpen ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
+                  </button>
                 </div>
                 ${groupOpen ? html`
                   <div class="sortable-container ${this._draggedEntityGroup === group ? 'dragging' : ''}">
@@ -2465,13 +2145,20 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                             class="entity-icon"
                           ></ha-state-icon>
                           <span class="entity-name">
-                            ${this._areaEditorEntityName(entityId, area.name)}
+                            ${this._areaEntityDisplayName(entityId)}
                           </span>
-                          <ha-icon-button
-                            .label=${isHidden ? this._t('common.show') : this._t('common.hide')}
-                            .path=${isHidden ? mdiEye : mdiEyeOff}
-                            @click=${() => this._toggleEntityVisibility(entityId, group)}
-                          ></ha-icon-button>
+                          <button
+                            class="dd-visibility-button ${isHidden ? 'hidden' : ''}"
+                            type="button"
+                            title=${isHidden ? this._t('common.show') : this._t('common.hide')}
+                            aria-label=${isHidden ? this._t('common.show') : this._t('common.hide')}
+                            @click=${(event: Event) => {
+                              event.stopPropagation();
+                              this._toggleEntityVisibility(entityId, group);
+                            }}
+                          >
+                            <ha-icon icon=${isHidden ? 'mdi:eye' : 'mdi:eye-off'}></ha-icon>
+                          </button>
                         </div>
                       </div>
                       ${this._getAreaEditorDomainCardsForSlot(customCards, group, index + 1, sortedEntities.length)
@@ -2489,35 +2176,29 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         ${customCards.length || this._draggedAreaCustomCardId
           ? this._renderAreaCustomCardPlacement(customCards, 'bottom', this._t('layout.custom_cards_bottom'))
           : nothing}
-        <div class="settings-reset-row area-editor-reset-row">
+        <div class="area-layout-actions">
           ${entityLayout === 'grouped' ? html`
             <button
-              class="home-layout-reset"
+              class="home-layout-reset area-apply-type-order"
               type="button"
-              title=${this._t('settings.apply_group_order_all_description')}
-              ?disabled=${!this._areaGroupOrderChanged}
+              ?disabled=${!this._areaGroupOrderDirty}
               @click=${this._applyAreaGroupOrderToAllAreas}
             >
-              ${this._t('settings.apply_group_order_all')}
+              ${this._t('settings.apply_type_order_all_rooms')}
             </button>
           ` : nothing}
           <button
             class="home-layout-reset"
             type="button"
-            ?disabled=${isAreaLayoutDefault(areaOptions)}
-            @click=${this._resetAreaLayout}
+            ?disabled=${areaEntityLayoutIsDefault}
+            @click=${this._resetAreaEntitySettings}
           >
-            ${this._t('settings.reset_room_layout')}
+            ${this._t('settings.reset_layout')}
           </button>
         </div>
+        </section>
       </div>
     `;
-  }
-
-  /** Entity name in the room settings, like the room page shows it. */
-  private _areaEditorEntityName(entityId: string, areaName: string): string {
-    const fullName = this.hass?.states?.[entityId]?.attributes?.friendly_name || entityId;
-    return areaEntityDisplayName(String(fullName), areaName, this._config?.settings);
   }
 
   private _getHomeSectionsOrder(): HomeSectionKey[] {
@@ -2525,7 +2206,16 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   }
 
   private _getHiddenHomeSections(): Set<HomeSectionKey> {
-    return new Set(resolveHiddenHomeSections(this._config?.settings));
+    const hidden = new Set(normalizeHiddenHomeSections(this._config?.settings?.home_sections_hidden));
+    const settings = this._config?.settings;
+    const explicitlyManaged =
+      (settings?.home_sections_order || []).includes('now_playing') ||
+      (settings?.home_sections_hidden || []).includes('now_playing');
+
+    if (!explicitlyManaged && normalizeNowPlayingMode(settings?.now_playing_bar) === 'off') {
+      hidden.add('now_playing');
+    }
+    return hidden;
   }
 
   private _getHiddenHomeInformationCards(): Set<HomeInformationCardKey> {
@@ -2547,7 +2237,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
     const cameras = [...cameraIds].flatMap(entityId => {
       const state = this.hass!.states[entityId];
-      const registry = getEntityRegistry(this.hass)[entityId];
+      const registry = this.hass!.entities?.[entityId];
       const configured = configuredEntities.get(entityId);
       if (!state || registry?.hidden_by || registry?.entity_category === 'diagnostic' || registry?.entity_category === 'config') return [];
 
@@ -2616,14 +2306,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _setHomeSectionsOrder(order: HomeSectionKey[]): void {
     if (!this._config) return;
 
-    // Order and hidden list are saved together, so sections that older
-    // settings hide (Now playing) stay hidden once they are managed here.
     const newConfig: DwainsDashboardConfig = {
       ...this._config,
       settings: {
         ...this._config.settings,
         home_sections_order: normalizeHomeSectionsOrder(order),
-        home_sections_hidden: [...this._getHiddenHomeSections()],
       },
     };
 
@@ -2689,7 +2376,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   }
 
   private _renderHomeSectionOrder() {
-    const order = this._previewOrder('home-sections', this._getHomeSectionsOrder());
+    const storedOrder = this._getHomeSectionsOrder();
+    const order = this._draggedHomeSection && this._homeSectionPreviewOrder
+      ? this._homeSectionPreviewOrder
+      : storedOrder;
     const hiddenSections = this._getHiddenHomeSections();
     const activeDetail = this._homeSettingsDetail;
     const defaultHomeOrder = normalizeHomeSectionsOrder();
@@ -2734,22 +2424,15 @@ export class DwainsDashboardStrategyEditor extends LitElement {
               Boolean(this._draggedHomeSection) &&
               this._draggedHomeSection !== section;
 
-              const detail = this._homeSectionDetail(section);
-              const isFavorites = section === 'favorites';
-              const hasDetail = Boolean(detail) || isFavorites;
-              const openDetail = () => isFavorites ? this._openFavoritesFrom('home') : this._openHomeSectionDetail(section);
-              const detailLabel = this._t('action.entity_action', {
-                action: this._t('sidebar.dashboard_settings'),
-                name: this._t(meta.labelKey),
-              });
-              return html`
+            return html`
+              <div class="dd-home-section-block ${open ? 'open' : ''}">
                 <div
-                  class="home-section-item ${enabled ? '' : 'disabled'} ${hasDetail ? 'has-detail' : ''} ${isDragging ? 'dragging' : ''} ${isDragOver ? 'drag-over' : ''}"
+                  class="home-section-item ${enabled ? '' : 'disabled'} ${detail ? 'has-detail' : ''} ${isDragging ? 'dragging' : ''} ${isDragOver ? 'drag-over' : ''}"
                   draggable="true"
                   data-section=${section}
                   data-index=${index}
-                  @click=${() => { if (hasDetail) openDetail(); }}
-                  @dragstart=${(e: DragEvent) => this._handleHomeSectionDragStart(e, section)}
+                  @click=${() => detail && toggleDetail(section)}
+                  @dragstart=${(event: DragEvent) => this._handleHomeSectionDragStart(event, section)}
                   @dragend=${this._handleHomeSectionDragEnd}
                   @dragover=${(event: DragEvent) => this._handleHomeSectionDragOver(event, index)}
                   @dragleave=${this._handleHomeSectionDragLeave}
@@ -2763,19 +2446,18 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                     <div class="home-section-title">${this._t(meta.labelKey)}</div>
                     <div class="home-section-description">
                       ${this._t(meta.descriptionKey)}
-                      ${isFavorites ? this._renderManageFavoritesLink('home') : nothing}
+                      ${section === 'favorites' ? html`
+                        <button
+                          class="dd-settings-inline-link"
+                          type="button"
+                          @click=${(event: Event) => {
+                            event.stopPropagation();
+                            this._openSettingsPage('favorites');
+                          }}
+                        >${this._t('settings.manage_favorites')}</button>
+                      ` : nothing}
                     </div>
                   </div>
-                  ${hasDetail ? html`
-                    <button
-                      class="home-section-toggle home-section-detail-button"
-                      type="button"
-                      data-home-settings-detail=${detail || 'favorites'}
-                      aria-label=${detailLabel}
-                      title=${detailLabel}
-                      @click=${(event: Event) => { event.stopPropagation(); openDetail(); }}
-                    ><ha-svg-icon class="home-section-detail-chevron" .path=${mdiChevronRight}></ha-svg-icon></button>
-                  ` : nothing}
                   <div class="home-section-actions" @click=${(event: Event) => event.stopPropagation()}>
                     <button
                       class="home-section-toggle ${enabled ? 'enabled' : ''}"
@@ -2996,15 +2678,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     });
   }
 
-  private async _deleteHomeCustomCard(id: string): Promise<void> {
-    const confirmed = await showConfirmDialog(this, {
-      hass: this.hass,
-      title: this._t('layout.delete_card_confirm'),
-      message: this._t('layout.delete_card_message'),
-      confirmLabel: this._t('common.delete'),
-      destructive: true,
-    });
-    if (!confirmed) return;
+  private _deleteHomeCustomCard(id: string): void {
+    if (!confirm(this._t('layout.delete_card_confirm'))) return;
     this._updateHomeCustomCards(this._getHomeCustomCards().filter(card => card.id !== id));
   }
 
@@ -3185,91 +2860,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     `;
   }
 
-  private _getExcludedHomeClimateAreas(): Set<string> {
-    return new Set(this._config?.settings?.home_climate_excluded_areas || []);
-  }
-
-  private _toggleHomeClimateArea(areaId: string, included: boolean): void {
-    if (!this._config) return;
-    const excluded = this._getExcludedHomeClimateAreas();
-    if (included) excluded.delete(areaId); else excluded.add(areaId);
-    this._fireConfigChanged({
-      ...this._config,
-      settings: { ...this._config.settings, home_climate_excluded_areas: [...excluded] },
-    });
-  }
-
-  private _renderHomeClimateAreaSettings() {
-    if (!this._config || !this.hass) return nothing;
-    const excluded = this._getExcludedHomeClimateAreas();
-    const outdoor = this._getHomeOutdoorClimateAreas();
-    const hiddenAreas = new Set(this._config.areas_display?.hidden || []);
-    const areas = sortAreas(this._config.areas || [], { ...this._config.areas_display, hidden: [] }, ddLocale(this.hass))
-      .filter(area => !hiddenAreas.has(area.area_id));
-    return html`
-      <div class="home-info-card-section home-climate-area-settings">
-        <div class="home-info-card-header"><div><h4>${this._t('settings.home_climate_areas_title')}</h4><p>${this._t('settings.home_climate_areas_description')}</p></div></div>
-        <div class="home-info-card-list">
-          ${areas.map(area => {
-            // Outdoor areas are always left out of the indoor average.
-            const isOutdoor = outdoor.has(area.area_id);
-            const included = !isOutdoor && !excluded.has(area.area_id);
-            return html`
-              <div class="home-info-card-item ${included ? 'enabled' : 'disabled'}">
-                <div class="home-section-icon"><ha-icon icon=${area.icon || 'mdi:floor-plan'}></ha-icon></div>
-                <div class="home-section-copy">
-                  <div class="home-section-title">${area.name}</div>
-                  ${isOutdoor ? html`<div class="home-section-description">${this._t('settings.home_climate_area_outdoor')}</div>` : nothing}
-                </div>
-                <ha-switch
-                  .checked=${included}
-                  ?disabled=${isOutdoor}
-                  @change=${(event: Event) => this._toggleHomeClimateArea(area.area_id, (event.target as any).checked)}
-                ></ha-switch>
-              </div>
-            `;
-          })}
-        </div>
-      </div>
-    `;
-  }
-
-  private _getHomeOutdoorClimateAreas(): Set<string> {
-    return new Set(this._config?.settings?.home_outdoor_climate_areas || []);
-  }
-
-  private _toggleHomeOutdoorClimateArea(areaId: string, outdoor: boolean): void {
-    if (!this._config) return;
-    const areas = this._getHomeOutdoorClimateAreas();
-    if (outdoor) areas.add(areaId); else areas.delete(areaId);
-    this._fireConfigChanged({
-      ...this._config,
-      settings: { ...this._config.settings, home_outdoor_climate_areas: [...areas] },
-    });
-  }
-
-  private _renderHomeOutdoorClimateAreaSettings() {
-    if (!this._config || !this.hass) return nothing;
-    const outdoor = this._getHomeOutdoorClimateAreas();
-    // Hidden areas are listed too: a garden or roof is often hidden from the
-    // dashboard but still has the outdoor sensors.
-    const areas = sortAreas(this._config.areas || [], { ...this._config.areas_display, hidden: [] }, ddLocale(this.hass));
-    return html`
-      <div class="home-info-card-section home-climate-area-settings">
-        <div class="home-info-card-header"><div><h4>${this._t('settings.home_outdoor_climate_areas_title')}</h4><p>${this._t('settings.home_outdoor_climate_areas_description')}</p></div></div>
-        <div class="home-info-card-list">
-          ${areas.map(area => { const isOutdoor = outdoor.has(area.area_id); return html`
-            <div class="home-info-card-item ${isOutdoor ? 'enabled' : 'disabled'}">
-              <div class="home-section-icon"><ha-icon icon=${area.icon || 'mdi:floor-plan'}></ha-icon></div>
-              <div class="home-section-copy"><div class="home-section-title">${area.name}</div></div>
-              <ha-switch .checked=${isOutdoor} @change=${(event: Event) => this._toggleHomeOutdoorClimateArea(area.area_id, (event.target as any).checked)}></ha-switch>
-            </div>
-          `; })}
-        </div>
-      </div>
-    `;
-  }
-
   private _renderHomeInformationCardSettings() {
     const hiddenCards = this._getHiddenHomeInformationCards();
 
@@ -3282,57 +2872,49 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     };
 
     return html`
-      <div class="home-info-card-section home-information-card-settings">
-        <div class="home-info-card-header">
-          <div>
-            <h4>${this._t('settings.house_information_cards')}</h4>
-            <p>${this._t('settings.house_information_cards_description')}</p>
-          </div>
-          <span>${this._t('settings.visible_count', { visible: visibleCount, total: DEFAULT_HOME_INFORMATION_CARDS.length })}</span>
-        </div>
-        <div class="home-info-card-list">
-          ${DEFAULT_HOME_INFORMATION_CARDS.map(card => {
+      <div class="dd-inline-section">
+        <div class="dd-flat-sublist">
+          ${DEFAULT_HOME_INFORMATION_CARDS.map((card) => {
             const meta = HOME_INFORMATION_CARD_META[card];
             const enabled = !hiddenCards.has(card);
-            const detail = card === 'climate' || card === 'outdoor_climate' ? card : undefined;
-            const clickable = Boolean(detail);
-            const detailLabel = this._t('action.entity_action', {
-              action: this._t('sidebar.dashboard_settings'),
-              name: this._t(meta.labelKey),
-            });
+            const detail = detailFor(card);
+            const open = detail ? this._homeSettingsDetail === detail : false;
 
             return html`
-              <div
-                class="home-info-card-item ${enabled ? 'enabled' : 'disabled'} ${clickable ? 'has-detail' : ''}"
-                @click=${() => { if (detail) this._homeSettingsDetail = detail; }}
-              >
-                <div class="home-section-icon"><ha-icon icon=${meta.icon}></ha-icon></div>
-                <div class="home-section-copy">
-                  <div class="home-section-title">${this._t(meta.labelKey)}</div>
-                  <div class="home-section-description">${this._t(meta.descriptionKey)}</div>
-                </div>
-                <div class="home-info-card-actions" @click=${(event: Event) => event.stopPropagation()}>
+              <div class="dd-flat-subitem ${open ? 'open' : ''}">
+                <div class="dd-flat-subitem-row ${detail ? 'has-detail' : ''}" @click=${() => detail && toggleDetail(detail)}>
+                  <div class="home-section-icon"><ha-icon icon=${meta.icon}></ha-icon></div>
+                  <div class="home-section-copy">
+                    <div class="home-section-title">${this._t(meta.labelKey)}</div>
+                  </div>
+                  <div class="home-info-card-actions" @click=${(event: Event) => event.stopPropagation()}>
+                    <button
+                      class="home-section-toggle ${enabled ? 'enabled' : ''}"
+                      type="button"
+                      title=${enabled ? this._t('settings.hide_section') : this._t('settings.show_section')}
+                      aria-label=${enabled ? this._t('settings.hide_section') : this._t('settings.show_section')}
+                      aria-pressed=${enabled ? 'true' : 'false'}
+                      @click=${() => this._toggleHomeInformationCardEnabled(card)}
+                    >
+                      <ha-icon icon=${enabled ? 'mdi:eye-outline' : 'mdi:eye-off-outline'}></ha-icon>
+                    </button>
+                  </div>
                   ${detail ? html`
                     <button
-                      class="home-section-toggle home-section-detail-button"
+                      class="dd-integrated-chevron"
                       type="button"
-                      data-home-settings-detail=${detail}
-                      aria-label=${detailLabel}
-                      title=${detailLabel}
-                      @click=${() => { this._homeSettingsDetail = detail; }}
-                    ><ha-svg-icon class="home-section-detail-chevron" .path=${mdiChevronRight}></ha-svg-icon></button>
+                      aria-expanded=${open ? 'true' : 'false'}
+                      @click=${(event: Event) => {
+                        event.stopPropagation();
+                        toggleDetail(detail);
+                      }}
+                    >
+                      <ha-icon icon=${open ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
+                    </button>
                   ` : nothing}
-                  <button
-                    class="home-section-toggle ${enabled ? 'enabled' : ''}"
-                    type="button"
-                    title=${enabled ? this._t('settings.hide_section') : this._t('settings.show_section')}
-                    aria-label=${enabled ? this._t('settings.hide_section') : this._t('settings.show_section')}
-                    aria-pressed=${enabled ? 'true' : 'false'}
-                    @click=${() => this._toggleHomeInformationCardEnabled(card)}
-                  >
-                    <ha-icon icon=${enabled ? 'mdi:eye-outline' : 'mdi:eye-off-outline'}></ha-icon>
-                  </button>
                 </div>
+                ${detail === 'climate' && open ? html`<div class="dd-flat-subdetail">${this._renderHomeClimateAreaSettings()}</div>` : nothing}
+                ${detail === 'outdoor_climate' && open ? html`<div class="dd-flat-subdetail">${this._renderHomeOutdoorClimateAreaSettings()}</div>` : nothing}
               </div>
             `;
           })}
@@ -3342,10 +2924,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   }
 
   private _renderHomeCameraSettings() {
-    const storedCameras = this._getHomeCameraSettings();
-    const cameraById = new Map(storedCameras.map(camera => [camera.entityId, camera]));
-    const cameras = this._previewOrder('home-cameras', storedCameras.map(camera => camera.entityId))
-      .map(entityId => cameraById.get(entityId)!);
+    const cameras = this._getHomeCameraSettings();
     const hidden = new Set(this._config?.settings?.home_cameras_hidden || []);
     const cameraLayoutIsDefault =
       (this._config?.settings?.home_camera_order || []).length === 0 &&
@@ -3406,405 +2985,145 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     `;
   }
 
-  private _getHomeScenes(): string[] {
-    return normalizeHomeScenes(this._config?.settings?.home_scenes);
+  private _toggleExpandedDeviceType(typeKey: string): void {
+    const next = new Set(this._expandedDeviceTypes);
+    if (next.has(typeKey)) next.delete(typeKey);
+    else next.add(typeKey);
+    this._expandedDeviceTypes = next;
   }
 
-  private _setHomeScenes(ids: string[]): void {
-    if (!this._config) return;
-    this._fireConfigChanged({
-      ...this._config,
-      settings: { ...this._config.settings, home_scenes: ids },
-    });
+  private _visibilityIcon(visible: boolean, partial = false): string {
+    if (!visible) return "mdi:eye-off-outline";
+    return partial ? "mdi:eye-minus-outline" : "mdi:eye-outline";
   }
 
-  private _homeSceneAreaName(entityId: string): string | undefined {
-    if (!this.hass || !this._config) return undefined;
-    const areaId = resolveStatusEntityAreaId(this.hass, this._config, entityId);
-    if (!areaId) return undefined;
-    return (this._config.areas || []).find(area => area.area_id === areaId)?.name ||
-      this.hass.areas?.[areaId]?.name ||
-      undefined;
-  }
-
-  private _homeSceneName(entityId: string): string {
-    return this.hass?.states[entityId]?.attributes?.friendly_name ||
-      getEntityRegistry(this.hass)[entityId]?.name ||
-      entityId;
-  }
-
-  private _homeSceneIcon(entityId: string): string {
-    const domain = homeSceneDomain(entityId) || 'scene';
-    return getEntityRegistry(this.hass)[entityId]?.icon ||
-      this.hass?.states[entityId]?.attributes?.icon ||
-      getDomainIcon(domain);
-  }
-
-  private _homeSceneTypeLabel(entityId: string): string {
-    return this._t(homeSceneDomain(entityId) === 'script' ? 'scenes.type_script' : 'scenes.type_scene');
-  }
-
-  private _openHomeScenePicker = (): void => {
-    this._homeSceneSearch = '';
-    this._showHomeScenePicker = true;
-  };
-
-  private _addHomeScene(entityId: string): void {
-    this._setHomeScenes(addHomeScene(this._getHomeScenes(), entityId));
-    this._showHomeScenePicker = false;
-  }
-
-  private _removeHomeScene(entityId: string): void {
-    this._setHomeScenes(removeHomeScene(this._getHomeScenes(), entityId));
-  }
-
-  private _moveHomeScene(entityId: string, direction: -1 | 1): void {
-    this._setHomeScenes(moveHomeScene(this._getHomeScenes(), entityId, direction));
-  }
-
-  private _renderHomeScenesSettings() {
-    const picked = this._previewOrder('home-scenes', this._getHomeScenes());
-
+  private _renderVisibilityButton(
+    visible: boolean,
+    partial: boolean,
+    label: string,
+    onClick: () => void
+  ) {
     return html`
-      <div class="home-info-card-section home-scene-settings-section">
-        <div class="home-info-card-header">
-          <div>
-            <h4>${this._t('scenes.settings_title')}</h4>
-            ${picked.length ? html`<p>${this._t('scenes.settings_help')}</p>` : nothing}
-          </div>
-          <button class="home-custom-card-add" type="button" @click=${this._openHomeScenePicker}>
-            <ha-icon icon="mdi:plus"></ha-icon>
-            ${this._t('scenes.add')}
-          </button>
-        </div>
-        ${picked.length ? html`
-          <div class="home-camera-settings-list ${this._draggedHomeScene ? 'dragging' : ''}">
-            ${repeat(
-              picked,
-              entityId => entityId,
-              (entityId, index) => {
-                const state = this.hass?.states[entityId];
-                const name = this._homeSceneName(entityId);
-                const areaName = this._homeSceneAreaName(entityId);
-                const unavailable = Boolean(state && isHiddenAsUnavailable(state));
-                const details = !state
-                  ? `${this._t('scenes.missing')} · ${entityId}`
-                  : [this._homeSceneTypeLabel(entityId), areaName, unavailable ? this._t('common.unavailable') : '']
-                    .filter(Boolean)
-                    .join(' · ');
-                const isDragging = this._draggedHomeScene === entityId;
-                const isDragOver = this._dragOverHomeSceneIndex === index && !isDragging && Boolean(this._draggedHomeScene);
-                return html`
-                  <div
-                    class="home-section-item home-scene-settings-item ${state && !unavailable ? '' : 'disabled'} ${isDragging ? 'dragging' : ''} ${isDragOver ? 'drag-over' : ''}"
-                    draggable="true"
-                    data-entity-id=${entityId}
-                    @dragstart=${(event: DragEvent) => this._handleHomeSceneDragStart(event, entityId)}
-                    @dragend=${this._handleHomeSceneDragEnd}
-                    @dragover=${(event: DragEvent) => this._handleHomeSceneDragOver(event, index)}
-                    @dragleave=${this._handleHomeSceneDragLeave}
-                    @drop=${(event: DragEvent) => this._handleHomeSceneDrop(event, index)}
-                  >
-                    <div class="home-section-handle"><ha-svg-icon .path=${mdiDrag}></ha-svg-icon></div>
-                    <div class="home-section-icon">
-                      <ha-icon icon=${state ? this._homeSceneIcon(entityId) : 'mdi:help-circle-outline'}></ha-icon>
-                    </div>
-                    <div class="home-section-copy">
-                      <div class="home-section-title">${name}</div>
-                      <div class="home-section-description">${details}</div>
-                    </div>
-                    <div class="home-section-actions">
-                      <ha-icon-button
-                        .label=${this._t('settings.move_up')}
-                        .path=${mdiArrowUp}
-                        .disabled=${index === 0}
-                        @click=${() => this._moveHomeScene(entityId, -1)}
-                      ></ha-icon-button>
-                      <ha-icon-button
-                        .label=${this._t('settings.move_down')}
-                        .path=${mdiArrowDown}
-                        .disabled=${index === picked.length - 1}
-                        @click=${() => this._moveHomeScene(entityId, 1)}
-                      ></ha-icon-button>
-                      <ha-icon-button
-                        .label=${this._t('scenes.remove_named', { name })}
-                        .path=${mdiDelete}
-                        @click=${() => this._removeHomeScene(entityId)}
-                      ></ha-icon-button>
-                    </div>
-                  </div>
-                `;
-              }
-            )}
-          </div>
-        ` : html`
-          <div class="home-camera-settings-empty">${this._t('scenes.settings_empty')}</div>
-        `}
-        ${this._showHomeScenePicker ? this._renderHomeScenePicker(picked) : nothing}
-      </div>
+      <button
+        class="dd-visibility-button ${visible ? 'visible' : 'hidden'} ${partial ? 'partial' : ''}"
+        type="button"
+        title=${label}
+        aria-label=${label}
+        aria-pressed=${visible ? 'true' : 'false'}
+        @click=${(event: Event) => {
+          event.stopPropagation();
+          onClick();
+        }}
+      >
+        <ha-icon icon=${this._visibilityIcon(visible, partial)}></ha-icon>
+      </button>
     `;
   }
 
-  private _renderHomeScenePicker(picked: string[]) {
-    const registry = getEntityRegistry(this.hass);
-    const candidates = pickableHomeSceneIds(this.hass?.states || {}, registry).map(entityId => {
-      const candidate: HomeSceneCandidate = { entityId, name: this._homeSceneName(entityId) };
-      const areaName = this._homeSceneAreaName(entityId);
-      if (areaName) candidate.areaName = areaName;
-      return candidate;
-    });
-    const options = filterHomeSceneCandidates(candidates, picked, this._homeSceneSearch, ddLocale(this.hass));
+  private _renderDeviceVisibilitySettings() {
+    const options = this._getDeviceTypeOptions();
+    if (!options.length) return nothing;
 
-    return html`
-      <div class="entity-picker-modal" @click=${(event: Event) => {
-        if (event.target === event.currentTarget) this._showHomeScenePicker = false;
-      }}>
-        <div class="entity-picker-content" role="dialog" aria-modal="true" aria-label=${this._t('scenes.picker_title')}>
-          <div class="entity-picker-header">
-            <h4>${this._t('scenes.picker_title')}</h4>
-            <button
-              class="close-button"
-              type="button"
-              title=${this._t('common.close')}
-              aria-label=${this._t('common.close')}
-              @click=${() => this._showHomeScenePicker = false}
-            >
-              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-                <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
-              </svg>
-            </button>
-          </div>
-
-          <div class="entity-search">
-            <input
-              class="entity-search-input"
-              type="search"
-              placeholder=${this._t('scenes.search')}
-              aria-label=${this._t('scenes.search')}
-              .value=${this._homeSceneSearch}
-              @input=${(event: Event) => this._homeSceneSearch = (event.target as HTMLInputElement).value}
-            />
-          </div>
-
-          <div class="entity-list">
-            ${repeat(
-              options,
-              option => option.entityId,
-              option => html`
-                <button type="button" class="entity-option home-scene-option" @click=${() => this._addHomeScene(option.entityId)}>
-                  <ha-icon class="entity-icon" icon=${this._homeSceneIcon(option.entityId)}></ha-icon>
-                  <span class="entity-name">
-                    <span class="home-scene-option-name">${option.name}</span>
-                    <span class="home-scene-option-meta">
-                      ${[this._homeSceneTypeLabel(option.entityId), option.areaName].filter(Boolean).join(' · ')}
-                    </span>
-                  </span>
-                  <span class="entity-id">${option.entityId}</span>
-                </button>
-              `
-            )}
-            ${options.length === 0 ? html`
-              <div class="entity-picker-hint empty">${this._t('scenes.no_results')}</div>
-            ` : nothing}
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  private _handleHomeSceneDragStart(event: DragEvent, entityId: string): void {
-    this._draggedHomeScene = entityId;
-    this._startDragPreview('home-scenes', this._getHomeScenes());
-    if (event.dataTransfer) {
-      event.dataTransfer.effectAllowed = 'move';
-      event.dataTransfer.setData('text/plain', entityId);
-    }
-  }
-
-  private _handleHomeSceneDragEnd = (): void => {
-    this._draggedHomeScene = undefined;
-    this._dragOverHomeSceneIndex = undefined;
-    this._cancelDragPreview('home-scenes');
-  };
-
-  private _handleHomeSceneDragOver(event: DragEvent, index: number): void {
-    if (!this._draggedHomeScene) return;
-    event.preventDefault();
-    this._dragOverHomeSceneIndex = index;
-    this._moveDragPreview('home-scenes', this._draggedHomeScene, index);
-    if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
-  }
-
-  private _handleHomeSceneDragLeave = (event: DragEvent): void => {
-    const currentTarget = event.currentTarget as HTMLElement | null;
-    const relatedTarget = event.relatedTarget as Node | null;
-    if (!currentTarget?.contains(relatedTarget)) this._dragOverHomeSceneIndex = undefined;
-  };
-
-  private _handleHomeSceneDrop(event: DragEvent, dropIndex: number): void {
-    event.preventDefault();
-    const dragged = this._draggedHomeScene;
-    if (!dragged) return;
-    this._moveDragPreview('home-scenes', dragged, dropIndex);
-    const next = this._finishDragPreview('home-scenes', this._getHomeScenes());
-    this._handleHomeSceneDragEnd();
-    if (next) this._setHomeScenes(next);
-  }
-
-  /**
-   * Devices page visibility as a tree: type > area > device > entity. The
-   * type eye hides the type group in the sidebar, the area and entity eyes
-   * hide entities on the Devices page only and the device switch hides a
-   * complete device in all of Dwains Dashboard.
-   */
-  private _renderDeviceVisibilityTree() {
-    const types = this._getDeviceVisibilityTree();
-    if (!types.length) {
-      return html`
-        <div class="device-visibility-section">
-          <div class="device-types-header">
-            <div>
-              <h4>${this._t('settings.devices_page_types')}</h4>
-              <p>${this._t('settings.no_hidden_devices')}</p>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
+    const groupsByKey = new Map(this._getDeviceVisibilityGroups().map((group) => [group.key, group]));
     const hiddenTypes = this._getHiddenDeviceTypes();
-    const visibleTypeCount = types.filter((type) => !hiddenTypes.has(type.key)).length;
+    const hiddenEntities = this._getHiddenDeviceEntityIds();
+    const deviceLayoutIsDefault =
+      hiddenTypes.size === 0 &&
+      hiddenEntities.size === 0 &&
+      this._getHiddenDeviceIds().size === 0;
 
     return html`
-      <div class="device-visibility-section">
+      <section class="device-visibility-section">
         <div class="device-types-header">
           <div>
             <h4>${this._t('settings.devices_page_types')}</h4>
-            <p>${this._t('settings.devices_visibility_description')}</p>
+            <p>${this._t('settings.devices_page_types_description')}</p>
           </div>
-          <span>${this._t('settings.visible_count', { visible: visibleTypeCount, total: types.length })}</span>
         </div>
-        <div class="device-visibility-tree">
-          ${repeat(types, (type) => type.key, (type) => this._renderDeviceVisibilityType(type))}
-        </div>
-        <div class="settings-reset-row">
-          <button
-            class="home-layout-reset"
-            type="button"
-            ?disabled=${isDeviceVisibilityDefault(this._config?.settings, this._config?.device_admission)}
-            @click=${this._resetDeviceVisibility}
-          >
-            ${this._t('settings.reset_devices_visibility')}
-          </button>
-        </div>
-      </div>
-    `;
-  }
 
-  private _renderDeviceVisibilityType(type: DeviceVisibilityTypeNode) {
-    // The eye shows the choices made on this page; the count also leaves out
-    // the entities of hidden devices.
-    const typeHidden = this._getHiddenDeviceTypes().has(type.key);
-    const entitiesVisibility = idsVisibility(type.entityIds, this._getDevicesPageHiddenEntityIds());
-    const visibility: GroupVisibility = typeHidden ? 'hidden' : entitiesVisibility;
-    const visibleCount = typeHidden
-      ? 0
-      : type.entityIds.length - countHidden(type.entityIds, this._getDeviceVisibilityHiddenEntities());
-    const expandable = type.areas.length > 0;
-    const expanded = expandable && this._expandedDeviceTypes.has(type.key);
+        <div class="device-admission-groups">
+          ${options.map((option) => {
+            const group = groupsByKey.get(option.key);
+            const globallyVisible = !hiddenTypes.has(option.key);
+            const devices = group?.devices || [];
+            const entityIds = [...new Set(devices.flatMap((device) => device.entityIds))];
+            const total = entityIds.length || option.count;
+            const hiddenInGroup = entityIds.filter((entityId) => hiddenEntities.has(entityId)).length;
+            const visibleInGroup = globallyVisible ? Math.max(0, total - hiddenInGroup) : 0;
+            const partial = globallyVisible && hiddenInGroup > 0 && hiddenInGroup < total;
+            const expanded = Boolean(group?.areas.length) && this._expandedDeviceTypes.has(option.key);
 
-    return html`
-      <section
-        class="device-visibility-type is-${visibility} ${expanded ? 'open' : ''}"
-        style=${`--device-type-color: ${type.color};`}
-      >
-        <div class="device-visibility-type-row">
-          <button
-            class="device-visibility-type-toggle"
-            type="button"
-            aria-expanded=${expandable ? (expanded ? 'true' : 'false') : nothing}
-            ?disabled=${!expandable}
-            @click=${() => this._toggleExpandedDeviceType(type.key)}
-          >
-            <span class="device-type-icon small"><ha-icon icon=${type.icon}></ha-icon></span>
-            <span class="device-visibility-copy">
-              <strong>${type.label}</strong>
-              <small>${this._t('settings.visible_count', { visible: visibleCount, total: type.entityIds.length })}</small>
-            </span>
-            ${expandable ? html`
-              <ha-icon class="device-visibility-chevron" icon="mdi:chevron-down" aria-hidden="true"></ha-icon>
-            ` : nothing}
-          </button>
-          ${this._renderVisibilityButton(
-            visibility,
-            hidesOnToggle(visibility) ? this._t('settings.hide_type') : this._t('settings.show_type'),
-            () => this._toggleDeviceTypeVisibility(type, entitiesVisibility)
-          )}
-        </div>
-        ${expanded ? html`
-          <div class="device-visibility-areas">
-            ${repeat(type.areas, (area) => area.areaId, (area) => this._renderDeviceVisibilityArea(type, area, typeHidden))}
-          </div>
-        ` : nothing}
-      </section>
-    `;
-  }
+            return html`
+              <section
+                class="device-type-panel ${expanded ? 'open' : ''} ${globallyVisible ? '' : 'disabled'}"
+                style=${`--device-type-color: ${option.color};`}
+              >
+                <div
+                  class="device-type-panel-row expandable"
+                  @click=${() => this._toggleExpandedDeviceType(option.key)}
+                >
+                  <span class="device-type-icon small"><ha-icon icon=${option.icon}></ha-icon></span>
+                  <span class="device-type-heading">
+                    <strong>${option.label}</strong>
+                    <small>${this._t('settings.visible_count', { visible: visibleInGroup, total })}</small>
+                  </span>
+                  ${this._renderVisibilityButton(
+                    globallyVisible,
+                    partial,
+                    globallyVisible ? this._t('settings.hide_type') : this._t('settings.show_type'),
+                    () => this._setDeviceTypeVisible(option.key, !globallyVisible)
+                  )}
+                  <button
+                    class="dd-integrated-chevron device-type-chevron"
+                    type="button"
+                    aria-expanded=${expanded ? 'true' : 'false'}
+                    @click=${(event: Event) => {
+                      event.stopPropagation();
+                      this._toggleExpandedDeviceType(option.key);
+                    }}
+                  >
+                    <ha-icon icon=${expanded ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
+                  </button>
+                </div>
 
-  private _renderDeviceVisibilityArea(type: DeviceVisibilityTypeNode, area: DeviceVisibilityAreaNode, typeHidden: boolean) {
-    const hiddenCount = countHidden(area.entityIds, this._getDeviceVisibilityHiddenEntities());
-    const visibility = idsVisibility(area.entityIds, this._getDevicesPageHiddenEntityIds());
-    const hide = hidesOnToggle(visibility);
+                ${expanded && group ? html`
+                  <div class="device-admission-panel">
+                    ${group.areas.map((areaGroup) => {
+                      const areaEntityIds = [...new Set(areaGroup.devices.flatMap((device) => device.entityIds))];
+                      const hiddenInArea = areaEntityIds.filter((entityId) => hiddenEntities.has(entityId)).length;
+                      const areaVisible = hiddenInArea < areaEntityIds.length;
+                      const areaPartial = hiddenInArea > 0 && hiddenInArea < areaEntityIds.length;
 
-    return html`
-      <section class="device-visibility-area ${typeHidden ? 'type-hidden' : ''}">
-        <div class="device-visibility-area-header">
-          <span class="device-visibility-copy">
-            <strong>${area.areaName}</strong>
-            <small>${this._t('settings.visible_count', { visible: area.entityIds.length - hiddenCount, total: area.entityIds.length })}</small>
-          </span>
-          ${this._renderVisibilityButton(
-            visibility,
-            hide ? this._t('settings.hide_area') : this._t('settings.show_area'),
-            () => this._setDevicesPageEntitiesHidden(area.entityIds, hide)
-          )}
-        </div>
-        ${repeat(
-          area.devices,
-          (device) => `${type.key}-${area.areaId}-${device.deviceId || ''}`,
-          (device) => this._renderDeviceVisibilityDevice(type, area, device)
-        )}
-      </section>
-    `;
-  }
-
-  private _renderDeviceVisibilityDevice(
-    type: DeviceVisibilityTypeNode,
-    area: DeviceVisibilityAreaNode,
-    device: DeviceVisibilityDeviceNode
-  ) {
-    const deviceId = device.deviceId;
-    return html`
-      <div class="device-visibility-device ${device.hidden ? 'device-hidden' : ''}">
-        ${deviceId ? html`
-          <div class="device-visibility-device-row">
-            <ha-icon class="device-visibility-device-icon" icon="mdi:devices" aria-hidden="true"></ha-icon>
-            <span class="device-visibility-copy">
-              <strong>${device.name}</strong>
-              <small>${this._t(device.hidden ? 'settings.device_hidden_everywhere' : 'settings.device_visible_everywhere')}</small>
-            </span>
-            <ha-switch
-              .checked=${!device.hidden}
-              aria-label=${device.name}
-              @change=${(event: Event) => this._setDeviceHidden(deviceId, !(event.target as any).checked)}
-            ></ha-switch>
-          </div>
-        ` : nothing}
-        <div class="device-visibility-entities">
-          ${repeat(
-            device.entityIds,
-            (entityId) => entityId,
-            (entityId) => this._renderDeviceVisibilityEntity(type, area, entityId, device.hidden)
-          )}
+                      return html`
+                        <section class="device-admission-area">
+                          <div class="device-admission-area-header">
+                            <span class="device-type-heading device-area-heading">
+                              <strong>${areaGroup.areaName}</strong>
+                              <small>${this._t('settings.visible_count', {
+                                visible: areaEntityIds.length - hiddenInArea,
+                                total: areaEntityIds.length,
+                              })}</small>
+                            </span>
+                            ${this._renderVisibilityButton(
+                              areaVisible,
+                              areaPartial,
+                              areaVisible ? this._t('settings.hide_area') : this._t('settings.show_area'),
+                              () => this._setEntitiesHidden(areaEntityIds, areaVisible)
+                            )}
+                          </div>
+                          <div class="device-admission-device-list">
+                            ${areaGroup.devices.flatMap((device) =>
+                              device.entityIds.map((entityId) => this._renderDeviceEntityVisibilityRow(entityId, device, group))
+                            )}
+                          </div>
+                        </section>
+                      `;
+                    })}
+                  </div>
+                ` : nothing}
+              </section>
+            `;
+          })}
         </div>
         <button
           class="home-layout-reset area-list-reset"
@@ -3818,224 +3137,171 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     `;
   }
 
-  private _renderDeviceVisibilityEntity(
-    type: DeviceVisibilityTypeNode,
-    area: DeviceVisibilityAreaNode,
-    entityId: string,
-    deviceHidden: boolean
-  ) {
-    const hidden = this._getDevicesPageHiddenEntityIds().has(entityId);
-    const visibility: GroupVisibility = hidden || deviceHidden ? 'hidden' : 'visible';
+  private _showEntityInfo(entityId: string): void {
+    if (!entityId || !this.hass?.states?.[entityId]) return;
+
+    const homeAssistant = document.querySelector("home-assistant");
+    const target = homeAssistant || this;
+    target.dispatchEvent(new CustomEvent("hass-more-info", {
+      detail: { entityId },
+      bubbles: true,
+      composed: true,
+    }));
+  }
+
+  private _entityVisibilityName(entityId: string): string {
     const state = this.hass?.states?.[entityId];
-    const fullName = String(state?.attributes?.friendly_name || entityId);
+    return state?.attributes?.friendly_name
+      || (this.hass?.entities?.[entityId] as any)?.name
+      || entityId;
+  }
+
+  private _renderDeviceEntityVisibilityRow(
+    entityId: string,
+    device: DeviceVisibilityDevice,
+    group: DeviceVisibilityTypeGroup
+  ) {
+    const visible = !this._getHiddenDeviceEntityIds().has(entityId) && !this._getHiddenDeviceIds().has(device.deviceId);
+    const interactive = Boolean(this.hass?.states?.[entityId]);
 
     return html`
-      <div class="device-visibility-entity is-${visibility}">
-        ${state
-          ? html`<ha-state-icon class="device-visibility-entity-icon" .hass=${this.hass} .stateObj=${state}></ha-state-icon>`
-          : html`<ha-icon class="device-visibility-entity-icon" icon=${type.icon}></ha-icon>`}
-        <span class="device-visibility-entity-name" title=${fullName}>
-          ${areaEntityDisplayName(fullName, area.areaName, this._config?.settings)}
-        </span>
-        ${deviceHidden
-          ? html`<span class="device-visibility-entity-note">${this._t('settings.hidden_with_device')}</span>`
-          : this._renderVisibilityButton(
-            visibility,
-            hidden ? this._t('common.show') : this._t('common.hide'),
-            () => this._setDevicesPageEntitiesHidden([entityId], !hidden)
-          )}
+      <div
+        class="device-admission-device ${visible ? "visible" : "hidden"} ${interactive ? "interactive" : ""}"
+        role=${interactive ? "button" : "group"}
+        tabindex=${interactive ? "0" : "-1"}
+        @click=${() => interactive && this._showEntityInfo(entityId)}
+        @keydown=${(event: KeyboardEvent) => {
+          if (!interactive || (event.key !== "Enter" && event.key !== " ")) return;
+          event.preventDefault();
+          this._showEntityInfo(entityId);
+        }}
+      >
+        <div class="device-type-icon"><ha-icon icon=${group.icon}></ha-icon></div>
+        <div class="device-admission-copy">
+          <div class="device-type-name">${this._entityVisibilityName(entityId)}</div>
+        </div>
+        ${this._renderVisibilityButton(
+          visible,
+          false,
+          visible ? this._t('common.hide') : this._t('common.show'),
+          () => this._setEntityHidden(entityId, visible)
+        )}
       </div>
     `;
   }
 
-  private _toggleExpandedDeviceType(typeKey: string): void {
-    const next = new Set(this._expandedDeviceTypes);
-    if (next.has(typeKey)) next.delete(typeKey);
-    else next.add(typeKey);
-    this._expandedDeviceTypes = next;
-  }
-
-  /**
-   * The type eye: a hidden type is shown again, a type whose entities are all
-   * hidden one by one shows them again, and otherwise the type is hidden.
-   */
-  private _toggleDeviceTypeVisibility(type: DeviceVisibilityTypeNode, entitiesVisibility: GroupVisibility): void {
-    if (this._getHiddenDeviceTypes().has(type.key)) {
-      this._setDeviceTypeVisible(type.key, true);
-    } else if (entitiesVisibility === 'hidden') {
-      this._setDevicesPageEntitiesHidden(type.entityIds, false);
-    } else {
-      this._setDeviceTypeVisible(type.key, false);
-    }
-  }
-
-  /** Entities hidden on the Devices page only. */
-  private _getDevicesPageHiddenEntityIds(): ReadonlySet<string> {
-    return getDevicesPageHiddenEntityIdSet(this._config);
-  }
-
-  /** Entities the Devices page leaves out: hidden on that page or part of a hidden device. */
-  private _getDeviceVisibilityHiddenEntities(): ReadonlySet<string> {
-    return this._deviceVisibilityHiddenEntities(this._getDeviceVisibilityEntries(), this._config?.device_admission);
-  }
-
-  private _deviceVisibilityHiddenEntities = memoizeOne((
-    entries: DeviceVisibilityEntry[],
-    admission: DwainsDashboardConfig['device_admission']
-  ): ReadonlySet<string> => {
-    const hiddenDevices = new Set(admission?.hidden_devices || []);
-    const hidden = new Set<string>((admission?.hidden_entities || []).filter(Boolean));
-    entries.forEach((entry) => {
-      if (entry.deviceId && hiddenDevices.has(entry.deviceId)) hidden.add(entry.entityId);
-    });
-    return hidden;
-  });
-
-  private _setDevicesPageEntitiesHidden(entityIds: string[], hidden: boolean): void {
-    if (!this._config) return;
-    this._fireConfigChanged({
-      ...this._config,
-      device_admission: {
-        ...this._config.device_admission,
-        hidden_entities: withIdsHidden(this._config.device_admission?.hidden_entities, entityIds, hidden).sort(),
-      },
-    });
-  }
-
-  /** Entities the Devices page can show, with their type, area and device. */
-  private _getDeviceVisibilityEntries(): DeviceVisibilityEntry[] {
+  private _getDeviceVisibilityGroups(): DeviceVisibilityTypeGroup[] {
     if (!this.hass || !this._config) return [];
-    return this._deviceVisibilityEntries(this.hass.states, this._config, getEntityRegistry(this.hass));
-  }
 
-  private _deviceVisibilityEntries = memoizeOne((
-    states: HomeAssistant['states'],
-    config: DwainsDashboardConfig,
-    registry: ReturnType<typeof getEntityRegistry>
-  ): DeviceVisibilityEntry[] => {
-    const entries: DeviceVisibilityEntry[] = [];
-    const processed = new Set<string>();
-    const knownAreas = new Set((config.areas || []).map((area) => area.area_id));
-    const hiddenAreas = new Set(config.areas_display?.hidden || []);
-    const deviceAreas = new Map((config.devices || []).map((device) => [device.device_id, device.area_id]));
-    const hideUnavailable = config.settings?.hide_unavailable_entities_on_devices !== false;
-
-    const addEntity = (entityId: string, areaId?: string | null, deviceId?: string | null) => {
-      if (!entityId || processed.has(entityId)) return;
-      const entry = registry[entityId];
-      if (entry?.hidden_by || entry?.entity_category === 'diagnostic' || entry?.entity_category === 'config') return;
-
-      const resolvedAreaId = areaId || (deviceId ? deviceAreas.get(deviceId) : undefined) || entry?.area_id;
-      if (!resolvedAreaId || !knownAreas.has(resolvedAreaId) || hiddenAreas.has(resolvedAreaId)) return;
-      if (getAreaHiddenEntityIdSet(config, resolvedAreaId).has(entityId)) return;
-
-      const state = states[entityId];
-      if (hideUnavailable && (!state || isHiddenAsUnavailable(state))) return;
-
-      const typeKey = this._deviceTypeKeyForEntityId(entityId);
-      if (!typeKey) return;
-
-      processed.add(entityId);
-      entries.push({
-        entityId,
-        typeKey,
-        areaId: resolvedAreaId,
-        deviceId: deviceId || entry?.device_id || undefined,
-      });
+    const deviceById = this._getAllDevicesById();
+    const hiddenDevices = this._getHiddenDeviceIds();
+    const collator = new Intl.Collator(ddLocale(this.hass), {
+      numeric: true,
+      sensitivity: "base",
+    });
+    const orderedAreas = sortAreas(
+      this._config.areas || [],
+      { ...this._config.areas_display, hidden: [] },
+      ddLocale(this.hass)
+    );
+    const areaOrder = new Map(orderedAreas.map((area, index) => [area.area_id, index]));
+    const compareArea = (a: { areaId: string; areaName: string }, b: { areaId: string; areaName: string }) => {
+      const aIndex = areaOrder.get(a.areaId) ?? Number.MAX_SAFE_INTEGER;
+      const bIndex = areaOrder.get(b.areaId) ?? Number.MAX_SAFE_INTEGER;
+      return aIndex - bIndex || collator.compare(a.areaName, b.areaName);
     };
+    const entityRecords = new Map<string, { entityId: string; deviceId?: string | null; areaId?: string | null }>();
 
-    (config.entities || []).forEach((entity) => addEntity(entity.entity_id, entity.area_id, entity.device_id));
-    Object.values(states || {}).forEach((state: any) => {
-      addEntity(state.entity_id, state.attributes?.area_id, registry[state.entity_id]?.device_id);
+    (this._config.entities || []).forEach((entity) => {
+      entityRecords.set(entity.entity_id, {
+        entityId: entity.entity_id,
+        deviceId: entity.device_id,
+        areaId: entity.area_id,
+      });
     });
 
-    // People have their own group, without areas or devices.
-    const hiddenPersons = new Set(config.settings?.hidden_persons || []);
-    Object.values(states || {}).forEach((state: any) => {
-      const entityId = state.entity_id;
-      if (!entityId?.startsWith('person.') || processed.has(entityId) || hiddenPersons.has(entityId)) return;
-      if (registry[entityId]?.hidden_by) return;
-      processed.add(entityId);
-      entries.push({ entityId, typeKey: 'person', areaId: '' });
+    Object.values(this.hass.entities || {}).forEach((entity: any) => {
+      entityRecords.set(entity.entity_id, {
+        entityId: entity.entity_id,
+        deviceId: entity.device_id,
+        areaId: entity.area_id,
+      });
     });
 
-    return entries;
-  });
+    const typeDeviceEntities = new Map<string, Map<string, Set<string>>>();
 
-  private _getDeviceVisibilityTree(): DeviceVisibilityTypeNode[] {
-    if (!this.hass || !this._config) return [];
-    return this._deviceVisibilityTree(this._getDeviceVisibilityEntries(), this._config, ddLocale(this.hass));
-  }
+    entityRecords.forEach((record) => {
+      const deviceId = record.deviceId;
+      if (!deviceId || !deviceById.has(deviceId)) return;
+      const device = deviceById.get(deviceId)!;
+      const area = this._deviceVisibilityArea(device, [record.entityId]);
+      if (!area || !this._isDeviceManagedEntity(record.entityId, area.areaId)) return;
 
-  private _deviceVisibilityTree = memoizeOne((
-    entries: DeviceVisibilityEntry[],
-    config: DwainsDashboardConfig,
-    locale: string
-  ): DeviceVisibilityTypeNode[] => {
-    const collator = new Intl.Collator(locale, { numeric: true, sensitivity: 'base' });
-    const devicesById = this._getAllDevicesById();
-    const hiddenDevices = new Set(config.device_admission?.hidden_devices || []);
-    const orderedAreas = sortAreas(config.areas || [], { ...config.areas_display, hidden: [] }, locale);
-    const areaIndex = new Map(orderedAreas.map((area, index) => [area.area_id, index]));
-    const areaNames = new Map(orderedAreas.map((area) => [area.area_id, area.name]));
-    const entityName = (entityId: string) => String(this.hass?.states?.[entityId]?.attributes?.friendly_name || entityId);
-    const byName = (a: string, b: string) => collator.compare(entityName(a), entityName(b));
+      const typeKey = this._deviceTypeKeyForEntityId(record.entityId);
+      if (!typeKey || typeKey === "person") return;
 
-    const byType = new Map<string, DeviceVisibilityEntry[]>();
-    entries.forEach((entry) => {
-      const list = byType.get(entry.typeKey) || [];
-      list.push(entry);
-      byType.set(entry.typeKey, list);
+      let devicesForType = typeDeviceEntities.get(typeKey);
+      if (!devicesForType) {
+        devicesForType = new Map();
+        typeDeviceEntities.set(typeKey, devicesForType);
+      }
+
+      let entityIds = devicesForType.get(deviceId);
+      if (!entityIds) {
+        entityIds = new Set();
+        devicesForType.set(deviceId, entityIds);
+      }
+      entityIds.add(record.entityId);
     });
 
-    return [...byType.entries()]
-      .map(([key, typeEntries]) => {
-        const byArea = new Map<string, DeviceVisibilityEntry[]>();
-        typeEntries.forEach((entry) => {
-          if (!entry.areaId) return;
-          const list = byArea.get(entry.areaId) || [];
-          list.push(entry);
-          byArea.set(entry.areaId, list);
+    return [...typeDeviceEntities.entries()]
+      .map(([key, deviceMap]) => {
+        const devices = [...deviceMap.entries()]
+          .map(([deviceId, entityIds]) => {
+            const device = deviceById.get(deviceId)!;
+            const area = this._deviceVisibilityArea(device, [...entityIds]);
+            if (!area) return undefined;
+            return {
+              deviceId,
+              name: device.name || deviceId,
+              areaId: area.areaId,
+              areaName: area.areaName,
+              entityCount: entityIds.size,
+              entityIds: [...entityIds].sort((a, b) => collator.compare(a, b)),
+              hidden: hiddenDevices.has(deviceId),
+            };
+          })
+          .filter((device): device is DeviceVisibilityDevice => Boolean(device))
+          .sort((a, b) => compareArea(a, b) || collator.compare(a.name, b.name));
+
+        const areaMap = new Map<string, DeviceVisibilityAreaGroup>();
+        devices.forEach((device) => {
+          let areaGroup = areaMap.get(device.areaId);
+          if (!areaGroup) {
+            areaGroup = {
+              areaId: device.areaId,
+              areaName: device.areaName,
+              devices: [],
+            };
+            areaMap.set(device.areaId, areaGroup);
+          }
+          areaGroup.devices.push(device);
         });
 
-        const areas = [...byArea.entries()]
-          .sort(([a], [b]) => (areaIndex.get(a) ?? Number.MAX_SAFE_INTEGER) - (areaIndex.get(b) ?? Number.MAX_SAFE_INTEGER))
-          .map(([areaId, areaEntries]): DeviceVisibilityAreaNode => {
-            const byDevice = new Map<string, string[]>();
-            areaEntries.forEach((entry) => {
-              const deviceKey = entry.deviceId && devicesById.has(entry.deviceId) ? entry.deviceId : '';
-              const list = byDevice.get(deviceKey) || [];
-              list.push(entry.entityId);
-              byDevice.set(deviceKey, list);
-            });
-            const devices = [...byDevice.entries()]
-              .map(([deviceId, entityIds]): DeviceVisibilityDeviceNode => ({
-                deviceId: deviceId || undefined,
-                name: deviceId ? devicesById.get(deviceId)?.name || deviceId : '',
-                hidden: Boolean(deviceId) && hiddenDevices.has(deviceId),
-                entityIds: entityIds.sort(byName),
-              }))
-              // Entities without a device come last.
-              .sort((a, b) => Number(!a.deviceId) - Number(!b.deviceId) || collator.compare(a.name, b.name));
-            return {
-              areaId,
-              areaName: areaNames.get(areaId) || areaId,
-              entityIds: devices.flatMap((device) => device.entityIds),
-              devices,
-            };
-          });
+        const areas = [...areaMap.values()].sort(compareArea);
 
         return {
           key,
           label: this._deviceTypeName(key),
           icon: this._deviceTypeIcon(key),
           color: this._deviceTypeColor(key),
-          entityIds: areas.length ? areas.flatMap((area) => area.entityIds) : typeEntries.map((entry) => entry.entityId),
+          devices,
           areas,
         };
       })
+      .filter((group) => group.devices.length > 0)
       .sort((a, b) => collator.compare(a.label, b.label));
-  });
+  }
 
   private _getAllDevicesById(): Map<string, DeviceConfig> {
     const devices = new Map<string, DeviceConfig>();
@@ -4057,6 +3323,101 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     return devices;
   }
 
+  private _isDeviceManagedEntity(entityId: string, areaId?: string): boolean {
+    const registry = this.hass?.entities?.[entityId] as any;
+    const state = this.hass?.states?.[entityId];
+
+    if (
+      !state ||
+      registry?.hidden_by ||
+      registry?.disabled_by ||
+      registry?.entity_category === "diagnostic" ||
+      registry?.entity_category === "config"
+    ) {
+      return false;
+    }
+
+    if (areaId && this._isEntityHiddenInAreaOptions(areaId, entityId)) {
+      return false;
+    }
+
+    return !!entityId.includes(".");
+  }
+
+  private _deviceVisibilityArea(device: DeviceConfig, entityIds: string[]): { areaId: string; areaName: string } | undefined {
+    const registryDevice = this.hass?.devices?.[device.device_id];
+    const hiddenAreas = new Set(this._config?.areas_display?.hidden || []);
+
+    const resolveArea = (areaId?: string | null) => {
+      if (!areaId || hiddenAreas.has(areaId)) return undefined;
+      const area = this._config?.areas?.find((item) => item.area_id === areaId);
+      return area ? { areaId: area.area_id, areaName: area.name } : undefined;
+    };
+
+    const fromDevice = resolveArea(device.area_id || registryDevice?.area_id);
+    if (fromDevice) return fromDevice;
+
+    for (const entityId of entityIds) {
+      const configEntity = this._config?.entities?.find((entity) => entity.entity_id === entityId);
+      const fromEntity = resolveArea(configEntity?.area_id || this.hass?.entities?.[entityId]?.area_id);
+      if (fromEntity) return fromEntity;
+    }
+
+    if (this._config?.settings?.hide_unavailable_entities_on_devices !== false) {
+      return undefined;
+    }
+
+    return {
+      areaId: '__unassigned__',
+      areaName: this._t('settings.unassigned_area'),
+    };
+  }
+
+  private _getHiddenDeviceEntityIds(): Set<string> {
+    return new Set(
+      (this._config?.device_admission?.hidden_entities || [])
+        .filter((entityId): entityId is string => typeof entityId === "string" && entityId.length > 0)
+    );
+  }
+
+  private _setEntityHidden(entityId: string, hidden: boolean): void {
+    this._setEntitiesHidden([entityId], hidden);
+  }
+
+  private _setEntitiesHidden(entityIds: string[], hidden: boolean): void {
+    if (!this._config) return;
+    const nextHidden = this._getHiddenDeviceEntityIds();
+    entityIds.forEach((entityId) => {
+      if (!entityId) return;
+      if (hidden) nextHidden.add(entityId);
+      else nextHidden.delete(entityId);
+    });
+    this._fireConfigChanged({
+      ...this._config,
+      device_admission: {
+        ...this._config.device_admission,
+        hidden_entities: [...nextHidden].sort(),
+      },
+    });
+  }
+
+  private _resetDeviceVisibility = (): void => {
+    if (!this._config) return;
+    this._expandedDeviceTypes = new Set();
+    this._fireConfigChanged({
+      ...this._config,
+      settings: {
+        ...this._config.settings,
+        hidden_device_types: [],
+      },
+      device_admission: {
+        ...this._config.device_admission,
+        hidden_entities: [],
+        hidden_devices: [],
+      },
+    });
+  };
+
   private _getHiddenDeviceIds(): Set<string> {
     return new Set(
       (this._config?.device_admission?.hidden_devices || [])
@@ -4064,30 +3425,25 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     );
   }
 
-  private _setDeviceHidden(deviceId: string, hidden: boolean): void {
-    if (!this._config) return;
-
-    const nextHidden = this._getHiddenDeviceIds();
-    if (hidden) nextHidden.add(deviceId);
-    else nextHidden.delete(deviceId);
-
-    this._fireConfigChanged({
-      ...this._config,
-      device_admission: {
-        ...this._config.device_admission,
-        hidden_devices: [...nextHidden].sort(),
-      },
-    });
+  private _getDeviceTypeOptions(): Array<{ key: string; label: string; icon: string; color: string; count: number }> {
+    return this._getDeviceVisibilityGroups()
+      .map((group) => ({
+        key: group.key,
+        label: group.label,
+        icon: group.icon,
+        color: group.color,
+        count: group.devices.reduce((total, device) => total + device.entityCount, 0),
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label, ddLocale(this.hass)));
   }
 
-  private _getDeviceTypeOptions(): Array<{ key: string; label: string; icon: string; color: string; count: number }> {
-    return this._getDeviceVisibilityTree().map((type) => ({
-      key: type.key,
-      label: type.label,
-      icon: type.icon,
-      color: type.color,
-      count: type.entityIds.length,
-    }));
+  private _isEntityHiddenInAreaOptions(areaId: string, entityId: string): boolean {
+    const areaOptions = this._config?.areas_options?.[areaId];
+    if (!areaOptions?.groups_options) return false;
+
+    return Object.values(areaOptions.groups_options).some((groupOptions) =>
+      groupOptions.hidden?.includes(entityId)
+    );
   }
 
   private _deviceTypeKeyForEntityId(entityId: string): string | undefined {
@@ -4257,24 +3613,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     });
   }
 
-  private _moveUngroupedEntity(order: string[], index: number, direction: -1 | 1): void {
-    const targetIndex = index + direction;
-    if (targetIndex < 0 || targetIndex >= order.length) return;
-    const nextOrder = [...order];
-    const [entityId] = nextOrder.splice(index, 1);
-    if (!entityId) return;
-    nextOrder.splice(targetIndex, 0, entityId);
-    this._saveUngroupedEntityOrder(nextOrder);
-  }
-
-  /** Config entities of the area: their own area, otherwise the area of their device. */
-  private _configAreaEntities(areaId: string): { entity_id: string }[] {
-    const config = this._config;
-    return (config?.entities || [])
-      .filter(entity => isConfigEntityInArea(config, entity, areaId))
-      .map(entity => ({ entity_id: entity.entity_id }));
-  }
-
   private _getAreaGroupedEntitiesWithoutFiltering(
     areaEntities: { entity_id: string }[],
     hass: HomeAssistant
@@ -4287,10 +3625,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       const entityId = entity.entity_id;
       if (!hass.states[entityId]) return;
 
-      if (!state) return;
-
-      // Skip hidden and diagnostic entities
-      const entityRegistry = getEntityRegistry(hass)[entityId];
+      const entityRegistry = hass.entities?.[entityId];
       if (entityRegistry?.hidden_by || entityRegistry?.entity_category === 'diagnostic' || entityRegistry?.entity_category === 'config') {
         return;
       }
@@ -4302,40 +3637,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     return grouped;
   }
 
-  /** The order to show: the drag preview of this list, else the stored order. */
-  private _previewOrder<T extends string>(list: string, order: readonly T[]): T[] {
-    const preview = this._dragPreview;
-    if (preview?.list === list && sameItems(preview.order, order)) return [...preview.order] as T[];
-    return [...order];
-  }
-
-  private _startDragPreview(list: string, order: readonly string[]): void {
-    this._dragPreview = { list, order: [...order] };
-  }
-
-  private _moveDragPreview(list: string, item: string | undefined, index: number): void {
-    const preview = this._dragPreview;
-    if (!item || !preview || preview.list !== list) return;
-    const next = moveItemTo(preview.order, item, index);
-    if (next !== preview.order) this._dragPreview = { list, order: next };
-  }
-
-  /** Ends the drag preview; returns its order when it differs from the stored order. */
-  private _finishDragPreview(list: string, stored: readonly string[]): string[] | undefined {
-    const preview = this._dragPreview;
-    if (preview?.list !== list) return undefined;
-    this._dragPreview = undefined;
-    if (!sameItems(preview.order, stored) || sameOrder(preview.order, stored)) return undefined;
-    return [...preview.order];
-  }
-
-  private _cancelDragPreview(list: string): void {
-    if (this._dragPreview?.list === list) this._dragPreview = undefined;
-  }
-
   private _handleHomeSectionDragStart(e: DragEvent, section: HomeSectionKey): void {
     this._draggedHomeSection = section;
-    this._startDragPreview('home-sections', this._getHomeSectionsOrder());
+    this._homeSectionPreviewOrder = [...this._getHomeSectionsOrder()];
 
     if (e.dataTransfer) {
       e.dataTransfer.effectAllowed = "move";
@@ -4357,7 +3661,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _handleHomeSectionDragEnd = (): void => {
     this._draggedHomeSection = undefined;
     this._dragOverHomeSectionIndex = undefined;
-    this._cancelDragPreview('home-sections');
+    this._homeSectionPreviewOrder = undefined;
   };
 
   private _handleHomeSectionDragOver(e: DragEvent, index: number): void {
@@ -4375,7 +3679,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     }
 
     this._dragOverHomeSectionIndex = index;
-    this._moveDragPreview('home-sections', this._draggedHomeSection, index);
 
     if (e.dataTransfer) {
       e.dataTransfer.dropEffect = "move";
@@ -4397,15 +3700,30 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     const dragged = this._draggedHomeSection;
     if (!dragged) return;
 
-    this._moveDragPreview('home-sections', dragged, dropIndex);
-    const next = this._finishDragPreview('home-sections', this._getHomeSectionsOrder());
-    if (next) this._setHomeSectionsOrder(next as HomeSectionKey[]);
+    const currentOrder = this._getHomeSectionsOrder();
+    const previewOrder = this._homeSectionPreviewOrder;
+
+    if (
+      previewOrder &&
+      previewOrder.length === currentOrder.length &&
+      previewOrder.some((section, index) => section !== currentOrder[index])
+    ) {
+      this._setHomeSectionsOrder(previewOrder);
+    } else {
+      const draggedIndex = currentOrder.indexOf(dragged);
+      if (draggedIndex !== -1 && draggedIndex !== dropIndex) {
+        const next = [...currentOrder];
+        const [item] = next.splice(draggedIndex, 1);
+        next.splice(dropIndex, 0, item!);
+        this._setHomeSectionsOrder(next);
+      }
+    }
+
     this._handleHomeSectionDragEnd();
   }
 
   private _handleHomeCameraDragStart(event: DragEvent, entityId: string): void {
     this._draggedHomeCamera = entityId;
-    this._startDragPreview('home-cameras', this._getHomeCameraSettings().map(camera => camera.entityId));
     if (event.dataTransfer) {
       event.dataTransfer.effectAllowed = 'move';
       event.dataTransfer.setData('text/plain', entityId);
@@ -4415,13 +3733,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _handleHomeCameraDragEnd = (): void => {
     this._draggedHomeCamera = undefined;
     this._dragOverHomeCameraIndex = undefined;
-    this._cancelDragPreview('home-cameras');
   };
 
   private _handleHomeCameraDragOver(event: DragEvent, index: number): void {
     event.preventDefault();
     this._dragOverHomeCameraIndex = index;
-    this._moveDragPreview('home-cameras', this._draggedHomeCamera, index);
     if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
   }
 
@@ -4436,54 +3752,30 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     const dragged = this._draggedHomeCamera;
     if (!dragged) return;
 
-    this._moveDragPreview('home-cameras', dragged, dropIndex);
-    const next = this._finishDragPreview('home-cameras', this._getHomeCameraSettings().map(camera => camera.entityId));
-    if (next) this._setHomeCameraOrder(next);
+    const order = this._getHomeCameraSettings().map(camera => camera.entityId);
+    const draggedIndex = order.indexOf(dragged);
+    if (draggedIndex === -1 || draggedIndex === dropIndex) {
+      this._handleHomeCameraDragEnd();
+      return;
+    }
+
+    const [camera] = order.splice(draggedIndex, 1);
+    order.splice(dropIndex, 0, camera!);
+    this._setHomeCameraOrder(order);
     this._handleHomeCameraDragEnd();
   }
 
-  /** Asks before a reset that throws away choices made in the settings. */
-  private _confirmReset(title: string, message: string): Promise<boolean> {
-    return showConfirmDialog(this, {
-      hass: this.hass,
-      title,
-      message,
-      confirmLabel: this._t('settings.reset'),
-      destructive: true,
-    });
-  }
-
-  private _resetAreasConfiguration = async (): Promise<void> => {
-    if (!this._config || isAreasDisplayDefault(this._config.areas_display)) return;
-    if (!await this._confirmReset(this._t('settings.reset_area_list_confirm'), this._t('settings.reset_area_list_message'))) return;
+  private _resetAreasConfiguration = (): void => {
     if (!this._config) return;
+    this._areaPreviewOrder = undefined;
     this._fireConfigChanged({
       ...this._config,
-      areas_display: resetAreasDisplay(this._config.areas_display),
-    });
-  };
-
-  private _resetAreaLayout = async (): Promise<void> => {
-    const areaId = this._area;
-    if (!this._config || !areaId || isAreaLayoutDefault(this._config.areas_options?.[areaId])) return;
-    if (!await this._confirmReset(this._t('settings.reset_room_layout_confirm'), this._t('settings.reset_room_layout_message'))) return;
-    if (!this._config || this._area !== areaId) return;
-    this._fireConfigChanged({
-      ...this._config,
-      areas_options: {
-        ...this._config.areas_options,
-        [areaId]: resetAreaLayout(this._config.areas_options?.[areaId]),
+      areas_display: {
+        ...this._config.areas_display,
+        hidden: [],
+        order: [],
+        sort_mode: undefined,
       },
-    });
-  };
-
-  private _resetDeviceVisibility = async (): Promise<void> => {
-    if (!this._config || isDeviceVisibilityDefault(this._config.settings, this._config.device_admission)) return;
-    if (!await this._confirmReset(this._t('settings.reset_devices_visibility_confirm'), this._t('settings.reset_devices_visibility_message'))) return;
-    if (!this._config) return;
-    this._fireConfigChanged({
-      ...this._config,
-      ...resetDeviceVisibility(this._config.settings, this._config.device_admission),
     });
   };
 
@@ -4506,18 +3798,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     });
   }
 
-  /** Area ids in the order of the area list, hidden areas included. */
-  private _sortedAreaIds(): string[] {
-    return sortAreas(
+  private _handleAreaDragStart(e: DragEvent, areaId: string): void {
+    this._draggedAreaId = areaId;
+    this._areaPreviewOrder = sortAreas(
       Object.values(this.hass?.areas || {}),
       { ...this._config?.areas_display, hidden: [] },
       ddLocale(this.hass)
     ).map((area) => area.area_id);
-  }
 
-  private _handleAreaDragStart(e: DragEvent, areaId: string): void {
-    this._draggedAreaId = areaId;
-    this._startDragPreview('areas', this._sortedAreaIds());
     if (e.dataTransfer) {
       e.dataTransfer.effectAllowed = 'move';
       e.dataTransfer.setData('text/plain', areaId);
@@ -4537,7 +3825,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _handleAreaDragEnd(): void {
     this._draggedAreaId = undefined;
     this._dragOverIndex = undefined;
-    this._cancelDragPreview('areas');
+    this._areaPreviewOrder = undefined;
   }
 
   private _handleAreaDragOver(e: DragEvent, index: number): void {
@@ -4554,7 +3842,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     }
     if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
     this._dragOverIndex = index;
-    this._moveDragPreview('areas', this._draggedAreaId, index);
   }
 
   private _handleAreaDragLeave(e: DragEvent): void {
@@ -4572,48 +3859,17 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       resolveAreaSortMode(this._config.areas_display) !== 'custom'
     ) return;
 
-    this._moveDragPreview('areas', this._draggedAreaId, dropIndex);
-    const order = this._finishDragPreview('areas', this._sortedAreaIds());
+    if (this._areaPreviewOrder?.length) {
+      this._fireConfigChanged({
+        ...this._config,
+        areas_display: {
+          ...this._config.areas_display,
+          order: [...this._areaPreviewOrder],
+        },
+      });
+    }
+
     this._handleAreaDragEnd();
-    if (!order) return;
-
-    this._fireConfigChanged({
-      ...this._config,
-      areas_display: {
-        ...this._config.areas_display,
-        order,
-      },
-    });
-  }
-
-  private _moveArea(areaId: string, direction: -1 | 1): void {
-    if (
-      !this._config ||
-      !this.hass ||
-      resolveAreaSortMode(this._config.areas_display) !== 'custom'
-    ) return;
-
-    const areas = sortAreas(
-      Object.values(this.hass.areas || {}),
-      { ...this._config.areas_display, hidden: [] },
-      ddLocale(this.hass)
-    );
-    const currentIndex = areas.findIndex((area) => area.area_id === areaId);
-    const targetIndex = currentIndex + direction;
-    if (currentIndex < 0 || targetIndex < 0 || targetIndex >= areas.length) return;
-
-    const reordered = [...areas];
-    const [area] = reordered.splice(currentIndex, 1);
-    if (!area) return;
-    reordered.splice(targetIndex, 0, area);
-
-    this._fireConfigChanged({
-      ...this._config,
-      areas_display: {
-        ...this._config.areas_display,
-        order: reordered.map((entry) => entry.area_id),
-      },
-    });
   }
 
   private _handleAreaCustomCardDragStart(event: DragEvent, cardId: string): void {
@@ -4692,10 +3948,17 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     });
   }
 
-  // Room pages save their own group keys (cover_shading, safety, ...); the
-  // shared mapping puts them in the broad group shown here.
-  private _strategyGroupForOrderKey(groupKey: string): AreaStrategyGroup {
-    return areaStrategyGroupForKey(groupKey);
+  private _areaGroupOrderIndex(group: AreaStrategyGroup, configuredOrder: readonly string[]): number | undefined {
+    const direct = configuredOrder.indexOf(group);
+    if (direct >= 0) return direct;
+
+    if (group === 'cover_gates') {
+      const formerCombined = configuredOrder.indexOf('cover_shading');
+      if (formerCombined >= 0) return formerCombined;
+    }
+
+    const legacy = configuredOrder.indexOf(getLegacyAreaGroupKey(group));
+    return legacy >= 0 ? legacy : undefined;
   }
 
   private _sortAreaStrategyGroups(groups: readonly AreaStrategyGroup[]): AreaStrategyGroup[] {
@@ -4804,36 +4067,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         },
       },
     });
-    this._areaGroupOrderChanged = true;
   }
-
-  /** Copies the group order of this room to every room. */
-  private _applyAreaGroupOrderToAllAreas = async (): Promise<void> => {
-    const areaId = this._area;
-    if (!this._config || !areaId || !this._areaGroupOrderChanged) return;
-    const confirmed = await showConfirmDialog(this, {
-      hass: this.hass,
-      title: this._t('settings.apply_group_order_all_confirm'),
-      message: this._t('settings.apply_group_order_all_description'),
-      confirmLabel: this._t('common.apply'),
-    });
-    if (!confirmed || !this._config || this._area !== areaId) return;
-
-    const currentOrder = this._config.areas_options?.[areaId]?.group_order;
-    const order = currentOrder?.length ? [...currentOrder] : [...AREA_STRATEGY_GROUPS];
-    const areasOptions = { ...this._config.areas_options };
-    const areaIds = new Set([
-      ...(this._config.areas || []).map((area) => area.area_id),
-      ...Object.keys(this.hass?.areas || {}),
-    ]);
-    areaIds.forEach((id) => {
-      areasOptions[id] = { ...areasOptions[id], group_order: [...order] };
-    });
-
-    this._fireConfigChanged({ ...this._config, areas_options: areasOptions });
-    this._areaGroupOrderChanged = false;
-    this._showToast(this._t('settings.apply_group_order_all_done'));
-  };
 
   private _handleEntitySectionDragStart(
     event: DragEvent,
@@ -4845,7 +4079,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     this._handleAreaCustomCardDragEnd();
     this._draggedEntitySection = group;
     this._dragOverEntitySection = undefined;
-    this._startDragPreview(`area-groups:${this._area}`, orderedGroups);
+    this._areaGroupPreviewOrder = [...orderedGroups];
     event.dataTransfer?.setData('text/plain', group);
     if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
   }
@@ -4866,9 +4100,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       this._areaGroupPreviewOrder = preview;
     }
     this._dragOverEntitySection = group;
-    const list = `area-groups:${this._area}`;
-    const index = this._dragPreview?.list === list ? this._dragPreview.order.indexOf(group) : -1;
-    if (index >= 0) this._moveDragPreview(list, dragged, index);
   }
 
   private _handleEntitySectionDrop(
@@ -4880,26 +4111,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     event.preventDefault();
     event.stopPropagation();
 
-    this._handleEntitySectionDragOver(event, targetGroup);
-    const reordered = this._finishDragPreview(`area-groups:${this._area}`, orderedGroups);
-    if (reordered) this._saveEntitySectionOrder(reordered as AreaStrategyGroup[]);
-    this._handleEntitySectionDragEnd();
-  }
-
-  private _moveEntitySection(
-    event: Event,
-    orderedGroups: AreaStrategyGroup[],
-    index: number,
-    direction: -1 | 1
-  ): void {
-    event.preventDefault();
-    event.stopPropagation();
-    const targetIndex = index + direction;
-    if (targetIndex < 0 || targetIndex >= orderedGroups.length) return;
-    const reordered = [...orderedGroups];
-    const [moved] = reordered.splice(index, 1);
-    if (!moved) return;
-    reordered.splice(targetIndex, 0, moved);
+    const reordered = this._areaGroupPreviewOrder?.length
+      ? [...this._areaGroupPreviewOrder]
+      : [...orderedGroups];
     this._saveEntitySectionOrder(reordered);
     this._handleEntitySectionDragEnd();
   }
@@ -4907,7 +4121,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _handleEntitySectionDragEnd = (): void => {
     this._draggedEntitySection = undefined;
     this._dragOverEntitySection = undefined;
-    this._cancelDragPreview(`area-groups:${this._area}`);
+    this._areaGroupPreviewOrder = undefined;
   };
 
   private _handleAreaEditorDragOver(event: DragEvent, group: string, index: number): void {
@@ -4932,46 +4146,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     this._handleEntityDrop(event, group, index);
   }
 
-  /** Drag preview list of the entities of a group (or the free order) in this room. */
-  private _entityDragList(group: string): string {
-    return `entities:${this._area}:${group}`;
-  }
-
-  /** Entities of the room settings as listed: config entities plus states with this area in the registry. */
-  private _areaEditorEntities(areaId: string): { entity_id: string }[] {
-    const entities = this._configAreaEntities(areaId);
-    const seen = new Set(entities.map((entity) => entity.entity_id));
-    const registry = getEntityRegistry(this.hass);
-    Object.values(this.hass?.states || {}).forEach((state) => {
-      if (!seen.has(state.entity_id) && registry[state.entity_id]?.area_id === areaId) {
-        entities.push({ entity_id: state.entity_id });
-      }
-    });
-    return entities;
-  }
-
-  /** Stored order of the entities of a group, or of all entities in the free order. */
-  private _sortedGroupEntities(group: string): string[] {
-    if (!this._area || !this.hass) return [];
-    const groups = this._getAreaGroupedEntitiesWithoutFiltering(this._areaEditorEntities(this._area), this.hass);
-    const areaOptions = this._config?.areas_options?.[this._area];
-    if (group === UNGROUPED_ENTITY_DRAG_GROUP) {
-      return this._sortEntityIds(
-        AREA_STRATEGY_GROUPS.flatMap((groupKey) => groups[groupKey] || []),
-        areaOptions?.entity_order || []
-      );
-    }
-    return this._sortEntityIds(
-      groups[group as AreaStrategyGroup] || [],
-      areaOptions?.groups_options?.[group]?.order || []
-    );
-  }
-
   private _handleEntityDragStart(e: DragEvent, entityId: string, group: string): void {
     this._handleAreaCustomCardDragEnd();
     this._draggedEntityId = entityId;
     this._draggedEntityGroup = group;
-    this._startDragPreview(this._entityDragList(group), this._sortedGroupEntities(group));
     if (e.dataTransfer) {
       e.dataTransfer.effectAllowed = 'move';
       e.dataTransfer.setData('text/plain', entityId);
@@ -4979,7 +4157,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   }
 
   private _handleEntityDragEnd(): void {
-    if (this._draggedEntityGroup) this._cancelDragPreview(this._entityDragList(this._draggedEntityGroup));
     this._draggedEntityId = undefined;
     this._draggedEntityGroup = undefined;
     this._dragOverEntityIndex = undefined;
@@ -4992,7 +4169,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     }
     if (this._draggedEntityGroup === group) {
       this._dragOverEntityIndex = index;
-      this._moveDragPreview(this._entityDragList(group), this._draggedEntityId, index);
     }
   }
 
@@ -5008,35 +4184,115 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
     if (!this._draggedEntityId || !this._config || !this._area || this._draggedEntityGroup !== group) return;
 
-    const list = this._entityDragList(group);
-    this._moveDragPreview(list, this._draggedEntityId, dropIndex);
-    const order = this._finishDragPreview(list, this._sortedGroupEntities(group));
-    this._handleEntityDragEnd();
-    if (!order) return;
+    // Get entities for this group
+    const areaEntities: { entity_id: string }[] = [];
+    const seenEntities = new Set<string>();
 
-    if (group === UNGROUPED_ENTITY_DRAG_GROUP) {
-      this._saveUngroupedEntityOrder(order);
+    // Get entities from registry first
+    if (this._config.entities) {
+      // Get all devices in this area
+      const areaDevices = new Set<string>();
+      if (this._config.devices) {
+        this._config.devices.forEach(device => {
+          if (device.area_id === this._area) {
+            areaDevices.add(device.device_id);
+          }
+        });
+      }
+
+      // Get entities via registry
+      this._config.entities.forEach(entity => {
+        if (entity.area_id === this._area ||
+            (entity.device_id && areaDevices.has(entity.device_id))) {
+          areaEntities.push({ entity_id: entity.entity_id });
+          seenEntities.add(entity.entity_id);
+        }
+      });
+    }
+
+    // Get grouped entities
+    const groups = this._getAreaGroupedEntitiesWithoutFiltering(areaEntities, this.hass!);
+    const isUngrouped = group === UNGROUPED_ENTITY_DRAG_GROUP;
+    const allGroupEntities = isUngrouped
+      ? AREA_STRATEGY_GROUPS.flatMap((groupKey) => groups[groupKey] || [])
+      : groups[group as keyof typeof groups] || [];
+    const concreteGroupOptions = this._config.areas_options?.[this._area]?.groups_options?.[group];
+    const formerCombinedGroupOptions = group === 'cover_gates'
+      ? this._config.areas_options?.[this._area]?.groups_options?.cover_shading
+      : undefined;
+    const legacyGroup = (AREA_STRATEGY_GROUPS as readonly string[]).includes(group)
+      ? getLegacyAreaGroupKey(group as AreaStrategyGroup)
+      : undefined;
+    const legacyGroupOptions = legacyGroup
+      ? this._config.areas_options?.[this._area]?.groups_options?.[legacyGroup]
+      : undefined;
+    const groupOptions = concreteGroupOptions || formerCombinedGroupOptions || legacyGroupOptions;
+    const entityOrder = isUngrouped
+      ? this._config.areas_options?.[this._area]?.entity_order || []
+      : groupOptions?.order || [];
+
+    // Sort entities according to current order
+    const sortedEntities = [...allGroupEntities].sort((a, b) => {
+      const aIndex = entityOrder.indexOf(a);
+      const bIndex = entityOrder.indexOf(b);
+      if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+      if (aIndex !== -1) return -1;
+      if (bIndex !== -1) return 1;
+      const nameA = this.hass!.states[a]?.attributes?.friendly_name || a;
+      const nameB = this.hass!.states[b]?.attributes?.friendly_name || b;
+      return nameA.localeCompare(nameB);
+    });
+
+    // Find the dragged item's current index
+    const draggedIndex = sortedEntities.findIndex(entityId => entityId === this._draggedEntityId);
+
+    if (draggedIndex === -1 || draggedIndex === dropIndex) {
+      this._draggedEntityId = undefined;
+      this._draggedEntityGroup = undefined;
+      this._dragOverEntityIndex = undefined;
       return;
     }
 
-    const areaOptions = this._config.areas_options?.[this._area];
-    this._fireConfigChanged({
-      ...this._config,
+    // Reorder the entities
+    const newSortedEntities = [...sortedEntities];
+    const [removed] = newSortedEntities.splice(draggedIndex, 1);
+    if (!removed) return;
+
+    newSortedEntities.splice(dropIndex, 0, removed);
+
+    // Create new order array
+    const order = newSortedEntities;
+
+    if (isUngrouped) {
+      this._saveUngroupedEntityOrder(order);
+      this._handleEntityDragEnd();
+      return;
+    }
+
+    const newConfig: DwainsDashboardConfig = {
+      ...this._config!,
       areas_options: {
-        ...this._config.areas_options,
+        ...this._config!.areas_options,
         [this._area]: {
-          ...areaOptions,
+          ...this._config!.areas_options?.[this._area],
           groups_options: {
-            ...areaOptions?.groups_options,
+            ...this._config!.areas_options?.[this._area]?.groups_options,
             [group]: {
-              ...areaOptions?.groups_options?.[group],
-              order,
-            },
-          },
-        },
-      },
-    });
+              ...this._config!.areas_options?.[this._area]?.groups_options?.[group],
+              order
+            }
+          }
+        }
+      }
+    };
+
+    this._fireConfigChanged(newConfig);
+    this._draggedEntityId = undefined;
+    this._draggedEntityGroup = undefined;
+    this._dragOverEntityIndex = undefined;
   }
+
+
 
   private _toggleAreaVisibility(area: string): void {
     const hidden = [...(this._config!.areas_display?.hidden || [])];
@@ -5101,70 +4357,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
   private _editArea(area: string): void {
     this._area = area;
-    this._collapsedAreaGroups = new Set();
-    this._areaGroupOrderChanged = false;
-  }
-
-  private _handleAreaGroupExpandedChanged(event: CustomEvent<{ expanded: boolean }>, group: string): void {
-    if (event.target !== event.currentTarget) return;
-    const collapsed = !event.detail?.expanded;
-    if (this._collapsedAreaGroups.has(group) === collapsed) return;
-    const next = new Set(this._collapsedAreaGroups);
-    if (collapsed) next.add(group);
-    else next.delete(group);
-    this._collapsedAreaGroups = next;
-  }
-
-  /**
-   * Hides or shows a whole entity group of the room. Hiding stores the
-   * entities the group has now, so entities added later are still shown.
-   */
-  private _setAreaEntityGroupHidden(group: string, entityIds: string[], hidden: boolean): void {
-    if (!this._config || !this._area) return;
-    const areaOptions = this._config.areas_options?.[this._area];
-    const groupOptions = areaOptions?.groups_options?.[group];
-
-    this._fireConfigChanged({
-      ...this._config,
-      areas_options: {
-        ...this._config.areas_options,
-        [this._area]: {
-          ...areaOptions,
-          groups_options: {
-            ...areaOptions?.groups_options,
-            [group]: {
-              ...groupOptions,
-              hidden: groupHiddenIds(groupOptions?.hidden, entityIds, hidden),
-            },
-          },
-        },
-      },
-    });
-  }
-
-  private _visibilityIcon(visibility: GroupVisibility): string {
-    if (visibility === 'hidden') return 'mdi:eye-off-outline';
-    return visibility === 'partial' ? 'mdi:eye-minus-outline' : 'mdi:eye-outline';
-  }
-
-  /** Eye button of a group: shows whether it is visible, partly hidden or hidden. */
-  private _renderVisibilityButton(visibility: GroupVisibility, label: string, onClick: () => void) {
-    return html`
-      <button
-        class="visibility-button is-${visibility}"
-        type="button"
-        title=${label}
-        aria-label=${label}
-        aria-pressed=${visibility === 'hidden' ? 'false' : 'true'}
-        @click=${(event: Event) => {
-          event.stopPropagation();
-          onClick();
-        }}
-        @keydown=${(event: KeyboardEvent) => event.stopPropagation()}
-      >
-        <ha-icon icon=${this._visibilityIcon(visibility)}></ha-icon>
-      </button>
-    `;
+    this._areaGroupOrderDirty = false;
+    this._collapsedAreaEntityGroups = new Set(AREA_STRATEGY_GROUPS);
+    this._emitSettingsPageContext();
+    this._resetSettingsScrollPosition();
   }
 
   private _addFavoriteEntity(): void {
@@ -5263,33 +4459,36 @@ export class DwainsDashboardStrategyEditor extends LitElement {
             <input
               class="entity-search-input"
               type="search"
-              placeholder=${this._t('settings.search_weather')}
               aria-label=${this._t('settings.search_weather')}
+              placeholder=${this._t('settings.search_weather')}
               .value=${this._weatherSearchFilter}
               @input=${(e: Event) => this._weatherSearchFilter = (e.target as HTMLInputElement).value}
             />
           </div>
 
           <div class="entity-list">
-            ${repeat(
-              filteredWeatherEntities.slice(0, 20), // Limit to 20 results for weather
-              (entityId) => entityId,
-              (entityId) => {
-                const state = this.hass?.states[entityId];
-                const friendlyName = state?.attributes?.friendly_name || entityId;
-
-                return html`
-                  <button type="button" class="entity-option" @click=${() => this._selectWeatherEntity(entityId)}>
-                    <ha-state-icon
-                      .stateObj=${state}
-                      class="entity-icon"
-                    ></ha-state-icon>
+            ${filteredWeatherEntities.map((entityId) => {
+              const state = this.hass?.states[entityId];
+              const friendlyName = state?.attributes?.friendly_name || entityId;
+              const selected = entityId === selectedId;
+              return html`
+                <button
+                  class="entity-option ${selected ? 'selected' : ''}"
+                  type="button"
+                  @click=${() => this._selectWeatherEntity(entityId)}
+                >
+                  <ha-state-icon .stateObj=${state} class="entity-icon"></ha-state-icon>
+                  <span class="entity-option-copy">
                     <span class="entity-name">${friendlyName}</span>
                     <span class="entity-id">${entityId}</span>
-                  </button>
-                `;
-              }
-            )}
+                  </span>
+                  ${selected ? html`<ha-icon class="entity-selected-icon" icon="mdi:check-circle"></ha-icon>` : nothing}
+                </button>
+              `;
+            })}
+            ${filteredWeatherEntities.length === 0 ? html`
+              <div class="entity-picker-hint empty">${this._t('settings.no_entities_found')}</div>
+            ` : nothing}
           </div>
 
           ${selectedId ? html`
@@ -5305,11 +4504,19 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   }
 
   private _renderAlarmPicker() {
-    const allEntities = Object.keys(this.hass?.states || {});
-    const alarmEntities = allEntities.filter(entityId =>
-      entityId.startsWith('alarm_control_panel.') &&
-      !getEntityRegistry(this.hass)[entityId]?.hidden_by
-    );
+    const selectedId = this._config?.settings?.alarm_entity_id;
+    const query = this._alarmSearchFilter.trim().toLocaleLowerCase(ddLocale(this.hass));
+    const alarmEntities = Object.keys(this.hass?.states || {})
+      .filter((entityId) => {
+        if (!entityId.startsWith('alarm_control_panel.')) return false;
+        const registry = this.hass?.entities?.[entityId] as any;
+        return !registry?.hidden_by && !registry?.disabled_by;
+      })
+      .sort((left, right) => {
+        const leftName = this.hass?.states[left]?.attributes?.friendly_name || left;
+        const rightName = this.hass?.states[right]?.attributes?.friendly_name || right;
+        return leftName.localeCompare(rightName, ddLocale(this.hass));
+      });
 
     const filteredAlarmEntities = alarmEntities.filter((entityId) => {
       if (!query) return true;
@@ -5333,33 +4540,36 @@ export class DwainsDashboardStrategyEditor extends LitElement {
             <input
               class="entity-search-input"
               type="search"
-              placeholder=${this._t('settings.search_alarm')}
               aria-label=${this._t('settings.search_alarm')}
+              placeholder=${this._t('settings.search_alarm')}
               .value=${this._alarmSearchFilter}
               @input=${(e: Event) => this._alarmSearchFilter = (e.target as HTMLInputElement).value}
             />
           </div>
 
           <div class="entity-list">
-            ${repeat(
-              filteredAlarmEntities.slice(0, 20),
-              (entityId) => entityId,
-              (entityId) => {
-                const state = this.hass?.states[entityId];
-                const friendlyName = state?.attributes?.friendly_name || entityId;
-
-                return html`
-                  <button type="button" class="entity-option" @click=${() => this._selectAlarmEntity(entityId)}>
-                    <ha-state-icon
-                      .stateObj=${state}
-                      class="entity-icon"
-                    ></ha-state-icon>
+            ${filteredAlarmEntities.map((entityId) => {
+              const state = this.hass?.states[entityId];
+              const friendlyName = state?.attributes?.friendly_name || entityId;
+              const selected = entityId === selectedId;
+              return html`
+                <button
+                  class="entity-option ${selected ? 'selected' : ''}"
+                  type="button"
+                  @click=${() => this._selectAlarmEntity(entityId)}
+                >
+                  <ha-state-icon .stateObj=${state} class="entity-icon"></ha-state-icon>
+                  <span class="entity-option-copy">
                     <span class="entity-name">${friendlyName}</span>
                     <span class="entity-id">${entityId}</span>
-                  </button>
-                `;
-              }
-            )}
+                  </span>
+                  ${selected ? html`<ha-icon class="entity-selected-icon" icon="mdi:check-circle"></ha-icon>` : nothing}
+                </button>
+              `;
+            })}
+            ${filteredAlarmEntities.length === 0 ? html`
+              <div class="entity-picker-hint empty">${this._t('settings.no_entities_found')}</div>
+            ` : nothing}
           </div>
 
           ${selectedId ? html`
@@ -5429,14 +4639,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                 const friendlyName = state?.attributes?.friendly_name || entityId;
 
                 return html`
-                  <button type="button" class="entity-option" @click=${() => this._selectEntity(entityId)}>
+                  <div class="entity-option" @click=${() => this._selectEntity(entityId)}>
                     <ha-state-icon
                       .stateObj=${state}
                       class="entity-icon"
                     ></ha-state-icon>
                     <span class="entity-name">${friendlyName}</span>
                     <span class="entity-id">${entityId}</span>
-                  </button>
+                  </div>
                 `;
               }
             )}
@@ -5471,14 +4681,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   }
 
   private _selectAlarmEntity(entityId: string): void {
-    const settings = this._config!.settings;
     const newConfig: DwainsDashboardConfig = {
       ...this._config!,
       settings: {
-        ...settings,
-        alarm_entity_id: entityId,
-        // Picking an alarm after it was removed shows the chip again.
-        show_alarm: settings?.alarm_entity_id ? settings.show_alarm : true,
+        ...this._config!.settings,
+        alarm_entity_id: entityId
       }
     };
 
@@ -5494,31 +4701,13 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     this._showWeatherPicker = false;
   };
 
-    this._fireConfigChanged(newConfig);
-  }
-
-  private _removeAlarmEntity(): void {
-    const newConfig: DwainsDashboardConfig = {
-      ...this._config!,
-      settings: {
-        ...this._config!.settings,
-        alarm_entity_id: undefined,
-        show_alarm: false,
-      }
-    };
-
-    this._fireConfigChanged(newConfig);
-  }
-
-  private _toggleAlarmDisplay = (e: Event): void => {
+  private _clearAlarmEntity = (): void => {
     if (!this._config) return;
-    this._fireConfigChanged({
-      ...this._config,
-      settings: {
-        ...this._config.settings,
-        show_alarm: Boolean((e.target as any).checked),
-      },
-    });
+    const settings = { ...this._config.settings } as Record<string, any>;
+    delete settings.alarm_entity_id;
+    settings.show_alarm = false;
+    this._fireConfigChanged({ ...this._config, settings });
+    this._showAlarmPicker = false;
   };
 
   private _toggleTimeDisplay(e: Event): void {
@@ -5653,62 +4842,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       settings: {
         ...this._config!.settings,
         hide_unavailable_entities: hideUnavailable
-      }
-    };
-
-    this._fireConfigChanged(newConfig);
-  }
-
-  private _toggleHideAreaName = (e: Event): void => {
-    if (!this._config) return;
-    this._fireConfigChanged({
-      ...this._config,
-      settings: {
-        ...this._config.settings,
-        hide_area_name_in_entity_names: Boolean((e.target as any).checked),
-      },
-    });
-  };
-
-  private _toggleHideEnergySensors = (e: Event): void => {
-    if (!this._config) return;
-    this._fireConfigChanged(withHideEnergySensors(this._config, Boolean((e.target as any).checked)));
-  };
-
-  private _toggleAreaShowEnergySensors = (e: Event): void => {
-    if (!this._config || !this._area) return;
-    this._fireConfigChanged(withAreaShowEnergySensors(this._config, this._area, Boolean((e.target as any).checked)));
-  };
-
-  private _toggleAreaFavorites = (e: Event): void => {
-    if (!this._config) return;
-    this._fireConfigChanged({
-      ...this._config,
-      settings: {
-        ...this._config.settings,
-        show_area_favorites: Boolean((e.target as any).checked),
-      },
-    });
-  };
-
-  private _toggleAreaNowPlaying = (e: Event): void => {
-    if (!this._config) return;
-    this._fireConfigChanged({
-      ...this._config,
-      settings: {
-        ...this._config.settings,
-        show_area_now_playing: Boolean((e.target as any).checked),
-      },
-    });
-  };
-
-  private _toggleAreaThermostat(e: Event): void {
-    const target = e.target as any;
-    const newConfig: DwainsDashboardConfig = {
-      ...this._config!,
-      settings: {
-        ...this._config!.settings,
-        show_area_thermostat: Boolean(target.checked)
       }
     };
 
@@ -5872,24 +5005,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     this._fireConfigChanged(newConfig);
   }
 
-  private _editAreaRegistry(ev: Event): void {
-    ev.stopPropagation();
-    // Point the user to the Home Assistant area settings.
-    this._showToast(this._t('strategy.edit_area_alert'));
-  }
-
-  // Show a short message in Home Assistant's own snackbar.
-  private _showToast(message: string): void {
-    fireEvent(this, 'hass-notification', { message });
-  }
-
-  private _openReplacementManager(initialDomain?: string): void {
+  private _openReplacementManager(): void {
     if (!this.hass || !this._config) return;
     openReplacementManager(this.hass, this._config, (config) => {
-      if (!this._config) return;
-      this._fireConfigChanged({ ...this._config, blueprint_replacements: config.blueprint_replacements || {} });
+      this._fireConfigChanged(config);
       this.requestUpdate();
-    }, initialDomain);
+    });
   }
 
   private _replacementCount(): number {
@@ -5903,8 +5024,19 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       ...config
     };
 
-    // Save the complete user configuration, but never the live registry data.
-    const cleanConfig = settingsEditorConfig(this._config);
+    // Only save essential configuration, not live data
+    const cleanConfig = {
+      type: "custom:dwains-dashboard-next",
+      areas_display: config.areas_display || {},
+      floors_display: config.floors_display || {},
+      areas_options: config.areas_options || {},
+      blueprint_replacements: config.blueprint_replacements || {},
+      device_admission: config.device_admission || {},
+      favorites: config.favorites || [],
+      pages: config.pages || [],
+      home_custom_cards: config.home_custom_cards || [],
+      settings: config.settings || {}
+    };
 
     const event = new CustomEvent("config-changed", {
       detail: { config: cleanConfig },
@@ -5922,6 +5054,110 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .editor-container {
         padding: 16px;
+      }
+
+      .dd-native-editor-subpage-back {
+        display: flex;
+        align-items: center;
+        min-height: 30px;
+        max-width: 1060px;
+        margin: 0 auto 6px;
+        padding: 0 12px;
+        box-sizing: border-box;
+      }
+      .dd-native-back-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        padding: 0;
+        border: 0;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--secondary-background-color) 74%, var(--card-background-color));
+        color: var(--primary-text-color);
+        cursor: pointer;
+        font: inherit;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .dd-native-back-button ha-icon { --mdc-icon-size: 16px; }
+      .settings-overview-hero {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        max-width: 720px;
+        margin: 0 auto 18px;
+        padding: 22px 24px;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background:
+          radial-gradient(circle at top right, color-mix(in srgb, var(--primary-color) 12%, transparent), transparent 42%),
+          var(--card-background-color);
+        box-shadow: 0 8px 26px rgba(15, 23, 42, 0.06);
+      }
+
+      .settings-overview-hero h2 {
+        margin: 0;
+        color: var(--primary-text-color);
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: 0;
+      }
+
+      .settings-overview-hero p {
+        margin: 6px 0 0;
+        color: var(--secondary-text-color);
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .settings-version-chip {
+        width: fit-content;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 12px;
+        padding: 7px 10px;
+        border-radius: 999px;
+        color: var(--primary-color);
+        background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1;
+      }
+
+      .settings-version-chip ha-icon,
+      .settings-version-chip svg {
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
+        --mdc-icon-size: 16px;
+      }
+
+      .settings-version-chip strong {
+        color: var(--primary-text-color);
+        font-weight: 800;
+      }
+
+      .settings-overview-hero > ha-icon,
+      .settings-overview-hero > svg {
+        flex: 0 0 auto;
+        width: 48px;
+        height: 48px;
+        border-radius: 999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-color);
+        background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+        fill: currentColor;
+        --mdc-icon-size: 26px;
+      }
+
+      .settings-overview-hero > svg {
+        padding: 11px;
+        box-sizing: border-box;
       }
 
       .settings-nav-section {
@@ -5952,7 +5188,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         width: 100%;
         min-height: 76px;
         display: grid;
-        grid-template-columns: 44px minmax(0, 1fr) 24px;
+        grid-template-columns: 44px minmax(0, 1fr) auto 24px;
         align-items: center;
         gap: 14px;
         padding: 12px 16px;
@@ -6010,36 +5246,17 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         line-height: 1.35;
       }
 
-      /* Summary facts wrap instead of being cut off. */
       .settings-nav-summary {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        margin-top: 8px;
-      }
-
-      .settings-nav-summary span {
-        max-width: 100%;
-        padding: 4px 9px;
+        justify-self: end;
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        padding: 6px 10px;
         border-radius: 999px;
         color: var(--secondary-text-color);
         background: color-mix(in srgb, var(--secondary-text-color) 7%, transparent);
         font-size: 12px;
-        font-weight: 700;
-        line-height: 1.3;
-        overflow-wrap: anywhere;
-      }
-
-      .settings-version-footer {
-        max-width: 720px;
-        margin: 4px auto 0;
-        padding: 0 14px;
-        color: var(--secondary-text-color);
-        font-size: 12px;
-        line-height: 1.4;
-      }
-
-      .settings-version-footer strong {
         font-weight: 700;
       }
 
@@ -6053,6 +5270,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .settings-loading-shell {
         min-height: 420px;
+      }
+
+      .settings-overview-hero-skeleton {
+        opacity: 0.92;
       }
 
       .settings-nav-item-skeleton {
@@ -6208,11 +5429,27 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       @media (max-width: 700px) {
+        .settings-overview-hero,
         .settings-nav-section,
-        .settings-version-footer,
         .settings-detail-content,
         .settings-detail-toolbar {
           max-width: none;
+        }
+
+        .settings-overview-hero {
+          align-items: flex-start;
+          padding: 18px;
+        }
+
+        .settings-overview-hero > ha-icon,
+        .settings-overview-hero > svg {
+          width: 40px;
+          height: 40px;
+          --mdc-icon-size: 22px;
+        }
+
+        .settings-overview-hero > svg {
+          padding: 9px;
         }
 
         .settings-nav-item {
@@ -6228,7 +5465,15 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         }
 
         .settings-nav-summary {
-          margin-top: 6px;
+          grid-column: 2 / -1;
+          justify-self: start;
+          max-width: 100%;
+          margin-top: -4px;
+        }
+
+        .settings-nav-chevron {
+          grid-column: 3;
+          grid-row: 1;
         }
 
         .settings-detail-toolbar {
@@ -6296,6 +5541,10 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         color: var(--secondary-text-color);
       }
 
+      .home-section-item > .home-section-detail-chevron {
+        margin-left: -2px;
+      }
+
       .home-info-card-actions {
         display: inline-flex;
         align-items: center;
@@ -6351,27 +5600,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .home-camera-settings-list {
         display: grid;
         gap: 8px;
-      }
-
-      .home-scene-settings-section {
-        padding: 0 16px 16px;
-      }
-
-      .home-scene-settings-section .home-custom-card-add {
-        flex: 0 0 auto;
-        white-space: nowrap;
-      }
-
-      .home-scene-option .entity-name {
-        min-width: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-      }
-
-      .home-scene-option-meta {
-        color: var(--secondary-text-color);
-        font-size: 12px;
       }
 
       .home-camera-settings-empty {
@@ -6488,7 +5716,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .home-section-item.has-detail {
-        grid-template-columns: 32px 42px minmax(0, 1fr) 40px auto;
+        grid-template-columns: 32px 42px minmax(0, 1fr) 20px auto;
       }
 
       .home-section-actions {
@@ -6518,14 +5746,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         --mdc-icon-size: 20px;
       }
 
-      .home-section-detail-button:hover {
-        background: var(--secondary-background-color);
-      }
-
-      .home-section-detail-button:focus-visible {
-        outline: 2px solid var(--primary-color);
-      }
-
       .home-layout-reset {
         justify-self: start;
         border: 0;
@@ -6539,60 +5759,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .home-layout-reset:disabled {
-        opacity: 0.42;
+        color: var(--disabled-text-color, var(--secondary-text-color));
+        background: color-mix(in srgb, var(--primary-text-color) 5%, transparent);
         cursor: default;
+        opacity: 0.55;
       }
 
-      .home-layout-reset:focus-visible {
-        outline: 2px solid var(--primary-color);
-        outline-offset: 2px;
-      }
-
-      .settings-reset-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin: 16px 0 0;
-      }
-
-      .area-editor-reset-row {
-        margin: 16px;
-      }
-
-      @media (max-width: 600px) {
-        .home-section-item {
-          grid-template-columns: 28px 36px minmax(0, 1fr);
-        }
-
-        .home-section-item.has-detail {
-          grid-template-columns: 28px 36px minmax(0, 1fr) 40px;
-        }
-
-        .home-info-card-item {
-          grid-template-columns: 36px minmax(0, 1fr) auto;
-        }
-
-        .home-section-icon {
-          width: 36px;
-          height: 36px;
-        }
-
-        .home-section-actions {
-          grid-column: 2 / -1;
-          justify-self: start;
-        }
-
-        .home-info-card-header {
-          align-items: start;
-          flex-direction: column;
-          gap: 8px;
-        }
-
-        .home-camera-settings-section,
-        .home-custom-card-settings-section,
-        .home-scene-settings-section {
-          padding-inline: 10px;
-        }
+      .area-apply-type-order:not(:disabled) {
+        color: var(--primary-color);
       }
 
       .dd-field {
@@ -6804,63 +5978,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         position: relative;
         width: 100%;
         min-width: 0;
-      }
-
-      .area-entity-section-header > span:not(.area-entity-section-actions) {
-        min-width: 0;
-        flex: 1;
-      }
-
-      .area-entity-section-title small {
-        margin-left: 8px;
-        color: var(--secondary-text-color);
-        font-size: 12px;
-        font-weight: 500;
-      }
-
-      .area-entity-section.is-hidden ha-expansion-panel {
-        opacity: 0.62;
-      }
-
-      .visibility-button {
-        width: 36px;
-        height: 36px;
-        padding: 0;
-        display: inline-grid;
-        place-items: center;
-        flex: 0 0 auto;
-        border: 0;
-        border-radius: 999px;
-        color: var(--secondary-text-color);
-        background: transparent;
-        cursor: pointer;
-      }
-
-      .visibility-button:hover {
-        background: color-mix(in srgb, var(--primary-text-color) 7%, transparent);
-        color: var(--primary-text-color);
-      }
-
-      .visibility-button:focus-visible {
-        outline: 2px solid var(--primary-color);
-        outline-offset: 1px;
-      }
-
-      .visibility-button.is-partial {
-        color: var(--primary-color);
-      }
-
-      .visibility-button.is-hidden {
-        color: var(--disabled-text-color, var(--secondary-text-color));
-      }
-
-      .visibility-button ha-icon {
-        --mdc-icon-size: 20px;
-      }
-
-      .area-entity-section-actions {
-        margin-left: auto;
-        display: inline-flex;
+        min-height: 58px;
+        display: grid;
+        grid-template-columns: 36px 34px minmax(0, 1fr) 44px;
         align-items: center;
         gap: 8px;
         padding: 6px 12px 8px;
@@ -7035,25 +6155,15 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         font-size: 15px;
       }
 
-      .area-energy-sensors-settings {
-        gap: 4px;
-      }
-
       .area-entity-layout-copy span,
-      .area-energy-sensors-description,
       .entity-name small {
         color: var(--secondary-text-color);
         font-size: 12px;
         line-height: 1.4;
       }
 
-      .area-entity-layout-settings .area-order-modes,
-      .tile-tap-modes {
+      .area-entity-layout-settings .area-order-modes {
         grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .tile-tap-section {
-        padding: 0 16px 16px;
       }
 
       .entity-name small {
@@ -7072,8 +6182,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           grid-template-columns: 1fr;
         }
 
-        .area-entity-layout-settings .area-order-modes,
-        .tile-tap-modes {
+        .area-entity-layout-settings .area-order-modes {
           grid-template-columns: 1fr;
         }
 
@@ -7327,34 +6436,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         cursor: pointer;
         display: flex;
         align-items: center;
-        align-self: stretch;
         gap: 4px;
-        min-width: 0;
-        min-height: 40px;
-        margin: 0;
-        padding: 0;
-        border: 0;
-        border-radius: 6px;
-        background: none;
-        color: inherit;
-        font: inherit;
-        text-align: left;
       }
 
       .area-name.clickable:hover {
         color: var(--primary-color);
-      }
-
-      .area-name.clickable:focus-visible,
-      .entity-option:focus-visible {
-        outline: 2px solid var(--primary-color);
-        outline-offset: 2px;
-      }
-
-      .area-name-text {
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
       }
 
       .area-name .chevron {
@@ -7376,18 +6462,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         cursor: pointer;
         font-size: inherit;
         padding: 0;
-      }
-
-      .manage-favorites-link {
-        display: inline;
-        margin-left: 4px;
-        font-weight: 600;
-        line-height: inherit;
-      }
-
-      .manage-favorites-link:hover,
-      .manage-favorites-link:focus-visible {
-        text-decoration: underline;
       }
 
       ha-icon-button[disabled] {
@@ -7550,14 +6624,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         line-height: 1.4;
       }
 
-      .replacement-list {
-        margin-top: 12px;
-      }
-
-      .replacement-section .home-camera-settings-empty {
-        margin-top: 12px;
-      }
-
       .replacement-summary ha-button ha-icon {
         --mdc-icon-size: 18px;
         margin-right: 6px;
@@ -7572,7 +6638,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .time-toggle,
       .weather-toggle,
-      .alarm-toggle,
       .favorite-suggestions-toggle,
       .hide-unavailable-toggle {
         margin-bottom: 16px;
@@ -7580,7 +6645,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .time-toggle ha-formfield,
       .weather-toggle ha-formfield,
-      .alarm-toggle ha-formfield,
       .favorite-suggestions-toggle ha-formfield,
       .hide-unavailable-toggle ha-formfield {
         --mdc-typography-body2-font-size: 14px;
@@ -7595,8 +6659,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         border-left: 3px solid var(--divider-color);
       }
 
-      .device-visibility-section {
+      .device-types-visibility {
         margin-top: 20px;
+        display: grid;
+        gap: 12px;
+      }
+
+      .device-admission-section {
+        margin-top: 24px;
         display: grid;
         gap: 12px;
       }
@@ -7632,6 +6702,42 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         font-weight: 700;
       }
 
+      .device-types-grid {
+        overflow: hidden;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: var(--card-background-color);
+      }
+
+      .device-type-option {
+        display: grid;
+        grid-template-columns: 42px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 10px;
+        min-height: 60px;
+        padding: 8px 12px;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        transition: opacity 0.16s ease, background 0.16s ease;
+      }
+
+      .device-type-option + .device-type-option {
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .device-type-option.enabled {
+        border-color: var(--divider-color);
+      }
+
+      .device-type-option.disabled {
+        opacity: 0.58;
+        background: color-mix(in srgb, var(--card-background-color) 78%, var(--secondary-background-color));
+      }
+
       .device-type-icon {
         width: 42px;
         height: 42px;
@@ -7639,13 +6745,93 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         display: flex;
         align-items: center;
         justify-content: center;
-        flex: 0 0 auto;
         color: var(--device-type-color);
         background: transparent;
       }
 
       .device-type-icon ha-icon {
         --mdc-icon-size: 22px;
+      }
+
+      .device-type-copy {
+        min-width: 0;
+      }
+
+      .device-type-name {
+        color: var(--primary-text-color);
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.15;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .device-type-count {
+        margin-top: 3px;
+        color: var(--secondary-text-color);
+        font-size: 12px;
+        line-height: 1;
+      }
+
+      .device-admission-global-actions,
+      .device-admission-group-actions,
+      .device-admission-area-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .device-admission-global-actions button,
+      .device-admission-group-actions button,
+      .device-admission-area-actions button {
+        min-height: 34px;
+        border: 0;
+        border-radius: 999px;
+        padding: 0 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--primary-color);
+        background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+        font: inherit;
+        font-size: 12px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      .device-admission-global-actions button[disabled],
+      .device-admission-group-actions button[disabled],
+      .device-admission-area-actions button[disabled] {
+        opacity: 0.42;
+        cursor: not-allowed;
+      }
+
+      .device-admission-global-actions ha-icon {
+        --mdc-icon-size: 16px;
+      }
+
+      .device-admission-groups {
+        display: grid;
+        gap: 8px;
+      }
+
+      .device-admission-groups ha-expansion-panel,
+      .device-admission-area,
+      .device-admission-device {
+        content-visibility: auto;
+      }
+
+      .device-admission-groups ha-expansion-panel {
+        contain-intrinsic-size: auto 86px;
+      }
+
+      .device-admission-panel-header {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 34px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 10px;
       }
 
       .device-type-icon.small {
@@ -7658,178 +6844,88 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         --mdc-icon-size: 19px;
       }
 
-      /* Devices page visibility tree: type > area > device > entity. */
-      .device-visibility-tree {
+      .device-admission-panel-header > span:not(.device-type-icon) {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--primary-text-color);
+        font-weight: 800;
+      }
+
+      .device-admission-panel-header small {
+        color: var(--secondary-text-color);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .device-admission-panel {
         display: grid;
+        gap: 12px;
+        padding: 0 16px 16px;
+      }
+
+      .device-admission-group-actions {
+        justify-content: flex-end;
+      }
+
+      .device-admission-area {
+        display: grid;
+        gap: 8px;
+        padding: 12px;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--card-background-color) 82%, var(--secondary-background-color));
+        contain-intrinsic-size: auto 180px;
+      }
+
+      .device-admission-area-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .device-admission-area-header strong {
+        display: block;
+        color: var(--primary-text-color);
+        font-size: 14px;
+        line-height: 1.2;
+      }
+
+      .device-admission-area-header span {
+        display: block;
+        margin-top: 2px;
+        color: var(--secondary-text-color);
+        font-size: 12px;
+      }
+
+      .device-admission-device-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
         gap: 8px;
       }
 
-      .device-visibility-type {
-        border: 1px solid var(--divider-color);
-        border-radius: 12px;
+      .device-admission-device {
+        display: grid;
+        grid-template-columns: 42px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 10px;
+        padding: 10px;
+        border: 1px solid color-mix(in srgb, var(--device-type-color) 22%, var(--divider-color));
+        border-radius: 10px;
         background: var(--card-background-color);
-        content-visibility: auto;
-        contain-intrinsic-size: auto 58px;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+        contain-intrinsic-size: auto 64px;
       }
 
-      .device-visibility-type.open {
-        border-color: color-mix(in srgb, var(--device-type-color) 30%, var(--divider-color));
-      }
-
-      .device-visibility-type-row {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        padding: 6px 8px 6px 6px;
-      }
-
-      .device-visibility-type-toggle {
-        flex: 1;
-        min-width: 0;
-        min-height: 44px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 0 6px;
-        border: 0;
-        border-radius: 10px;
-        color: inherit;
-        background: transparent;
-        font: inherit;
-        text-align: left;
-        cursor: pointer;
-      }
-
-      .device-visibility-type-toggle:disabled {
-        cursor: default;
-      }
-
-      .device-visibility-type-toggle:focus-visible {
-        outline: 2px solid var(--primary-color);
-        outline-offset: 1px;
-      }
-
-      .device-visibility-type.is-hidden .device-visibility-type-toggle {
+      .device-admission-device.hidden {
         opacity: 0.58;
+        background: color-mix(in srgb, var(--card-background-color) 74%, var(--secondary-background-color));
       }
 
-      .device-visibility-copy {
-        flex: 1;
+      .device-admission-copy {
         min-width: 0;
-        display: grid;
-        gap: 2px;
-      }
-
-      .device-visibility-copy strong {
-        overflow: hidden;
-        color: var(--primary-text-color);
-        font-size: 14px;
-        font-weight: 700;
-        line-height: 1.2;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-
-      .device-visibility-copy small {
-        color: var(--secondary-text-color);
-        font-size: 12px;
-        line-height: 1.2;
-      }
-
-      .device-visibility-chevron {
-        flex: 0 0 auto;
-        color: var(--secondary-text-color);
-        transition: transform 0.18s ease;
-        --mdc-icon-size: 20px;
-      }
-
-      .device-visibility-type.open .device-visibility-chevron {
-        transform: rotate(180deg);
-      }
-
-      .device-visibility-areas {
-        display: grid;
-        gap: 10px;
-        padding: 0 12px 12px;
-      }
-
-      .device-visibility-area {
-        display: grid;
-        gap: 6px;
-        padding: 8px 8px 10px 12px;
-        border-radius: 10px;
-        background: color-mix(in srgb, var(--card-background-color) 82%, var(--secondary-background-color));
-      }
-
-      .device-visibility-area.type-hidden {
-        opacity: 0.58;
-      }
-
-      .device-visibility-area-header,
-      .device-visibility-device-row,
-      .device-visibility-entity {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        min-width: 0;
-      }
-
-      .device-visibility-device-row {
-        min-height: 40px;
-        padding-right: 2px;
-      }
-
-      .device-visibility-device-icon {
-        flex: 0 0 auto;
-        color: var(--secondary-text-color);
-        --mdc-icon-size: 20px;
-      }
-
-      .device-visibility-device.device-hidden .device-visibility-device-row .device-visibility-copy {
-        opacity: 0.62;
-      }
-
-      .device-visibility-entities {
-        display: grid;
-        gap: 2px;
-      }
-
-      .device-visibility-device-row + .device-visibility-entities {
-        margin-left: 15px;
-        padding-left: 15px;
-        border-left: 2px solid var(--divider-color);
-      }
-
-      .device-visibility-entity {
-        min-height: 36px;
-      }
-
-      .device-visibility-entity.is-hidden .device-visibility-entity-icon,
-      .device-visibility-entity.is-hidden .device-visibility-entity-name {
-        opacity: 0.5;
-      }
-
-      .device-visibility-entity-icon {
-        flex: 0 0 auto;
-        color: var(--device-type-color);
-        --mdc-icon-size: 20px;
-      }
-
-      .device-visibility-entity-name {
-        flex: 1;
-        min-width: 0;
-        overflow: hidden;
-        color: var(--primary-text-color);
-        font-size: 13px;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-
-      .device-visibility-entity-note {
-        flex: 0 0 auto;
-        padding-right: 8px;
-        color: var(--secondary-text-color);
-        font-size: 12px;
       }
 
       @media (max-width: 600px) {
@@ -7839,19 +6935,21 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           gap: 8px;
         }
 
-        .device-visibility-areas {
-          padding: 0 8px 10px;
+        .device-types-grid {
+          grid-template-columns: 1fr;
         }
 
-        .device-visibility-device-row + .device-visibility-entities {
-          margin-left: 8px;
-          padding-left: 10px;
+        .device-admission-panel {
+          padding: 0 10px 12px;
         }
-      }
 
-      @media (prefers-reduced-motion: reduce) {
-        .device-visibility-chevron {
-          transition: none;
+        .device-admission-area-header {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .device-admission-device-list {
+          grid-template-columns: 1fr;
         }
       }
 
@@ -8066,14 +7164,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         display: flex;
         align-items: center;
         gap: 12px;
-        width: 100%;
-        margin: 0;
         padding: 12px;
-        border: 0;
         background: var(--primary-background-color);
-        color: inherit;
-        font: inherit;
-        text-align: left;
         border-radius: 8px;
         cursor: pointer;
         transition: all 0.2s ease;
@@ -8176,23 +7268,2326 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         color: var(--secondary-text-color);
       }
 
-      /* Reduced motion: no heartbeat, pulse or shimmer loops and
-         near-instant transitions. */
-      @media (prefers-reduced-motion: reduce) {
-        *,
-        *::before,
-        *::after {
-          animation-duration: 0.01ms !important;
-          animation-iteration-count: 1 !important;
-          transition-duration: 0.01ms !important;
-          transition-delay: 0s !important;
-          scroll-behavior: auto !important;
+      /* Integrated settings UI: single authoritative layout */
+      .dd-flat-settings {
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+        scroll-padding-top: 96px;
+      }
+
+      .settings-detail-content,
+      .home-section-item,
+      .dd-flat-subitem-row {
+        scroll-margin-top: 96px;
+      }
+
+      .dd-flat-settings .settings-nav-section,
+      .dd-flat-settings .settings-detail-content,
+      .dd-settings-version-footer,
+      .dd-subpage-header {
+        max-width: 1060px;
+        margin-inline: auto;
+      }
+
+      .dd-settings-overview .settings-nav-section:first-of-type {
+        margin-top: 0;
+      }
+
+      .dd-settings-version-footer {
+        margin-top: 22px;
+        padding-top: 14px;
+        border-top: 0;
+        color: var(--secondary-text-color);
+        font-size: 11px;
+        text-align: center;
+      }
+
+      .dd-settings-version-footer::before {
+        content: "";
+        display: block;
+        width: 28px;
+        height: 1px;
+        margin: 0 auto 10px;
+        background: var(--divider-color);
+      }
+
+      .dd-subpage-header {
+        height: 42px;
+        min-height: 42px;
+        margin-top: 0;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0;
+        box-sizing: border-box;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+      }
+
+      .dd-subpage-back {
+        width: 36px;
+        height: 36px;
+        flex: 0 0 36px;
+        display: inline-grid;
+        place-items: center;
+        border: 0;
+        border-radius: 999px;
+        color: var(--primary-color);
+        background: color-mix(in srgb, var(--primary-color) 9%, transparent);
+        cursor: pointer;
+      }
+
+      .dd-subpage-back ha-icon {
+        --mdc-icon-size: 20px;
+      }
+
+      .dd-subpage-title {
+        min-width: 0;
+        overflow: hidden;
+        color: var(--primary-text-color);
+        font-size: 17px;
+        font-weight: 800;
+        line-height: 1.2;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .dd-settings-page-description {
+        max-width: 760px;
+        margin: 0 0 14px;
+        color: var(--secondary-text-color);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .dd-settings-section {
+        min-width: 0;
+        margin-bottom: 10px;
+      }
+
+      .dd-settings-section:not(.page-root) {
+        overflow: hidden;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: var(--card-background-color);
+      }
+
+      .dd-settings-section-header {
+        min-height: 60px;
+        display: grid;
+        grid-template-columns: 40px minmax(0, 1fr);
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        box-sizing: border-box;
+      }
+
+      .dd-settings-section-icon,
+      .dd-setting-row-icon {
+        width: 40px;
+        height: 40px;
+        display: grid;
+        place-items: center;
+        color: var(--primary-color);
+      }
+
+      .dd-settings-section-icon ha-icon {
+        --mdc-icon-size: 23px;
+      }
+
+      .dd-settings-section-copy,
+      .dd-setting-row-copy {
+        min-width: 0;
+        display: grid;
+        gap: 3px;
+      }
+
+      .dd-settings-section-copy strong,
+      .dd-setting-row-copy strong {
+        color: var(--primary-text-color);
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.25;
+      }
+
+      .dd-settings-section-copy small,
+      .dd-setting-row-copy small {
+        max-width: 720px;
+        color: var(--secondary-text-color);
+        font-size: 11px;
+        line-height: 1.4;
+        font-weight: 400;
+      }
+
+      .dd-settings-section:not(.page-root) > .dd-settings-section-content {
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .dd-settings-section.page-root > .dd-settings-section-content {
+        min-width: 0;
+      }
+
+      .dd-settings-list {
+        overflow: hidden;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: var(--card-background-color);
+      }
+
+      .dd-settings-section:not(.page-root) .dd-settings-list {
+        border: 0;
+        border-radius: 0;
+      }
+
+      .dd-settings-list-spaced {
+        margin-bottom: 18px;
+      }
+
+      .dd-setting-row {
+        min-height: 60px;
+        display: grid;
+        grid-template-columns: 40px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        box-sizing: border-box;
+        cursor: default;
+      }
+
+      .dd-setting-row + .dd-setting-row {
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .dd-setting-row-icon ha-icon {
+        --mdc-icon-size: 22px;
+      }
+
+      .dd-setting-row ha-switch {
+        justify-self: end;
+      }
+
+      .dd-home-layout-panel,
+      .dd-inline-section {
+        min-width: 0;
+      }
+
+      .dd-home-page-description,
+      .dd-inline-description {
+        margin: 0;
+        color: var(--secondary-text-color);
+        font-size: 12px;
+        line-height: 1.4;
+        font-weight: 400;
+      }
+
+      .dd-home-page-description {
+        margin-bottom: 14px;
+      }
+
+      .dd-home-flat-layout {
+        padding-top: 0;
+      }
+
+      .dd-home-flat-layout.home-layout-section {
+        padding-inline: 0;
+      }
+
+      .dd-home-section-block {
+        overflow: hidden;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: var(--card-background-color);
+      }
+
+      .dd-home-section-block.open {
+        background: color-mix(in srgb, var(--primary-color) 1.5%, var(--card-background-color));
+      }
+
+      .dd-home-section-block > .home-section-item {
+        position: relative;
+        min-height: 54px;
+        grid-template-columns: 22px 40px minmax(0, 1fr) 44px;
+        gap: 6px;
+        padding: 5px 12px;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .dd-home-section-block.open > .home-section-item::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 1px;
+        background: var(--divider-color);
+        pointer-events: none;
+      }
+
+      .dd-home-flat-layout .home-section-icon,
+      .dd-flat-sublist .home-section-icon,
+      .dd-climate-area-settings .home-section-icon {
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .dd-home-flat-layout .home-section-icon {
+        width: 40px;
+        height: 40px;
+      }
+
+      .dd-home-flat-layout .home-section-icon ha-icon {
+        --mdc-icon-size: 23px;
+      }
+
+      .dd-home-flat-layout .home-section-item.disabled .home-section-icon,
+      .dd-flat-sublist .home-info-card-item.disabled .home-section-icon,
+      .dd-climate-area-settings .home-info-card-item.disabled .home-section-icon {
+        background: transparent;
+      }
+
+      .dd-home-flat-layout .home-section-toggle,
+      .dd-flat-sublist .home-section-toggle {
+        border: 1px solid color-mix(in srgb, var(--primary-color) 24%, var(--divider-color));
+        border-radius: 999px;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .dd-home-flat-layout .home-section-toggle.enabled,
+      .dd-flat-sublist .home-section-toggle.enabled {
+        color: var(--primary-color);
+        background: color-mix(in srgb, var(--primary-color) 5%, transparent);
+      }
+
+      .dd-home-section-block .home-section-description {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .dd-home-section-block .home-section-actions,
+      .home-info-card-actions {
+        display: grid;
+        grid-template-columns: 44px;
+        align-items: center;
+        justify-content: end;
+        justify-items: center;
+        justify-self: end;
+        width: 44px;
+        margin: 0;
+      }
+
+      .dd-icon-action {
+        display: inline-grid;
+        place-items: center;
+        border: 0;
+        color: var(--secondary-text-color);
+        background: transparent;
+        cursor: pointer;
+      }
+
+      .dd-icon-action ha-icon {
+        --mdc-icon-size: 19px;
+      }
+
+      .dd-integrated-chevron {
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        z-index: 1;
+        width: 30px;
+        height: 15px;
+        display: grid;
+        place-items: center;
+        margin: 0;
+        padding: 0;
+        transform: translateX(-50%);
+        border: 0;
+        color: var(--secondary-text-color);
+        background: transparent;
+        cursor: pointer;
+      }
+
+      .dd-home-section-block.open > .home-section-item .dd-integrated-chevron,
+      .dd-flat-subitem.open > .dd-flat-subitem-row .dd-integrated-chevron {
+        color: var(--primary-color);
+        background: transparent;
+      }
+
+      .dd-integrated-chevron ha-icon {
+        width: 14px;
+        height: 14px;
+        --mdc-icon-size: 14px;
+      }
+
+      .dd-home-inline-detail {
+        margin-left: 72px;
+        padding: 5px 0 8px 10px;
+        border-left: 1px solid color-mix(in srgb, var(--primary-color) 34%, transparent);
+      }
+
+      .dd-flat-subdetail {
+        margin-left: 18px;
+        padding: 3px 0 0 10px;
+        border-left: 1px solid color-mix(in srgb, var(--primary-color) 34%, transparent);
+      }
+
+      .dd-home-house-information .dd-inline-section {
+        padding-bottom: 0;
+      }
+
+      .dd-flat-sublist,
+      .dd-climate-area-settings .home-info-card-list {
+        display: grid;
+        gap: 0;
+        overflow: hidden;
+        border-top: 0;
+      }
+
+      .dd-home-house-information .dd-flat-sublist {
+        overflow: visible;
+      }
+
+      .dd-flat-subitem + .dd-flat-subitem,
+      .dd-flat-subitem-row + .dd-flat-subitem-row {
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .dd-flat-subitem.open > .dd-flat-subitem-row {
+        border-bottom: 0;
+      }
+
+      .dd-flat-subitem.open > .dd-flat-subitem-row::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 1px;
+        background: var(--divider-color);
+        pointer-events: none;
+      }
+
+      .dd-flat-subitem-row {
+        position: relative;
+        min-height: 50px;
+        display: grid;
+        grid-template-columns: 36px minmax(0, 1fr) 48px;
+        align-items: center;
+        gap: 9px;
+        padding: 6px 12px 6px 0;
+        box-sizing: border-box;
+      }
+
+      .dd-flat-subitem-row.has-detail {
+        cursor: pointer;
+      }
+
+      .dd-draggable-subitem {
+        grid-template-columns: 22px 40px minmax(0, 1fr) 48px;
+        cursor: grab;
+      }
+
+      .dd-flat-subitem-row .home-section-icon {
+        width: 36px;
+        height: 36px;
+      }
+
+      .dd-inline-actions {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 2px;
+        white-space: nowrap;
+      }
+
+      .dd-icon-action {
+        width: 32px;
+        height: 32px;
+        border-radius: 999px;
+      }
+
+      .dd-climate-area-settings {
+        padding: 0;
+      }
+
+      .dd-climate-area-settings .home-info-card-item {
+        min-height: 0;
+        display: grid;
+        grid-template-columns: 32px minmax(0, 1fr) 48px;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+        padding: 4px 12px 4px 8px;
+        border: 0;
+        border-bottom: 1px solid var(--divider-color);
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .dd-climate-area-settings .home-info-card-item:last-child {
+        border-bottom: 0;
+      }
+
+      .dd-climate-area-settings .home-section-icon {
+        width: 32px;
+        height: 32px;
+      }
+
+      .dd-climate-actions {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        justify-self: end;
+        width: 48px;
+      }
+
+      .dd-climate-actions ha-switch {
+        transform: scale(.9);
+        transform-origin: center;
+      }
+
+      .dd-favorite-suggestions-row ha-switch {
+        transform: scale(.9);
+        transform-origin: right center;
+      }
+
+      .dd-climate-description {
+        padding: 6px 8px;
+      }
+
+      .dd-inline-action-row {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        margin: 0;
+        padding: 8px 8px;
+      }
+
+      .home-custom-card-add {
+        width: auto;
+        min-height: 34px;
+        padding: 7px 12px;
+      }
+
+      .dd-empty-state,
+      .no-favorites {
+        margin: 8px 0 2px;
+        padding: 14px 10px;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        color: var(--secondary-text-color);
+        text-align: center;
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .dd-favorites-inline {
+        display: grid;
+        gap: 16px;
+        padding: 0;
+      }
+
+      .dd-favorites-options-card,
+      .dd-favorites-list-card {
+        overflow: hidden;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: var(--card-background-color);
+      }
+
+      .dd-favorites-options-card .dd-setting-row {
+        min-height: 64px;
+        margin: 0;
+        border: 0;
+        border-radius: 0;
+      }
+
+      .dd-favorites-options-card .dd-setting-row-icon {
+        color: var(--primary-color);
+      }
+
+      .dd-favorites-picker {
+        padding: 0;
+      }
+
+      .dd-favorites-list-card .dd-inline-action-row {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--divider-color);
+      }
+
+      .dd-favorites-list-head {
+        justify-content: space-between;
+      }
+
+      .dd-favorites-list-head > strong {
+        color: var(--primary-text-color);
+        font-family: var(--ha-font-family-body, inherit);
+        font-size: 15px;
+        font-weight: 700;
+        line-height: 1.25;
+      }
+
+      .dd-favorites-list-card .selected-entities {
+        padding: 10px 12px 12px;
+      }
+
+      .dd-favorites-list-card .no-favorites {
+        margin: 0;
+        padding: 18px 12px;
+      }
+
+      @media (min-width: 701px) {
+        .dd-flat-settings {
+          padding-top: 8px;
         }
 
-        .sponsoring-header ha-icon {
-          animation: none;
+        .dd-flat-settings:not(.dd-settings-overview) .settings-detail-content {
+          width: 100%;
+          margin-top: 0;
         }
       }
+
+      @media (max-width: 700px) {
+        .dd-flat-settings {
+          padding-inline: 10px;
+        }
+
+        .dd-flat-settings .settings-nav-section,
+        .dd-flat-settings .settings-detail-content,
+        .dd-subpage-header,
+        .dd-settings-version-footer {
+          max-width: none;
+        }
+
+        .dd-subpage-header {
+          margin-bottom: 10px;
+        }
+      }
+
+      @media (max-width: 600px) {
+        .dd-settings-page-description {
+          margin-bottom: 10px;
+        }
+
+        .dd-settings-section-header,
+        .dd-setting-row {
+          grid-template-columns: 36px minmax(0, 1fr) auto;
+          padding-inline: 8px;
+        }
+
+        .dd-settings-section-icon,
+        .dd-setting-row-icon {
+          width: 36px;
+          height: 36px;
+        }
+
+        .dd-home-page-description {
+          margin-bottom: 10px;
+        }
+
+        .dd-home-flat-layout.home-layout-section {
+          padding-inline: 0;
+        }
+
+        .dd-home-flat-layout .home-section-list {
+          width: 100%;
+        }
+
+        .dd-home-section-block > .home-section-item,
+        .dd-home-section-block > .home-section-item.has-detail {
+          grid-template-columns: 18px 40px minmax(0, 1fr) 40px;
+          gap: 6px;
+          padding: 7px 8px;
+        }
+
+        .dd-home-section-block .home-section-icon {
+          width: 40px;
+          height: 40px;
+        }
+
+        .dd-home-section-block .home-section-icon ha-icon {
+          --mdc-icon-size: 23px;
+        }
+
+        .dd-home-section-block .home-section-actions {
+          grid-template-columns: 40px;
+          width: 40px;
+          justify-self: end;
+        }
+
+        .home-info-card-actions {
+          grid-template-columns: 40px;
+          width: 40px;
+          justify-self: end;
+        }
+
+        .dd-integrated-chevron {
+          height: 14px;
+        }
+
+        .dd-home-section-block .home-section-title {
+          font-size: 14px;
+        }
+
+        .dd-home-section-block .home-section-description {
+          font-size: 11px;
+          line-height: 1.3;
+        }
+
+        .dd-home-inline-detail {
+          margin-left: 52px;
+          padding: 4px 0 6px 10px;
+        }
+
+        .dd-flat-subdetail {
+          margin-left: 18px;
+          padding: 2px 0 0 10px;
+        }
+
+        .dd-flat-subitem-row {
+          grid-template-columns: 36px minmax(0, 1fr) 40px;
+          gap: 8px;
+          padding: 6px 8px 6px 0;
+        }
+
+        .dd-draggable-subitem {
+          grid-template-columns: 20px 36px minmax(0, 1fr) 40px;
+        }
+
+        .dd-flat-subitem-row .home-section-icon {
+          width: 36px;
+          height: 36px;
+        }
+
+        .dd-flat-subitem-row .home-section-toggle {
+          width: 36px;
+          height: 36px;
+        }
+
+        .dd-climate-area-settings .home-info-card-item {
+          grid-template-columns: 30px minmax(0, 1fr) 48px;
+          padding: 4px 10px 4px 8px;
+        }
+
+        .dd-climate-area-settings .home-section-icon {
+          width: 30px;
+          height: 30px;
+        }
+
+        .dd-inline-action-row {
+          padding-right: 8px;
+        }
+
+        .dd-settings-version-footer {
+          margin-top: 18px;
+          font-size: 10px;
+        }
+      }
+
+
+      /* Settings consistency pass */
+      .settings-nav-section {
+        margin-bottom: 14px;
+      }
+
+      .settings-nav-section h3 {
+        min-height: 34px;
+        margin: 0 0 6px;
+        padding: 0 4px;
+        color: var(--secondary-text-color);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .settings-nav-item {
+        min-height: 70px;
+        grid-template-columns: 36px minmax(0, 1fr) auto 24px;
+        gap: 12px;
+        padding: 10px 14px;
+      }
+
+      .settings-nav-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 0;
+        color: var(--settings-item-color);
+        background: transparent;
+      }
+
+      .settings-nav-icon ha-icon,
+      .settings-nav-icon svg,
+      .settings-nav-gradient-icon {
+        width: 25px;
+        height: 25px;
+        fill: currentColor;
+        --mdc-icon-size: 25px;
+      }
+
+      .settings-nav-icon.support-gradient {
+        color: inherit;
+      }
+
+      .settings-nav-gradient-icon {
+        overflow: visible;
+      }
+
+      .dd-header-status-list {
+        overflow: hidden;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: var(--card-background-color);
+      }
+
+      .dd-header-status-list > .dd-setting-row,
+      .dd-header-feature-row {
+        min-height: 60px;
+        display: grid;
+        grid-template-columns: 40px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        box-sizing: border-box;
+      }
+
+      .dd-header-status-list > .dd-setting-row {
+        border: 0;
+        border-radius: 0;
+      }
+
+      .dd-header-status-list > .dd-setting-row + .dd-setting-row,
+      .dd-header-feature {
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .dd-header-feature-actions {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        white-space: nowrap;
+      }
+
+      .dd-header-status-settings {
+        display: grid;
+        gap: 16px;
+      }
+
+      .dd-status-people-card {
+        overflow: hidden;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: var(--card-background-color);
+      }
+
+      .dd-status-people-card .dd-status-people-heading {
+        min-height: 60px;
+      }
+
+      .dd-status-people-card .dd-status-people-list {
+        padding: 12px;
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .dd-status-people-card .persons-list {
+        border: 0;
+        border-radius: 0;
+      }
+
+      .dd-now-playing-settings {
+        margin: 0;
+        padding: 0 12px 12px;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--card-background-color) 97%, var(--primary-background-color));
+      }
+
+      .dd-now-playing-settings .dd-now-playing-heading {
+        min-height: 68px;
+        padding-inline: 0;
+      }
+
+      .dd-now-playing-icon {
+        color: var(--primary-color) !important;
+      }
+
+      .dd-now-playing-segments {
+        width: 100%;
+        margin: 0;
+      }
+
+      .dd-now-playing-segments .area-sort-segment {
+        min-height: 48px;
+      }
+
+      .dd-now-playing-segments .area-sort-segment ha-icon {
+        --mdc-icon-size: 19px;
+      }
+
+      .dd-inline-text-button,
+      .dd-icon-text-button {
+        min-height: 32px;
+        padding: 0 8px;
+        border: 0;
+        border-radius: 8px;
+        color: var(--primary-color);
+        background: transparent;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .dd-inline-text-button:hover,
+      .dd-icon-text-button:hover {
+        background: color-mix(in srgb, var(--primary-color) 7%, transparent);
+      }
+
+      .dd-settings-inline-link {
+        display: inline;
+        width: auto;
+        margin: 0 0 0 4px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: var(--primary-color);
+        font: inherit;
+        font-size: inherit;
+        font-weight: 650;
+        line-height: inherit;
+        vertical-align: baseline;
+        cursor: pointer;
+      }
+
+      .dd-settings-inline-link:hover {
+        text-decoration: underline;
+      }
+
+      .dd-setting-row-with-link {
+        cursor: default;
+      }
+
+      .dd-icon-text-button {
+        width: 32px;
+        padding: 0;
+        display: inline-grid;
+        place-items: center;
+      }
+
+      .dd-icon-text-button.danger {
+        color: var(--error-color, #f44336);
+        border: 1px solid color-mix(in srgb, var(--error-color, #f44336) 28%, var(--divider-color));
+        background: color-mix(in srgb, var(--error-color, #f44336) 6%, var(--card-background-color));
+      }
+
+      .dd-icon-text-button.danger:hover {
+        background: color-mix(in srgb, var(--error-color, #f44336) 11%, var(--card-background-color));
+      }
+
+      .dd-icon-text-button ha-icon {
+        --mdc-icon-size: 18px;
+      }
+
+      .master-confirmation-section.dd-simple-settings-stack {
+        gap: 8px;
+        padding: 0;
+      }
+
+      .master-confirmation-note {
+        padding: 4px 2px 8px;
+        border-radius: 0;
+        color: var(--secondary-text-color);
+        background: transparent;
+        font-size: 12px;
+      }
+
+      .master-confirmation-note ha-icon {
+        color: #0f9f8f;
+        --mdc-icon-size: 18px;
+      }
+
+      .master-confirmation-list {
+        border-radius: 12px;
+      }
+
+      .master-confirmation-row {
+        grid-template-columns: 40px minmax(0, 1fr) auto;
+        gap: 8px;
+        min-height: 60px;
+        padding: 8px 12px;
+      }
+
+      .master-confirmation-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 0;
+        color: #0f9f8f;
+        background: transparent;
+      }
+
+      .master-confirmation-control {
+        gap: 0;
+      }
+
+      .master-confirmation-control > span {
+        display: none;
+      }
+
+      .entity-display-section {
+        padding: 0;
+      }
+
+      .entity-display-section > .dd-settings-list-spaced {
+        margin-bottom: 16px;
+      }
+
+      .area-order-settings {
+        width: 100%;
+        margin: 0 0 16px;
+        padding: 14px;
+        box-sizing: border-box;
+        border-radius: 12px;
+      }
+
+      .area-order-settings .area-order-list-hint {
+        margin: 12px 0 0;
+      }
+
+      .area-order-settings .area-settings-sortable {
+        margin-top: 12px;
+      }
+
+      .area-settings-sortable {
+        padding: 0;
+        gap: 8px;
+      }
+
+      .area-settings-sortable .dd-area-sortable-row {
+        overflow: hidden;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: var(--card-background-color);
+        box-shadow: none;
+      }
+
+      .area-settings-sortable .dd-area-sortable-row .area-item {
+        min-height: 62px;
+        padding: 8px 12px;
+        box-sizing: border-box;
+      }
+
+      .area-settings-sortable .sortable-item.dragging {
+        opacity: 0.28;
+        transform: none;
+      }
+
+      .area-settings-sortable .sortable-item.drag-over::before {
+        display: none;
+      }
+
+      .area-settings-sortable .sortable-item.drag-over {
+        background: color-mix(in srgb, var(--primary-color) 4%, var(--card-background-color));
+      }
+
+      .area-settings-sortable .handle {
+        margin-right: 0;
+        padding: 6px 2px;
+        background: transparent;
+      }
+
+      .area-detail-editor .area-entity-section-header {
+        cursor: grab;
+      }
+
+      .area-detail-editor .area-entity-section-header:active {
+        cursor: grabbing;
+      }
+
+      .area-detail-editor .area-entity-section-handle {
+        cursor: inherit;
+      }
+
+      .area-settings-sortable .area-icon {
+        width: 40px;
+        margin-right: 6px;
+        color: var(--primary-color);
+        --mdc-icon-size: 22px;
+      }
+
+      .device-visibility-section {
+        margin-top: 20px;
+        display: grid;
+        gap: 10px;
+      }
+
+      .device-admission-groups {
+        display: grid;
+        gap: 8px;
+      }
+
+      .device-type-panel {
+        overflow: hidden;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: var(--card-background-color);
+        content-visibility: auto;
+        contain-intrinsic-size: auto 70px;
+      }
+
+      .device-type-panel.open {
+        background: color-mix(in srgb, var(--primary-color) 1.5%, var(--card-background-color));
+      }
+
+      .device-type-panel.disabled {
+        opacity: 0.58;
+      }
+
+      .device-type-panel-row {
+        position: relative;
+        min-height: 62px;
+        display: grid;
+        grid-template-columns: 40px minmax(0, 1fr) 44px;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        box-sizing: border-box;
+      }
+
+      .device-type-panel-row.expandable {
+        cursor: pointer;
+      }
+
+      .device-type-panel-row .device-type-icon.small {
+        width: 40px;
+        height: 40px;
+        border-radius: 0;
+        color: var(--primary-color);
+        background: transparent;
+      }
+
+      .device-type-heading {
+        min-width: 0;
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+      }
+
+      .device-type-heading strong {
+        min-width: 0;
+        overflow: hidden;
+        color: var(--primary-text-color);
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.25;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .device-type-heading small {
+        flex: 0 0 auto;
+        color: var(--secondary-text-color);
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .dd-visibility-button {
+        width: 40px;
+        height: 40px;
+        display: inline-grid;
+        place-items: center;
+        justify-self: end;
+        padding: 0;
+        border: 1px solid color-mix(in srgb, var(--primary-color) 24%, var(--divider-color));
+        border-radius: 999px;
+        color: var(--primary-color);
+        background: transparent;
+        cursor: pointer;
+      }
+
+      .dd-visibility-button.hidden {
+        color: var(--secondary-text-color);
+        border-color: var(--divider-color);
+      }
+
+      .dd-visibility-button.partial {
+        border-style: dashed;
+      }
+
+      .dd-visibility-button ha-icon {
+        --mdc-icon-size: 20px;
+      }
+
+      .device-type-chevron {
+        left: 50%;
+        bottom: -1px;
+      }
+
+      .device-type-panel.open > .device-type-panel-row {
+        border-bottom: 1px solid var(--divider-color);
+      }
+
+      .device-admission-panel {
+        display: grid;
+        gap: 0;
+        padding: 0;
+      }
+
+      .device-admission-area {
+        display: grid;
+        gap: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+      }
+
+      .device-admission-area + .device-admission-area {
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .device-admission-area-header {
+        min-height: 52px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 44px;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px 6px 52px;
+        box-sizing: border-box;
+      }
+
+      .device-admission-device-list {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0;
+        padding: 0 12px 8px 52px;
+      }
+
+      .device-admission-device {
+        min-height: 52px;
+        display: grid;
+        grid-template-columns: 34px minmax(0, 1fr) 44px;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 0;
+        border: 0;
+        border-top: 1px solid var(--divider-color);
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .device-admission-device .device-type-icon {
+        width: 34px;
+        height: 34px;
+        color: var(--primary-color);
+      }
+
+      .device-admission-device.hidden {
+        opacity: 0.52;
+        background: transparent;
+      }
+
+      .device-admission-copy .device-type-count {
+        margin-top: 2px;
+      }
+
+      ha-expansion-panel {
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      @media (max-width: 700px) {
+        .settings-nav-item {
+          grid-template-columns: 32px minmax(0, 1fr) auto 20px;
+          gap: 8px;
+          padding-inline: 10px;
+        }
+
+        .settings-nav-icon {
+          width: 32px;
+          height: 32px;
+        }
+
+        .settings-nav-icon ha-icon,
+        .settings-nav-icon svg,
+        .settings-nav-gradient-icon {
+          width: 22px;
+          height: 22px;
+          --mdc-icon-size: 22px;
+        }
+
+        .dd-header-status-list > .dd-setting-row,
+        .dd-header-feature-row {
+          grid-template-columns: 36px minmax(0, 1fr) auto;
+          padding-inline: 8px;
+        }
+
+        .dd-header-feature-actions {
+          gap: 4px;
+        }
+
+        .device-type-heading {
+          flex-wrap: wrap;
+          gap: 2px 8px;
+        }
+
+        .device-type-heading small {
+          width: 100%;
+        }
+
+        .device-admission-area-header {
+          padding-left: 12px;
+        }
+
+        .device-admission-device-list {
+          padding-left: 12px;
+        }
+      }
+
+      /* Final settings layout pass */
+      .dd-flat-settings {
+        max-width: 920px;
+        margin-inline: auto;
+      }
+
+      .dd-flat-settings .settings-nav-section,
+      .dd-flat-settings .settings-detail-content,
+      .dd-flat-settings .dd-settings-version-footer {
+        max-width: none;
+        width: 100%;
+      }
+
+      .settings-nav-section h3 {
+        min-height: 28px;
+        margin: 0 0 7px;
+        padding: 0 2px;
+        font-size: 14px;
+        font-weight: 750;
+        color: var(--primary-text-color);
+      }
+
+      .settings-nav-section + .settings-nav-section {
+        margin-top: 18px;
+      }
+
+      .area-sort-segmented {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        overflow: hidden;
+        border: 1px solid var(--divider-color);
+        border-radius: 10px;
+        background: var(--secondary-background-color);
+      }
+
+      .area-sort-segment,
+      .area-detail-editor .area-entity-layout-settings .area-order-mode {
+        min-width: 0;
+        min-height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 8px 10px;
+        border: 0;
+        border-right: 1px solid var(--divider-color);
+        color: var(--primary-text-color);
+        background: transparent;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 650;
+        cursor: pointer;
+        box-shadow: none;
+      }
+
+      .area-sort-segment:last-child {
+        border-right: 0;
+      }
+
+      .area-sort-segment:hover,
+      .area-detail-editor .area-entity-layout-settings .area-order-mode:hover {
+        color: var(--primary-text-color);
+        background: color-mix(in srgb, var(--primary-color) 4%, transparent);
+      }
+
+      .area-sort-segment.selected,
+      .area-detail-editor .area-entity-layout-settings .area-order-mode.selected {
+        color: var(--primary-color);
+        background: color-mix(in srgb, var(--primary-color) 9%, var(--card-background-color));
+      }
+
+      .area-sort-segment ha-icon,
+      .area-detail-editor .area-entity-layout-settings .area-order-mode ha-icon {
+        color: currentColor;
+        --mdc-icon-size: 18px;
+      }
+
+      .area-detail-editor .area-entity-layout-settings .area-order-mode strong {
+        color: inherit;
+        font-size: 12px;
+        font-weight: 650;
+      }
+
+      .area-order-list-hint {
+        margin: 0 2px 8px;
+        color: var(--secondary-text-color);
+        font-size: 12px;
+        line-height: 1.4;
+      }
+
+      .dd-integrated-chevron ha-icon {
+        width: 18px;
+        height: 18px;
+        --mdc-icon-size: 18px;
+      }
+
+      .dd-integrated-chevron {
+        width: 34px;
+        height: 18px;
+      }
+
+      .persons-list .person-item {
+        display: grid;
+        grid-template-columns: 40px minmax(0, 1fr) 44px;
+        gap: 8px;
+      }
+
+      .persons-list .dd-visibility-button {
+        justify-self: end;
+      }
+
+      .master-confirmation-control {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 12px;
+      }
+
+      .master-confirmation-control > span {
+        display: block;
+        min-width: 116px;
+        color: var(--secondary-text-color);
+        font-size: 12px;
+        font-weight: 600;
+        text-align: right;
+      }
+
+      .device-type-panel {
+        --device-type-color: var(--primary-color);
+      }
+
+      .device-type-panel-row .device-type-icon.small,
+      .device-type-panel .device-admission-device .device-type-icon {
+        color: var(--device-type-color);
+      }
+
+      .device-type-panel .dd-visibility-button {
+        color: var(--device-type-color);
+        border-color: color-mix(in srgb, var(--device-type-color) 30%, var(--divider-color));
+      }
+
+      .device-type-panel .dd-visibility-button.hidden {
+        color: var(--secondary-text-color);
+        border-color: var(--divider-color);
+      }
+
+      .device-admission-device-list {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+        padding: 0 12px 12px 52px;
+      }
+
+      .device-admission-device {
+        min-width: 0;
+        min-height: 62px;
+        grid-template-columns: 32px minmax(0, 1fr) 38px;
+        gap: 7px;
+        padding: 8px;
+        border: 1px solid var(--divider-color);
+        border-radius: 10px;
+        background: var(--card-background-color);
+      }
+
+      .device-admission-device + .device-admission-device {
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .device-admission-device.hidden {
+        background: color-mix(in srgb, var(--secondary-background-color) 70%, var(--card-background-color));
+      }
+
+      .device-admission-device .dd-visibility-button {
+        width: 34px;
+        height: 34px;
+      }
+
+      .device-admission-copy {
+        min-width: 0;
+      }
+
+      .device-admission-copy .device-type-name {
+        display: -webkit-box;
+        overflow: hidden;
+        white-space: normal;
+        text-overflow: clip;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        overflow-wrap: break-word;
+        word-break: normal;
+        font-size: 12px;
+        font-weight: 650;
+        line-height: 1.2;
+      }
+
+      .device-admission-copy .device-type-count {
+        font-size: 10px;
+      }
+
+      .dd-replacement-settings {
+        padding: 0;
+        display: grid;
+        gap: 12px;
+      }
+
+      .dd-replacement-list {
+        overflow: hidden;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: var(--card-background-color);
+      }
+
+      .dd-replacement-row {
+        min-height: 62px;
+        display: grid;
+        grid-template-columns: 40px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+      }
+
+      .dd-replacement-row + .dd-replacement-row {
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .dd-replacement-row.disabled {
+        opacity: 0.55;
+      }
+
+      .dd-replacement-domain-icon {
+        width: 36px;
+        height: 36px;
+        display: grid;
+        place-items: center;
+        border-radius: 9px;
+        color: var(--primary-color);
+        background: color-mix(in srgb, var(--primary-color) 10%, var(--card-background-color));
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 10%, transparent);
+      }
+
+      .dd-replacement-domain-icon ha-icon {
+        --mdc-icon-size: 20px;
+      }
+
+      .dd-replacement-copy {
+        min-width: 0;
+        display: grid;
+        gap: 3px;
+      }
+
+      .dd-replacement-copy strong {
+        font-size: 14px;
+      }
+
+      .dd-replacement-copy small {
+        overflow: hidden;
+        color: var(--secondary-text-color);
+        font-size: 11px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .dd-replacement-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .dd-replacement-enabled {
+        display: inline-flex;
+        align-items: center;
+        margin: 0;
+      }
+
+      .dd-replacement-empty {
+        padding: 18px;
+        border: 1px dashed var(--divider-color);
+        border-radius: 12px;
+        color: var(--secondary-text-color);
+        font-size: 12px;
+        text-align: center;
+      }
+
+      .dd-replacement-footer {
+        display: flex;
+        justify-content: flex-start;
+      }
+
+      .dd-replacement-footer ha-button ha-icon {
+        --mdc-icon-size: 18px;
+        margin-right: 5px;
+      }
+
+      @media (max-width: 700px) {
+        .dd-flat-settings {
+          max-width: none;
+        }
+
+        .area-sort-segmented {
+          grid-template-columns: 1fr;
+        }
+
+        .area-sort-segment {
+          justify-content: center;
+          text-align: center;
+          border-right: 0;
+          border-bottom: 1px solid var(--divider-color);
+        }
+
+        .area-sort-segment:last-child {
+          border-bottom: 0;
+        }
+
+        .device-admission-device-list {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          padding-left: 12px;
+        }
+
+        .master-confirmation-control > span {
+          min-width: 0;
+          max-width: 110px;
+        }
+
+        .dd-replacement-row {
+          grid-template-columns: 36px minmax(0, 1fr);
+        }
+
+        .dd-replacement-actions {
+          grid-column: 2;
+          justify-self: start;
+        }
+      }
+
+      /* Settings correction pass */
+      .dd-flat-settings {
+        width: 100%;
+        max-width: none;
+        margin-inline: 0;
+        padding: 24px 20px 20px;
+        box-sizing: border-box;
+      }
+
+      @media (min-width: 701px) {
+        .dd-flat-settings {
+          padding-top: 24px;
+        }
+
+        .dd-flat-settings:not(.dd-settings-overview) .settings-detail-content {
+          margin-top: 0;
+        }
+      }
+
+      .dd-flat-settings .dd-setting-row-icon,
+      .dd-flat-settings .dd-settings-section-icon {
+        color: var(--primary-color);
+      }
+
+      .dd-flat-settings ha-switch {
+        --switch-checked-color: var(--primary-color);
+        --md-switch-selected-track-color: var(--primary-color);
+        --md-switch-selected-focus-track-color: var(--primary-color);
+        --md-switch-selected-hover-track-color: var(--primary-color);
+        --md-switch-selected-pressed-track-color: var(--primary-color);
+      }
+
+      .dd-flat-settings .dd-visibility-button:not(.hidden) {
+        color: var(--primary-color);
+        border-color: color-mix(in srgb, var(--primary-color) 24%, var(--divider-color));
+      }
+
+      .dd-flat-settings .area-sort-segment.selected,
+      .dd-flat-settings .area-order-mode.selected {
+        color: var(--primary-color);
+        border-color: color-mix(in srgb, var(--primary-color) 32%, var(--divider-color));
+        background: color-mix(in srgb, var(--primary-color) 7%, var(--card-background-color));
+      }
+
+      .device-type-panel-row > .device-type-icon.small {
+        color: var(--device-type-color);
+      }
+
+      .device-type-panel .device-admission-device .device-type-icon {
+        color: var(--secondary-text-color);
+      }
+
+      .device-type-panel .dd-visibility-button,
+      .device-type-panel .dd-visibility-button.hidden {
+        color: var(--device-type-color);
+        border-color: color-mix(in srgb, var(--device-type-color) 30%, var(--divider-color));
+      }
+
+      .device-type-panel .dd-visibility-button.hidden {
+        color: var(--secondary-text-color);
+        border-color: var(--divider-color);
+      }
+
+      .device-type-panel-row .device-type-heading {
+        flex-wrap: nowrap;
+        gap: 8px;
+      }
+
+      .device-type-panel-row .device-type-heading small {
+        width: auto;
+      }
+
+      .device-area-heading {
+        display: grid;
+        gap: 2px;
+        align-items: center;
+      }
+
+      .device-area-heading small {
+        width: 100%;
+      }
+
+      .device-admission-device {
+        min-height: 56px;
+        padding: 6px 8px;
+      }
+
+      .device-admission-copy .device-type-name {
+        display: -webkit-box;
+        overflow: hidden;
+        white-space: normal;
+        text-overflow: clip;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        line-height: 1.2;
+        overflow-wrap: break-word;
+        word-break: normal;
+      }
+
+      .dd-replacement-footer {
+        justify-content: flex-end;
+      }
+
+      @media (max-width: 700px) {
+        .dd-flat-settings {
+          padding: 18px 10px 16px;
+        }
+
+        .device-type-panel-row .device-type-heading {
+          flex-wrap: nowrap;
+        }
+
+        .device-type-panel-row .device-type-heading small {
+          width: auto;
+        }
+
+        .device-area-heading {
+          display: grid;
+        }
+
+        .device-area-heading small {
+          width: 100%;
+        }
+      }
+
+      /* Settings entity picker, people, areas and device hierarchy */
+      .entity-picker-content {
+        box-sizing: border-box;
+      }
+
+      .entity-option {
+        width: 100%;
+        border: 1px solid transparent;
+        color: inherit;
+        font: inherit;
+        text-align: left;
+      }
+
+      .entity-option.selected {
+        border-color: color-mix(in srgb, var(--primary-color) 42%, var(--divider-color));
+        background: color-mix(in srgb, var(--primary-color) 8%, var(--card-background-color));
+      }
+
+      .entity-option-copy {
+        min-width: 0;
+        flex: 1;
+        display: grid;
+        gap: 2px;
+      }
+
+      .entity-option-copy .entity-name,
+      .entity-option-copy .entity-id {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .entity-selected-icon {
+        flex: 0 0 auto;
+        color: var(--primary-color);
+        --mdc-icon-size: 20px;
+      }
+
+      .entity-picker-footer {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 12px;
+        padding-top: 10px;
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .persons-list {
+        overflow: visible;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 8px;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+      }
+
+      .persons-list .person-item {
+        min-width: 0;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: 40px minmax(0, 1fr) 34px;
+        align-items: center;
+        gap: 8px;
+        padding: 8px;
+        box-sizing: border-box;
+        border: 1px solid var(--divider-color);
+        border-radius: 10px;
+        background: var(--card-background-color);
+      }
+
+      .persons-list .person-item + .person-item {
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .person-avatar {
+        width: 40px;
+        height: 40px;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+        border-radius: 999px;
+        background: var(--secondary-background-color);
+      }
+
+      .person-avatar img {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+      }
+
+      .person-avatar .person-icon {
+        margin: 0;
+        --mdc-icon-size: 25px;
+      }
+
+      .persons-list .person-name {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 13px;
+        font-weight: 650;
+      }
+
+      .persons-list .dd-visibility-button {
+        width: 30px;
+        height: 30px;
+      }
+
+      .area-sort-segment {
+        align-items: center;
+        line-height: 1.2;
+      }
+
+      .area-sort-segment > span,
+      .area-sort-segment ha-icon {
+        align-self: center;
+      }
+
+      .area-settings-sortable .dd-area-sortable-row .area-item {
+        display: grid;
+        grid-template-columns: 46px minmax(0, 1fr) 48px;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .area-settings-sortable.is-custom-order .dd-area-sortable-row .area-item {
+        grid-template-columns: 22px 46px minmax(0, 1fr) 48px;
+      }
+
+      .area-settings-sortable .handle {
+        width: 22px;
+        height: 40px;
+        display: grid;
+        place-items: center;
+        margin: 0;
+        padding: 0;
+      }
+
+      .area-settings-sortable .area-icon {
+        width: 46px;
+        height: 46px;
+        display: grid;
+        place-items: center;
+        margin: 0;
+        --mdc-icon-size: 25px;
+      }
+
+      .area-settings-sortable .area-name {
+        min-width: 0;
+        margin: 0;
+      }
+
+      .area-settings-sortable .area-actions {
+        width: 48px;
+        justify-content: flex-end;
+      }
+
+      .device-area-heading {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+      }
+
+      .device-area-heading {
+        display: inline-flex !important;
+        flex-wrap: nowrap !important;
+        align-items: baseline;
+        gap: 8px;
+        min-width: 0;
+        white-space: nowrap;
+      }
+
+      .device-area-heading strong {
+        flex: 0 1 auto;
+        min-width: 0;
+      }
+
+      .device-area-heading small {
+        width: auto !important;
+        flex: 0 0 auto;
+        white-space: nowrap;
+      }
+
+      .device-admission-device {
+        min-height: 44px;
+        padding: 4px 7px;
+        grid-template-columns: 30px minmax(0, 1fr) 34px;
+        gap: 6px;
+      }
+
+      .device-admission-device .device-type-icon {
+        width: 30px;
+        height: 30px;
+      }
+
+      .device-admission-device .device-type-icon ha-icon {
+        --mdc-icon-size: 18px;
+      }
+
+      .device-admission-device .dd-visibility-button {
+        width: 32px;
+        height: 32px;
+      }
+
+      .device-admission-device-list {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .device-admission-device {
+        min-height: 58px;
+        align-items: center;
+        cursor: default;
+      }
+
+      .device-admission-device.interactive {
+        cursor: pointer;
+      }
+
+      .device-admission-device.interactive:hover {
+        background: color-mix(in srgb, var(--primary-color) 4%, var(--card-background-color));
+        border-color: color-mix(in srgb, var(--primary-color) 24%, var(--divider-color));
+      }
+
+      .device-admission-copy {
+        align-self: center;
+        display: flex;
+        min-width: 0;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .device-admission-copy .device-type-name {
+        font-size: 11.5px;
+        line-height: 1.18;
+        overflow-wrap: normal;
+        word-break: normal;
+        hyphens: none;
+      }
+
+      .device-admission-copy .device-type-count {
+        margin-top: 2px;
+        font-size: 9.5px;
+      }
+
+      @media (max-width: 820px) {
+        .device-admission-device-list {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 520px) {
+        .device-admission-device-list {
+          grid-template-columns: 1fr;
+        }
+      }
+
+
+      .area-detail-editor {
+        padding: 16px;
+      }
+
+      .area-detail-editor > .toolbar {
+        min-height: 42px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin: 0 0 10px;
+        padding: 0;
+        background: transparent;
+        border: 0;
+      }
+
+      .area-detail-editor > .toolbar ha-icon-button {
+        width: 38px;
+        height: 38px;
+        --mdc-icon-button-size: 38px;
+        --mdc-icon-size: 22px;
+      }
+
+      .area-detail-editor > .toolbar h2 {
+        margin: 0;
+        font-size: 17px;
+        font-weight: 800;
+      }
+
+      .area-detail-editor .area-help {
+        margin: 0 0 12px;
+        padding: 10px 12px;
+        border: 1px solid var(--divider-color);
+        border-radius: 10px;
+        background: color-mix(in srgb, var(--secondary-background-color) 72%, var(--card-background-color));
+      }
+
+      .area-detail-editor .area-help-icon {
+        color: var(--secondary-text-color);
+      }
+
+      .area-detail-editor .area-help-text p {
+        margin: 0;
+      }
+
+      .area-detail-editor .area-help-text p + p {
+        margin-top: 5px;
+      }
+
+      .area-detail-editor .area-entity-layout-settings {
+        margin: 0 0 12px;
+        padding: 14px;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .area-detail-editor .area-entity-layout-settings > .area-entity-section,
+      .area-detail-editor .area-entity-layout-settings > .area-free-order-section {
+        margin: 0;
+      }
+
+      .area-detail-editor .area-entity-layout-settings > .area-entity-section > ha-expansion-panel {
+        margin-bottom: 0;
+      }
+
+      .area-entity-layout-hint {
+        margin: 0;
+        color: var(--secondary-text-color);
+        font-size: 12px;
+        line-height: 1.4;
+      }
+
+      .area-detail-editor .area-entity-section {
+        margin: 0 0 8px;
+      }
+
+      .area-detail-editor .area-entity-section ha-expansion-panel,
+      .area-detail-editor > ha-expansion-panel {
+        overflow: hidden;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: var(--card-background-color);
+      }
+
+      .area-detail-editor .area-entity-section-header {
+        min-height: 52px;
+        display: grid;
+        grid-template-columns: 40px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .area-detail-editor .area-entity-section-header > ha-icon {
+        justify-self: center;
+        color: var(--primary-color);
+        --mdc-icon-size: 22px;
+      }
+
+      .area-detail-editor .area-entity-section .sortable-container {
+        padding: 0 10px 8px;
+      }
+
+      .area-detail-editor .area-entity-section .sortable-item {
+        border-radius: 9px;
+      }
+
+      .area-detail-editor .area-entity-section .entity-item {
+        min-height: 46px;
+        padding: 4px 6px;
+      }
+
+      .area-list-reset {
+        margin-top: 10px;
+      }
+
+      .area-layout-actions {
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .area-layout-actions .home-layout-reset {
+        margin: 0;
+      }
+
+      /* Area room editor final consistency */
+      .master-confirmation-note ha-icon,
+      .master-confirmation-icon {
+        color: var(--primary-color);
+      }
+
+      .area-detail-editor .area-entity-layout-settings {
+        padding: 10px 12px 12px;
+        gap: 8px;
+      }
+
+      .area-detail-editor .area-entity-layout-settings .area-order-modes {
+        gap: 0;
+        overflow: hidden;
+        border: 1px solid var(--divider-color);
+        border-radius: 10px;
+        background: var(--secondary-background-color);
+      }
+
+      .area-detail-editor .area-entity-layout-settings .area-order-mode:last-child {
+        border-right: 0;
+      }
+
+      .area-detail-editor .area-entity-section-header {
+        min-height: 52px;
+        grid-template-columns: 28px 32px minmax(0, 1fr) 40px;
+        gap: 8px;
+        padding: 6px 12px 8px;
+      }
+
+      .area-detail-editor .area-entity-section-handle {
+        width: 28px;
+        height: 36px;
+      }
+
+      .area-detail-editor .area-entity-section-header > ha-icon {
+        justify-self: center;
+        --mdc-icon-size: 21px;
+      }
+
+      .area-detail-editor .area-entity-section-title {
+        justify-self: start;
+        text-align: left;
+      }
+
+      .area-detail-editor .area-entity-section .sortable-container {
+        gap: 0;
+        padding: 0;
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .area-detail-editor .area-entity-section .sortable-item {
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+      }
+
+      .area-detail-editor .area-entity-section .sortable-item + .sortable-item {
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .area-detail-editor .area-entity-section .entity-item {
+        min-height: 48px;
+        padding: 5px 10px;
+      }
+
+      .area-detail-editor .area-entity-section .sortable-item:hover {
+        background: color-mix(in srgb, var(--primary-color) 3%, transparent);
+      }
+
+      /* Area room editor behavior + hierarchy */
+      .area-entity-layout-heading {
+        min-height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .area-entity-layout-heading > strong { font-size: 14px; }
+      .area-reset-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        white-space: nowrap;
+      }
+      .area-reset-button ha-icon { --mdc-icon-size: 17px; }
+
+      .area-free-order-section {
+        overflow: hidden;
+        margin: 0 0 8px;
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        background: var(--card-background-color);
+      }
+      .area-free-order-header {
+        min-height: 52px;
+        display: grid;
+        grid-template-columns: 40px minmax(0, 1fr);
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        box-sizing: border-box;
+      }
+      .area-free-order-header ha-icon {
+        justify-self: center;
+        color: var(--primary-color);
+        --mdc-icon-size: 21px;
+      }
+      .area-free-order-header strong { font-size: 14px; }
+      .area-free-order-section .sortable-container {
+        gap: 0;
+        padding: 0;
+        border-top: 1px solid var(--divider-color);
+      }
+      .area-free-order-section .sortable-item {
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+      }
+      .area-free-order-section .sortable-item + .sortable-item {
+        border-top: 1px solid var(--divider-color);
+      }
+      .area-free-order-section .entity-item {
+        min-height: 48px;
+        padding: 5px 10px 5px 18px;
+      }
+
+      .area-detail-editor .area-entity-section-header {
+        grid-template-columns: 18px 40px minmax(0, 1fr) 40px;
+        gap: 6px;
+        padding: 7px 8px 9px;
+      }
+      .area-detail-editor .area-entity-section-handle {
+        width: 18px;
+        height: 40px;
+      }
+      .area-detail-editor .area-entity-section-header > ha-icon {
+        width: 40px;
+        justify-self: center;
+        color: var(--area-group-color, var(--primary-color));
+        --mdc-icon-size: 23px;
+      }
+      .area-detail-editor .area-entity-section-title { font-size: 14px; }
+      .area-detail-editor .area-entity-section .entity-item {
+        padding-left: 18px;
+        background: color-mix(in srgb, var(--secondary-background-color) 44%, transparent);
+      }
+      .area-detail-editor .area-entity-section .entity-icon {
+        color: var(--secondary-text-color);
+      }
+      .area-detail-editor .area-entity-section .sortable-item:hover .entity-item {
+        background: color-mix(in srgb, var(--secondary-background-color) 72%, transparent);
+      }
+
+      @media (max-width: 700px) {
+        .persons-list {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .area-settings-sortable .dd-area-sortable-row .area-item {
+          grid-template-columns: 40px minmax(0, 1fr) 40px;
+        }
+
+        .area-settings-sortable.is-custom-order .dd-area-sortable-row .area-item {
+          grid-template-columns: 18px 40px minmax(0, 1fr) 40px;
+        }
+
+        .area-settings-sortable .area-icon {
+          width: 40px;
+          height: 40px;
+          --mdc-icon-size: 23px;
+        }
+
+        .area-settings-sortable .handle {
+          width: 18px;
+        }
+
+        .area-settings-sortable .area-actions {
+          width: 40px;
+        }
+      }
+
+      @media (max-width: 430px) {
+        .persons-list {
+          grid-template-columns: 1fr;
+        }
+      }
+
     `;
   }
 }

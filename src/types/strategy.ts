@@ -54,14 +54,11 @@ export interface DwainsDashboardSettings {
   /** Show the alarm chip for `alarm_entity_id`. Default on. */
   show_alarm?: boolean;
   show_weather?: boolean;
-  show_alarm?: boolean;
   show_time?: boolean;
   show_notifications?: boolean;
   show_suggested_favorites?: boolean;
   hidden_persons?: string[];
   hide_unavailable_entities?: boolean;
-  /** Hide the assigned area name when it appears at the start or end of generated entity names. */
-  hide_area_name_in_entity_names?: boolean;
   hide_unavailable_entities_on_devices?: boolean;
   /**
    * Drop the area name from entity names on pages and groups that already show

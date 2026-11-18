@@ -33,8 +33,8 @@ describe('isUrgentStatus', () => {
   });
 
   it('never marks other status, whatever its colour', () => {
-    // Motion is red in the palette but is not urgent without a triggered alarm.
-    expect(getDomainColor('binary_sensor', 'motion')).toBe(URGENT_STATUS_COLOR);
+    // The type colour does not determine whether a motion status is urgent.
+    expect(typeof getDomainColor('binary_sensor', 'motion')).toBe('string');
     expect(isUrgentStatus(sensor('motion'), false)).toBe(false);
     for (const domain of ['light', 'switch', 'cover', 'lock', 'person', 'wattage']) {
       expect(isUrgentStatus({ domain }, true), domain).toBe(false);

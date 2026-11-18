@@ -1,3 +1,4 @@
+import { mdiClose } from "@mdi/js";
 import { LitElement, html, css, PropertyValues, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
@@ -57,11 +58,6 @@ export interface DomainEntitiesDialogParams {
   entityIds?: string[];
   viewAllLabel?: string;
   onViewAll?: () => void;
-  /** Home-information popup; room/device presentation is chosen per caller. */
-  homeInformation?: boolean;
-  homeInformationPresentation?: 'room' | 'devices';
-  /** Concrete Devices-tab key used for matching header icon/color (e.g. cover_shading). */
-  deviceViewKey?: string;
   customTitle?: string;
   customEntities?: string[];
   customDescription?: string;
@@ -117,6 +113,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
 
   private _entityCards = new Map<string, HTMLElement>();
   private _updateInterval?: number;
+  private _mobileSheetAnimated = false;
   private _optimisticCleanupTimer?: number;
   private _sheetDrag = new SheetDragController(this, {
     getPanel: () => findDialogPanel(this.renderRoot?.querySelector('ha-dialog')),
@@ -403,6 +400,14 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       transition: transform 0.18s ease;
     }
 
+    .domain-entity-card.is-active .domain-entity-toggle {
+      background: var(--entity-color);
+    }
+
+    .domain-entity-card.is-active .domain-entity-toggle::before {
+      transform: translateX(16px);
+    }
+
     .domain-entity-more,
     .domain-lock-action {
       width: 30px;
@@ -424,12 +429,71 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       --mdc-icon-size: 17px;
     }
 
+    .domain-cover-actions {
+      min-height: 32px;
+      padding: 3px;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      flex: 0 0 auto;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--secondary-background-color) 74%, #ffffff);
+      box-shadow:
+        inset 0 0 0 1px rgba(15, 23, 42, 0.055),
+        0 6px 14px rgba(15, 23, 42, 0.08);
+    }
+
+    .domain-cover-action {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      color: color-mix(in srgb, var(--primary-text-color) 58%, transparent);
+      background: transparent;
+    }
+
+    .domain-cover-action.active {
+      color: #ffffff;
+      background: var(--entity-color);
+      box-shadow: 0 6px 12px color-mix(in srgb, var(--entity-color) 22%, transparent);
+    }
+
+    .domain-cover-action ha-icon {
+      --mdc-icon-size: 16px;
+    }
+
+    .domain-entity-copy {
+      min-width: 0;
+    }
+
     .domain-entity-meta {
       margin-bottom: 3px;
       color: color-mix(in srgb, var(--secondary-text-color) 78%, transparent);
       font-size: 11px;
       font-weight: 800;
       line-height: 1.1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .domain-entity-name {
+      color: var(--primary-text-color);
+      font-size: 15px;
+      font-weight: 850;
+      line-height: 1.05;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .domain-entity-status {
+      margin-top: 5px;
+      color: color-mix(in srgb, var(--secondary-text-color) 84%, transparent);
+      font-size: 12px;
+      font-weight: 760;
+      line-height: 1.15;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -493,28 +557,14 @@ export class DwainsDomainEntitiesDialog extends LitElement {
         border-radius: 14px;
       }
 
-    .area-icon ha-icon {
-      --mdc-icon-size: 17px;
-    }
-
-    .area-name {
-      font-size: 15px;
-      font-weight: 850;
-    }
-
-    .entity-count {
-      font-size: 11px;
-    }
-
-    .entities-grid {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 9px;
-      padding: 10px 12px 12px;
-    }
-
-    @media (max-width: 900px) and (min-width: 601px) {
       .entities-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        padding: 12px;
+      }
+
+      .domain-entity-card {
+        min-height: 126px;
       }
     }
   `, homeInformationDialogStyles, roomActionStyles];
@@ -522,6 +572,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
   public async showDialog(params: DomainEntitiesDialogParams): Promise<void> {
     this._params = params;
     this._loading = true;
+    this._mobileSheetAnimated = false;
     await this._loadEntities();
   }
 
@@ -530,6 +581,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     this._groupedEntities = {};
     this._optimisticEntityStates = {};
     this._entityCards.clear();
+    this._mobileSheetAnimated = false;
     if (this._updateInterval) {
       clearInterval(this._updateInterval);
       this._updateInterval = undefined;
@@ -549,6 +601,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       this._updateEntityCards();
     }
 
+    this._animateMobileSheetIn();
   }
 
   override connectedCallback(): void {
@@ -613,9 +666,8 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       const assignedAreaId = entityAreas?.[entityId];
       const entityAreaId = assignedAreaId || resolveStatusEntityAreaId(this.hass, config, entityId, entityConfig);
 
-      // Persons are grouped by presence/location and therefore do not need
-      // an HA area assignment. Area-based domains still require one.
-      if (domain !== 'person' && !entityAreaId) return;
+      // Skip entities without area
+      if (!entityAreaId) return;
 
       // Check area filter if specified
       if (areaId && entityAreaId !== areaId) return;
@@ -640,7 +692,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
 
       entities.push({
         entity_id: entityId,
-        ...(entityAreaId ? { area_id: entityAreaId } : {}),
+        area_id: entityAreaId,
         hidden: false
       });
     });
@@ -738,7 +790,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     let domainTitle = customTitle || this._getLocalizedDomainTitle(domain);
     if (filterByUnitOfMeasurement === 'W') {
       domainTitle = this._t('dialog.power_sensors');
-    } else if (deviceClass && !customTitle) {
+    } else if (deviceClass) {
       const deviceClassTitles: Record<string, string> = {
         motion: this._t('dialog.motion_sensors'),
         door: this._t('dialog.door_sensors'),
@@ -806,7 +858,7 @@ export class DwainsDomainEntitiesDialog extends LitElement {
             : this._renderContent()
           }
         </div>
-      </dd-next-popup-shell>
+      </ha-dialog>
     `;
   }
 
@@ -1044,16 +1096,18 @@ export class DwainsDomainEntitiesDialog extends LitElement {
   private _renderViewAllAction() {
     if (!this._params?.onViewAll) return nothing;
 
-    const config = this._params.config;
-    const orderedAreas = sortAreas(config?.areas || [], config?.areas_display, ddLocale(this.hass));
-    const areaOrder = new Map(orderedAreas.map((area, index) => [area.area_id, index]));
-
-    return [...entries].sort(([aId, a], [bId, b]) => {
-      const aOrder = areaOrder.get(aId) ?? Number.MAX_SAFE_INTEGER;
-      const bOrder = areaOrder.get(bId) ?? Number.MAX_SAFE_INTEGER;
-      if (aOrder !== bOrder) return aOrder - bOrder;
-      return a.areaName.localeCompare(b.areaName);
-    });
+    return html`
+      <div class="domain-actions">
+        <button
+          class="dialog-view-all"
+          type="button"
+          @click=${this._handleViewAll}
+        >
+          <span>${this._params.viewAllLabel || this._t('common.view_all')}</span>
+          <ha-icon icon="mdi:chevron-right"></ha-icon>
+        </button>
+      </div>
+    `;
   }
 
   private _handleViewAll = (): void => {
@@ -1165,39 +1219,22 @@ export class DwainsDomainEntitiesDialog extends LitElement {
       ? 'mdi:account-group'
       : getAreaConfigMap(this._params?.config).get(_areaId)?.icon || '';
 
-    const bulkToggle = ['light', 'switch', 'fan', 'input_boolean'].includes(kind);
     return html`
-      <div class="area-section ${compactRoom ? 'half-room' : 'full-room'}">
-        ${showAreaHeader ? html`<div class="area-header">
+      <div class="area-section">
+        <div class="area-header">
           ${areaIcon ? html`
-            <div class="area-icon"><ha-icon icon="${areaIcon}"></ha-icon></div>
+            <div class="area-icon">
+              <ha-icon icon="${areaIcon}"></ha-icon>
+            </div>
           ` : nothing}
           <div class="area-name">${group.areaName}</div>
-          ${bulkToggle ? html`
-            <button class="area-master-toggle" type="button"
-              style=${`--entity-color: ${this._entityColor(kind)};`}
-              title=${allOn ? this._t('action.turn_off_all') : this._t('action.turn_on_all')}
-              @click=${(event: Event) => {
-                event.stopPropagation();
-                void this._runBulkDomainAction(
-                  roomEntityIds,
-                  allOn ? 'turn_off' : 'turn_on',
-                  allOn ? this._t('action.turn_off_all') : this._t('action.turn_on_all'),
-                  false
-                );
-              }}>
-              <span>${activeCount}/${group.entities.length}</span>
-              <span class="area-master-track ${allOn ? 'is-on' : ''}"></span>
-            </button>
-          ` : (this._params?.homeInformation && (kind === 'sensor' || kind === 'climate'))
-            ? nothing
-            : html`<div class="entity-count">${group.entities.length}</div>`}
-        </div>` : nothing}
+          <div class="entity-count">${group.entities.length}</div>
+        </div>
         <div class="entities-grid">
           ${repeat(
             group.entities,
             entity => entity.entity_id,
-            entity => this._renderEntityCard(entity)
+            entity => this._renderEntityCard(entity, group.areaName)
           )}
         </div>
       </div>
@@ -1208,73 +1245,8 @@ export class DwainsDomainEntitiesDialog extends LitElement {
     const rawState = this.hass.states[entity.entity_id];
     if (!rawState) return nothing;
 
-    const domain = entity.entity_id.split('.')[0] || 'unknown';
-
-    if (this._params?.homeInformationPresentation === 'devices' &&
-        !['person', 'light', 'cover', 'climate', 'sensor'].includes(domain)) {
-      const state = this._getEffectiveEntityState(rawState);
-      const deviceClass = state.attributes?.device_class;
-      const rawName = state.attributes?.friendly_name ||
-        this.hass.entities?.[entity.entity_id]?.name || entity.entity_id;
-      const areaName = this._entityAreaName(entity);
-      const name = this._params.config?.settings?.hide_area_name_in_entity_names === true
-        ? stripAreaNameFromEntityName(rawName, areaName)
-        : rawName;
-      const active = this._isEntityActiveForUi(state, domain);
-      const unavailable = this._isUnavailable(state);
-      const canToggle = ['switch', 'fan', 'input_boolean'].includes(domain);
-      return renderCompactDeviceTile({
-        name,
-        status: formatEntityStateWithUnit(this.hass, state),
-        icon: this.hass.entities?.[entity.entity_id]?.icon || state.attributes?.icon ||
-          getDeviceClassIcon(domain, deviceClass) || getDomainIcon(domain),
-        accent: this._entityColor(domain, deviceClass),
-        active,
-        unavailable,
-        toggle: canToggle,
-        onOpen: () => this._showMoreInfo(entity.entity_id),
-        onToggle: () => void this._runBulkDomainAction(
-          [entity.entity_id],
-          active ? 'turn_off' : 'turn_on',
-          this._t(active ? 'action.turn_off' : 'action.turn_on'),
-          false
-        ),
-        turnOnLabel: this._t('action.turn_on'),
-        turnOffLabel: this._t('action.turn_off'),
-      });
-    }
-
-    if (this._params?.homeInformationPresentation === 'devices') {
-      const replacement = findReplacementAssignment({
-        hass: this.hass,
-        config: this._params.config,
-        entity,
-        surface: 'devices_cards',
-      });
-      // House Information renders the same Devices card host for supported domains.
-      const sharedDeviceCard = ['person', 'light', 'cover', 'climate', 'sensor', 'switch', 'binary_sensor', 'fan', 'input_boolean', 'lock'].includes(domain) ||
-        (replacement && replacement.enabled !== false);
-
-      if (sharedDeviceCard) {
-        const rawName = rawState.attributes?.friendly_name ||
-          this.hass.entities?.[entity.entity_id]?.name ||
-          entity.entity_id;
-        return html`
-          <dd-next-device-entity-card
-            class="entity-card-wrapper ${domain}-entity-card"
-            .hass=${this.hass}
-            .config=${this._params.config}
-            .entityId=${entity.entity_id}
-            .popup=${true}
-            .areaName=${this._entityAreaName(entity)}
-            .displayName=${rawName}
-            @dd-more-info=${(event: CustomEvent<{ entityId: string }>) => this._showMoreInfo(event.detail.entityId)}
-          ></dd-next-device-entity-card>
-        `;
-      }
-    }
-
     const state = this._getEffectiveEntityState(rawState);
+    const domain = entity.entity_id.split('.')[0] || 'unknown';
     if (domain === 'todo') {
       return html`
         <div class="domain-todo-list-card" data-entity=${entity.entity_id}>
@@ -1757,9 +1729,6 @@ export class DwainsDomainEntitiesDialog extends LitElement {
   }
 
   private _entityColor(domain: string, deviceClass?: string): string {
-    if (domain === 'sensor' && (deviceClass === 'temperature' || deviceClass === 'humidity')) {
-      return getDomainColor(deviceClass, deviceClass);
-    }
     return getDomainColor(domain, deviceClass);
   }
 
