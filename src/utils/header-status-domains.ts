@@ -30,6 +30,11 @@ export interface DomainCount {
   urgent?: boolean;
 }
 
+function entityDomain(entityId: string): string {
+  const dot = entityId.indexOf('.');
+  return dot === -1 ? entityId : entityId.slice(0, dot);
+}
+
 // Constants for state checks
 const STATES_OFF = ['closed', 'locked', 'off', 'false', 'not_home', 'idle'];
 const UNAVAILABLE_STATES = ['unavailable', 'unknown'];
@@ -177,6 +182,27 @@ export function getGroupMemberIds(state: HassEntity | undefined): string[] {
  * registry and the dashboard config only, not by the member's current
  * state, so the counts do not jump when a member becomes unavailable.
  */
+export function shouldSkipGroupEntity(
+  state: HassEntity,
+  isMemberCounted: (memberId: string) => boolean
+): boolean {
+  const members = getGroupMemberIds(state);
+  return members.length > 0 && members.some(isMemberCounted);
+}
+
+/**
+ * Members of a group entity, limited to the group's own domain.
+ */
+export function getGroupMemberIds(state: HassEntity | undefined): string[] {
+  const members = state?.attributes?.entity_id;
+  if (!Array.isArray(members)) return [];
+  const domain = entityDomain(state!.entity_id);
+  return members.filter((member): member is string =>
+    typeof member === 'string' && member !== state!.entity_id && entityDomain(member) === domain
+  );
+}
+
+/** Skip a group when at least one of its members is counted on its own. */
 export function shouldSkipGroupEntity(
   state: HassEntity,
   isMemberCounted: (memberId: string) => boolean
@@ -350,7 +376,7 @@ export function getStatusDomains(hass: HomeAssistant, config: any): DomainCount[
         result.push({
           domain: 'person',
           count: personData.on,
-          name: `${personData.on}/${personData.total} ${ddLocalize(hass, 'person.home').toLowerCase()}`,
+          name: ddLocalize(hass, 'person.home'),
           icon: config.icon
         });
       }
@@ -387,6 +413,24 @@ export function getStatusDomains(hass: HomeAssistant, config: any): DomainCount[
           entities: data.entities
         });
       }
+    }
+  });
+
+  // Covers are status-oriented here: windows, doors and gates are shown when
+  // open; shading is shown in its relevant closed/protective state. Unknown
+  // cover types stay out of House information instead of falling back to the
+  // broad "Covers" label.
+  Object.values(coverStatusCounts).forEach((data) => {
+    if (data.total > 0 && data.on > 0) {
+      result.push({
+        domain: 'cover',
+        deviceClass: data.deviceClass,
+        statusKind: data.statusKind,
+        count: data.on,
+        name: data.name,
+        icon: data.icon,
+        entities: data.entities,
+      });
     }
   });
 

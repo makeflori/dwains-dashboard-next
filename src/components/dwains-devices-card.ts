@@ -1,4 +1,4 @@
-import { LitElement, html, css, nothing, type PropertyValues } from 'lit';
+import { LitElement, html, css, unsafeCSS, nothing, type PropertyValues } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { repeat } from 'lit/directives/repeat.js';
@@ -200,6 +200,7 @@ export class DwainsDevicesCard extends LitElement {
     window.addEventListener(TRANSLATIONS_LOADED_EVENT, this._handleTranslationsLoaded);
     window.addEventListener('resize', this._resizeHandler);
     window.addEventListener('dwains-dashboard-next-toggle-devices-nav', this._handleDevicesNavToggle);
+    window.addEventListener('dwains-dashboard-next-mobile-nav-sheet', this._handleMobileNavSheet as EventListener);
     window.addEventListener('dwains-dashboard-next-select-device-domain', this._handleSelectDeviceDomain as EventListener);
     window.addEventListener('dwains-dashboard-next-open-devices-overview', this._handleOpenOverview);
     window.addEventListener('location-changed', this._locationHandler);
@@ -219,6 +220,7 @@ export class DwainsDevicesCard extends LitElement {
     window.removeEventListener(TRANSLATIONS_LOADED_EVENT, this._handleTranslationsLoaded);
     window.removeEventListener('resize', this._resizeHandler);
     window.removeEventListener('dwains-dashboard-next-toggle-devices-nav', this._handleDevicesNavToggle);
+    window.removeEventListener('dwains-dashboard-next-mobile-nav-sheet', this._handleMobileNavSheet as EventListener);
     window.removeEventListener('dwains-dashboard-next-select-device-domain', this._handleSelectDeviceDomain as EventListener);
     window.removeEventListener('dwains-dashboard-next-open-devices-overview', this._handleOpenOverview);
     window.removeEventListener('location-changed', this._locationHandler);
@@ -418,9 +420,120 @@ export class DwainsDevicesCard extends LitElement {
     }
 
     this._addPersonData(data);
+
+    data.forEach((byArea) => {
+      byArea.forEach((bucket) => {
+        bucket.entities = this._sortDeviceAreaEntities(bucket.area.area_id, bucket.entities);
+      });
+    });
+
     this._hiddenDeviceTypes().forEach((typeKey) => data.delete(typeKey));
 
     return data;
+  }
+
+  private _deviceEntityGroupKey(entityId: string): string {
+    return getAreaEntityGroupKey(entityId, this._hass) || this._typeKeyFor(entityId) || entityId.split('.')[0] || 'other';
+  }
+
+  private _deviceGroupOrderIndex(areaId: string, groupKey: string): number {
+    const configuredOrder = this.config?.areas_options?.[areaId]?.group_order || [];
+
+    const direct = configuredOrder.indexOf(groupKey);
+    if (direct >= 0) return direct;
+
+    if (groupKey === 'cover_gates' && configuredOrder.includes('cover_shading')) {
+      return configuredOrder.indexOf('cover_shading');
+    }
+
+    if (
+      ['cover_openings', 'cover_shading', 'cover_gates'].includes(groupKey) &&
+      configuredOrder.includes('cover')
+    ) {
+      return configuredOrder.indexOf('cover');
+    }
+
+    if ((AREA_STRATEGY_GROUPS as readonly string[]).includes(groupKey)) {
+      const legacy = configuredOrder.indexOf(getLegacyAreaGroupKey(groupKey as AreaStrategyGroup));
+      if (legacy >= 0) return legacy;
+    }
+
+    const defaultIndex = (AREA_STRATEGY_GROUPS as readonly string[]).indexOf(groupKey);
+    return defaultIndex >= 0 ? configuredOrder.length + defaultIndex : Number.MAX_SAFE_INTEGER;
+  }
+
+  private _deviceConfiguredEntityOrder(areaId: string, groupKey: string): string[] {
+    const areaOptions = this.config?.areas_options?.[areaId];
+    if (!areaOptions) return [];
+
+    if (areaOptions.entity_layout === 'ungrouped') {
+      return areaOptions.entity_order || [];
+    }
+
+    const groupsOptions = areaOptions.groups_options || {};
+    const direct = groupsOptions[groupKey]?.order;
+    if (direct?.length) return direct;
+
+    if (groupKey === 'cover_gates') {
+      const formerCombined = groupsOptions.cover_shading?.order;
+      if (formerCombined?.length) return formerCombined;
+    }
+
+    if (['cover_openings', 'cover_shading', 'cover_gates'].includes(groupKey)) {
+      const formerCover = groupsOptions.cover?.order;
+      if (formerCover?.length) return formerCover;
+    }
+
+    if ((AREA_STRATEGY_GROUPS as readonly string[]).includes(groupKey)) {
+      const legacy = groupsOptions[getLegacyAreaGroupKey(groupKey as AreaStrategyGroup)]?.order;
+      if (legacy?.length) return legacy;
+    }
+
+    return [];
+  }
+
+  private _sortDeviceAreaEntities(areaId: string, entities: EntityConfig[]): EntityConfig[] {
+    const collator = new Intl.Collator(ddLocale(this._hass), { sensitivity: 'base', numeric: true });
+
+    return [...entities].sort((a, b) => {
+      const groupA = this._deviceEntityGroupKey(a.entity_id);
+      const groupB = this._deviceEntityGroupKey(b.entity_id);
+
+      if (groupA !== groupB) {
+        const rankA = this._deviceGroupOrderIndex(areaId, groupA);
+        const rankB = this._deviceGroupOrderIndex(areaId, groupB);
+        if (rankA !== rankB) return rankA - rankB;
+      }
+
+      const order = this._deviceConfiguredEntityOrder(areaId, groupA);
+      if (groupA === groupB && order.length) {
+        const indexA = order.indexOf(a.entity_id);
+        const indexB = order.indexOf(b.entity_id);
+        if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+        if (indexA !== -1) return -1;
+        if (indexB !== -1) return 1;
+      }
+
+      const nameA = this._hass.states[a.entity_id]?.attributes?.friendly_name ||
+        this._hass.entities?.[a.entity_id]?.name ||
+        a.entity_id;
+      const nameB = this._hass.states[b.entity_id]?.attributes?.friendly_name ||
+        this._hass.entities?.[b.entity_id]?.name ||
+        b.entity_id;
+
+      const deviceIdA = a.device_id || (this._hass.entities?.[a.entity_id] as any)?.device_id || '';
+      const deviceIdB = b.device_id || (this._hass.entities?.[b.entity_id] as any)?.device_id || '';
+      if (deviceIdA !== deviceIdB) {
+        const deviceName = (deviceId: string, fallback: string) => {
+          if (!deviceId) return fallback;
+          return this.config?.devices?.find(item => item.device_id === deviceId)?.name || deviceId;
+        };
+        const byDevice = collator.compare(deviceName(deviceIdA, String(nameA)), deviceName(deviceIdB, String(nameB)));
+        if (byDevice !== 0) return byDevice;
+      }
+
+      return collator.compare(String(nameA), String(nameB));
+    });
   }
 
   private _buildMaintenanceData(): Map<string, MaintenanceBucket> {
@@ -461,10 +574,15 @@ export class DwainsDevicesCard extends LitElement {
     });
 
     buckets.forEach((bucket) => {
-      bucket.items.sort((a, b) => {
-        if (a.kind !== b.kind) return a.kind === 'unavailable' ? -1 : 1;
-        return a.name.localeCompare(b.name);
-      });
+      const orderedIds = this._sortDeviceAreaEntities(
+        bucket.area.area_id,
+        bucket.items.map((item) => ({ entity_id: item.entityId, area_id: bucket.area.area_id, hidden: false }))
+      ).map((entity) => entity.entity_id);
+      const orderIndex = new Map(orderedIds.map((entityId, index) => [entityId, index]));
+      bucket.items.sort((a, b) =>
+        (orderIndex.get(a.entityId) ?? Number.MAX_SAFE_INTEGER) -
+        (orderIndex.get(b.entityId) ?? Number.MAX_SAFE_INTEGER)
+      );
     });
 
     return buckets;
@@ -643,11 +761,13 @@ export class DwainsDevicesCard extends LitElement {
       }));
   }
 
-  // Type-sleutel per entiteit: binary_sensors splitsen we op device-class
-  // (motion → "Motion"), de rest groepeert op domein.
+  // Device types use the same concrete grouping model as the room view.
   private _typeKeyFor(entityId: string): string | undefined {
     const domain = entityId.split('.')[0];
     if (!domain) return undefined;
+    if (domain === 'cover') {
+      return getAreaEntityGroupKey(entityId, this._hass) || 'cover_shading';
+    }
     if (domain === 'binary_sensor') {
       const dc = this._hass?.states?.[entityId]?.attributes?.device_class;
       if (dc) return `binary_sensor.${dc}`;
@@ -680,6 +800,9 @@ export class DwainsDevicesCard extends LitElement {
     if (key === ENERGY_KEY) return 'mdi:flash';
     if (key === DEVICES_OVERVIEW_KEY) return 'mdi:view-grid-outline';
     if (key === PERSON_DOMAIN) return 'mdi:account-group';
+    if (key === 'cover_openings') return 'mdi:door-open';
+    if (key === 'cover_shading') return 'mdi:blinds-horizontal';
+    if (key === 'cover_gates') return 'mdi:gate';
     if (key.startsWith('binary_sensor.')) {
       return getDeviceClassIcon('binary_sensor', key.slice('binary_sensor.'.length));
     }
@@ -688,8 +811,11 @@ export class DwainsDevicesCard extends LitElement {
 
   private _typeColor(key: string): string {
     if (key === MAINTENANCE_KEY) return 'var(--warning-color, #ff9800)';
-    if (key === ENERGY_KEY) return '#d88e20';
+    if (key === ENERGY_KEY) return getDomainColor('energy');
     if (key === DEVICES_OVERVIEW_KEY) return 'var(--primary-color)';
+    if (key === 'cover_openings' || key === 'cover_shading' || key === 'cover_gates') {
+      return getDomainColor('cover');
+    }
     if (key.startsWith('binary_sensor.')) {
       return getDomainColor('binary_sensor', key.slice('binary_sensor.'.length));
     }
@@ -1095,6 +1221,16 @@ export class DwainsDevicesCard extends LitElement {
         </div>
       </nav>
     `;
+    return this._isMobile ? html`
+      <dd-next-popup-shell
+        .open=${this._mobileNavOpen}
+        .navigationMenu=${true}
+        .titleText=${this._t('devices.title')}
+        icon="mdi:format-list-bulleted-type"
+        .closeLabel=${this._t('common.close')}
+        @dd-close=${this._closeMobileNav}
+      >${content}</dd-next-popup-shell>
+    ` : content;
   }
 
   private _renderDevicesOverview(groups: DeviceGroupCard[]) {
@@ -1195,14 +1331,24 @@ export class DwainsDevicesCard extends LitElement {
 
     const byArea = data.get(domain);
     if (!byArea) return nothing;
+    const roomStyle = !this._isSpecialDeviceType(domain);
 
     // Areas in zichtbare, gesorteerde volgorde (gefilterd op aanwezigheid).
     const orderedAreas = domain === PERSON_DOMAIN
       ? [...byArea.values()].map((bucket) => bucket.area)
       : this._getVisibleSortedAreas().filter((a) => byArea.has(a.area_id));
+    const allEntities = [...byArea.values()].flatMap((bucket) => bucket.entities);
+    const personEntities = domain === PERSON_DOMAIN
+      ? [...new Map(allEntities.map((entity) => [entity.entity_id, entity])).values()]
+      : [];
+    const personArea = orderedAreas[0] || {
+      area_id: PERSON_AREA_KEY,
+      name: '',
+      icon: 'mdi:account-group',
+    };
 
     return html`
-      <div class="device-view">
+      <div class="device-view ${roomStyle ? 'room-style-device-view' : 'special-device-view'}">
         ${this._renderDevicePageHeader({
           icon: this._typeIcon(domain),
           title: this._typeName(domain),
@@ -1229,9 +1375,35 @@ export class DwainsDevicesCard extends LitElement {
                   (entity) => this._renderEntityCard(entity, domain === PERSON_DOMAIN ? undefined : area.name)
                 )}
               </div>
-            </div>
-          `;
-        })}
+            `
+          : html`
+              <div class="device-room-groups">
+                ${orderedAreas.map((area) => {
+                  const bucket = byArea.get(area.area_id)!;
+                  const compactRoom = bucket.entities.length <= 2;
+                  return html`
+                    <dd-next-room-group
+                      class="device-room-group ${compactRoom ? 'half-room' : 'full-room'}"
+                      .name=${area.name}
+                      .icon=${getAreaIcon(area)}
+                      .accent=${this._roomAccent(area)}
+                      .compact=${compactRoom}
+                    >
+                      <span slot="actions">${this._renderDeviceRoomActions(domain, bucket.entities)}</span>
+                      <div class=${this._entitiesGridClass(domain, roomStyle)}>
+                        ${repeat(
+                          bucket.entities,
+                          (e) => e.entity_id,
+                          (entity) => roomStyle
+                            ? this._renderRoomStyleEntityCard(entity, area)
+                            : this._renderEntityCard(entity, area)
+                        )}
+                      </div>
+                    </dd-next-room-group>
+                  `;
+                })}
+              </div>
+            `}
       </div>
     `;
   }
@@ -1373,17 +1545,13 @@ export class DwainsDevicesCard extends LitElement {
 
         ${orderedBuckets.length
           ? orderedBuckets.map((bucket) => html`
-              <div class="maintenance-area-group">
-                <button
-                  class="maintenance-area-title"
-                  type="button"
-                  @click=${() => this._navigateToArea(bucket.area.area_id)}
-                  ?disabled=${bucket.area.area_id === MAINTENANCE_AREA_KEY}
-                >
-                  <span>${bucket.area.name}</span>
-                  <span>${bucket.items.length}</span>
-                  <ha-icon icon="mdi:chevron-right"></ha-icon>
-                </button>
+              <div class="domain-group maintenance-area-group">
+                <div class="domain-header">
+                  <div class="domain-header-title">
+                    <ha-icon icon="mdi:floor-plan"></ha-icon>
+                    <span>${bucket.area.name}</span>
+                  </div>
+                </div>
                 <div class="maintenance-grid">
                   ${repeat(
                     bucket.items,
@@ -1455,6 +1623,9 @@ export class DwainsDevicesCard extends LitElement {
     const state = this._hass.states[entity.entity_id];
     if (!state) return nothing;
 
+  private _renderDeviceGlobalActions(typeKey: string, entities: EntityConfig[]) {
+    const domain = this._deviceGroupDomain(typeKey);
+    if (!domain || !entities.length) return nothing;
     return html`
       <div class="${this._entityWrapperClass(entity.entity_id)}">
         <dwains-dashboard-next-card-host
@@ -1465,12 +1636,231 @@ export class DwainsDevicesCard extends LitElement {
     `;
   }
 
-  private _entitiesGridClass(typeKey: string): string {
+  private _renderDeviceRoomActions(typeKey: string, entities: EntityConfig[]) {
+    const domain = this._deviceGroupDomain(typeKey);
+    if (!domain || !entities.length) return nothing;
+
+    const activeCount = entities.filter((entity) => {
+      const state = this._hass.states?.[entity.entity_id];
+      return state && this._roomStyleEntityActive(state, domain);
+    }).length;
+
+    if (['light', 'switch', 'fan', 'input_boolean'].includes(domain)) {
+      return html`
+        <dd-next-room-actions
+          mode="toggle"
+          .accent=${getDomainColor(domain)}
+          .activeCount=${activeCount}
+          .totalCount=${entities.length}
+          .toggleOnLabel=${this._t('action.turn_on_all')}
+          .toggleOffLabel=${this._t('action.turn_off_all')}
+          @dd-action=${(event: CustomEvent<{ action: string }>) =>
+            void this._runDeviceBulkAction(entities, event.detail.action)}
+        ></dd-next-room-actions>
+      `;
+    }
+
+    if (domain === 'cover' || domain === 'lock') {
+      const active = activeCount > 0;
+      const items = domain === 'cover'
+        ? [
+            { action: 'open_cover', label: this._t('action.open_all'), icon: 'mdi:arrow-up', active },
+            { action: 'close_cover', label: this._t('action.close_all'), icon: 'mdi:arrow-down', active: !active },
+          ]
+        : [
+            { action: 'lock', label: this._t('action.lock_all'), icon: 'mdi:lock-outline', active: !active },
+            { action: 'unlock', label: this._t('action.unlock_all'), icon: 'mdi:lock-open-variant-outline', active },
+          ];
+
+      return html`
+        <dd-next-room-actions
+          mode="segmented"
+          .accent=${getDomainColor(domain)}
+          .items=${items}
+          @dd-action=${(event: CustomEvent<{ action: string }>) =>
+            void this._runDeviceBulkAction(entities, event.detail.action)}
+        ></dd-next-room-actions>
+      `;
+    }
+
+    return nothing;
+  }
+
+  private _renderDeviceBulkButtons(domain: string, entities: EntityConfig[], withLabels: boolean) {
+    const button = (label: string, icon: string, action: string) => html`
+      <button
+        class="device-bulk-action ${withLabels ? 'with-label' : 'icon-only'}"
+        type="button"
+        title=${label}
+        aria-label=${label}
+        style=${`--domain-color: ${getDomainColor(domain)};`}
+        @click=${(event: Event) => {
+          event.stopPropagation();
+          void this._runDeviceBulkAction(entities, action);
+        }}
+      >
+        <ha-icon icon=${icon}></ha-icon>
+        ${withLabels ? html`<span>${label}</span>` : nothing}
+      </button>
+    `;
+
+    if (['light', 'switch', 'fan', 'input_boolean'].includes(domain)) {
+      return html`
+        ${button(this._t('action.turn_on_all'), 'mdi:power', 'turn_on')}
+        ${button(this._t('action.turn_off_all'), 'mdi:power-off', 'turn_off')}
+      `;
+    }
+    if (domain === 'cover') {
+      return html`
+        ${button(this._t('action.open_all'), 'mdi:arrow-up', 'open_cover')}
+        ${button(this._t('action.close_all'), 'mdi:arrow-down', 'close_cover')}
+      `;
+    }
+    if (domain === 'lock') {
+      return html`
+        ${button(this._t('action.unlock_all'), 'mdi:lock-open-variant-outline', 'unlock')}
+        ${button(this._t('action.lock_all'), 'mdi:lock-outline', 'lock')}
+      `;
+    }
+    return nothing;
+  }
+
+  private async _runDeviceBulkAction(entities: EntityConfig[], action: string): Promise<void> {
+    const grouped = new Map<string, string[]>();
+    for (const entity of entities) {
+      if (!this._hass.states?.[entity.entity_id]) continue;
+      const domain = entity.entity_id.split('.')[0] || '';
+      const ids = grouped.get(domain) || [];
+      ids.push(entity.entity_id);
+      grouped.set(domain, ids);
+    }
+
+    try {
+      for (const [domain, entityIds] of grouped) {
+        if (['light', 'switch', 'fan', 'input_boolean'].includes(domain) && ['turn_on', 'turn_off'].includes(action)) {
+          await this._hass.callService(domain, action, { entity_id: entityIds });
+        } else if (domain === 'cover' && ['open_cover', 'close_cover'].includes(action)) {
+          await this._hass.callService('cover', action, { entity_id: entityIds });
+        } else if (domain === 'lock' && ['lock', 'unlock'].includes(action)) {
+          await this._hass.callService('lock', action, { entity_id: entityIds });
+        }
+      }
+    } catch (error) {
+      console.warn(`Failed to run device bulk action ${action}`, error);
+    }
+  }
+
+  private _renderEntityCard(entity: EntityConfig, area: AreaConfig) {
+    if (!this._hass.states[entity.entity_id]) return nothing;
+    return html`
+      <dd-next-device-entity-card
+        class="${this._entityWrapperClass(entity.entity_id)}"
+        .hass=${this._hass}
+        .config=${this.config}
+        .entityId=${entity.entity_id}
+        .areaName=${area.name}
+        @dd-more-info=${(event: CustomEvent<{ entityId: string }>) => this._showMoreInfo(event.detail.entityId)}
+      ></dd-next-device-entity-card>
+    `;
+  }
+
+  private _isSpecialDeviceType(typeKey: string): boolean {
+    return ['light', 'cover', 'cover_openings', 'cover_shading', 'cover_gates', 'climate', 'sensor'].includes(typeKey);
+  }
+
+  private _renderRoomStyleEntityCard(entity: EntityConfig, area: AreaConfig) {
+    const state = this._hass.states[entity.entity_id];
+    if (!state) return nothing;
+
+    const replacement = findReplacementAssignment({
+      hass: this._hass,
+      config: this.config,
+      entity,
+      surface: 'devices_cards',
+    });
+    if (replacement && replacement.enabled !== false) {
+      return html`
+        <div class="entity-card-wrapper room-style-replacement-card">
+          <dwains-dashboard-next-card-host
+            framed
+            .hass=${this._hass}
+            .config=${this._entityCardConfig(entity.entity_id)}
+          ></dwains-dashboard-next-card-host>
+        </div>
+      `;
+    }
+
+    const domain = entity.entity_id.split('.')[0] || 'unknown';
+    const deviceClass = state.attributes?.device_class;
+    const rawName = state.attributes?.friendly_name ||
+      this._hass.entities?.[entity.entity_id]?.name ||
+      entity.entity_id;
+    const name = this.config?.settings?.hide_area_name_in_entity_names === true
+      ? stripAreaNameFromEntityName(rawName, area.name)
+      : rawName;
+
+    if (domain === 'person') {
+      return html`
+        <dd-next-device-entity-card
+          .hass=${this._hass}
+          .config=${this.config}
+          .entityId=${entity.entity_id}
+          .areaName=${area.name}
+          .displayName=${name}
+          @dd-more-info=${(event: CustomEvent<{ entityId: string }>) => this._showMoreInfo(event.detail.entityId)}
+        ></dd-next-device-entity-card>
+      `;
+    }
+
+    const icon = this._hass.entities?.[entity.entity_id]?.icon ||
+      state.attributes?.icon ||
+      getDeviceClassIcon(domain, deviceClass) ||
+      getDomainIcon(domain);
+    const active = this._roomStyleEntityActive(state, domain);
+    const unavailable = ['unavailable', 'unknown'].includes(String(state.state).toLowerCase()) &&
+      !['scene', 'event'].includes(domain);
+    const canToggle = ['switch', 'fan', 'input_boolean'].includes(domain);
+
+    return renderCompactDeviceTile({
+      name,
+      status: formatEntityStateWithUnit(this._hass, state),
+      icon,
+      accent: getDomainColor(domain, deviceClass),
+      active,
+      unavailable,
+      toggle: canToggle,
+      onOpen: () => this._showMoreInfo(entity.entity_id),
+      onToggle: () => void this._toggleRoomStyleEntity(entity.entity_id, domain, active),
+      turnOnLabel: this._t('action.turn_on'),
+      turnOffLabel: this._t('action.turn_off'),
+    });
+  }
+
+  private _roomStyleEntityActive(state: any, domain: string): boolean {
+    const value = String(state?.state || '').toLowerCase();
+    if (domain === 'lock') return value === 'unlocked';
+    if (domain === 'person') return value === 'home';
+    if (domain === 'binary_sensor') return value === 'on';
+    return ['on', 'open', 'opening', 'playing', 'active', 'home'].includes(value);
+  }
+
+  private async _toggleRoomStyleEntity(entityId: string, domain: string, active: boolean): Promise<void> {
+    const serviceDomain = domain === 'input_boolean' ? 'input_boolean' : domain;
+    try {
+      await this._hass.callService(serviceDomain, active ? 'turn_off' : 'turn_on', { entity_id: entityId });
+    } catch (error) {
+      console.warn(`Failed to toggle ${entityId} from Devices view`, error);
+    }
+  }
+
+  private _entitiesGridClass(typeKey: string, roomStyle = false): string {
     return [
       'entities-grid',
-      typeKey === 'cover' ? 'cover-entities-grid' : '',
+      roomStyle ? 'room-style-entities-grid' : 'special-entities-grid',
+      (typeKey === 'cover' || typeKey.startsWith('cover_')) ? 'cover-entities-grid' : '',
       typeKey === 'light' ? 'light-entities-grid' : '',
       typeKey === 'sensor' ? 'sensor-entities-grid' : '',
+      typeKey === 'climate' ? 'climate-entities-grid' : '',
       typeKey === 'binary_sensor.motion' ? 'motion-entities-grid' : '',
       typeKey === 'todo' ? 'todo-entities-grid' : '',
     ].filter(Boolean).join(' ');
@@ -1497,7 +1887,6 @@ export class DwainsDevicesCard extends LitElement {
           subtitle: this._t('devices.new_description', { hours: NEW_DEVICE_WINDOW_HOURS }),
           color: this._typeColor(NEW_DEVICES_KEY),
           back: true,
-          actions: html`<span class="device-header-count">${devices.length}</span>`,
         })}
         <section class="recent-devices new-devices-view">
           <div class="recent-grid">
@@ -2127,7 +2516,7 @@ export class DwainsDevicesCard extends LitElement {
     }
 
     .maintenance-area-group {
-      margin-bottom: 18px;
+      margin-bottom: 14px;
     }
 
     .maintenance-area-title {
@@ -2289,7 +2678,7 @@ export class DwainsDevicesCard extends LitElement {
     }
 
     .area-button.energy {
-      --domain-color: #d88e20;
+      --domain-color: ${unsafeCSS(getDomainColor('energy'))};
     }
 
     .energy-view {
@@ -2299,9 +2688,11 @@ export class DwainsDevicesCard extends LitElement {
     /* Domain (per area) groups */
     .domain-group {
       background: var(--card-background-color);
+      border: 1px solid color-mix(in srgb, var(--primary-text-color) 7%, transparent);
       border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 16px;
+      padding: 14px;
+      margin-bottom: 14px;
+      box-shadow: 0 5px 14px rgba(15, 23, 42, 0.035);
     }
 
     .domain-header {
@@ -2324,6 +2715,75 @@ export class DwainsDevicesCard extends LitElement {
     .domain-header ha-icon {
       --mdc-icon-size: 20px;
       opacity: 0.8;
+    }
+
+    .device-global-actions {
+      width: 100%;
+      margin: -2px 0 12px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .device-bulk-action {
+      min-height: 36px;
+      padding: 0 12px;
+      border: 0;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      color: var(--primary-text-color);
+      background: var(--card-background-color);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow:
+        0 8px 18px rgba(15, 23, 42, 0.055),
+        inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 6%, transparent);
+    }
+
+    .device-bulk-action ha-icon {
+      --mdc-icon-size: 17px;
+      color: var(--domain-color, var(--primary-color));
+    }
+
+    .device-bulk-action.icon-only {
+      width: 32px;
+      height: 30px;
+      min-height: 30px;
+      padding: 0;
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 7%, transparent);
+    }
+
+    .person-device-grid {
+      margin: 0;
+      align-items: start;
+    }
+
+    .device-room-groups {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      align-items: start;
+    }
+
+    .device-room-groups .device-room-group {
+      grid-column: 1 / -1;
+      margin-bottom: 0;
+      min-width: 0;
+    }
+
+    .device-room-groups .device-room-group.half-room {
+      grid-column: span 1;
+    }
+
+    .device-room-groups .device-room-group.half-room .entities-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     }
 
     .entities-grid {
@@ -2360,6 +2820,38 @@ export class DwainsDevicesCard extends LitElement {
     .entity-card-wrapper {
       min-height: 60px;
       position: relative;
+      min-width: 0;
+    }
+
+    .room-style-entities-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      align-items: stretch;
+      gap: 8px;
+    }
+
+    .room-style-device-view .mobile-entity-avatar {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      border-radius: inherit;
+    }
+
+    /* The location map forms the lower card section and uses two thirds
+       of that section's width, centred beneath the identity row. */
+    .room-style-device-view .person-location-preview {
+      width: 66.666%;
+      height: 90px;
+      margin-top: 10px;
+      align-self: center;
+      overflow: hidden;
+      border-radius: 8px;
+      pointer-events: none;
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 6%, transparent);
+    }
+
+    .room-style-replacement-card {
+      min-height: 62px;
     }
 
     .cover-entity-card {

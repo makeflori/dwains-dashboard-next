@@ -31,4 +31,22 @@ Dwains Dashboard Next follows semantic versioning.
 7. Commit with `Release X.Y.Z`.
 8. Create tag `vX.Y.Z`.
 9. Push the commit and tag.
-10. Create the GitHub release with English release notes.
+10. Create the GitHub release with English release notes and no attached assets.
+11. Verify the built entry file and all generated chunks are present in `dist/chunks/` before testing through HACS.
+
+- The HACS distribution layout must remain identical to upstream v1.11.0 unless an upstream release changes it.
+
+- Always clean the complete `dist/` directory before release builds so obsolete top-level chunks from previous packaging experiments cannot survive into a v1.11.0-style build.
+
+- Release builds must remove obsolete files from previous packaging layouts before Rollup runs.
+
+- Keep the v1.11.0 bootstrap strategy imports static in `src/index.ts`; do not move dashboard/view strategy loading back to dynamic imports without an explicit compatibility review.
+
+- The generated entry must retain the v1.11.0-style static bootstrap chunk (`./chunks/index-*.js`) rather than directly dynamically importing all runtime strategy/UI chunks from the entry file.
+
+- Keep `src/index.ts` as the thin bootstrap loader and keep runtime bootstrap logic in `src/bootstrap.ts` so the built entry preserves the v1.11.0 single static bootstrap-chunk shape.
+- Hotfix: scope legacy room tile styles to entity/type sections so the v1.11 header layout remains intact.
+- Refactor room styling: remove room-ui-v2, keep the v1.11 header isolated, and move room entity/type styles into layout-card-styles.ts.
+- Room/Home UX: keep favorite labels stable, apply area-name hiding to favorites, top-align room headers, split cover grouping/statuses, keep battery diagnostics visible, restore the room breadcrumb, center header icons, replace switch lightning icons, compact imported cards, adapt status rows, and keep room favorites at six columns.
+- House information and room UI: keep status cards in the active primary row, restore the blue home breadcrumb icon, use plug icons for switches, consolidate select/input_select cards, merge selector groups, and separate cover status semantics with deployed shading alerts.
+- Person cards: keep the four-column Devices layout, increase only card height, size the GPS preview to the lower section, and mirror the same presentation in Home Information popups; cover and climate popups continue to mirror their Devices cards.

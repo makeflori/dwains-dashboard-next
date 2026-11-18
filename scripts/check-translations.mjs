@@ -107,6 +107,7 @@ const translationCalls = new Map([
 ]);
 
 for (const file of sourceFilesIn(path.resolve('src'))) {
+  if (file.startsWith(localesDir + path.sep)) continue;
   const source = fs.readFileSync(file, 'utf8');
   const sourceFile = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true);
   const visit = (node) => {

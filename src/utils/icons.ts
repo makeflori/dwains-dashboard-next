@@ -1,7 +1,7 @@
 export const getDomainIcon = (domain: string): string => {
   const icons: Record<string, string> = {
     light: 'mdi:lightbulb',
-    switch: 'mdi:flash',
+    switch: 'mdi:power-plug',
     sensor: 'mdi:eye',
     energy: 'mdi:flash',
     binary_sensor: 'mdi:checkbox-marked-circle-outline',
@@ -57,34 +57,123 @@ export const getDomainIcon = (domain: string): string => {
 };
 
 export const getDomainColor = (domain: string, deviceClass?: string): string => {
-  if (domain === 'binary_sensor' && ['motion', 'occupancy', 'presence'].includes(deviceClass || '')) {
-    return '#df5b63';
+  // Semantic type colours; active states and alarms are handled by their consumers.
+  if (domain === 'binary_sensor') {
+    const deviceClassColors: Record<string, string> = {
+      // Red — warning-related sensor types (actual alarm state handled by UI)
+      moisture: '#D94F58',
+      smoke: '#D94F58',
+      gas: '#D94F58',
+      carbon_monoxide: '#D94F58',
+      problem: '#D94F58',
+      safety: '#D94F58',
+      tamper: '#D94F58',
+      heat: '#D94F58',
+      cold: '#D94F58',
+
+      // Light and energy
+      light: '#E1A129',
+      plug: '#65A83F',
+      power: '#65A83F',
+
+      // Controls and access
+      lock: '#424B93',
+
+      // Earth tone — openings
+      window: '#AD7253',
+      door: '#AD7253',
+      opening: '#AD7253',
+      garage_door: '#AD7253',
+
+      // Neutral — informational sensors
+      battery: '#7A8799',
+      battery_charging: '#7A8799',
+      update: '#7A8799',
+
+      // Green — presence / active process
+      occupancy: '#3F9B6D',
+      presence: '#3F9B6D',
+      running: '#3F9B6D',
+
+      // Slate — neutral activity
+      motion: '#7A8799',
+      vibration: '#7A8799',
+
+      // Media-like signal/event state
+      sound: '#C16AAF',
+
+      // Neutral — connectivity
+      connectivity: '#7A8799',
+    };
+    if (deviceClass && deviceClassColors[deviceClass]) {
+      return deviceClassColors[deviceClass]!;
+    }
+  }
+
+  if (domain === 'sensor') {
+    const sensorDeviceClassColors: Record<string, string> = {
+      temperature: '#239CB5',
+      humidity: '#50A789',
+      power: '#65A83F',
+      energy: '#65A83F',
+      battery: '#7A8799',
+    };
+    if (deviceClass && sensorDeviceClassColors[deviceClass]) {
+      return sensorDeviceClassColors[deviceClass]!;
+    }
   }
 
   const colors: Record<string, string> = {
-    light: '#e1a129',
-    switch: '#2f6fd6',
-    cover: '#1494aa',
-    camera: '#0ea5c6',
-    climate: '#34a6d8',
-    fan: '#2b8fcb',
-    lock: '#2f6fd6',
-    media_player: '#7c67c7',
-    person: '#6d7891',
-    binary_sensor: '#6d7891',
-    sensor: '#4f79a7',
-    wattage: '#d88e20',
-    energy: '#d88e20',
-    temperature: '#7c67c7',
-    humidity: '#34a6d8',
-    vacuum: '#7c67c7',
-    alarm_control_panel: '#df5b63',
-    button: '#7c67c7',
-    event: '#7c67c7',
-    select: '#6d7891',
+    // Red — alarm / danger
+    alarm_control_panel: '#D94F58',
+
+    // Warm yellow for light; green for energy
+    light: '#E1A129',
+    wattage: '#65A83F',
+    energy: '#65A83F',
+
+    // Blue — controls
+    switch: '#367DD5',
+    input_boolean: '#367DD5',
+    lock: '#424B93',
+    select: '#367DD5',
+    input_select: '#367DD5',
+    button: '#367DD5',
+    input_button: '#367DD5',
+    remote: '#367DD5',
+
+    // Orange — shading / gates
+    cover: '#D98928',
+
+    // Neutral slate — general sensors / updates
+    sensor: '#7A8799',
+    update: '#7A8799',
+
+    // Neutral people/device/activity
+    person: '#7A8799',
+    binary_sensor: '#7A8799',
+    vacuum: '#7A8799',
+
+    // Magenta — media / events
+    media_player: '#C16AAF',
+    event: '#C16AAF',
+    scene: '#C16AAF',
+
+    // Blue-cyan — climate / temperature
+    climate: '#239CB5',
+    temperature: '#239CB5',
+    room_climate: '#399FA0',
+
+    // Teal — air / humidity
+    fan: '#50A789',
+    humidifier: '#50A789',
+    humidity: '#50A789',
+
+    // Violet — cameras
+    camera: '#8065C7',
   };
 
-  return colors[domain] || '#7c67c7';
+  return colors[domain] || '#7A8799';
 };
 
 export const getAlertIcon = (deviceClass?: string): string => {
@@ -155,6 +244,10 @@ export const getDeviceClassIcon = (domain: string, deviceClass?: string): string
       voltage: 'mdi:flash-triangle',
       carbon_dioxide: 'mdi:molecule-co2',
       carbon_monoxide: 'mdi:molecule-co'
+    },
+    switch: {
+      outlet: 'mdi:power-plug',
+      switch: 'mdi:toggle-switch'
     },
     cover: {
       garage: 'mdi:garage',

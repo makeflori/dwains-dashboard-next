@@ -193,3 +193,28 @@ HACS downloads everything under `dist/`, including the `dist/chunks/` folder tha
 Dwains Dashboard Next is released under the MIT License.
 
 See [LICENSE](LICENSE) for the full license terms.
+
+## Latest dashboard improvements
+
+- Size desktop quick-control tiles to their content while reserving space for longest on/off and open/closed states.
+- Keep the quick-control layout stable when device counts or states change.
+- Align light, energy, temperature, humidity, room-climate, humidifier, and scene colors through existing domain color definitions.
+- Preserve distinct armed and triggered alarm states.
+- Give combined indoor/outdoor climate cards the shared teal accent and use green-only household power bars.
+
+- Preserve the room section heading in entity popups even when only one room is present, while avoiding redundant person grouping labels.
+
+## Mobile entity dialog refinements
+
+- Size mobile domain dialogs to their contents up to the viewport limit.
+- Use a two-line mobile header with a full-height icon and a swipe-down dismissal gesture.
+- Display entities as single-column mobile rows and room-grouped desktop tiles.
+- Provide global bulk-action buttons once above all rooms, plus compact per-room master toggles.
+
+## Entity popup layout correction
+
+- Use a dedicated responsive dialog header with icon, title, destination link, and aligned close button.
+- Capture drag gestures on the visible mobile sheet handle to close the dialog without pulling the background page.
+- Keep mobile dialogs anchored at the bottom and sized to their content.
+- Match the room-view entity layout: single-row cards on mobile, two or three columns on desktop.
+- Preserve room headings, put all-room actions at the top, and show a compact group switch in each room.

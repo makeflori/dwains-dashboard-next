@@ -281,6 +281,9 @@ export class DwainsPageCard extends LitElement {
     }
     dwains-dashboard-next-card-host {
       display: block;
+      width: 100%;
+      max-width: none;
+      min-width: 0;
     }
     .add-wrap {
       max-width: 520px;

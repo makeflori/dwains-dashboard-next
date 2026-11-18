@@ -47,6 +47,7 @@ export type BlueprintInputType =
   | 'boolean'
   | 'number'
   | 'area-picker'
+  | 'entity-list'
   | string;
 
 /** One row of an entity-list input. Rows may carry extra fields. */
@@ -222,6 +223,7 @@ export function defaultValues(meta: BlueprintMeta): Record<string, any> {
         : [];
     } else if (def.default !== undefined) vals[key] = def.default;
     else if (def.type === 'boolean') vals[key] = false;
+    else if (def.type === 'entity-list') vals[key] = [];
     else vals[key] = '';
   }
   return vals;
