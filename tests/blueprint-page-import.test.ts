@@ -12,7 +12,7 @@ const pages = [
 describe('import actual published Dashboard Next page YAML', () => {
   for (const [folder, title, version] of pages) {
     it(`parses ${title} and resolves its card without blueprint metadata leaks`, () => {
-      const yaml = readFileSync(`blueprint-source/page-blueprints/${folder}/blueprint.yaml`, 'utf8');
+      const yaml = readFileSync(`tests/fixtures/blueprints/${folder}/blueprint.yaml`, 'utf8');
       const parsed = parseBlueprintYaml(yaml);
       expect(parsed.meta.name).toBe(title);
       expect(parsed.meta.version).toBe(version);
@@ -42,7 +42,7 @@ describe('import actual published Dashboard Next page YAML', () => {
     });
   }
   it('computes optional wallet sections without a portfolio total sensor', () => {
-    const yaml = readFileSync('blueprint-source/page-blueprints/CryptoWallet/blueprint.yaml', 'utf8');
+    const yaml = readFileSync('tests/fixtures/blueprints/CryptoWallet/blueprint.yaml', 'utf8');
     const parsed = parseBlueprintYaml(yaml);
     const coins = [{ name: 'Bitcoin', entity: 'sensor.bitcoin_value', price_entity: 'sensor.bitcoin_price', amount_entity: 'sensor.bitcoin_holdings', icon: '' }];
     const result = resolveBlueprintCard(parsed.card, parsed.meta, { ...defaultValues(parsed.meta), portfolio_total: '', coins, __language: 'en' });
