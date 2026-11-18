@@ -1,0 +1,71 @@
+name: One-time legacy migration to upstream 1.15.1
+
+on:
+  push:
+    branches:
+      - migration/legacy-to-v1.15.1
+    paths:
+      - .github/workflows/migrate-legacy-v1151.yml
+
+permissions:
+  contents: write
+
+jobs:
+  merge-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout archived customized branch
+        uses: actions/checkout@v4
+        with:
+          ref: migration/legacy-to-v1.15.1
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Merge official tagged upstream 1.15.1
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch https://github.com/dwainscheeren/dwains-dashboard-next.git refs/tags/v1.15.1
+          test "$(git rev-parse FETCH_HEAD^{commit})" = "92624996ede2c619608be13120b9f32186e76222"
+          # Prefer current official upstream for directly conflicting hunks.
+          # Preserve the archived custom changes when they do not conflict.
+          if ! git merge --no-commit --no-ff -X theirs FETCH_HEAD; then
+            echo "Unresolved merge conflicts; migration branch will not be updated."
+            git diff --name-only --diff-filter=U
+            exit 1
+          fi
+          git commit -m "Merge upstream Dwains Dashboard Next v1.15.1 into legacy customizations"
+          echo "### Integration commit" >> "$GITHUB_STEP_SUMMARY"
+          git log -1 --oneline >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check
+        run: npm run type-check
+
+      - name: Test
+        run: npm test
+
+      - name: Build bundled dashboard
+        run: npm run build
+
+      - name: Commit generated files if changed
+        shell: bash
+        run: |
+          git add -A dist
+          if ! git diff --cached --quiet; then
+            git commit -m "Build migrated dashboard against upstream v1.15.1"
+          fi
+
+      - name: Publish verified candidate only to migration branch
+        run: git push origin HEAD:refs/heads/migration/legacy-to-v1.15.1
