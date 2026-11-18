@@ -21,6 +21,8 @@ jobs:
       - run: npm ci
       - name: Adapt old core components using updated dependencies
         run: node scripts/port-legacy-v1151.mjs
+      - name: Checkout companion Blueprint repository for integration tests
+        run: git clone --depth=1 --quiet https://github.com/makeflori/dwains-dashboard-blueprints.git blueprint-source
       - name: Run all unit tests
         run: npm test
       - name: Build migrated source
