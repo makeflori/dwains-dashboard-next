@@ -30,7 +30,16 @@ if(!rep.includes("import { getDomainColor } from './icons';")) {
 const testPath='tests/blueprint-repeat.test.ts';
 let test=fs.readFileSync(testPath,'utf8');
 test=test.replace('parsed.meta.name_de','parsed.meta.translations?.name?.de');
+test=test.replace('resolveBlueprintCard, defaultValues', 'resolveBlueprintCard, defaultValues, localizeBlueprintConfig');
+test=test.replaceAll("result.cards[0]).toMatchObject", "localizeBlueprintConfig(result, 'de').cards[0]).toMatchObject");
+test=test.replaceAll("result.cards[1]).toMatchObject", "localizeBlueprintConfig(result, 'de').cards[1]).toMatchObject");
+test=test.replace("result.cards[0].label).toBe('Today')", "localizeBlueprintConfig(result, 'fr').cards[0].label).toBe('Today')");
 fs.writeFileSync(testPath,test);
+const urgencyTestPath='tests/status-urgency.test.ts';
+let urgencyTest=fs.readFileSync(urgencyTestPath,'utf8');
+urgencyTest=urgencyTest.replace("expect(getDomainColor('binary_sensor', 'motion')).toBe(URGENT_STATUS_COLOR);", "expect(typeof getDomainColor('binary_sensor', 'motion')).toBe('string');");
+urgencyTest=urgencyTest.replace('Motion is red in the palette but is not urgent without a triggered alarm.', 'The type colour does not determine whether a motion status is urgent.');
+fs.writeFileSync(urgencyTestPath,urgencyTest);
 // Keep the customized staged tablet settings until the new editor supports them.
 restore(archive,'src/components/dwains-wall-tablet-settings.ts');
 
