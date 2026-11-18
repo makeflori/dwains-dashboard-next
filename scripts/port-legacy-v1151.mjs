@@ -84,6 +84,36 @@ if(stylesStart<0||stylesEnd<0)throw new Error('Cannot locate archived scoped roo
 fs.writeFileSync('src/components/styles/legacy-room-area-styles.ts',
   "import { css } from 'lit';\n"+oldStyles.slice(stylesStart,stylesEnd+2)+'\n');
 
+// Blueprints with entity-list rows can depend on auxiliary row sensors as well
+// as their primary entity. Include such sensors in explicit triggers_update
+// placeholders without changing the documented $entities.<list>$ behavior.
+const bpPath='src/utils/blueprints.ts';
+let bp=fs.readFileSync(bpPath,'utf8');
+const originalTokenHandling="        const next = walk(node[key], item);\n        if (next !== REMOVED) out[key] = next;";
+const enhancedTokenHandling=[
+"        const next = walk(node[key], item);",
+"        if (key === 'triggers_update' && typeof node[key] === 'string' && Array.isArray(next)) {",
+"          const listMatch = /^\\$entities\\.([A-Za-z0-9_]+)\\$/.exec(node[key]);",
+"          if (listMatch) {",
+"            const extras = listRows(listMatch[1]).flatMap((row) =>",
+"              Object.entries(row)",
+"                .filter(([field, value]) => field.endsWith('_entity') && typeof value === 'string' && value.includes('.'))",
+"                .map(([, value]) => value as string)",
+"            );",
+"            out[key] = Array.from(new Set([...next, ...extras]));",
+"            continue;",
+"          }",
+"        }",
+"        if (next !== REMOVED) out[key] = next;",
+].join('\n');
+if(!bp.includes(originalTokenHandling) && !bp.includes(enhancedTokenHandling)) {
+ throw new Error('Blueprint substitution has changed; cannot safely patch triggers_update');
+}
+if(bp.includes(originalTokenHandling)) {
+ bp=bp.replace(originalTokenHandling,enhancedTokenHandling);
+ fs.writeFileSync(bpPath,bp);
+}
+
 const errors=[];
 for(const args of [['--noEmit','--pretty','false'],['--noEmit','-p','tests','--pretty','false']]) {
  const res=cp.spawnSync('node_modules/.bin/tsc',args,{encoding:'utf8',maxBuffer:30*1024*1024});
