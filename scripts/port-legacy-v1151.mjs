@@ -95,7 +95,7 @@ const enhancedTokenHandling=[
 "        if (key === 'triggers_update' && typeof node[key] === 'string' && Array.isArray(next)) {",
 "          const listMatch = /^\\$entities\\.([A-Za-z0-9_]+)\\$/.exec(node[key]);",
 "          if (listMatch) {",
-"            const extras = listRows(listMatch[1]).flatMap((row) =>",
+"            const extras = listRows(listMatch[1]!).flatMap((row) =>",
 "              Object.entries(row)",
 "                .filter(([field, value]) => field.endsWith('_entity') && typeof value === 'string' && value.includes('.'))",
 "                .map(([, value]) => value as string)",
