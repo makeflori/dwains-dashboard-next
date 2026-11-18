@@ -981,7 +981,7 @@ export const ru = {
   'settings.hide_area_name_in_entity_names_description': 'Удаляет назначенную зону, если она повторяется в начале или конце имени сущности.',
   'settings.devices_page_types_description': 'Показывать или скрывать сущности на вкладке «Устройства» по типу и комнате.',
   'settings.hidden_unavailable_title': 'Скрытые недоступные сущности',
-  'settings.hidden_unavailable_description': "Эти сущности сейчас скрыты, потому что их состояние — «недоступно» или «неизвестно». Вы можете отключить эту фильтрацию в настройках панели.",
+  'settings.hidden_unavailable_description': "Эти сущности сейчас скрыты, потому что их состояние - «недоступно» или «неизвестно». Вы можете отключить эту фильтрацию в настройках панели.",
   'settings.unassigned_area': 'Не назначено',
   "status.shading_closed": "Солнцезащита закрыта",
   "blueprint.duplicate_value_sensor": "Каждый датчик стоимости криптовалюты можно использовать только один раз.",
