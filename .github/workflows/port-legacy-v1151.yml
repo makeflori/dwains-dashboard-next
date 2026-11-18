@@ -1,0 +1,23 @@
+name: Diagnose retained legacy components against 1.15.1
+on:
+  push:
+    branches: [migration/replay-on-v1.15.1]
+    paths: [.github/workflows/port-legacy-v1151.yml, scripts/port-legacy-v1151.mjs]
+permissions:
+  contents: read
+jobs:
+  compatibility:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: migration/replay-on-v1.15.1
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - name: Diagnose old core components using updated dependencies
+        run: node scripts/port-legacy-v1151.mjs
