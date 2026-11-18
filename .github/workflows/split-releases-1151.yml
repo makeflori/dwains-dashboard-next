@@ -1,0 +1,72 @@
+name: Split upstream and customized v1.15.1 releases
+on:
+  push:
+    branches: [automation/split-releases-1151]
+    paths: [.github/workflows/split-releases-1151.yml]
+permissions:
+  contents: write
+jobs:
+  split:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Verify HACS version ordering
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --quiet awesomeversion
+          python - <<'PY'
+          from awesomeversion import AwesomeVersion
+          original = AwesomeVersion("1.15.1")
+          custom = AwesomeVersion("1.15.1.1")
+          print("Original:", original, "Strategy:", original.strategy)
+          print("Custom:", custom, "Strategy:", custom.strategy)
+          assert custom > original, "HACS version comparison does not rank v1.15.1.1 above v1.15.1"
+          PY
+      - name: Verify immutable inputs and release provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          REPO="$GITHUB_REPOSITORY"
+          MAIN=$(gh api "repos/$REPO/git/ref/heads/main" --jq .object.sha)
+          DEV=$(gh api "repos/$REPO/git/ref/heads/dev" --jq .object.sha)
+          CURRENT=$(gh api "repos/$REPO/git/ref/tags/v1.15.1" --jq .object.sha)
+          test "$MAIN" = "92624996ede2c619608be13120b9f32186e76222"
+          test "$DEV" = "c84add86d729e80488ff28617e0ef5087b8c1d0a"
+          test "$CURRENT" = "$DEV"
+          gh api "repos/$REPO/releases/tags/v1.15.1" --jq '.immutable == false' | grep -qx 'true'
+          if gh release view v1.15.1.1 --repo "$REPO" >/dev/null 2>&1; then
+            echo "::error::v1.15.1.1 already exists; nothing changed."
+            exit 1
+          fi
+          echo "Release inputs verified."
+      - name: Create customized fork release from dev
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release create v1.15.1.1 --repo "$GITHUB_REPOSITORY" \
+            --target c84add86d729e80488ff28617e0ef5087b8c1d0a \
+            --title "v1.15.1.1 - Angepasster Fork" \
+            --notes "Basiert auf Dwains Dashboard Next v1.15.1 mit den migrierten Anpassungen aus dev. Beinhaltet Layout-, Einstellungen-, Geräte- und Tablet-Anpassungen sowie Kompatibilitätskorrekturen. Build, Tests, Übersetzungsprüfung und HACS-Validierung erfolgreich. Bitte die Oberfläche in Home Assistant gesondert prüfen." \
+            --latest
+          test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/v1.15.1.1" --jq .object.sha)" = "c84add86d729e80488ff28617e0ef5087b8c1d0a"
+      - name: Replace mislabeled customized v1.15.1 with the genuine upstream v1.15.1
+        shell: bash
+        run: |
+          set -euo pipefail
+          REPO="$GITHUB_REPOSITORY"
+          test "$(gh api "repos/$REPO/git/ref/tags/v1.15.1" --jq .object.sha)" = "c84add86d729e80488ff28617e0ef5087b8c1d0a"
+          gh release delete v1.15.1 --repo "$REPO" --yes --cleanup-tag
+          if gh api "repos/$REPO/git/ref/tags/v1.15.1" >/dev/null 2>&1; then
+            echo "::error::Old tag still exists; refusing to create an incorrect upstream release."
+            exit 1
+          fi
+          gh release create v1.15.1 --repo "$REPO" \
+            --target 92624996ede2c619608be13120b9f32186e76222 \
+            --title "v1.15.1 - Unverändertes Original" \
+            --notes "Original Dwains Dashboard Next v1.15.1 aus dem unveränderten Upstream-Stand (main), Commit 92624996. Keine individuellen Anpassungen. Für die angepasste Fork-Version siehe Release v1.15.1.1."
+          test "$(gh api "repos/$REPO/git/ref/tags/v1.15.1" --jq .object.sha)" = "92624996ede2c619608be13120b9f32186e76222"
+          gh release edit v1.15.1.1 --repo "$REPO" --latest
+          echo "Both releases published with correct source commits."
