@@ -38,7 +38,7 @@ import {
 import { countReplacementRules, domainReplacementEntries, setDomainReplacement } from "../utils/blueprint-replacements";
 import { settingsEditorConfig } from "../utils/dashboard-config";
 import { isHiddenAsUnavailable } from "../utils/entity-availability";
-import { areaEntityDisplayName, hidesAreaNameInEntityNames, registryEntityDisplayName } from "../utils/entity-names";
+import { hidesAreaNameInEntityNames, registryEntityDisplayName } from "../utils/entity-names";
 import {
   getAreaHiddenEntityIdSet,
   getDevicesPageHiddenEntityIdSet,
