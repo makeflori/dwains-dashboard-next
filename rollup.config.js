@@ -26,7 +26,7 @@ const versionStamp = () => {
     transform(code, id) {
       if (!id.endsWith('/src/version.ts') && !id.endsWith('/src/index.ts')) return null;
       return {
-        code: code.replace('__DD_NEXT_VERSION__', String(pkg.version)),
+        code: code.replace('__DD_NEXT_VERSION__', String(process.env.DD_NEXT_VERSION || pkg.version)),
         map: null
       };
     }
