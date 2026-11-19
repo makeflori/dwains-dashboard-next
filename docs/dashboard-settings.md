@@ -71,6 +71,7 @@ Configure:
 - Area icons
 - Area entity ordering
 - Whether unavailable area entities are shown
+- **Use entity names only** (off by default): when Home Assistant exposes an entity-specific name, generated room tiles, device cards, entity lists and related editor entries use it instead of the composed device + entity name. If no separate entity name is available, the full name is retained. This option is independent of room-name removal.
 - **Leave the room name out of entity names** (on by default): room pages, the Devices page and device lists show "Ceiling light" instead of "Living room Ceiling light". Only the whole room name at the start or end of a name is removed, also between brackets, so "Wohnzimmerlampe" stays as it is.
 - Whether rooms with one climate entity show a thermostat in the room header (on by default)
 - **Show favorites on room pages** (on by default)
