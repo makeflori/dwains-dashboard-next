@@ -38,7 +38,7 @@ import {
 import { countReplacementRules, domainReplacementEntries, setDomainReplacement } from "../utils/blueprint-replacements";
 import { settingsEditorConfig } from "../utils/dashboard-config";
 import { isHiddenAsUnavailable } from "../utils/entity-availability";
-import { areaEntityDisplayName, hidesAreaNameInEntityNames } from "../utils/entity-names";
+import { areaEntityDisplayName, hidesAreaNameInEntityNames, registryEntityDisplayName } from "../utils/entity-names";
 import {
   getAreaHiddenEntityIdSet,
   getDevicesPageHiddenEntityIdSet,
@@ -118,7 +118,7 @@ type SettingsPageKey =
 
 interface SettingsPageItem {
   page: Exclude<SettingsPageKey, "overview">;
-  group: "general" | "layout" | "advanced" | "device";
+  group: "general" | "content" | "behavior" | "support";
   icon: string;
   color: string;
   title: string;
@@ -550,9 +550,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _renderSettingsOverview() {
     const groups: Array<{ key: SettingsPageItem["group"]; title: string }> = [
       { key: "general", title: this._t('settings.general') },
-      { key: "layout", title: this._t('settings.dashboard_layout') },
-      { key: "advanced", title: this._t('settings.advanced') },
-      { key: "device", title: this._t('kiosk.group_title') },
+      { key: "content", title: this._t('settings.content_display') },
+      { key: "behavior", title: this._t('settings.behavior_access') },
+      { key: "support", title: this._t('settings.about_support') },
     ];
     const items = this._settingsOverviewItems();
 
@@ -630,7 +630,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       },
       {
         page: "favorites",
-        group: "general",
+        group: "content",
         icon: "mdi:star-outline",
         color: "#f59e0b",
         title: this._t('favorites.title'),
@@ -644,7 +644,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       },
       {
         page: "header",
-        group: "general",
+        group: "content",
         icon: "mdi:card-account-details-star-outline",
         color: "#22a06b",
         title: this._t('settings.header_status'),
@@ -660,7 +660,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       },
       {
         page: "controls",
-        group: "general",
+        group: "behavior",
         icon: "mdi:gesture-tap-button",
         color: "#d97706",
         title: this._t('settings.controls_confirmations'),
@@ -674,7 +674,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       },
       {
         page: "people",
-        group: "layout",
+        group: "content",
         icon: "mdi:account-group-outline",
         color: "#8b5cf6",
         title: this._t('settings.people'),
@@ -683,7 +683,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       },
       {
         page: "areas",
-        group: "layout",
+        group: "general",
         icon: "mdi:floor-plan",
         color: "#14b8a6",
         title: this._t('settings.areas'),
@@ -696,7 +696,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       },
       {
         page: "devices",
-        group: "layout",
+        group: "general",
         icon: "mdi:format-list-bulleted-type",
         color: "#0891b2",
         title: this._t('settings.devices_page'),
@@ -710,7 +710,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       },
       {
         page: "replacements",
-        group: "layout",
+        group: "content",
         icon: "mdi:puzzle-edit-outline",
         color: "#7c3aed",
         title: this._t('settings.blueprint_replacements'),
@@ -719,7 +719,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       },
       {
         page: "permissions",
-        group: "advanced",
+        group: "behavior",
         icon: "mdi:shield-account",
         color: "#ef4444",
         title: this._t('settings.user_permissions'),
@@ -732,7 +732,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       },
       {
         page: "support",
-        group: "advanced",
+        group: "support",
         icon: "mdi:heart-outline",
         color: "#f59e0b",
         title: this._t('settings.support'),
@@ -741,7 +741,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       },
       {
         page: "wall_tablet",
-        group: "device",
+        group: "behavior",
         icon: "mdi:tablet-dashboard",
         color: "#64748b",
         title: this._t('kiosk.title'),
@@ -1577,6 +1577,15 @@ export class DwainsDashboardStrategyEditor extends LitElement {
             <p class="toggle-description">${this._t('settings.hide_unavailable_areas_description')}</p>
           </div>
           <div class="hide-unavailable-toggle">
+            <ha-formfield .label=${this._t('settings.use_entity_name_only')}>
+              <ha-switch
+                .checked=${this._config?.settings?.use_entity_name_only === true}
+                @change=${this._toggleUseEntityNameOnly}
+              ></ha-switch>
+            </ha-formfield>
+            <p class="toggle-description">${this._t('settings.use_entity_name_only_description')}</p>
+          </div>
+          <div class="hide-unavailable-toggle">
             <ha-formfield .label=${this._t('settings.hide_area_name')}>
               <ha-switch
                 .checked=${hidesAreaNameInEntityNames(this._config?.settings)}
@@ -2262,7 +2271,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   /** Entity name in the room settings, like the room page shows it. */
   private _areaEditorEntityName(entityId: string, areaName: string): string {
     const fullName = this.hass?.states?.[entityId]?.attributes?.friendly_name || entityId;
-    return areaEntityDisplayName(String(fullName), areaName, this._config?.settings);
+    return registryEntityDisplayName(String(fullName), areaName, this._config?.settings, getEntityRegistry(this.hass)[entityId]?.name);
   }
 
   private _getHomeSectionsOrder(): HomeSectionKey[] {
@@ -3351,7 +3360,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           ? html`<ha-state-icon class="device-visibility-entity-icon" .hass=${this.hass} .stateObj=${state}></ha-state-icon>`
           : html`<ha-icon class="device-visibility-entity-icon" icon=${type.icon}></ha-icon>`}
         <span class="device-visibility-entity-name" title=${fullName}>
-          ${areaEntityDisplayName(fullName, area.areaName, this._config?.settings)}
+          ${registryEntityDisplayName(fullName, area.areaName, this._config?.settings, getEntityRegistry(this.hass)[entityId]?.name)}
         </span>
         ${deviceHidden
           ? html`<span class="device-visibility-entity-note">${this._t('settings.hidden_with_device')}</span>`
@@ -5094,6 +5103,17 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
     this._fireConfigChanged(newConfig);
   }
+
+  private _toggleUseEntityNameOnly = (e: Event): void => {
+    if (!this._config) return;
+    this._fireConfigChanged({
+      ...this._config,
+      settings: {
+        ...this._config.settings,
+        use_entity_name_only: Boolean((e.target as any).checked),
+      },
+    });
+  };
 
   private _toggleHideAreaName = (e: Event): void => {
     if (!this._config) return;
