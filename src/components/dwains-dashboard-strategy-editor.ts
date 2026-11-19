@@ -761,7 +761,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         class="settings-nav-item"
         type="button"
         data-settings-page=${item.page}
-        style=${`--settings-item-color: ${item.color};`}
+        style=${`--settings-item-color: ${item.group === 'general' ? 'var(--primary-color)' : item.group === 'content' ? '#8b5cf6' : item.group === 'behavior' ? '#0f9f8f' : 'var(--secondary-text-color)'};`}
         @click=${() => this._openSettingsPage(item.page)}
       >
         <div class="settings-nav-icon">
@@ -5383,6 +5383,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         padding: 16px;
       }
 
+      /* Normalize the settings surfaces while preserving native HA inputs. */
+      .settings-detail-content ha-expansion-panel { display: block; margin-bottom: 14px; border-radius: 14px; overflow: hidden; }
+      .settings-detail-content .hide-unavailable-toggle { padding: 12px 16px; border-bottom: 1px solid var(--divider-color); }
+      .settings-detail-content .hide-unavailable-toggle:last-child { border-bottom: 0; }
+      .settings-detail-content .toggle-description { margin: 4px 0 0; color: var(--secondary-text-color); line-height: 1.45; }
+      .settings-detail-content ha-formfield { display: flex; min-height: 32px; align-items: center; }
+
+
       .settings-nav-section {
         max-width: 720px;
         margin: 0 auto 16px;
@@ -5429,6 +5437,13 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         background: color-mix(in srgb, var(--settings-item-color) 5%, transparent);
       }
 
+      /* One hierarchy and color system for all settings pages. */
+      .settings-nav-section { margin-bottom: 22px; }
+      .settings-nav-section h3 { font-weight: 650; letter-spacing: 0.01em; }
+      .settings-nav-list { border-radius: 14px; }
+      .settings-nav-item { min-height: 72px; }
+      .settings-nav-item:focus-visible { outline: 2px solid var(--primary-color); outline-offset: -3px; }
+      .settings-nav-icon { background: color-mix(in srgb, var(--settings-item-color) 13%, var(--card-background-color)); color: var(--settings-item-color); }
       .settings-nav-icon {
         width: 44px;
         height: 44px;
@@ -5436,8 +5451,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #fff;
-        background: var(--settings-item-color);
+        color: var(--settings-item-color);
+        background: color-mix(in srgb, var(--settings-item-color) 13%, var(--card-background-color));
       }
 
       .settings-nav-icon ha-icon,
