@@ -3,7 +3,7 @@ name: Rebuild settings-only v1.15.1.1
 on:
   push:
     branches: [dev]
-    paths: [.github/workflows/rebuild-settings-dev-release.yml]
+    paths: [.github/workflows/rebuild-settings-dev-release.yml, src/components/dwains-dashboard-strategy-editor.ts]
   workflow_dispatch:
 
 permissions:
