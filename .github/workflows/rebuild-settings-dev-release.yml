@@ -1,0 +1,74 @@
+name: Rebuild settings-only v1.15.1.1
+
+on:
+  push:
+    branches: [dev]
+    paths: [.github/workflows/rebuild-settings-dev-release.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: settings-only-v1.15.1.1-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out clean development branch
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          fetch-depth: 0
+
+      - name: Verify official base
+        run: |
+          git merge-base --is-ancestor 92624996ede2c619608be13120b9f32186e76222 HEAD
+          test "$(node -p "require('./package.json').version")" = "1.15.1"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install, type-check, translations and tests
+        run: |
+          npm ci
+          npm run type-check
+          npm run i18n:check
+          npm test
+
+      - name: Build v1.15.1.1 from official base plus settings changes
+        env:
+          DD_NEXT_VERSION: '1.15.1.1'
+        run: npm run build:release
+
+      - name: Commit complete HACS distribution to dev
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A dist
+          if ! git diff --cached --quiet; then
+            git commit -m 'build: settings-only v1.15.1.1 distribution'
+            git push origin HEAD:dev
+          fi
+
+      - name: Replace previous v1.15.1.1 release only after successful build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git fetch --tags --force
+          gh release delete v1.15.1.1 --yes --repo "${{ github.repository }}" || true
+          git push origin :refs/tags/v1.15.1.1 || true
+          git tag -d v1.15.1.1 2>/dev/null || true
+          git tag -a v1.15.1.1 -m 'Settings-only development version based on v1.15.1'
+          git push origin refs/tags/v1.15.1.1
+          gh release create v1.15.1.1 \
+            --repo "${{ github.repository }}" \
+            --title 'v1.15.1.1' \
+            --notes-file docs/release-notes-v1.15.1.1.md \
+            --prerelease
