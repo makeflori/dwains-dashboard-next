@@ -57,7 +57,9 @@ See the [screenshot gallery](docs/screenshots.md) for room controls, wall tablet
 
 ## Status
 
-Current release: `1.15.1`
+Official base: `v1.15.1` (unchanged on `main`).
+
+The `dev` branch is a **development version based on v1.15.1**, with changes limited to the dashboard settings and the explicitly configurable entity-name display. This is not a replacement for the official v1.15.1 release. See [development changes](docs/release-notes-v1.15.1.1.md).
 
 ## Community And Support
 
