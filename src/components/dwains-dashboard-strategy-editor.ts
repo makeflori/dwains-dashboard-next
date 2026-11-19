@@ -977,16 +977,19 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     }
   }
 
+  /** Consistent, always-visible settings section; native HA controls stay inside. */
   private _renderSettingsPanel(icon: string, title: string, description: string, content: unknown) {
     return html`
-      <ha-expansion-panel expanded outlined>
-        <div slot="header">
-          <ha-icon icon=${icon}></ha-icon>
-          ${title}
-        </div>
-        <p class="description">${description}</p>
-        ${content}
-      </ha-expansion-panel>
+      <section class="dd-settings-section" aria-label=${title}>
+        <header class="dd-settings-section-header">
+          <span class="dd-settings-section-icon" aria-hidden="true"><ha-icon icon=${icon}></ha-icon></span>
+          <span class="dd-settings-section-copy">
+            <strong>${title}</strong>
+            ${description ? html`<small>${description}</small>` : nothing}
+          </span>
+        </header>
+        <div class="dd-settings-section-content">${content}</div>
+      </section>
     `;
   }
 
@@ -5383,6 +5386,40 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         padding: 16px;
       }
 
+      .dd-settings-section {
+        border: 1px solid var(--divider-color);
+        border-radius: 14px;
+        background: var(--card-background-color);
+        overflow: hidden;
+        margin: 0 0 14px;
+      }
+      .dd-settings-section-header {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        padding: 16px;
+        background: color-mix(in srgb, var(--secondary-background-color) 50%, var(--card-background-color));
+      }
+      .dd-settings-section-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        flex: 0 0 auto;
+        color: var(--primary-color);
+        background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+      }
+      .dd-settings-section-copy { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+      .dd-settings-section-copy strong { font-size: 16px; font-weight: 650; line-height: 1.3; }
+      .dd-settings-section-copy small { color: var(--secondary-text-color); line-height: 1.4; }
+      .dd-settings-section-content { padding: 10px 16px 16px; }
+      .dd-settings-section-content .hide-unavailable-toggle { padding: 12px 0; }
+      .dd-settings-section-content .hide-unavailable-toggle:last-child { border-bottom: 0; }
+      @media (max-width: 600px) {
+        .dd-settings-section-header { padding: 12px; }
+        .dd-settings-section-content { padding: 8px 12px 12px; }
+      }
       /* Normalize the settings surfaces while preserving native HA inputs. */
       .settings-detail-content ha-expansion-panel { display: block; margin-bottom: 14px; border-radius: 14px; overflow: hidden; }
       .settings-detail-content .hide-unavailable-toggle { padding: 12px 16px; border-bottom: 1px solid var(--divider-color); }
