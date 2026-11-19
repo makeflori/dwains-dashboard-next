@@ -71,4 +71,4 @@ jobs:
             --repo "${{ github.repository }}" \
             --title 'v1.15.1.1' \
             --notes-file docs/release-notes-v1.15.1.1.md \
-            --prerelease
+
