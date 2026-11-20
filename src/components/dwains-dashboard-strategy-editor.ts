@@ -1489,6 +1489,27 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     );
   }
 
+  /** Shared compact row for settings switches; keeps the existing HA switch and handler. */
+  private _renderToggleSetting(
+    icon: string,
+    title: string,
+    description: string,
+    checked: boolean,
+    onChange: (event: Event) => void,
+    extra: unknown = nothing
+  ) {
+    return html`
+      <div class="dd-setting-row">
+        <span class="dd-setting-row-icon" aria-hidden="true"><ha-icon icon=${icon}></ha-icon></span>
+        <span class="dd-setting-row-copy">
+          <strong>${title}</strong>
+          ${description ? html`<small>${description}${extra}</small>` : extra}
+        </span>
+        <ha-switch .checked=${checked} .ariaLabel=${title} @change=${onChange}></ha-switch>
+      </div>
+    `;
+  }
+
   private _renderEntityDisplaySettingsPanel() {
     return this._renderSettingsPanel(
       "mdi:eye-off",
@@ -1496,23 +1517,21 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       this._t('settings.devices_description'),
       html`
         <div class="entity-display-section">
-          <div class="hide-unavailable-toggle">
-            <ha-formfield .label=${this._t('settings.hide_unavailable_devices')}>
-              <ha-switch
-                .checked=${this._config?.settings?.hide_unavailable_entities_on_devices !== false}
-                @change=${this._toggleHideUnavailableEntities}
-              ></ha-switch>
-            </ha-formfield>
-            <p class="toggle-description">${this._t('settings.hide_unavailable_devices_description')}</p>
-          </div>
-          <div class="hide-unavailable-toggle">
-            <ha-formfield .label=${this._t('settings.show_new_devices')}>
-              <ha-switch
-                .checked=${this._config?.settings?.show_recent_devices_panel !== false}
-                @change=${this._toggleRecentDevicesPanel}
-              ></ha-switch>
-            </ha-formfield>
-            <p class="toggle-description">${this._t('settings.show_new_devices_description')}</p>
+          <div class="dd-settings-list dd-settings-list-spaced">
+            ${this._renderToggleSetting(
+              "mdi:eye-off-outline",
+              this._t('settings.hide_unavailable_devices'),
+              this._t('settings.hide_unavailable_devices_description'),
+              this._config?.settings?.hide_unavailable_entities_on_devices !== false,
+              this._toggleHideUnavailableEntities
+            )}
+            ${this._renderToggleSetting(
+              "mdi:history",
+              this._t('settings.show_new_devices'),
+              this._t('settings.show_new_devices_description'),
+              this._config?.settings?.show_recent_devices_panel !== false,
+              this._toggleRecentDevicesPanel
+            )}
           </div>
           ${this._renderDeviceVisibilityTree()}
         </div>
@@ -1527,24 +1546,23 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       this._t('settings.permissions_description'),
       html`
         <div class="entity-display-section">
-          <div class="hide-unavailable-toggle">
-            <ha-formfield .label=${this._t('settings.restrict_ha_menu')}>
-              <ha-switch
-                .checked=${this._config?.settings?.restrict_non_admin_ha_sidebar === true}
-                @change=${this._toggleRestrictNonAdminHaSidebar}
-              ></ha-switch>
-            </ha-formfield>
-            <p class="toggle-description">${this._t('settings.restrict_ha_menu_description')}</p>
+          <div class="dd-settings-list dd-settings-list-spaced">
+            ${this._renderToggleSetting(
+              "mdi:menu",
+              this._t('settings.restrict_ha_menu'),
+              this._t('settings.restrict_ha_menu_description'),
+              this._config?.settings?.restrict_non_admin_ha_sidebar === true,
+              this._toggleRestrictNonAdminHaSidebar
+            )}
+            ${this._renderToggleSetting(
+              "mdi:pencil-off-outline",
+              this._t('settings.restrict_editing'),
+              this._t('settings.restrict_editing_description'),
+              this._config?.settings?.restrict_non_admin_dashboard_settings === true,
+              this._toggleRestrictNonAdminDashboardSettings
+            )}
           </div>
-          <div class="hide-unavailable-toggle">
-            <ha-formfield .label=${this._t('settings.restrict_editing')}>
-              <ha-switch
-                .checked=${this._config?.settings?.restrict_non_admin_dashboard_settings === true}
-                @change=${this._toggleRestrictNonAdminDashboardSettings}
-              ></ha-switch>
-            </ha-formfield>
-            <p class="toggle-description">${this._t('settings.restrict_editing_description')}</p>
-          </div>
+          
         </div>
       `
     );
@@ -1570,71 +1588,57 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       this._t('settings.areas_page_description'),
       html`
         <div class="entity-display-section">
-          <div class="hide-unavailable-toggle">
-            <ha-formfield .label=${this._t('settings.hide_unavailable_areas')}>
-              <ha-switch
-                .checked=${this._config?.settings?.hide_unavailable_entities !== false}
-                @change=${this._toggleHideUnavailableAreaEntities}
-              ></ha-switch>
-            </ha-formfield>
-            <p class="toggle-description">${this._t('settings.hide_unavailable_areas_description')}</p>
-          </div>
-          <div class="hide-unavailable-toggle">
-            <ha-formfield .label=${this._t('settings.use_entity_name_only')}>
-              <ha-switch
-                .checked=${this._config?.settings?.use_entity_name_only === true}
-                @change=${this._toggleUseEntityNameOnly}
-              ></ha-switch>
-            </ha-formfield>
-            <p class="toggle-description">${this._t('settings.use_entity_name_only_description')}</p>
-          </div>
-          <div class="hide-unavailable-toggle">
-            <ha-formfield .label=${this._t('settings.hide_area_name')}>
-              <ha-switch
-                .checked=${hidesAreaNameInEntityNames(this._config?.settings)}
-                @change=${this._toggleHideAreaName}
-              ></ha-switch>
-            </ha-formfield>
-            <p class="toggle-description">${this._t('settings.hide_area_name_description')}</p>
-          </div>
-          <div class="hide-unavailable-toggle">
-            <ha-formfield .label=${this._t('settings.hide_energy_sensors')}>
-              <ha-switch
-                .checked=${this._config?.settings?.hide_energy_sensors_on_area_pages === true}
-                @change=${this._toggleHideEnergySensors}
-              ></ha-switch>
-            </ha-formfield>
-            <p class="toggle-description">${this._t('settings.hide_energy_sensors_description')}</p>
-          </div>
-          <div class="hide-unavailable-toggle">
-            <ha-formfield .label=${this._t('thermostat.setting_label')}>
-              <ha-switch
-                .checked=${this._config?.settings?.show_area_thermostat !== false}
-                @change=${this._toggleAreaThermostat}
-              ></ha-switch>
-            </ha-formfield>
-            <p class="toggle-description">${this._t('thermostat.setting_description')}</p>
-          </div>
-          <div class="hide-unavailable-toggle">
-            <ha-formfield .label=${this._t('settings.show_area_favorites')}>
-              <ha-switch
-                .checked=${this._config?.settings?.show_area_favorites !== false}
-                @change=${this._toggleAreaFavorites}
-              ></ha-switch>
-            </ha-formfield>
-            <p class="toggle-description">
-              ${this._t('settings.show_area_favorites_description')}
+          <div class="dd-settings-list dd-settings-list-spaced">
+            ${this._renderToggleSetting(
+              "mdi:eye-off-outline",
+              this._t('settings.hide_unavailable_areas'),
+              this._t('settings.hide_unavailable_areas_description'),
+              this._config?.settings?.hide_unavailable_entities !== false,
+              this._toggleHideUnavailableAreaEntities
+            )}
+            ${this._renderToggleSetting(
+              "mdi:form-textbox",
+              this._t('settings.use_entity_name_only'),
+              this._t('settings.use_entity_name_only_description'),
+              this._config?.settings?.use_entity_name_only === true,
+              this._toggleUseEntityNameOnly
+            )}
+            ${this._renderToggleSetting(
+              "mdi:format-text",
+              this._t('settings.hide_area_name'),
+              this._t('settings.hide_area_name_description'),
+              hidesAreaNameInEntityNames(this._config?.settings),
+              this._toggleHideAreaName
+            )}
+            ${this._renderToggleSetting(
+              "mdi:flash-off",
+              this._t('settings.hide_energy_sensors'),
+              this._t('settings.hide_energy_sensors_description'),
+              this._config?.settings?.hide_energy_sensors_on_area_pages === true,
+              this._toggleHideEnergySensors
+            )}
+            ${this._renderToggleSetting(
+              "mdi:thermostat",
+              this._t('thermostat.setting_label'),
+              this._t('thermostat.setting_description'),
+              this._config?.settings?.show_area_thermostat !== false,
+              this._toggleAreaThermostat
+            )}
+            ${this._renderToggleSetting(
+              "mdi:star-outline",
+              this._t('settings.show_area_favorites'),
+              this._t('settings.show_area_favorites_description'),
+              this._config?.settings?.show_area_favorites !== false,
+              this._toggleAreaFavorites,
               ${this._renderManageFavoritesLink('areas')}
-            </p>
-          </div>
-          <div class="hide-unavailable-toggle">
-            <ha-formfield .label=${this._t('settings.show_area_now_playing')}>
-              <ha-switch
-                .checked=${isAreaNowPlayingEnabled(this._config?.settings)}
-                @change=${this._toggleAreaNowPlaying}
-              ></ha-switch>
-            </ha-formfield>
-            <p class="toggle-description">${this._t('settings.show_area_now_playing_description')}</p>
+            )}
+            ${this._renderToggleSetting(
+              "mdi:music-circle-outline",
+              this._t('settings.show_area_now_playing'),
+              this._t('settings.show_area_now_playing_description'),
+              isAreaNowPlayingEnabled(this._config?.settings),
+              this._toggleAreaNowPlaying
+            )}
           </div>
           ${this._renderAreasConfiguration()}
         </div>
@@ -5420,6 +5424,32 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         .dd-settings-section-header { padding: 12px; }
         .dd-settings-section-content { padding: 8px 12px 12px; }
       }
+      /* Reuse one compact switch-row pattern throughout device/area settings. */
+      .dd-settings-list { border: 1px solid var(--divider-color); border-radius: 10px; overflow: hidden; background: var(--card-background-color); }
+      .dd-settings-list-spaced { margin-bottom: 16px; }
+      .dd-setting-row { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 12px; min-height: 62px; }
+      .dd-setting-row + .dd-setting-row { border-top: 1px solid var(--divider-color); }
+      .dd-setting-row-icon { display: grid; place-items: center; width: 36px; height: 36px; color: var(--primary-color); background: color-mix(in srgb, var(--primary-color) 10%, transparent); border-radius: 9px; }
+      .dd-setting-row-icon ha-icon { --mdc-icon-size: 20px; }
+      .dd-setting-row-copy { display: grid; min-width: 0; gap: 3px; }
+      .dd-setting-row-copy strong { font-size: 14px; font-weight: 650; line-height: 1.3; }
+      .dd-setting-row-copy small { color: var(--secondary-text-color); font-size: 12px; line-height: 1.4; }
+      .dd-setting-row ha-switch { justify-self: end; }
+
+      /* Apply the existing Home-section drag card visual language to other
+         settings lists. Existing handlers, actions and sorting are unchanged. */
+      .settings-detail-content .sortable-container { display: grid; gap: 8px; }
+      .settings-detail-content .sortable-container > .sortable-item {
+        border: 1px solid var(--divider-color); border-radius: 10px;
+        background: var(--card-background-color); box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+        transition: border-color .16s ease, box-shadow .16s ease, opacity .16s ease, transform .16s ease;
+      }
+      .settings-detail-content .sortable-container > .sortable-item.dragging { opacity: .5; transform: scale(.99); }
+      .settings-detail-content .sortable-container > .sortable-item.drag-over {
+        border-color: var(--primary-color);
+        box-shadow: inset 0 0 0 1px var(--primary-color), 0 8px 18px rgba(15, 23, 42, .08);
+      }
+      .settings-detail-content .sortable-container > .sortable-item.drag-over::before { content: none; }
       /* Normalize the settings surfaces while preserving native HA inputs. */
       .settings-detail-content ha-expansion-panel { display: block; margin-bottom: 14px; border-radius: 14px; overflow: hidden; }
       .settings-detail-content .hide-unavailable-toggle { padding: 12px 16px; border-bottom: 1px solid var(--divider-color); }
