@@ -1630,7 +1630,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
               this._t('settings.show_area_favorites_description'),
               this._config?.settings?.show_area_favorites !== false,
               this._toggleAreaFavorites,
-              ${this._renderManageFavoritesLink('areas')}
+              this._renderManageFavoritesLink('areas')
             )}
             ${this._renderToggleSetting(
               "mdi:music-circle-outline",
