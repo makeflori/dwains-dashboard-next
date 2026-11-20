@@ -1,15 +1,18 @@
-name: Rebuild settings-only v1.15.1.1
+name: Rebuild settings-only v1.15.1.2
 
 # Release tags are immutable: never silently replace an installed HACS version.
 # Publish subsequent changes under a NEW version instead.
 on:
+  push:
+    branches: [dev]
+    paths: [.github/workflows/rebuild-settings-dev-release.yml]
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: settings-only-v1.15.1.1-release
+  group: settings-only-v1.15.1.2-release
   cancel-in-progress: false
 
 jobs:
@@ -27,8 +30,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if git ls-remote --exit-code --tags origin refs/tags/v1.15.1.1 >/dev/null 2>&1; then
-            echo "::error::v1.15.1.1 already exists. Use a NEW version tag for subsequent changes; do not overwrite released JS under a cached URL."
+          if git ls-remote --exit-code --tags origin refs/tags/v1.15.1.2 >/dev/null 2>&1; then
+            echo "::error::v1.15.1.2 already exists. Use a NEW version tag for subsequent changes; do not overwrite released JS under a cached URL."
             exit 1
           fi
 
@@ -40,7 +43,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: npm
 
       - name: Install, type-check, translations and tests
@@ -50,9 +53,9 @@ jobs:
           npm run i18n:check
           npm test
 
-      - name: Build v1.15.1.1 from official base plus settings changes
+      - name: Build v1.15.1.2 from official base plus settings changes
         env:
-          DD_NEXT_VERSION: '1.15.1.1'
+          DD_NEXT_VERSION: '1.15.1.2'
         run: npm run build:release
 
       - name: Commit complete HACS distribution to dev
@@ -61,19 +64,19 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A dist
           if ! git diff --cached --quiet; then
-            git commit -m 'build: settings-only v1.15.1.1 distribution'
+            git commit -m 'build: settings-only v1.15.1.2 distribution'
             git push origin HEAD:dev
           fi
 
-      - name: Publish v1.15.1.1 release without replacing existing releases
+      - name: Publish v1.15.1.2 release without replacing existing releases
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           git fetch --tags --force
-          git tag -a v1.15.1.1 -m 'Settings-only development version based on v1.15.1'
-          git push origin refs/tags/v1.15.1.1
-          gh release create v1.15.1.1 \
+          git tag -a v1.15.1.2 -m 'Settings-only development version based on v1.15.1'
+          git push origin refs/tags/v1.15.1.2
+          gh release create v1.15.1.2 \
             --repo "${{ github.repository }}" \
-            --title 'v1.15.1.1' \
-            --notes-file docs/release-notes-v1.15.1.1.md
+            --title 'v1.15.1.2' \
+            --notes-file docs/release-notes-v1.15.1.2.md
 
