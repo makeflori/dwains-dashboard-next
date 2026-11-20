@@ -1,9 +1,8 @@
 name: Rebuild settings-only v1.15.1.1
 
+# Release tags are immutable: never silently replace an installed HACS version.
+# Publish subsequent changes under a NEW version instead.
 on:
-  push:
-    branches: [dev]
-    paths: [.github/workflows/rebuild-settings-dev-release.yml, src/components/dwains-dashboard-strategy-editor.ts, src/i18n/locales/en.ts]
   workflow_dispatch:
 
 permissions:
@@ -18,6 +17,15 @@ jobs:
     if: github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
     steps:
+      - name: Reject reuse of an existing release version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git ls-remote --exit-code --tags origin refs/tags/v1.15.1.1 >/dev/null 2>&1; then
+            echo "::error::v1.15.1.1 already exists. Use a NEW version tag for subsequent changes; do not overwrite released JS under a cached URL."
+            exit 1
+          fi
+
       - name: Check out clean development branch
         uses: actions/checkout@v4
         with:
@@ -57,18 +65,15 @@ jobs:
             git push origin HEAD:dev
           fi
 
-      - name: Replace previous v1.15.1.1 release only after successful build
+      - name: Publish v1.15.1.1 release without replacing existing releases
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           git fetch --tags --force
-          gh release delete v1.15.1.1 --yes --repo "${{ github.repository }}" || true
-          git push origin :refs/tags/v1.15.1.1 || true
-          git tag -d v1.15.1.1 2>/dev/null || true
           git tag -a v1.15.1.1 -m 'Settings-only development version based on v1.15.1'
           git push origin refs/tags/v1.15.1.1
           gh release create v1.15.1.1 \
             --repo "${{ github.repository }}" \
             --title 'v1.15.1.1' \
-            --notes-file docs/release-notes-v1.15.1.1.md \
+            --notes-file docs/release-notes-v1.15.1.1.md
 
