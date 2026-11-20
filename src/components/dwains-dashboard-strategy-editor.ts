@@ -1343,16 +1343,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       this._t('settings.favorites_page_description'),
       html`
         <div class="favorites-section">
-          <div class="favorite-suggestions-toggle">
-            <ha-formfield .label=${this._t('settings.show_suggested_favorites')}>
-              <ha-switch
-                .checked=${this._config?.settings?.show_suggested_favorites !== false}
-                @change=${this._toggleSuggestedFavorites}
-              ></ha-switch>
-            </ha-formfield>
-            <p class="toggle-description">
-              ${this._t('settings.suggested_favorites_description')}
-            </p>
+          <div class="dd-settings-list dd-settings-list-spaced">
+            ${this._renderToggleSetting(
+              'mdi:star-outline',
+              this._t('settings.show_suggested_favorites'),
+              this._t('settings.suggested_favorites_description'),
+              this._config?.settings?.show_suggested_favorites !== false,
+              this._toggleSuggestedFavorites
+            )}
           </div>
           <div class="entity-picker">
             <div class="entity-picker-header">
@@ -1381,13 +1379,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       this._t('settings.time_date_description'),
       html`
         <div class="time-section">
-          <div class="time-toggle">
-            <ha-formfield .label=${this._t('settings.show_time')}>
-              <ha-switch
-                .checked=${this._config?.settings?.show_time !== false}
-                @change=${this._toggleTimeDisplay}
-              ></ha-switch>
-            </ha-formfield>
+          <div class="dd-settings-list dd-settings-list-spaced">
+            ${this._renderToggleSetting(
+              'mdi:clock-outline',
+              this._t('settings.show_time'),
+              '',
+              this._config?.settings?.show_time !== false,
+              this._toggleTimeDisplay
+            )}
           </div>
         </div>
       `
@@ -1401,13 +1400,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       this._t('settings.notifications_description'),
       html`
         <div class="notifications-section">
-          <div class="notifications-toggle">
-            <ha-formfield .label=${this._t('settings.show_notifications')}>
-              <ha-switch
-                .checked=${this._config?.settings?.show_notifications !== false}
-                @change=${this._toggleNotificationsDisplay}
-              ></ha-switch>
-            </ha-formfield>
+          <div class="dd-settings-list dd-settings-list-spaced">
+            ${this._renderToggleSetting(
+              'mdi:bell-outline',
+              this._t('settings.show_notifications'),
+              '',
+              this._config?.settings?.show_notifications !== false,
+              this._toggleNotificationsDisplay
+            )}
           </div>
         </div>
       `
@@ -1421,13 +1421,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       this._t('settings.weather_description'),
       html`
         <div class="weather-section">
-          <div class="weather-toggle">
-            <ha-formfield .label=${this._t('settings.show_weather')}>
-              <ha-switch
-                .checked=${this._config?.settings?.show_weather !== false}
-                @change=${this._toggleWeatherDisplay}
-              ></ha-switch>
-            </ha-formfield>
+          <div class="dd-settings-list dd-settings-list-spaced">
+            ${this._renderToggleSetting(
+              'mdi:weather-cloudy',
+              this._t('settings.show_weather'),
+              '',
+              this._config?.settings?.show_weather !== false,
+              this._toggleWeatherDisplay
+            )}
           </div>
 
           ${this._config?.settings?.show_weather !== false ? html`
@@ -1459,15 +1460,16 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       this._t('settings.alarm_description'),
       html`
         <div class="alarm-section">
-          <div class="alarm-toggle">
-            <ha-formfield .label=${this._t('settings.show_alarm')}>
-              <ha-switch
-                .checked=${Boolean(this._config?.settings?.alarm_entity_id) && this._config?.settings?.show_alarm !== false}
-                .disabled=${!this._config?.settings?.alarm_entity_id}
-                @change=${this._toggleAlarmDisplay}
-              ></ha-switch>
-            </ha-formfield>
-            <p class="toggle-description">${this._t('settings.show_alarm_description')}</p>
+          <div class="dd-settings-list dd-settings-list-spaced">
+            ${this._renderToggleSetting(
+              'mdi:shield-home-outline',
+              this._t('settings.show_alarm'),
+              this._t('settings.show_alarm_description'),
+              Boolean(this._config?.settings?.alarm_entity_id) && this._config?.settings?.show_alarm !== false,
+              this._toggleAlarmDisplay,
+              nothing,
+              !this._config?.settings?.alarm_entity_id
+            )}
           </div>
           <div class="alarm-picker">
             <div class="alarm-picker-header">
@@ -1496,7 +1498,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     description: string,
     checked: boolean,
     onChange: (event: Event) => void,
-    extra: unknown = nothing
+    extra: unknown = nothing,
+    disabled = false
   ) {
     return html`
       <div class="dd-setting-row">
@@ -1505,7 +1508,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           <strong>${title}</strong>
           ${description ? html`<small>${description}${extra}</small>` : extra}
         </span>
-        <ha-switch .checked=${checked} .ariaLabel=${title} @change=${onChange}></ha-switch>
+        <ha-switch .checked=${checked} .disabled=${disabled} aria-label=${title} @change=${onChange}></ha-switch>
       </div>
     `;
   }
