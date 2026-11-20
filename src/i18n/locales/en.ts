@@ -826,7 +826,7 @@ export const en = {
   'settings.behavior_access': "Behavior & access",
   'settings.about_support': "About & support",
   'settings.hide_area_name': "Leave the room name out of entity names",
-  'settings.hide_area_name_description': "Remove the room name from entity labels, e.g. “Living room Ceiling light” → “Ceiling light”."Living room Ceiling light\" is shown as \"Ceiling light\". Only the whole room name at the start or end of a name is removed, also between brackets.",
+  'settings.hide_area_name_description': "Remove the room name from entity labels, e.g. Living room Ceiling light → Ceiling light.",
   'settings.hide_energy_sensors': 'Hide power and energy sensors on room pages',
   'settings.hide_energy_sensors_description': "Hide power and energy sensors on room pages without changing energy calculations.",
   'settings.area_show_energy_sensors': 'Show power and energy sensors in this room',
