@@ -17,6 +17,12 @@ jobs:
     if: github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
     steps:
+      - name: Check out clean development branch
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          fetch-depth: 0
+
       - name: Reject reuse of an existing release version
         env:
           GH_TOKEN: ${{ github.token }}
@@ -25,12 +31,6 @@ jobs:
             echo "::error::v1.15.1.1 already exists. Use a NEW version tag for subsequent changes; do not overwrite released JS under a cached URL."
             exit 1
           fi
-
-      - name: Check out clean development branch
-        uses: actions/checkout@v4
-        with:
-          ref: dev
-          fetch-depth: 0
 
       - name: Verify official base
         run: |
