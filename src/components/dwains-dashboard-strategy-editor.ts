@@ -2016,13 +2016,15 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
         ${this._config.settings?.hide_energy_sensors_on_area_pages === true ? html`
           <section class="area-entity-layout-settings area-energy-sensors-settings">
-            <ha-formfield .label=${this._t('settings.area_show_energy_sensors')}>
-              <ha-switch
-                .checked=${areaOptions.show_energy_sensors === true}
-                @change=${this._toggleAreaShowEnergySensors}
-              ></ha-switch>
-            </ha-formfield>
-            <span class="area-energy-sensors-description">${this._t('settings.area_show_energy_sensors_description')}</span>
+            <div class="dd-settings-list">
+              ${this._renderToggleSetting(
+                'mdi:flash-outline',
+                this._t('settings.area_show_energy_sensors'),
+                this._t('settings.area_show_energy_sensors_description'),
+                areaOptions.show_energy_sensors === true,
+                this._toggleAreaShowEnergySensors
+              )}
+            </div>
           </section>
         ` : nothing}
 
@@ -5421,8 +5423,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .dd-settings-section-copy strong { font-size: 16px; font-weight: 650; line-height: 1.3; }
       .dd-settings-section-copy small { color: var(--secondary-text-color); line-height: 1.4; }
       .dd-settings-section-content { padding: 10px 16px 16px; }
-      .dd-settings-section-content .hide-unavailable-toggle { padding: 12px 0; }
-      .dd-settings-section-content .hide-unavailable-toggle:last-child { border-bottom: 0; }
       @media (max-width: 600px) {
         .dd-settings-section-header { padding: 12px; }
         .dd-settings-section-content { padding: 8px 12px 12px; }
@@ -5455,10 +5455,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .settings-detail-content .sortable-container > .sortable-item.drag-over::before { content: none; }
       /* Normalize the settings surfaces while preserving native HA inputs. */
       .settings-detail-content ha-expansion-panel { display: block; margin-bottom: 14px; border-radius: 14px; overflow: hidden; }
-      .settings-detail-content .hide-unavailable-toggle { padding: 12px 16px; border-bottom: 1px solid var(--divider-color); }
-      .settings-detail-content .hide-unavailable-toggle:last-child { border-bottom: 0; }
-      .settings-detail-content .toggle-description { margin: 4px 0 0; color: var(--secondary-text-color); line-height: 1.45; }
-      .settings-detail-content ha-formfield { display: flex; min-height: 32px; align-items: center; }
 
 
       .settings-nav-section {
@@ -7052,31 +7048,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
           align-items: stretch;
           flex-direction: column;
         }
-      }
-
-      .time-toggle,
-      .weather-toggle,
-      .alarm-toggle,
-      .favorite-suggestions-toggle,
-      .hide-unavailable-toggle {
-        margin-bottom: 16px;
-      }
-
-      .time-toggle ha-formfield,
-      .weather-toggle ha-formfield,
-      .alarm-toggle ha-formfield,
-      .favorite-suggestions-toggle ha-formfield,
-      .hide-unavailable-toggle ha-formfield {
-        --mdc-typography-body2-font-size: 14px;
-      }
-
-      .toggle-description {
-        margin: 8px 0 0 0;
-        font-size: 12px;
-        color: var(--secondary-text-color);
-        line-height: 1.4;
-        padding-left: 16px;
-        border-left: 3px solid var(--divider-color);
       }
 
       .device-visibility-section {
