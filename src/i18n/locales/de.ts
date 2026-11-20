@@ -805,7 +805,7 @@ export const de = {
   'settings.behavior_access': "Verhalten & Zugriff",
   'settings.about_support': "Über & Support",
   'settings.hide_area_name': "Raumnamen in Entitätsnamen weglassen",
-  'settings.hide_area_name_description': "Entfernt den Raumnamen aus Entitätsbezeichnungen, z. B. „Wohnzimmer Deckenlampe“ → „Deckenlampe“."Wohnzimmer Deckenlampe\" als \"Deckenlampe\" angezeigt. Nur der ganze Raumname am Anfang oder Ende eines Namens wird entfernt, auch in Klammern.",
+  'settings.hide_area_name_description': "Entfernt den Raumnamen aus Entitätsbezeichnungen, z. B. Wohnzimmer Deckenlampe → Deckenlampe.",
   'settings.hide_energy_sensors': 'Leistungs- und Energiesensoren auf Raumseiten ausblenden',
   'settings.hide_energy_sensors_description': "Blendet Leistungs- und Energiesensoren auf Raumseiten aus. Die Energieberechnung bleibt unverändert.",
   'settings.area_show_energy_sensors': 'Leistungs- und Energiesensoren in diesem Raum anzeigen',
