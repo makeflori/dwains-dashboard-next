@@ -3620,16 +3620,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     });
   }
 
-  private _getDeviceTypeOptions(): Array<{ key: string; label: string; icon: string; color: string; count: number }> {
-    return this._getDeviceVisibilityTree().map((type) => ({
-      key: type.key,
-      label: type.label,
-      icon: type.icon,
-      color: type.color,
-      count: type.entityIds.length,
-    }));
-  }
-
   private _deviceTypeKeyForEntityId(entityId: string): string | undefined {
     const domain = entityId.split('.')[0];
     if (!domain) return undefined;
