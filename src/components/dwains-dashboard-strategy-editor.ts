@@ -905,13 +905,14 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   };
 
   private _renderSettingsDetailPage(page: SettingsPageKey) {
-    const item = this._settingsOverviewItems().find((candidate) => candidate.page === page);
+    const overviewItems = this._settingsOverviewItems();
+    const item = overviewItems.find((candidate) => candidate.page === page);
     if (!item) return this._renderSettingsOverview();
 
     const homeDetail = page === 'home' ? this._homeSettingsDetailHeader() : undefined;
     const returnPage = page === 'favorites' ? this._favoritesReturnPage : undefined;
     const returnItem = returnPage
-      ? this._settingsOverviewItems().find((candidate) => candidate.page === returnPage)
+      ? overviewItems.find((candidate) => candidate.page === returnPage)
       : undefined;
     const title = homeDetail?.title || item.title;
     const description = homeDetail?.description || item.description;
