@@ -509,7 +509,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       return this._renderLoadingShell();
     }
 
-    if (!this.hass || this._loading) {
+    // The settings navigation needs only the saved config and hass metadata.
+    // Keep registry-dependent detail pages behind the existing loading shell.
+    if (!this.hass || (this._loading && (this._area || this._settingsPage !== 'overview'))) {
       return this._renderLoadingShell();
     }
 
@@ -770,7 +772,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         <div class="settings-nav-copy">
           <div class="settings-nav-title">${item.title}</div>
           <div class="settings-nav-description">${item.description}</div>
-          ${item.summary?.length
+          ${!this._loading && item.summary?.length
             ? html`
                 <div class="settings-nav-summary">
                   ${item.summary.filter(Boolean).map((part) => html`<span>${part}</span>`)}
@@ -5384,6 +5386,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     return css`
       :host {
         display: block;
+        --dd-settings-content-width: 940px;
       }
 
       .editor-container {
@@ -5437,7 +5440,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
 
       .settings-nav-section {
-        max-width: 720px;
+        max-width: var(--dd-settings-content-width);
         margin: 0 auto 16px;
       }
 
@@ -5547,7 +5550,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .settings-version-footer {
-        max-width: 720px;
+        max-width: var(--dd-settings-content-width);
         margin: 4px auto 0;
         padding: 0 14px;
         color: var(--secondary-text-color);
@@ -5625,7 +5628,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .settings-detail-toolbar {
-        max-width: 940px;
+        max-width: var(--dd-settings-content-width);
         margin: 0 auto 14px;
         display: grid;
         grid-template-columns: auto minmax(0, 1fr);
@@ -5687,7 +5690,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .settings-detail-content {
-        max-width: 940px;
+        max-width: var(--dd-settings-content-width);
         margin: 0 auto;
       }
 
