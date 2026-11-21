@@ -245,6 +245,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   private _dragOverIndex?: number;
 
   @state()
+  private _draggedFavoriteId?: string;
+
+  @state()
+  private _dragOverFavoriteIndex?: number;
+
+  @state()
   private _draggedHomeSection?: HomeSectionKey;
 
   @state()
@@ -4673,46 +4679,103 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     `;
   }
 
-  private _renderSelectedEntities() {
-    const favorites = this._config?.favorites || [];
+  /** Favorite ordering reuses the existing live drag-preview and save flow. */
+  private _moveFavorite(entityId: string, direction: number): void {
+    if (!this._config) return;
+    const order = [...(this._config.favorites || [])];
+    const index = order.indexOf(entityId);
+    const target = index + direction;
+    if (index < 0 || target < 0 || target >= order.length) return;
+    [order[index], order[target]] = [order[target]!, order[index]!];
+    this._fireConfigChanged({ ...this._config, favorites: order });
+  }
 
-    if (favorites.length === 0) {
-      return html`
-        <div class="no-favorites">
-          <p>${this._t('favorites.empty')}</p>
-        </div>
-      `;
+  private _handleFavoriteDragStart(event: DragEvent, entityId: string): void {
+    this._draggedFavoriteId = entityId;
+    this._startDragPreview('favorites', this._config?.favorites || []);
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', entityId);
     }
+  }
 
+  private _handleFavoriteDragEnd = (): void => {
+    this._draggedFavoriteId = undefined;
+    this._dragOverFavoriteIndex = undefined;
+    this._cancelDragPreview('favorites');
+  };
+
+  private _handleFavoriteDragOver(event: DragEvent, index: number): void {
+    if (!this._draggedFavoriteId) return;
+    event.preventDefault();
+    this._dragOverFavoriteIndex = index;
+    this._moveDragPreview('favorites', this._draggedFavoriteId, index);
+    if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+  }
+
+  private _handleFavoriteDragLeave = (event: DragEvent): void => {
+    const element = event.currentTarget as HTMLElement | null;
+    const related = event.relatedTarget as Node | null;
+    if (!element?.contains(related)) this._dragOverFavoriteIndex = undefined;
+  };
+
+  private _handleFavoriteDrop(event: DragEvent, index: number): void {
+    event.preventDefault();
+    if (!this._draggedFavoriteId || !this._config) return;
+    this._moveDragPreview('favorites', this._draggedFavoriteId, index);
+    const next = this._finishDragPreview('favorites', this._config.favorites || []);
+    if (next) this._fireConfigChanged({ ...this._config, favorites: next });
+    this._handleFavoriteDragEnd();
+  }
+
+  private _renderSelectedEntities() {
+    const favorites = this._previewOrder('favorites', this._config?.favorites || []);
+    if (favorites.length === 0) {
+      return html`<div class="no-favorites"><p>${this._t('favorites.empty')}</p></div>`;
+    }
     return html`
       <div class="selected-entities">
-        ${repeat(
-          favorites,
-          (entityId) => entityId,
-          (entityId) => {
-            const state = this.hass?.states[entityId];
-            const friendlyName = state?.attributes?.friendly_name || entityId;
-
-            return html`
-              <div class="selected-entity" data-entity-id="${entityId}">
-                <ha-state-icon
-                  .stateObj=${state}
-                  class="entity-icon"
-                ></ha-state-icon>
-                <span class="entity-name">${friendlyName}</span>
-                <button
-                  class="remove-button"
-                  title=${this._t('common.remove')}
-                  @click=${() => this._removeFavoriteEntity(entityId)}
-                >
-                  <svg viewBox="0 0 24 24" width="20" height="20">
-                    <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
-                  </svg>
-                </button>
-              </div>
-            `;
-          }
-        )}
+        ${repeat(favorites, entityId => entityId, (entityId, index) => {
+          const state = this.hass?.states[entityId];
+          const friendlyName = state?.attributes?.friendly_name || entityId;
+          const dragging = this._draggedFavoriteId === entityId;
+          const dragOver = this._dragOverFavoriteIndex === index && Boolean(this._draggedFavoriteId) && !dragging;
+          return html`
+            <div
+              class="selected-entity sortable-item ${dragging ? 'dragging' : ''} ${dragOver ? 'drag-over' : ''}"
+              data-entity-id=${entityId}
+              draggable="true"
+              @dragstart=${(event: DragEvent) => this._handleFavoriteDragStart(event, entityId)}
+              @dragend=${this._handleFavoriteDragEnd}
+              @dragover=${(event: DragEvent) => this._handleFavoriteDragOver(event, index)}
+              @dragleave=${this._handleFavoriteDragLeave}
+              @drop=${(event: DragEvent) => this._handleFavoriteDrop(event, index)}
+            >
+              <span class="handle" aria-hidden="true"><ha-svg-icon .path=${mdiDrag}></ha-svg-icon></span>
+              <ha-state-icon .stateObj=${state} class="entity-icon"></ha-state-icon>
+              <span class="entity-name">${friendlyName}</span>
+              <span class="entity-order-buttons">
+                <ha-icon-button
+                  .label=${this._t('settings.move_up')}
+                  .path=${mdiArrowUp}
+                  .disabled=${index === 0}
+                  @click=${() => this._moveFavorite(entityId, -1)}
+                ></ha-icon-button>
+                <ha-icon-button
+                  .label=${this._t('settings.move_down')}
+                  .path=${mdiArrowDown}
+                  .disabled=${index === favorites.length - 1}
+                  @click=${() => this._moveFavorite(entityId, 1)}
+                ></ha-icon-button>
+              </span>
+              <ha-icon-button
+                .label=${this._t('common.remove')}
+                .path=${mdiDelete}
+                @click=${() => this._removeFavoriteEntity(entityId)}
+              ></ha-icon-button>
+            </div>
+          `;
+        })}
       </div>
     `;
   }
@@ -5438,8 +5501,13 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         background: color-mix(in srgb, var(--dd-settings-accent) 9%, var(--card-background-color));
         box-shadow: inset 3px 0 0 var(--dd-settings-accent);
       }
-      .settings-detail-editor .settings-detail-content {
+      /* Current Home Assistant switch variables, scoped to settings switches. */
+      .settings-detail-editor .dd-setting-row ha-switch {
+        --ha-switch-checked-background-color: var(--dd-settings-accent);
+        --ha-switch-checked-border-color: var(--dd-settings-accent);
+        --ha-switch-checked-thumb-background-color: var(--card-background-color);
         --switch-checked-color: var(--dd-settings-accent);
+        --switch-checked-track-color: var(--dd-settings-accent);
         --md-switch-selected-track-color: var(--dd-settings-accent);
       }
       /* Action buttons share the category accent, without changing
@@ -7421,11 +7489,21 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .selected-entity {
         display: flex;
         align-items: center;
-        gap: 12px;
-        padding: 12px;
+        min-width: 0;
+        box-sizing: border-box;
+        gap: 8px;
+        padding: 10px 12px;
         background: var(--card-background-color);
-        border-radius: 8px;
+        border-radius: 10px;
         border: 1px solid var(--divider-color);
+      }
+      .selected-entity .handle { flex: 0 0 auto; }
+      .selected-entity .entity-name { min-width: 0; overflow-wrap: anywhere; }
+      .selected-entity .entity-order-buttons { margin-left: auto; }
+      .selected-entity.dragging { opacity: .5; transform: scale(.99); }
+      .selected-entity.drag-over {
+        border-color: var(--dd-settings-accent);
+        box-shadow: inset 0 0 0 1px var(--dd-settings-accent);
       }
 
       .selected-entity .entity-icon {
