@@ -5476,15 +5476,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         margin: 0;
         padding: 0 12px 12px;
       }
-      /* Settings-only accents match their category on the overview.
-         Device-type colors and domain colors remain untouched. */
-      .settings-detail-editor .settings-back-button,
-      .settings-detail-editor .home-layout-reset,
-      .settings-detail-editor .manage-favorites-link { color: var(--dd-settings-accent); }
-      .settings-detail-editor .settings-back-button,
-      .settings-detail-editor .home-layout-reset {
-        background: color-mix(in srgb, var(--dd-settings-accent) 10%, transparent);
-      }
+      /* Category accents apply to icons only. Native HA controls retain theme colors. */
       .settings-detail-editor .dd-setting-row-icon,
       .settings-detail-editor .home-section-icon,
       .settings-detail-editor .area-order-mode > ha-icon {
@@ -5493,30 +5485,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .settings-detail-editor .dd-setting-row-icon,
       .settings-detail-editor .home-section-icon {
         background: color-mix(in srgb, var(--dd-settings-accent) 10%, transparent);
-      }
-      .settings-detail-editor .area-order-mode.selected {
-        border-color: var(--dd-settings-accent);
-        background: color-mix(in srgb, var(--dd-settings-accent) 9%, var(--card-background-color));
-        box-shadow: inset 3px 0 0 var(--dd-settings-accent);
-      }
-      /* Current Home Assistant switch variables, scoped to settings switches. */
-      .settings-detail-editor .dd-setting-row ha-switch {
-        --ha-switch-checked-background-color: var(--dd-settings-accent);
-        --ha-switch-checked-border-color: var(--dd-settings-accent);
-        --ha-switch-checked-thumb-background-color: var(--card-background-color);
-        --switch-checked-color: var(--dd-settings-accent);
-        --switch-checked-track-color: var(--dd-settings-accent);
-        --md-switch-selected-track-color: var(--dd-settings-accent);
-      }
-      /* Action buttons share the category accent, without changing
-         colors assigned to device types or entity-domain groups. */
-      .settings-detail-editor .home-section-actions ha-icon-button,
-      .settings-detail-editor .area-actions ha-icon-button,
-      .settings-detail-editor .entity-order-buttons ha-icon-button,
-      .settings-detail-editor .area-entity-section-actions ha-icon-button,
-      .settings-detail-editor .settings-detail-content ha-button {
-        color: var(--dd-settings-accent);
-        --mdc-theme-primary: var(--dd-settings-accent);
       }
       /* Reuse one compact switch-row pattern throughout device/area settings. */
       .dd-settings-list { border: 1px solid var(--divider-color); border-radius: 10px; overflow: hidden; background: var(--card-background-color); }
@@ -5550,7 +5518,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .settings-nav-section {
         max-width: var(--dd-settings-content-width);
-        margin: 0 auto 16px;
+        margin: 0 auto 22px;
       }
 
       .settings-nav-section h3 {
@@ -5558,20 +5526,20 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         padding: 0 14px;
         color: var(--secondary-text-color);
         font-size: 13px;
-        font-weight: 700;
-        letter-spacing: 0;
+        font-weight: 650;
+        letter-spacing: 0.01em;
       }
 
       .settings-nav-list {
         overflow: hidden;
         border: 1px solid var(--divider-color);
-        border-radius: 12px;
+        border-radius: 14px;
         background: var(--card-background-color);
       }
 
       .settings-nav-item {
         width: 100%;
-        min-height: 76px;
+        min-height: 72px;
         display: grid;
         grid-template-columns: 44px minmax(0, 1fr) 24px;
         align-items: center;
@@ -5594,13 +5562,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         background: color-mix(in srgb, var(--settings-item-color) 5%, transparent);
       }
 
-      /* One hierarchy and color system for all settings pages. */
-      .settings-nav-section { margin-bottom: 22px; }
-      .settings-nav-section h3 { font-weight: 650; letter-spacing: 0.01em; }
-      .settings-nav-list { border-radius: 14px; }
-      .settings-nav-item { min-height: 72px; }
       .settings-nav-item:focus-visible { outline: 2px solid var(--primary-color); outline-offset: -3px; }
-      .settings-nav-icon { background: color-mix(in srgb, var(--settings-item-color) 13%, var(--card-background-color)); color: var(--settings-item-color); }
       .settings-nav-icon {
         width: 44px;
         height: 44px;
@@ -7500,8 +7462,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .selected-entity .entity-order-buttons { margin-left: auto; }
       .selected-entity.dragging { opacity: .5; transform: scale(.99); }
       .selected-entity.drag-over {
-        border-color: var(--dd-settings-accent);
-        box-shadow: inset 0 0 0 1px var(--dd-settings-accent);
+        border-color: var(--primary-color);
+        box-shadow: inset 0 0 0 1px var(--primary-color);
       }
 
       .selected-entity .entity-icon {
