@@ -511,7 +511,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
     // The settings navigation needs only the saved config and hass metadata.
     // Keep registry-dependent detail pages behind the existing loading shell.
-    if (!this.hass || (this._loading && (this._area || this._settingsPage !== 'overview'))) {
+    if (!this.hass || this._loading) {
       return this._renderLoadingShell();
     }
 
@@ -772,7 +772,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         <div class="settings-nav-copy">
           <div class="settings-nav-title">${item.title}</div>
           <div class="settings-nav-description">${item.description}</div>
-          ${!this._loading && item.summary?.length
+          ${item.summary?.length
             ? html`
                 <div class="settings-nav-summary">
                   ${item.summary.filter(Boolean).map((part) => html`<span>${part}</span>`)}
@@ -917,7 +917,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         : this._backToSettingsOverview;
 
     return html`
-      <div class="editor-container">
+      <div class="editor-container settings-detail-editor"
+        style=${`--dd-settings-accent: ${item.group === 'general' ? 'var(--primary-color)' : item.group === 'content' ? '#8b5cf6' : item.group === 'behavior' ? '#0f9f8f' : 'var(--secondary-text-color)'};`}>
         <div class="settings-detail-toolbar">
           <button class="settings-back-button" type="button" @click=${backAction}>
             <ha-icon icon="mdi:arrow-left"></ha-icon>
@@ -2162,11 +2163,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                     ` : nothing}
                   </span>
                   <span class="area-entity-section-actions">
-                    ${allGroupEntities.length ? this._renderVisibilityButton(
-                      groupVisibilityState,
-                      hidesOnToggle(groupVisibilityState) ? this._t('settings.hide_group') : this._t('settings.show_group'),
-                      () => this._setAreaEntityGroupHidden(group, allGroupEntities, hidesOnToggle(groupVisibilityState))
-                    ) : nothing}
                     <ha-icon-button
                       .label=${this._t('settings.move_up')}
                       .path=${mdiArrowUp}
@@ -2179,6 +2175,11 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                       .disabled=${groupIndex === groupedSections.length - 1}
                       @click=${(event: Event) => this._moveEntitySection(event, storedGroupedSections, groupIndex, 1)}
                     ></ha-icon-button>
+                    ${allGroupEntities.length ? this._renderVisibilityButton(
+                      groupVisibilityState,
+                      hidesOnToggle(groupVisibilityState) ? this._t('settings.hide_group') : this._t('settings.show_group'),
+                      () => this._setAreaEntityGroupHidden(group, allGroupEntities, hidesOnToggle(groupVisibilityState))
+                    ) : nothing}
                     <button
                       class="area-entity-section-handle"
                       type="button"
@@ -2535,16 +2536,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                     ><ha-svg-icon class="home-section-detail-chevron" .path=${mdiChevronRight}></ha-svg-icon></button>
                   ` : nothing}
                   <div class="home-section-actions" @click=${(event: Event) => event.stopPropagation()}>
-                    <button
-                      class="home-section-toggle ${enabled ? 'enabled' : ''}"
-                      type="button"
-                      title=${enabled ? this._t('settings.hide_section') : this._t('settings.show_section')}
-                      aria-label=${enabled ? this._t('settings.hide_section') : this._t('settings.show_section')}
-                      aria-pressed=${enabled ? 'true' : 'false'}
-                      @click=${() => this._toggleHomeSectionEnabled(section)}
-                    >
-                      <ha-icon icon=${enabled ? 'mdi:eye-outline' : 'mdi:eye-off-outline'}></ha-icon>
-                    </button>
+                    
                     <ha-icon-button
                       .label=${this._t('settings.move_up')}
                       .path=${mdiArrowUp}
@@ -2556,6 +2548,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                       .path=${mdiArrowDown}
                       .disabled=${index === order.length - 1}
                       @click=${() => this._moveHomeSection(section, 1)}
+                    ></ha-icon-button>
+                    <ha-icon-button
+                      .label=${enabled ? this._t('settings.hide_section') : this._t('settings.show_section')}
+                      .path=${enabled ? mdiEyeOff : mdiEye}
+                      aria-pressed=${enabled ? 'true' : 'false'}
+                      @click=${() => this._toggleHomeSectionEnabled(section)}
                     ></ha-icon-button>
                   </div>
                 </div>
@@ -5407,8 +5405,44 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .settings-page-header .dd-settings-section + .dd-settings-section { border-top: 1px solid var(--divider-color); }
       .settings-page-header .dd-settings-list { border: 0; border-radius: 0; }
       .settings-page-header .dd-settings-list-spaced { margin-bottom: 0; }
+      /* These sections inherited 16px of padding from the old separate cards. */
+      .settings-page-header .time-section,
+      .settings-page-header .weather-section,
+      .settings-page-header .alarm-section { padding: 0; }
       .settings-page-header .weather-picker,
-      .settings-page-header .alarm-picker { margin: 0 12px 12px; }
+      .settings-page-header .alarm-picker {
+        box-sizing: border-box;
+        width: 100%;
+        margin: 0;
+        padding: 0 12px 12px;
+      }
+      /* Settings-only accents match their category on the overview.
+         Device-type colors and domain colors remain untouched. */
+      .settings-detail-editor .settings-back-button,
+      .settings-detail-editor .home-layout-reset,
+      .settings-detail-editor .manage-favorites-link { color: var(--dd-settings-accent); }
+      .settings-detail-editor .settings-back-button,
+      .settings-detail-editor .home-layout-reset {
+        background: color-mix(in srgb, var(--dd-settings-accent) 10%, transparent);
+      }
+      .settings-detail-editor .dd-setting-row-icon,
+      .settings-detail-editor .home-section-icon,
+      .settings-detail-editor .area-order-mode > ha-icon {
+        color: var(--dd-settings-accent);
+      }
+      .settings-detail-editor .dd-setting-row-icon,
+      .settings-detail-editor .home-section-icon {
+        background: color-mix(in srgb, var(--dd-settings-accent) 10%, transparent);
+      }
+      .settings-detail-editor .area-order-mode.selected {
+        border-color: var(--dd-settings-accent);
+        background: color-mix(in srgb, var(--dd-settings-accent) 9%, var(--card-background-color));
+        box-shadow: inset 3px 0 0 var(--dd-settings-accent);
+      }
+      .settings-detail-editor .settings-detail-content {
+        --switch-checked-color: var(--dd-settings-accent);
+        --md-switch-selected-track-color: var(--dd-settings-accent);
+      }
       /* Reuse one compact switch-row pattern throughout device/area settings. */
       .dd-settings-list { border: 1px solid var(--divider-color); border-radius: 10px; overflow: hidden; background: var(--card-background-color); }
       .dd-settings-list-spaced { margin-bottom: 16px; }
