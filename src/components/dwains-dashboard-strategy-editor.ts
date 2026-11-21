@@ -515,8 +515,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       return this._renderLoadingShell();
     }
 
-    // The settings navigation needs only the saved config and hass metadata.
-    // Keep registry-dependent detail pages behind the existing loading shell.
     if (!this.hass || this._loading) {
       return this._renderLoadingShell();
     }
@@ -594,9 +592,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     const visibleHouseInfoCards = DEFAULT_HOME_INFORMATION_CARDS
       .filter((card) => !this._getHiddenHomeInformationCards().has(card))
       .length;
-    // The summary only needs the distinct type count, not the fully
-    // sorted device/area/entity visibility tree used on the Devices page.
-    const deviceTypeCount = new Set(this._getDeviceVisibilityEntries().map((entry) => entry.typeKey)).size;
+    const deviceTypeCount = this._getDeviceTypeOptions().length;
     const hiddenDeviceTypeCount = this._getHiddenDeviceTypes().size;
     const personCount = Object.values(this.hass?.states || {})
       .filter((state: any) => state.entity_id?.startsWith("person."))
@@ -907,14 +903,13 @@ export class DwainsDashboardStrategyEditor extends LitElement {
   };
 
   private _renderSettingsDetailPage(page: SettingsPageKey) {
-    const overviewItems = this._settingsOverviewItems();
-    const item = overviewItems.find((candidate) => candidate.page === page);
+    const item = this._settingsOverviewItems().find((candidate) => candidate.page === page);
     if (!item) return this._renderSettingsOverview();
 
     const homeDetail = page === 'home' ? this._homeSettingsDetailHeader() : undefined;
     const returnPage = page === 'favorites' ? this._favoritesReturnPage : undefined;
     const returnItem = returnPage
-      ? overviewItems.find((candidate) => candidate.page === returnPage)
+      ? this._settingsOverviewItems().find((candidate) => candidate.page === returnPage)
       : undefined;
     const title = homeDetail?.title || item.title;
     const description = homeDetail?.description || item.description;
@@ -3618,6 +3613,16 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         hidden_devices: [...nextHidden].sort(),
       },
     });
+  }
+
+  private _getDeviceTypeOptions(): Array<{ key: string; label: string; icon: string; color: string; count: number }> {
+    return this._getDeviceVisibilityTree().map((type) => ({
+      key: type.key,
+      label: type.label,
+      icon: type.icon,
+      color: type.color,
+      count: type.entityIds.length,
+    }));
   }
 
   private _deviceTypeKeyForEntityId(entityId: string): string | undefined {
