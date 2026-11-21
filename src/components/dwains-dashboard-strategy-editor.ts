@@ -2536,7 +2536,6 @@ export class DwainsDashboardStrategyEditor extends LitElement {
                     ><ha-svg-icon class="home-section-detail-chevron" .path=${mdiChevronRight}></ha-svg-icon></button>
                   ` : nothing}
                   <div class="home-section-actions" @click=${(event: Event) => event.stopPropagation()}>
-                    
                     <ha-icon-button
                       .label=${this._t('settings.move_up')}
                       .path=${mdiArrowUp}
@@ -5442,6 +5441,16 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .settings-detail-editor .settings-detail-content {
         --switch-checked-color: var(--dd-settings-accent);
         --md-switch-selected-track-color: var(--dd-settings-accent);
+      }
+      /* Action buttons share the category accent, without changing
+         colors assigned to device types or entity-domain groups. */
+      .settings-detail-editor .home-section-actions ha-icon-button,
+      .settings-detail-editor .area-actions ha-icon-button,
+      .settings-detail-editor .entity-order-buttons ha-icon-button,
+      .settings-detail-editor .area-entity-section-actions ha-icon-button,
+      .settings-detail-editor .settings-detail-content ha-button {
+        color: var(--dd-settings-accent);
+        --mdc-theme-primary: var(--dd-settings-accent);
       }
       /* Reuse one compact switch-row pattern throughout device/area settings. */
       .dd-settings-list { border: 1px solid var(--divider-color); border-radius: 10px; overflow: hidden; background: var(--card-background-color); }
