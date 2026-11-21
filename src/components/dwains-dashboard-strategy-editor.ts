@@ -594,7 +594,9 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     const visibleHouseInfoCards = DEFAULT_HOME_INFORMATION_CARDS
       .filter((card) => !this._getHiddenHomeInformationCards().has(card))
       .length;
-    const deviceTypeCount = this._getDeviceTypeOptions().length;
+    // The summary only needs the distinct type count, not the fully
+    // sorted device/area/entity visibility tree used on the Devices page.
+    const deviceTypeCount = new Set(this._getDeviceVisibilityEntries().map((entry) => entry.typeKey)).size;
     const hiddenDeviceTypeCount = this._getHiddenDeviceTypes().size;
     const personCount = Object.values(this.hass?.states || {})
       .filter((state: any) => state.entity_id?.startsWith("person."))
@@ -769,7 +771,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         class="settings-nav-item"
         type="button"
         data-settings-page=${item.page}
-        style=${`--settings-item-color: ${item.group === 'general' ? 'var(--primary-color)' : item.group === 'content' ? '#8b5cf6' : item.group === 'behavior' ? '#0f9f8f' : 'var(--secondary-text-color)'};`}
+        style=${`--settings-item-color: ${item.group === 'support' ? '#f59e0b' : item.group === 'general' ? 'var(--primary-color)' : item.group === 'content' ? '#8b5cf6' : '#0f9f8f'};`}
         @click=${() => this._openSettingsPage(item.page)}
       >
         <div class="settings-nav-icon">
@@ -925,7 +927,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
     return html`
       <div class="editor-container settings-detail-editor"
-        style=${`--dd-settings-accent: ${item.group === 'general' ? 'var(--primary-color)' : item.group === 'content' ? '#8b5cf6' : item.group === 'behavior' ? '#0f9f8f' : 'var(--secondary-text-color)'};`}>
+        style=${`--dd-settings-accent: ${item.group === 'support' ? '#f59e0b' : item.group === 'general' ? 'var(--primary-color)' : item.group === 'content' ? '#8b5cf6' : '#0f9f8f'};`}>
         <div class="settings-detail-toolbar">
           <button class="settings-back-button" type="button" @click=${backAction}>
             <ha-icon icon="mdi:arrow-left"></ha-icon>
