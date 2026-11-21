@@ -926,7 +926,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
             <small>${description}</small>
           </div>
         </div>
-        <div class="settings-detail-content">
+        <div class="settings-detail-content ${page === 'header' ? 'settings-page-header' : ''}">
           ${this._renderSettingsPageContent(page)}
         </div>
       </div>
@@ -977,17 +977,12 @@ export class DwainsDashboardStrategyEditor extends LitElement {
     }
   }
 
-  /** Consistent, always-visible settings section; native HA controls stay inside. */
-  private _renderSettingsPanel(icon: string, title: string, description: string, content: unknown) {
+  /** Settings pages already provide a heading in their toolbar.
+   * Keep semantic section labels without rendering a second visual heading
+   * or nesting cards around the native Home Assistant controls. */
+  private _renderSettingsPanel(_icon: string, title: string, _description: string, content: unknown) {
     return html`
       <section class="dd-settings-section" aria-label=${title}>
-        <header class="dd-settings-section-header">
-          <span class="dd-settings-section-icon" aria-hidden="true"><ha-icon icon=${icon}></ha-icon></span>
-          <span class="dd-settings-section-copy">
-            <strong>${title}</strong>
-            ${description ? html`<small>${description}</small>` : nothing}
-          </span>
-        </header>
         <div class="dd-settings-section-content">${content}</div>
       </section>
     `;
@@ -5395,38 +5390,22 @@ export class DwainsDashboardStrategyEditor extends LitElement {
         padding: 16px;
       }
 
-      .dd-settings-section {
-        border: 1px solid var(--divider-color);
-        border-radius: 14px;
-        background: var(--card-background-color);
+      /* The toolbar already names the page: avoid redundant nested headers/cards. */
+      .dd-settings-section { min-width: 0; margin-bottom: 14px; }
+      .dd-settings-section-content { min-width: 0; }
+      /* The four header/status switches form one continuous settings list. */
+      .settings-page-header {
         overflow: hidden;
-        margin: 0 0 14px;
-      }
-      .dd-settings-section-header {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-        padding: 16px;
-        background: color-mix(in srgb, var(--secondary-background-color) 50%, var(--card-background-color));
-      }
-      .dd-settings-section-icon {
-        width: 36px;
-        height: 36px;
+        border: 1px solid var(--divider-color);
         border-radius: 10px;
-        display: grid;
-        place-items: center;
-        flex: 0 0 auto;
-        color: var(--primary-color);
-        background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+        background: var(--card-background-color);
       }
-      .dd-settings-section-copy { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-      .dd-settings-section-copy strong { font-size: 16px; font-weight: 650; line-height: 1.3; }
-      .dd-settings-section-copy small { color: var(--secondary-text-color); line-height: 1.4; }
-      .dd-settings-section-content { padding: 10px 16px 16px; }
-      @media (max-width: 600px) {
-        .dd-settings-section-header { padding: 12px; }
-        .dd-settings-section-content { padding: 8px 12px 12px; }
-      }
+      .settings-page-header .dd-settings-section { margin: 0; }
+      .settings-page-header .dd-settings-section + .dd-settings-section { border-top: 1px solid var(--divider-color); }
+      .settings-page-header .dd-settings-list { border: 0; border-radius: 0; }
+      .settings-page-header .dd-settings-list-spaced { margin-bottom: 0; }
+      .settings-page-header .weather-picker,
+      .settings-page-header .alarm-picker { margin: 0 12px 12px; }
       /* Reuse one compact switch-row pattern throughout device/area settings. */
       .dd-settings-list { border: 1px solid var(--divider-color); border-radius: 10px; overflow: hidden; background: var(--card-background-color); }
       .dd-settings-list-spaced { margin-bottom: 16px; }
@@ -6691,6 +6670,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .sortable-item {
+        min-width: 0;
+        box-sizing: border-box;
         position: relative;
         background: var(--card-background-color);
         border-radius: 4px;
@@ -6760,6 +6741,8 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       .entity-item {
         display: flex;
         align-items: center;
+        box-sizing: border-box;
+        min-width: 0;
         width: 100%;
         padding: 12px 16px;
         min-height: 48px;
@@ -6770,6 +6753,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .handle {
+        flex: 0 0 auto;
         cursor: grab;
         margin-right: 8px;
         display: flex;
@@ -6795,6 +6779,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
 
       .area-icon,
       .entity-icon {
+        flex: 0 0 auto;
         margin-right: 16px;
       }
 
@@ -6843,6 +6828,7 @@ export class DwainsDashboardStrategyEditor extends LitElement {
       }
 
       .area-actions {
+        flex: 0 0 auto;
         display: flex;
         align-items: center;
         gap: 4px;
